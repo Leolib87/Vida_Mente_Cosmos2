@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapeo de Filosofía de la Mente y Ciencias Cognitivas en Chile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            background-color: #000000;
+            color: #00FF00;
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        .main-container {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+        .content { grid-column: 1 / 2; }
+        .sidebar {
+            grid-column: 2 / 3;
+            position: sticky;
+            top: 20px;
+            align-self: start;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        .header {
+            grid-column: 1 / 3;
+            position: relative;
+            height: 100vh;
+            background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center/cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #00FFFF;
+            text-shadow: 0 0 15px #00FF00;
+            animation: fadeIn 2s ease-in;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1;
+        }
+        .header h1, .header p {
+            position: relative;
+            z-index: 2;
+        }
+        .header h1 {
+            font-size: clamp(2em, 4vw, 4em);
+            animation: glow 2s infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 5px #00FF00; }
+            to { text-shadow: 0 0 20px #00FFFF; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .section {
+            margin: 40px 0;
+            padding: 25px;
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF;
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        .sidebar .section {
+            margin: 0;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.1);
+        }
+        #visualization-section { margin-top: 20px; }
+        h2 {
+            color: #00FF00;
+            text-shadow: 0 0 8px #00FF00;
+            border-bottom: 1px solid #00FFFF;
+            padding-bottom: 10px;
+            margin: 0 0 15px 0;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        h3 {
+            color: #00FFFF;
+            margin: 20px 0 10px 0;
+            font-size: 1.2em;
+        }
+        p {
+            color: #00FF00;
+            font-size: 1.1em;
+            margin: 0 0 10px 0;
+        }
+        .highlight {
+            color: #00FFFF;
+            font-weight: bold;
+            text-decoration: none;
+            transition: text-shadow 0.3s ease;
+        }
+        .highlight:hover { text-shadow: 0 0 10px #00FFFF; }
+        a {
+            color: #00FF00;
+            text-decoration: none;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        ul { list-style: none; padding: 0; margin: 0; }
+        ul li { margin: 10px 0; }
+        #visualization {
+            width: 100%;
+            height: 700px;
+            padding: 10px;
+            box-sizing: border-box;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .nodes .node circle {
+            stroke: #00FFFF;
+            stroke-width: 2px;
+            fill: #00FF00;
+            transition: all 0.3s ease;
+        }
+        .nodes .node:hover circle {
+            fill: #FFFFFF;
+            stroke: #00FFFF;
+            r: 12;
+            filter: drop-shadow(0 0 8px #00FFFF);
+        }
+        .nodes .node text {
+            fill: #00FFFF;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 5px #00FF00;
+            font-size: 12px;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        .nodes .node:hover text {
+            fill: #FFFFFF;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        .links .link {
+            stroke: #00FF00;
+            stroke-opacity: 0.7;
+            stroke-width: 1.5px;
+            transition: stroke-opacity 0.3s ease;
+        }
+        .footer {
+            grid-column: 1 / 3;
+            text-align: center;
+            padding: 30px;
+            color: #00FFFF;
+            border-top: 2px solid #00FF00;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1>Mapeo de Filosofía de la Mente y Ciencias Cognitivas en Chile</h1>
+            <p>Un viaje a través del pensamiento chileno contemporáneo</p>
+        </div>
+
+        <div class="content">
+            <div class="section" id="visualization-section">
+                <h2>Red de Conexiones Cognitivas</h2>
+                <div id="visualization"></div>
+            </div>
+
+            <div class="section" id="intro">
+                <h2>Introducción</h2>
+                <p>Este proyecto mapea las raíces históricas de la <span class="highlight"><a href="#filosofia-mente">filosofía de la mente</a></span> y las <span class="highlight"><a href="#ciencias-cognitivas">ciencias cognitivas</a></span> en Chile, explorando las contribuciones de pensadores chilenos clave y sus obras. Desde enfoques clásicos hasta nuevas perspectivas, buscamos entender cómo ha evolucionado el pensamiento en este ámbito.</p>
+            </div>
+
+            <div class="section" id="autores">
+                <h2>Autores Relevantes</h2>
+                <h3><a href="https://www.elmostrador.cl/noticias/opinion/2022/02/26/evocacion-de-felix-schwartzmann/" class="highlight">Félix Schwartzmann</a></h3>
+                <p>Pionero en antropología filosófica, autor de <span class="highlight">"El Sentimiento de lo Humano en América"</span>.</p>
+                <h3>Humberto Maturana</h3>
+                <p>Biólogo y filósofo, conocido por el concepto de autopoiesis.</p>
+                <h3>Francisco Varela</h3>
+                <p>Coautor con Maturana, destacó en neurociencias y cognición.</p>
+                <h3>Mario Villalobos</h3>
+                <p>Filósofo contemporáneo enfocado en cognición y enacción.</p>
+                <h3>Glenda Satne</h3>
+                <p>Explora la cognición social y la filosofía de la mente.</p>
+                <h3>Diego Cosmelli</h3>
+                <p>Investigador en neurociencia y conciencia.</p>
+                <h3>Eugenio Rodríguez</h3>
+                <p>Especialista en neurociencia cognitiva.</p>
+            </div>
+
+            <div class="section" id="obras">
+                <h2>Obras Relevantes</h2>
+                <ul>
+                    <li><a href="#" class="highlight">El Libro del Proyecto Cinco - Eden Medina</a></li>
+                    <li><a href="https://articulo.mercadolibre.cl/MLC-1182951950-libro-_JM" class="highlight">Historia del Universo y Conciencia - Félix Schwartzmann</a></li>
+                    <li><a href="#" class="highlight">Nuevos Enfoques de la Cognición</a></li>
+                    <li><a href="#" class="highlight">Papers Clásicos: Joaquín Luco y LTP</a></li>
+                </ul>
+            </div>
+
+            <div class="section" id="enfoques">
+                <h2>Enfoques</h2>
+                <p><span class="highlight">Enfoques Clásicos:</span> Filosofía tradicional de la mente y primeras investigaciones cognitivas.</p>
+                <p><span class="highlight">Enfoques Nuevos:</span> Perspectivas enacción, cognición situada y neurofenomenología.</p>
+            </div>
+
+            <div class="section" id="mapeo">
+                <h2>Mapeo de Autores Contemporáneos</h2>
+                <p>Este proyecto incluye un análisis de las conexiones entre autores como Villalobos, Satne, Cosmelli y Rodríguez, destacando su aporte al panorama actual.</p>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="section" id="referencias">
+                <h2>Referencias de Interés</h2>
+                <ul>
+                    <li><a href="https://leo.mdj.cl:9001/s/xsWeJEMPHKf7gXb" class="highlight">Leo Server</a></li>
+                    <li><a href="https://articulo.mercadolibre.cl/MLC-502178265-el-sentimiento-de-lo-humano-en-america-felix-schwartzmann-_JM" class="highlight">El Sentimiento de lo Humano en América</a></li>
+                    <li><a href="https://bibliotecadigital.uchile.cl/discovery/fulldisplay?vid=56UDC_INST%3A56UDC_INST&tab=Everything&docid=alma991002306489703936&lang=es" class="highlight">Autoconocimiento en Occidente</a></li>
+                    <li><a href="https://docplayer.es/18777300-A-felix-schwartzmann-turkenich.html" class="highlight">A Félix Schwartzmann</a></li>
+                    <li><a href="https://prezi.com/cl6sq3z9ubvf/felix-schwartzmann-turkenich/" class="highlight">Prezi Félix Schwartzmann</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Mapeando el pensamiento chileno | Febrero 2025</p>
+        </div>
+    </div>
+
+    <script>
+        const vizContainer = document.getElementById('visualization');
+        let vizWidth = vizContainer.clientWidth - 20;
+        const vizHeight = 700;
+
+        const svg = d3.select("#visualization")
+            .append("svg")
+            .attr("width", vizWidth)
+            .attr("height", vizHeight)
+            .attr("viewBox", `0 0 ${vizWidth} ${vizHeight}`)
+            .attr("preserveAspectRatio", "xMidYMid meet");
+
+        svg.append("rect")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .attr("fill", "rgba(0, 0, 0, 0.9)")
+            .attr("rx", 5);
+
+        const nodes = [
+            { id: "Filosofía Mente", link: "#intro", group: 1 },
+            { id: "Ciencias Cognitivas", link: "#intro", group: 1 },
+            { id: "Félix Schwartzmann", link: "https://www.elmostrador.cl/noticias/opinion/2022/02/26/evocacion-de-felix-schwartzmann/", group: 2 },
+            { id: "Humberto Maturana", link: "#autores", group: 2 },
+            { id: "Francisco Varela", link: "#autores", group: 2 },
+            { id: "Mario Villalobos", link: "#autores", group: 3 },
+            { id: "Glenda Satne", link: "#autores", group: 3 },
+            { id: "Diego Cosmelli", link: "#autores", group: 3 },
+            { id: "Eugenio Rodríguez", link: "#autores", group: 3 },
+            { id: "Proyecto Cinco", link: "#obras", group: 4 },
+            { id: "Historia Universo", link: "https://articulo.mercadolibre.cl/MLC-1182951950-libro-_JM", group: 4 },
+            { id: "Nuevos Enfoques", link: "#obras", group: 4 },
+            { id: "Joaquín Luco", link: "#obras", group: 5 }
+        ];
+
+        const links = [
+            { source: "Filosofía Mente", target: "Ciencias Cognitivas" },
+            { source: "Filosofía Mente", target: "Félix Schwartzmann" },
+            { source: "Ciencias Cognitivas", target: "Humberto Maturana" },
+            { source: "Ciencias Cognitivas", target: "Francisco Varela" },
+            { source: "Ciencias Cognitivas", target: "Mario Villalobos" },
+            { source: "Ciencias Cognitivas", target: "Glenda Satne" },
+            { source: "Ciencias Cognitivas", target: "Diego Cosmelli" },
+            { source: "Ciencias Cognitivas", target: "Eugenio Rodríguez" },
+            { source: "Filosofía Mente", target: "Proyecto Cinco" },
+            { source: "Félix Schwartzmann", target: "Historia Universo" },
+            { source: "Ciencias Cognitivas", target: "Nuevos Enfoques" },
+            { source: "Ciencias Cognitivas", target: "Joaquín Luco" }
+        ];
+
+        const simulation = d3.forceSimulation(nodes)
+            .force("link", d3.forceLink(links).id(d => d.id).distance(120).strength(0.2))
+            .force("charge", d3.forceManyBody().strength(-300))
+            .force("center", d3.forceCenter(vizWidth / 2, vizHeight / 2))
+            .force("collide", d3.forceCollide(30))
+            .force("x", d3.forceX(vizWidth / 2).strength(0.05))
+            .force("y", d3.forceY(vizHeight / 2).strength(0.05));
+
+        const link = svg.append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(links)
+            .join("line")
+            .attr("class", "link");
+
+        const node = svg.append("g")
+            .attr("class", "nodes")
+            .selectAll("g")
+            .data(nodes)
+            .join("g")
+            .attr("class", "node");
+
+        node.append("circle")
+            .attr("r", 8)
+            .attr("fill", d => d.group === 1 ? "#00FF00" : d.group === 2 ? "#00FFFF" : d.group === 3 ? "#FFFFFF" : "#00FF80");
+
+        node.append("text")
+            .attr("dy", -10)
+            .attr("text-anchor", "middle")
+            .text(d => d.id);
+
+        node.call(d3.drag()
+            .on("start", dragStarted)
+            .on("drag", dragged)
+            .on("end", dragEnded))
+            .on("click", (event, d) => window.open(d.link, "_blank"))
+            .on("mouseover", function() { d3.select(this).select("circle").transition().duration(200).attr("r", 12); })
+            .on("mouseout", function() { d3.select(this).select("circle").transition().duration(200).attr("r", 8); });
+
+        simulation.on("tick", () => {
+            link.attr("x1", d => Math.max(20, Math.min(vizWidth - 20, d.source.x)))
+                .attr("y1", d => Math.max(20, Math.min(vizHeight - 20, d.source.y)))
+                .attr("x2", d => Math.max(20, Math.min(vizWidth - 20, d.target.x)))
+                .attr("y2", d => Math.max(20, Math.min(vizHeight - 20, d.target.y)));
+            node.attr("transform", d => `translate(${Math.max(20, Math.min(vizWidth - 20, d.x))},${Math.max(20, Math.min(vizHeight - 20, d.y))})`);
+        });
+
+        function dragStarted(event) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        }
+        function dragged(event) {
+            event.subject.fx = Math.max(20, Math.min(vizWidth - 20, event.x));
+            event.subject.fy = Math.max(20, Math.min(vizHeight - 20, event.y));
+        }
+        function dragEnded(event) {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
+        }
+
+        function resize() {
+            vizWidth = vizContainer.clientWidth - 20;
+            svg.attr("width", vizWidth).attr("viewBox", `0 0 ${vizWidth} ${vizHeight}`);
+            simulation.force("center", d3.forceCenter(vizWidth / 2, vizHeight / 2));
+            simulation.alpha(1).restart();
+        }
+        window.addEventListener("resize", resize);
+
+        window.addEventListener('load', () => {
+            resize();
+            simulation.alpha(1).restart();
+        });
+    </script>
+</body>
+</html>

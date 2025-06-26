@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fondos para Emprendimiento e Investigación en Chile 2025</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #000000;
+            color: #00FF00;
+            font-family: 'Orbitron', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 2px solid #00FFFF;
+            box-shadow: 0 0 15px #00FFFF;
+        }
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        nav ul li {
+            position: relative;
+            margin: 0 20px;
+        }
+        nav ul li a {
+            color: #00FF00;
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        .main-container {
+            max-width: 1400px;
+            margin: 80px auto 0;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 20px;
+        }
+        .content {
+            grid-column: 1 / 2;
+        }
+        .sidebar {
+            grid-column: 2 / 3;
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            background: rgba(0, 255, 255, 0.1);
+            padding: 20px;
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF;
+        }
+        .section {
+            margin: 50px 0;
+            padding: 30px;
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF;
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 30px #00FFFF;
+        }
+        h2 {
+            color: #00FF00;
+            text-shadow: 0 0 8px #00FF00;
+            border-bottom: 1px solid #00FFFF;
+            padding-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #00FFFF;
+            text-align: left;
+        }
+        th {
+            background: rgba(0, 255, 255, 0.1);
+            color: #00FFFF;
+        }
+        tr:nth-child(even) {
+            background: rgba(0, 255, 255, 0.03);
+        }
+        tr:hover {
+            background: rgba(0, 255, 255, 0.2);
+        }
+        a {
+            color: #00FFFF;
+            text-decoration: none;
+        }
+        a:hover {
+            text-shadow: 0 0 5px #00FFFF;
+        }
+        #network-graph {
+            width: 100%;
+            height: 600px;
+            margin: 30px 0;
+        }
+        .node circle {
+            stroke: #00FFFF;
+            stroke-width: 2px;
+            fill: #00FF00;
+            transition: all 0.3s ease;
+        }
+        .node.category circle {
+            fill: #FF00CC;
+        }
+        .node:hover circle {
+            fill: #FFFFFF;
+            stroke: #00FFFF;
+        }
+        .node text {
+            fill: #00FFFF;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            pointer-events: none;
+        }
+        .link {
+            stroke: #00FF00;
+            stroke-opacity: 0.6;
+            stroke-width: 1.5px;
+        }
+        .sidebar a {
+            color: #00FF00;
+            text-decoration: none;
+            display: block;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+        .sidebar a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        @media (max-width: 900px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                margin-top: 120px;
+            }
+            .sidebar {
+                position: static;
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#startups">Fondos para Startups</a></li>
+            <li><a href="#investigacion">Investigación Académica</a></li>
+            <li><a href="#becas">Becas</a></li>
+            <li><a href="#proyectos">Proyectos Institucionales</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-container" id="inicio">
+        <div class="content">
+            <div class="section">
+                <h2>Red Interactiva de Fondos en Chile 2025</h2>
+                <div id="network-graph"></div>
+            </div>
+
+            <div class="section" id="startups">
+                <h2>Fondos para Startups y Emprendimientos</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre del Fondo</th>
+                            <th>Tipo de Fondo</th>
+                            <th>Monto de Financiamiento</th>
+                            <th>Nacional/Internacional</th>
+                            <th>Fechas de Postulación</th>
+                            <th>Link</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Start-Up Chile – Build (Corfo)</td><td>Pre-aceleración (fase temprana)</td><td>$10.000.000 CLP (equity-free)</td><td>Nacional</td><td>Cohortes múltiples: Ej. Feb–Mar, Jun–Jul</td><td><a href="https://www.startupchile.org/programs/build/" target="_blank">Start-Up Chile Build</a></td></tr>
+                        <tr><td>Start-Up Chile – Ignite (Corfo)</td><td>Aceleración (prototipo validado)</td><td>$25.000.000 CLP (80% cofinanciamiento, 90% si liderado por mujer)</td><td>Nacional</td><td>Cohortes múltiples: Ej. Feb–Mar, Jun–Jul</td><td><a href="https://www.startupchile.org/programs/ignite/" target="_blank">Start-Up Chile Ignite</a></td></tr>
+                        <tr><td>Start-Up Chile – Growth (Corfo)</td><td>Escalamiento (expansión global)</td><td>$75.000.000 CLP (50% cofinanciamiento)</td><td>Nacional</td><td>Cohortes múltiples: Ej. Feb–Mar, Jun–Jul</td><td><a href="https://www.startupchile.org/programs/growth/" target="_blank">Start-Up Chile Growth</a></td></tr>
+                        <tr><td>Semilla Inicia (Corfo)</td><td>Subsidio semilla (nuevos emprendimientos)</td><td>$15.000.000 CLP ($17.000.000 si liderado por mujer)</td><td>Nacional</td><td>Anual: Ej. Oct 2024 – Ene 2025</td><td><a href="https://www.corfo.cl/sites/cpp/sala_de_prensa/semilla-inicia-2024" target="_blank">Semilla Inicia</a></td></tr>
+                        <tr><td>Semilla Expande (Corfo)</td><td>Subsidio expansión</td><td>$25.000.000 CLP (Etapa 1) + $20.000.000 (Etapa 2) (+10% si liderado por mujer)</td><td>Nacional</td><td>Anual: Ej. Nov 2024 – Feb 2025</td><td><a href="https://www.corfo.cl/sites/cpp/sala_de_prensa/semilla-expande-2024" target="_blank">Semilla Expande</a></td></tr>
+                        <tr><td>Capital Semilla Emprende (Sercotec)</td><td>Fondo concursable (microempresas)</td><td>$3.500.000 CLP (con aporte beneficiario)</td><td>Nacional</td><td>Anual por regiones: Ej. Mar–May 2025</td><td><a href="https://www.sercotec.cl/capital-semilla-emprende/" target="_blank">Capital Semilla Emprende</a></td></tr>
+                        <tr><td>Capital Abeja Emprende (Sercotec)</td><td>Fondo emprendedoras (negocios nuevos)</td><td>$3.500.000 CLP</td><td>Nacional</td><td>Anual por regiones: Ej. Mar–May 2025</td><td><a href="https://www.sercotec.cl/capital-abeja-emprende/" target="_blank">Capital Abeja Emprende</a></td></tr>
+                        <tr><td>Capital Pioneras (Sercotec)</td><td>Fondo emprendedoras (rubros masculinizados)</td><td>$3.500.000 CLP</td><td>Nacional</td><td>Anual por regiones: Ej. Mar–May 2025</td><td><a href="https://www.sercotec.cl/capital-pioneras/" target="_blank">Capital Pioneras</a></td></tr>
+                        <tr><td>Crece (Sercotec)</td><td>Subsidio crecimiento MIPYMEs</td><td>$5.000.000 CLP</td><td>Nacional</td><td>Anual por regiones: Ej. Feb–Abr 2025</td><td><a href="https://www.sercotec.cl/crece/" target="_blank">Crece</a></td></tr>
+                        <tr><td>Kit Digital (Sercotec)</td><td>Subsidio digitalización</td><td>Hasta $1.200.000 CLP</td><td>Nacional</td><td>Anual por regiones: Ej. Abr–Jun 2025</td><td><a href="https://www.sercotec.cl/kit-digital/" target="_blank">Kit Digital</a></td></tr>
+                        <tr><td>Emprendamos Semilla (FOSIS)</td><td>Microemprendimiento (vulnerables)</td><td>~$400.000 CLP + capacitación</td><td>Nacional</td><td>Anual por regiones: Ej. Ene–Mar 2025</td><td><a href="https://www.fosis.gob.cl/es/programa/emprendamos-semilla/" target="_blank">Emprendamos Semilla</a></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section" id="investigacion">
+                <h2>Financiamiento para Investigación Académica</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre del Fondo</th>
+                            <th>Tipo de Fondo</th>
+                            <th>Monto de Financiamiento</th>
+                            <th>Nacional/Internacional</th>
+                            <th>Fechas de Postulación</th>
+                            <th>Link</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Fondecyt Iniciación (ANID)</td><td>Investigación básica (investigador novel)</td><td>Hasta $30.000.000 CLP/año (3 años)</td><td>Nacional</td><td>Anual: Ej. Abr–Jul 2025</td><td><a href="https://www.anid.cl/concursos/concurso-de-proyectos-fondecyt-de-iniciacion-en-investigacion-2025/" target="_blank">Fondecyt Iniciación</a></td></tr>
+                        <tr><td>Fondecyt Regular (ANID)</td><td>Investigación básica (investigador senior)</td><td>Hasta $57.000.000 CLP/año (4 años)</td><td>Nacional</td><td>Anual: Ej. Abr–Jun 2025</td><td><a href="https://www.anid.cl/concursos/concurso-de-proyectos-fondecyt-regular-2025/" target="_blank">Fondecyt Regular</a></td></tr>
+                        <tr><td>Fondecyt Postdoctorado (ANID)</td><td>Beca/Proyecto postdoctoral</td><td>$31.164.000 CLP/año (2-3 años)</td><td>Nacional</td><td>Anual: Ej. Ene–Abr 2025</td><td><a href="https://www.anid.cl/concursos/concurso-fondecyt-de-postdoctorado-2025/" target="_blank">Fondecyt Postdoctorado</a></td></tr>
+                        <tr><td>Fondos ANID – Exploración</td><td>Investigación exploratoria (alto riesgo)</td><td>Hasta $80.000.000 CLP/año (1-2 años)</td><td>Nacional</td><td>Anual: Ej. Abr–Ago 2025</td><td><a href="https://www.anid.cl/concursos/proyectos-de-exploracion/" target="_blank">Fondos Exploración</a></td></tr>
+                        <tr><td>Fondo I+D en Salud (FONIS) (ANID)</td><td>Investigación aplicada en salud</td><td>Hasta $70.000.000 CLP (24 meses)</td><td>Nacional</td><td>Anual: Ej. Feb–Abr 2025</td><td><a href="https://www.anid.cl/concursos/fondo-de-investigacion-y-desarrollo-en-salud-fonis/" target="_blank">FONIS</a></td></tr>
+                        <tr><td>Concurso IDeA I+D (ANID)</td><td>Investigación tecnológica aplicada</td><td>Hasta $237.000.000 CLP (cofinanciamiento 15%)</td><td>Nacional</td><td>Anual: Ej. Ene–Mar 2025</td><td><a href="https://www.anid.cl/concursos/concurso-idea-id-2024/" target="_blank">IDeA I+D</a></td></tr>
+                        <tr><td>Anillos de Investigación (ANID)</td><td>Investigación asociativa</td><td>Hasta $220.000.000 CLP/año (3 años)</td><td>Nacional</td><td>Periódica: Ej. Convocatoria cada 2-3 años</td><td><a href="https://www.anid.cl/concursos/anillos-de-investigacion/" target="_blank">Anillos</a></td></tr>
+                        <tr><td>Fondo ALMA-ANID</td><td>Investigación astronómica (postdoctoral)</td><td>~$69.800.000 CLP (2 años)</td><td>Internacional (Chile–ALMA)</td><td>Anual: Ej. Mar–May 2025</td><td><a href="https://www.anid.cl/concursos/fondo-alma-anid/" target="_blank">Fondo ALMA</a></td></tr>
+                        <tr><td>Fondo CAS-ANID (Chile–China)</td><td>Investigación astronómica conjunta</td><td>$73.100.000 CLP (2 años)</td><td>Internacional (Chile–China)</td><td>Anual: Ej. Feb–Abr 2025</td><td><a href="https://www.anid.cl/concursos/fondo-cas-anid/" target="_blank">Fondo CAS</a></td></tr>
+                        <tr><td>Fondo Gemini-ANID</td><td>Investigación astronómica (Telescopio Gemini)</td><td>~$70.000.000 CLP (2 años)</td><td>Internacional (Chile–EE.UU.)</td><td>Anual: Ej. Mar–May 2025</td><td><a href="https://www.anid.cl/concursos/fondo-gemini-anid/" target="_blank">Fondo Gemini</a></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section" id="becas">
+                <h2>Becas para Investigadores y Emprendedores</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre de la Beca/Fondo</th>
+                            <th>Tipo de Beca</th>
+                            <th>Monto de Financiamiento</th>
+                            <th>Nacional/Internacional</th>
+                            <th>Fechas de Postulación</th>
+                            <th>Link</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Beca Doctorado Nacional (ANID)</td><td>Doctorado en Chile</td><td>$7.800.000 CLP/año + matrícula (~$2.700.000)</td><td>Nacional</td><td>Anual: Ej. Sep–Dic 2025</td><td><a href="https://www.anid.cl/concursos/beca-de-doctorado-nacional/" target="_blank">Beca Doctorado Nacional</a></td></tr>
+                        <tr><td>Beca Magíster Nacional (ANID)</td><td>Magíster en Chile</td><td>$4.800.000 CLP/año + arancel</td><td>Nacional</td><td>Anual: Ej. Ago–Nov 2025</td><td><a href="https://www.anid.cl/concursos/beca-de-magister-nacional/" target="_blank">Beca Magíster Nacional</a></td></tr>
+                        <tr><td>Beca Doctorado Extranjero (Becas Chile – ANID)</td><td>Doctorado fuera de Chile</td><td>~USD 62.000/año + estipendio (~USD 1.300/mes)</td><td>Internacional</td><td>Anual: Ej. Abr–Jul 2025</td><td><a href="https://www.anid.cl/concursos/beca-de-doctorado-extranjero-becas-chile/" target="_blank">Becas Chile</a></td></tr>
+                        <tr><td>Beca Chevening (Reino Unido)</td><td>Máster en Reino Unido (1 año)</td><td>Tuition (~£18.000) + estipendio + pasajes</td><td>Internacional</td><td>Anual: Ej. Ago–Nov 2025</td><td><a href="https://www.chevening.org/scholarship/chile/" target="_blank">Chevening Chile</a></td></tr>
+                        <tr><td>Beca Fulbright-CONICYT (Chile–EE.UU.)</td><td>Doctorado en EE.UU.</td><td>Cobertura completa (compartida ANID/Fulbright)</td><td>Internacional</td><td>Anual: Ej. Oct 2024 – Mar 2025</td><td><a href="https://www.fulbright.cl/programas/" target="_blank">Fulbright Chile</a></td></tr>
+                        <tr><td>Programas Erasmus Mundus (UE)</td><td>Máster conjunto en Europa</td><td>~€1.400/mes + matrícula + seguro + viaje</td><td>Internacional</td><td>Anual: Ej. Oct 2024 – Feb 2025</td><td><a href="https://www.eacea.ec.europa.eu/scholarships/erasmus-mundus-catalogue_en" target="_blank">Erasmus Mundus</a></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section" id="proyectos">
+                <h2>Fondos para Proyectos Institucionales y Empresariales</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre del Fondo</th>
+                            <th>Tipo de Fondo</th>
+                            <th>Monto de Financiamiento</th>
+                            <th>Nacional/Internacional</th>
+                            <th>Fechas de Postulación</th>
+                            <th>Link</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Crea y Valida I+D+i (Corfo)</td><td>Subsidio I+D (prototipo a validación)</td><td>$100.000.000 CLP (80%) o $120.000.000 (colaborativo)</td><td>Nacional</td><td>Anual: Ej. Ene–Mar 2025</td><td><a href="https://www.corfo.cl/sites/cpp/convocatorias/crea-y-valida" target="_blank">Crea y Valida</a></td></tr>
+                        <tr><td>Consolida y Expande Innovación (Corfo)</td><td>Subsidio escalamiento innovación</td><td>$150.000.000 CLP (40-60% cofinanciamiento)</td><td>Nacional</td><td>Bianual: Ej. Dic 2024 – Mar 2025</td><td><a href="https://www.corfo.cl/sites/cpp/convocatorias/consolida-y-expande" target="_blank">Consolida y Expande</a></td></tr>
+                        <tr><td>Innova Región (Corfo)</td><td>Subsidio I+D regional (sostenibilidad)</td><td>~$100.000.000 CLP</td><td>Nacional</td><td>Anual por regiones: Ej. Feb–Abr 2025</td><td><a href="https://www.corfo.cl/sites/cpp/convocatorias/innova-region" target="_blank">Innova Región</a></td></tr>
+                        <tr><td>Capital Humano para la Innovación (Corfo)</td><td>Inserción investigadores en empresas</td><td>Variable (cofinancia salario)</td><td>Nacional</td><td>Ventanilla abierta: Todo 2025</td><td><a href="https://www.corfo.cl/sites/cpp/convocatorias/capital-humano-para-la-innovacion" target="_blank">Capital Humano</a></td></tr>
+                        <tr><td>Red Eureka (Corfo)</td><td>I+D colaborativo internacional</td><td>~70% costo pymes (60% medianas)</td><td>Internacional</td><td>Convocatorias periódicas: Ej. Todo 2025</td><td><a href="https://www.eurekanetwork.org/countries/chile/" target="_blank">Red Eureka</a></td></tr>
+                        <tr><td>Fondo de Innovación para la Competitividad (FIC-R)</td><td>I+D+i regional (Gobiernos Regionales)</td><td>~$100.000.000 CLP/proyecto</td><td>Nacional</td><td>Anual por región: Ej. Mar–Jun 2025</td><td><a href="https://www.subdere.gov.cl/fondo-de-innovacion-para-la-competitividad-fic" target="_blank">FIC-R</a></td></tr>
+                        <tr><td>Centros Tecnológicos (ANID)</td><td>Creación centros I+D empresariales</td><td>Hasta $9.250.000.000 CLP (plurianual)</td><td>Nacional</td><td>Periódica: Ej. Convocatoria cada 3-5 años</td><td><a href="https://www.anid.cl/concursos/centros-tecnologicos/" target="_blank">Centros Tecnológicos</a></td></tr>
+                        <tr><td>Centros de Investigación Aplicada (ANID)</td><td>Centros I+D aplicada</td><td>Miles de millones CLP (plurianual)</td><td>Nacional</td><td>Periódica: Ej. Convocatoria cada 3-5 años</td><td><a href="https://www.anid.cl/concursos/centros-de-investigacion-aplicada/" target="_blank">Centros Aplicada</a></td></tr>
+                        <tr><td>Institutos Milenio (ANID)</td><td>Centros excelencia científica</td><td>$300–500.000.000 CLP/año (10 años)</td><td>Nacional</td><td>Periódica: Ej. Convocatoria cada 5-10 años</td><td><a href="https://www.anid.cl/concursos/institutos-milenio/" target="_blank">Institutos Milenio</a></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <h2>Categorías</h2>
+            <ul>
+                <li><a href="#startups">Fondos para Startups</a></li>
+                <li><a href="#investigacion">Investigación Académica</a></li>
+                <li><a href="#becas">Becas</a></li>
+                <li><a href="#proyectos">Proyectos Institucionales</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Datos para la red D3.js
+        const categories = [
+            { id: "Startups", group: "category", size: 20 },
+            { id: "Investigación", group: "category", size: 20 },
+            { id: "Becas", group: "category", size: 20 },
+            { id: "Proyectos", group: "category", size: 20 }
+        ];
+        const nodes = categories.concat([
+            { id: "Start-Up Chile", group: "fondo", category: "Startups" },
+            { id: "Semilla Inicia", group: "fondo", category: "Startups" },
+            { id: "Fondecyt", group: "fondo", category: "Investigación" },
+            { id: "FONIS", group: "fondo", category: "Investigación" },
+            { id: "Beca ANID", group: "fondo", category: "Becas" },
+            { id: "Chevening", group: "fondo", category: "Becas" },
+            { id: "Crea y Valida", group: "fondo", category: "Proyectos" },
+            { id: "Red Eureka", group: "fondo", category: "Proyectos" }
+        ]);
+        const links = [
+            { source: "Startups", target: "Start-Up Chile" },
+            { source: "Startups", target: "Semilla Inicia" },
+            { source: "Investigación", target: "Fondecyt" },
+            { source: "Investigación", target: "FONIS" },
+            { source: "Becas", target: "Beca ANID" },
+            { source: "Becas", target: "Chevening" },
+            { source: "Proyectos", target: "Crea y Valida" },
+            { source: "Proyectos", target: "Red Eureka" },
+            { source: "Startups", target: "Investigación", distance: 200 },
+            { source: "Investigación", target: "Becas", distance: 200 },
+            { source: "Becas", target: "Proyectos", distance: 200 }
+        ];
+
+        // Configuración de la visualización D3.js
+        const width = 900, height = 600;
+        const svg = d3.select("#network-graph")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        const simulation = d3.forceSimulation(nodes)
+            .force("link", d3.forceLink(links).id(d => d.id).distance(d => d.distance || 150))
+            .force("charge", d3.forceManyBody().strength(-200))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collision", d3.forceCollide().radius(d => d.size + 10));
+
+        const link = svg.append("g")
+            .selectAll("line")
+            .data(links)
+            .enter().append("line")
+            .attr("class", "link");
+
+        const node = svg.append("g")
+            .selectAll("g")
+            .data(nodes)
+            .enter().append("g")
+            .attr("class", d => d.group === "category" ? "node category" : "node")
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        node.append("circle")
+            .attr("r", d => d.size)
+            .on("click", (event, d) => {
+                if (d.group === "category") {
+                    window.location.hash = d.id.toLowerCase();
+                }
+            });
+
+        node.append("text")
+            .attr("dy", ".35em")
+            .attr("text-anchor", "middle")
+            .text(d => d.id);
+
+        simulation.on("tick", () => {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            node
+                .attr("transform", d => `translate(${d.x},${d.y})`);
+        });
+
+        function dragstarted(event) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        }
+
+        function dragged(event) {
+            event.subject.fx = event.x;
+            event.subject.fy = event.y;
+        }
+
+        function dragended(event) {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
+        }
+    </script>
+</body>
+</html>

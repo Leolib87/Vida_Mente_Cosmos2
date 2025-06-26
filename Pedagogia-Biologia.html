@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedagogías en Ciencias Naturales y Biología - Análisis 2025</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-green: #00FF00;
+            --neon-cyan: #00FFFF;
+            --black-bg: #000000;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: var(--black-bg);
+            color: var(--neon-green);
+            font-family: 'Orbitron', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        nav ul li {
+            position: relative;
+            margin: 0 20px;
+        }
+        nav ul li a {
+            color: var(--neon-green);
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        .mega-menu {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            width: 800px;
+            max-width: 90vw;
+            padding: 20px;
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        nav ul li:hover .mega-menu {
+            display: grid;
+            opacity: 1;
+        }
+        .mega-menu h3 {
+            color: var(--neon-cyan);
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px var(--neon-cyan);
+        }
+        .mega-menu ul {
+            display: block;
+            padding: 0;
+        }
+        .mega-menu ul li {
+            margin: 5px 0;
+        }
+        .mega-menu a {
+            font-size: 0.9em;
+            color: var(--neon-green);
+            transition: color 0.3s ease;
+        }
+        .mega-menu a:hover {
+            color: #FFFFFF;
+        }
+        .main-container {
+            max-width: 1400px;
+            margin: 80px auto 0;
+            padding: 20px;
+            text-align: center;
+        }
+        .intro {
+            margin-bottom: 40px;
+        }
+        .intro h1 {
+            color: var(--neon-cyan);
+            font-size: 2.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 20px;
+        }
+        .intro p {
+            font-size: 1.1em;
+            max-width: 1000px;
+            margin: 0 auto 15px;
+        }
+        .highlight {
+            color: var(--neon-cyan);
+            font-weight: bold;
+        }
+        .filter-container {
+            margin-bottom: 20px;
+        }
+        .filter-container input {
+            padding: 10px;
+            font-size: 1em;
+            font-family: 'Orbitron', sans-serif;
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--neon-green);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+            border-radius: 5px;
+            outline: none;
+            width: 300px;
+            transition: box-shadow 0.3s ease;
+        }
+        .filter-container input:focus {
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 40px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--neon-cyan);
+        }
+        th {
+            background: rgba(0, 0, 0, 0.9);
+            color: var(--neon-cyan);
+            text-shadow: 0 0 5px var(--neon-cyan);
+            position: sticky;
+            top: 0;
+        }
+        tr:hover {
+            background: rgba(0, 255, 255, 0.1);
+        }
+        a {
+            color: var(--neon-green);
+            text-decoration: none;
+        }
+        a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        #data-table td:last-child a {
+            color: var(--neon-cyan);
+        }
+        .sheets-container {
+            margin: 40px 0;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--neon-cyan);
+            margin-bottom: 15px;
+        }
+        .tab-button {
+            flex: 1;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid var(--neon-cyan);
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            text-align: center;
+            cursor: pointer;
+            font-size: 1.1em;
+            color: var(--neon-green);
+            transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .tab-button.active {
+            background: rgba(0, 255, 255, 0.2);
+            color: #FFFFFF;
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        .tab-button:hover:not(.active) {
+            background: rgba(0, 255, 255, 0.1);
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .sheets-iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            border-radius: 5px;
+        }
+        .malla-container {
+            margin: 40px 0;
+        }
+        .malla-container h3 {
+            color: var(--neon-cyan);
+            font-size: 1.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 15px;
+        }
+        .malla-iframe {
+            width: 100%;
+            height: 1000px;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            border-radius: 5px;
+            display: none;
+        }
+        .image-gallery {
+            margin-top: 40px;
+        }
+        .image-gallery ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        .image-gallery li {
+            text-align: center;
+        }
+        .image-gallery img {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan);
+            border-radius: 5px;
+        }
+        .image-gallery p {
+            color: var(--neon-cyan);
+            font-size: 1em;
+            margin-top: 5px;
+            text-shadow: 0 0 5px var(--neon-cyan);
+            border-bottom: 1px dotted var(--neon-green);
+            padding-bottom: 2px;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        .image-gallery li:hover p {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        .about-container {
+            margin: 40px 0;
+        }
+        .about-container h3 {
+            color: var(--neon-cyan);
+            font-size: 1.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 15px;
+        }
+        .about-container p {
+            font-size: 1em;
+        }
+        @media (max-width: 900px) {
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                padding: 10px 0;
+            }
+            nav ul li {
+                margin: 10px 0;
+                width: 100%;
+                text-align: center;
+            }
+            .mega-menu {
+                position: static;
+                transform: none;
+                width: 100%;
+                max-width: 100%;
+                grid-template-columns: 1fr;
+                padding: 15px;
+                box-shadow: none;
+                border: 2px solid var(--neon-cyan);
+            }
+            nav ul li:hover .mega-menu {
+                display: block;
+            }
+            .intro h1 {
+                font-size: 2em;
+            }
+            .intro p {
+                font-size: 1em;
+                padding: 0 15px;
+            }
+            .filter-container input {
+                width: 100%;
+            }
+            .sheets-iframe, .malla-iframe {
+                height: 800px;
+            }
+            .image-gallery img {
+                width: 100%;
+            }
+            .tabs {
+                flex-direction: column;
+            }
+            .tab-button {
+                border-radius: 5px;
+                margin-bottom: 5px;
+            }
+        }
+        @media (max-width: 600px) {
+            .intro h1 {
+                font-size: 1.5em;
+            }
+            .intro p {
+                font-size: 0.9em;
+            }
+            th, td {
+                font-size: 0.85em;
+                padding: 8px;
+            }
+            .sheets-iframe, .malla-iframe {
+                height: 500px;
+            }
+            .image-gallery p {
+                font-size: 0.85em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navegación con Mega Menú -->
+    <nav>
+        <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li>
+                <a href="#">Exploración Conceptual</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Ideas y Preguntas Existenciales</h3>
+                        <ul>
+                            <li><a href="#trazado-vida">Origen y Fin de la Vida</a></li>
+                            <li><a href="#biologia">Determinismo vs. Libertad</a></li>
+                            <li><a href="#filosofia-mente">Conducta y Creatividad</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Fundamentos Teóricos</h3>
+                        <ul>
+                            <li><a href="#biologia">Filosofía de la Biología</a></li>
+                            <li><a href="#ciencias-cognitivas">Filosofía de las Ciencias Cognitivas</a></li>
+                            <li><a href="#filosofia-mente">Mente y Lenguaje</a></li>
+                            <li><a href="Explorando la Visualización Filosófica.HTML">Visualización Filosófica</a></li>
+                            <li><a href="MAPEO_FILO_MENTE_CHILE.HTML">Mapeo Filosofía de la Mente Chile</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <a href="#">Perspectivas Disciplinarias</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Biología y Ciencias Naturales</h3>
+                        <ul>
+                            <li><a href="#biologia">Histología y Biología Celular</a></li>
+                            <li><a href="HISTOLOGIA.html">Histología</a></li>
+                            <li><a href="https://leolib87.github.io/herbario/">Herbario</a></li>
+                            <li><a href="cuerpo humano completo plantilla Lt.html">Cuerpo Humano Desplegable</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Economía y Política</h3>
+                        <ul>
+                            <li><a href="#economia-politica">Teorías Colectivistas y Liberales</a></li>
+                            <li><a href="#economia-politica">Análisis de Corrientes Ideológicas</a></li>
+                            <li><a href="RED POLITICOS.html">Red de Políticos FA</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Educación y Filosofía</h3>
+                        <ul>
+                            <li><a href="red 2.html">Filosofía de la Educación</a></li>
+                            <li><a href="#trazado-vida">Autoconocimiento y Sentido Humano</a></li>
+                            <li><a href="red3.html">Red Tesis de Magíster Ejemplos</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <a href="#">Metodología y Datos</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Recolección y Procesamiento</h3>
+                        <ul>
+                            <li><a href="#redes-palabras">Visualización y Análisis de Datos</a></li>
+                            <li><a href="#voyant-tools">Herramientas Digitales (Gephi, D3.js)</a></li>
+                            <li><a href="varios graficos.html">Varios Gráficos</a></li>
+                            <li><a href="GRAFICO DE LINEAS Y TREEMAP.html">Gráfico de Líneas y Treemap</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <a href="#">Proyectos & Mapas</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Mapas de Conocimiento</h3>
+                        <ul>
+                            <li><a href="#elementos-comunes">Filosofía de la Mente</a></li>
+                            <li><a href="#economia-politica">Política Chilena</a></li>
+                            <li><a href="VARELA_CARTOGRAFIA.HTML">Cartografía Varela</a></li>
+                            <li><a href="AUTOPOIESIS.HTML">Simulación Autopoiesis Maturana y Varela 1974</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <a href="#">Recursos</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Lecturas y Bibliografía</h3>
+                        <ul>
+                            <li><a href="MI_BIBLIOTECA.HTML">Mi Biblioteca de Humanidades</a></li>
+                            <li><a href="BIBLIOTECA_CIENCIAS.HTML">Mi Biblioteca de Ciencias</a></li>
+                            <li><a href="BIBLIOECAS_DIGITALES_SOMBRA.HTML">Bibliotecas Sombra</a></li>
+                            <li><a href="CITAS.HTML">Fragmentos de Mentes</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Enlaces de Interés</h3>
+                        <ul>
+                            <li><a href="LEOLIB NEWS BLACK.HTML">Leolib News</a></li>
+                            <li><a href="https://leolib87.github.io/herbario/">Herbario</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li><a href="#contacto">Acerca de / Contacto</a></li>
+        </ul>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="main-container" id="inicio">
+        <!-- Introducción -->
+        <div class="intro">
+            <h1>Pedagogías en Ciencias Naturales y Biología: Desafíos 2025</h1>
+            <p>Las carreras de <span class="highlight">Pedagogía en Biología y Ciencias Naturales</span> enfrentan un panorama complejo en Chile para el <span class="highlight">2025</span>. Según datos de matrícula 2024, universidades como la <span class="highlight">Universidad de Chile</span> (168 matriculados totales) y la <span class="highlight">Universidad de La Frontera</span> (148) lideran en inscripción, mientras otras, como la <span class="highlight">Pontificia Universidad Católica de Valparaíso</span>, reportan cero matrículas. El diálogo institucional revela una crisis de ingreso persistente, con propuestas como la difusión en colegios y ferias científicas mostrando <span class="highlight">nulo impacto</span> en las postulaciones, según análisis internos.</p>
+            <p>El diagnóstico apunta a un problema nacional más allá de las estrategias locales: solo un <span class="highlight">70-90%</span> de los beneficiarios del propedéutico optan por pedagogías científicas, y la <span class="highlight">baja vocación</span> entre estudiantes de enseñanza media persiste. Mientras instituciones como la <span class="highlight">Universidad Alberto Hurtado</span> exploran casos de éxito, la falta de medidas concretas y fundamentadas deja el futuro de estas carreras en un <span class="highlight">limbo estratégico</span>. Esta tabla filtrable presenta los datos clave para analizar tendencias y desafíos.</p>
+        </div>
+
+        <!-- Filtro -->
+        <div class="filter-container">
+            <input type="text" id="search" placeholder="Filtrar por universidad, región o siglas..." onkeyup="filterTable()">
+        </div>
+
+        <!-- Tabla 1: Datos Generales con Links -->
+        <div class="table-container" id="tabla1">
+            <table id="data-table">
+                <thead>
+                    <tr>
+                        <th>Universidad</th>
+                        <th>Nombre Carrera</th>
+                        <th>Región</th>
+                        <th>Sede</th>
+                        <th>Arancel Anual 2025</th>
+                        <th>Matrícula Total 2024</th>
+                        <th>Matrícula 1er Año 2024</th>
+                        <th>Prom. PAES 1er Año 2024</th>
+                        <th>Vacantes 1er Semestre</th>
+                        <th>Web</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Universidad Metropolitana de Ciencias de la Educación</td>
+                        <td>Pedagogía en Biología con Mención</td>
+                        <td>Metropolitana</td>
+                        <td>Casa Central (Santiago)</td>
+                        <td>$3.517.000</td>
+                        <td>179</td>
+                        <td>16</td>
+                        <td>s/i</td>
+                        <td>50</td>
+                        <td><a href="https://pregrado.umce.cl/index.php/pedagogia-en-biologia-con-menciones" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>Universidad de Playa Ancha de Ciencias de la Educación</td>
+                        <td>Pedagogía en Biología y Ciencias</td>
+                        <td>Valparaíso</td>
+                        <td>Casa Central (Valparaíso)</td>
+                        <td>$3.520.000</td>
+                        <td>51</td>
+                        <td>9</td>
+                        <td>s/i</td>
+                        <td>15</td>
+                        <td><a href="https://www.upla.cl/admision/carreras-profesionales/facultad-de-ciencias-naturales-y-exactas/pedagogia-en-biologia-y-ciencias/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>Pontificia Universidad Católica de Valparaíso</td>
+                        <td>Pedagogía en Biología y Ciencias Naturales</td>
+                        <td>Valparaíso</td>
+                        <td>Valparaíso</td>
+                        <td>$4.707.000</td>
+                        <td>0</td>
+                        <td>10</td>
+                        <td>s/i</td>
+                        <td>20</td>
+                        <td><a href="https://www.pucv.cl/pucv/pregrado/pedagogia-en-biologia-y-ciencias-naturales" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>Universidad de La Serena</td>
+                        <td>Pedagogía en Biología y Ciencias Naturales</td>
+                        <td>La Serena</td>
+                        <td>La Serena</td>
+                        <td>$3.160.000</td>
+                        <td>97</td>
+                        <td>30</td>
+                        <td>636.5</td>
+                        <td>25</td>
+                        <td><a href="http://admision.userena.cl/carreras/pedagogia-en-biologia-y-cs-naturales" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>Universidad de Antofagasta</td>
+                        <td>Pedagogía en Biología y Ciencias Naturales</td>
+                        <td>Antofagasta</td>
+                        <td>Sede Campus Coloso</td>
+                        <td>$3.588.000</td>
+                        <td>35</td>
+                        <td>11</td>
+                        <td>s/i</td>
+                        <td>15</td>
+                        <td><a href="https://www.uantof.cl/carreras/pedagogia-en-biologia-y-ciencias-naturales/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>Universidad Alberto Hurtado</td>
+                        <td>Pedagogía en Biología y Ciencias Naturales en Educación Media</td>
+                        <td>Santiago</td>
+                        <td>Casa Central (Santiago)</td>
+                        <td>$4.276.140</td>
+                        <td>51</td>
+                        <td>7</td>
+                        <td>s/i</td>
+                        <td>10</td>
+                        <td><a href="https://admision.uahurtado.cl/facultades/pedagogia-en-biologia-y-ciencias-naturales/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>Universidad de La Frontera</td>
+                        <td>Pedagogía en Ciencias Mención Biología, Química o Física</td>
+                        <td>Temuco</td>
+                        <td>Casa Central (Temuco)</td>
+                        <td>$2.769.000</td>
+                        <td>148</td>
+                        <td>29</td>
+                        <td>647.6</td>
+                        <td>25</td>
+                        <td><a href="https://admision.ufro.cl/pedagogia-en-ciencias-mencion-biologia-quimica-o-fisica/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>Universidad Católica del Maule</td>
+                        <td>Pedagogía en Ciencias Mención en Biología, Física, Química</td>
+                        <td>Maule</td>
+                        <td>Casa Central</td>
+                        <td>$4.339.000</td>
+                        <td>106</td>
+                        <td>27</td>
+                        <td>631.9</td>
+                        <td>30</td>
+                        <td><a href="https://portal.ucm.cl/carreras/pedagogia-en-ciencias" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>Universidad de Concepción</td>
+                        <td>Pedagogía en Ciencias Naturales y Biología</td>
+                        <td>Concepción</td>
+                        <td>Casa Central</td>
+                        <td>$4.713.812</td>
+                        <td>110</td>
+                        <td>23</td>
+                        <td>s/i</td>
+                        <td>25</td>
+                        <td><a href="https://admision.udec.cl/pedagogia-en-ciencias-naturales-y-biologia/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>Universidad de Concepción</td>
+                        <td>Pedagogía en Ciencias Naturales y Biología</td>
+                        <td>Los Ángeles</td>
+                        <td>Sede Los Ángeles</td>
+                        <td>$4.713.812</td>
+                        <td>78</td>
+                        <td>22</td>
+                        <td>s/i</td>
+                        <td>20</td>
+                        <td><a href="https://admision.udec.cl/pedagogia-en-ciencias-naturales-y-biologia/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>Universidad del Bío-Bío</td>
+                        <td>Pedagogía en Ciencias Naturales Mención Biología o Física o Química</td>
+                        <td>Chillán</td>
+                        <td>Sede Chillán</td>
+                        <td>$3.244.000</td>
+                        <td>143</td>
+                        <td>38</td>
+                        <td>593</td>
+                        <td>40</td>
+                        <td><a href="https://www.ubiobio.cl/admision/Todas_las_Carreras/28/Pedagogia_en_Ciencias_Naturales_mencion_Biologia_o_Fisica_o_Quimica/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>Universidad de O’Higgins</td>
+                        <td>Pedagogía en Ciencias Naturales con Menciones</td>
+                        <td>Rancagua</td>
+                        <td>Sede Rancagua</td>
+                        <td>$3.741.000</td>
+                        <td>86</td>
+                        <td>30</td>
+                        <td>607.7</td>
+                        <td>30</td>
+                        <td><a href="https://www.uoh.cl/escuela-de-educacion/carreras/pedagogia-en-ciencias-naturales/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>Universidad Católica de la Santísima Concepción</td>
+                        <td>Pedagogía en Educación Media en Biología y Ciencias Naturales</td>
+                        <td>Concepción</td>
+                        <td>Casa Central (Concepción)</td>
+                        <td>$4.329.000</td>
+                        <td>104</td>
+                        <td>24</td>
+                        <td>s/i</td>
+                        <td>30</td>
+                        <td><a href="https://educacion.ucsc.cl/carreras/pedagogia-educacion-media-en-biologia-y-ciencias-naturales/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>Universidad de Chile</td>
+                        <td>Pedagogía en Educación Media en Biología y Química</td>
+                        <td>Santiago</td>
+                        <td>Santiago</td>
+                        <td>$5.450.400</td>
+                        <td>168</td>
+                        <td>26</td>
+                        <td>689</td>
+                        <td>40</td>
+                        <td><a href="https://ciencias.uchile.cl/carreras/105693/pedagogia-en-educacion-media-en-biologia-y-quimica" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>Universidad de Talca</td>
+                        <td>Pedagogía en Educación Media en Biología y Química</td>
+                        <td>Linares</td>
+                        <td>Campus Linares</td>
+                        <td>$4.243.259</td>
+                        <td>37</td>
+                        <td>12</td>
+                        <td>s/i</td>
+                        <td>20</td>
+                        <td><a href="https://admision.utalca.cl/carreras/pedagogia-en-ed-media-en-biologia-y-quimica/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>Pontificia Universidad Católica de Chile</td>
+                        <td>Pedagogía en Educación Media en Ciencias Naturales y Biología</td>
+                        <td>Metropolitana</td>
+                        <td>Campus San Joaquín</td>
+                        <td>$6.006.000</td>
+                        <td>54</td>
+                        <td>36</td>
+                        <td>726.6</td>
+                        <td>0</td>
+                        <td><a href="https://admision.uc.cl/carreras/pedagogia-en-educacion-media-en-ciencias-naturales-y-biologia/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>Universidad de Santiago de Chile</td>
+                        <td>Pedagogía en Química y Biología / Licenciatura en Educación en Química y Biología</td>
+                        <td>Metropolitana</td>
+                        <td>Casa Central (Santiago)</td>
+                        <td>$4.693.000</td>
+                        <td>0</td>
+                        <td>12</td>
+                        <td>s/i</td>
+                        <td>400</td>
+                        <td><a href="https://www.admision.usach.cl/carreras/pedagogia-en-quimica-y-biologia" target="_blank">Sitio</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tabla 2: Indicadores de Desempeño (Placeholder - sin datos aún) -->
+        <div class="table-container" id="tabla2">
+            <table id="data-table2">
+                <thead>
+                    <tr>
+                        <th>Universidad</th>
+                        <th>Acreditación Institución</th>
+                        <th>% Titulados Continuidad</th>
+                        <th>Retención 1er Año</th>
+                        <th>Duración Real (semestres)</th>
+                        <th>Empleabilidad 1er Año</th>
+                        <th>Empleabilidad 2º Año</th>
+                        <th>Ingreso Promedio 4° Año</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="8">Datos no disponibles aún</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+         <!-- Contenedor para las mallas curriculares -->
+<div class="malla-container" id="malla-container">
+    <h3>Malla Curricular</h3>
+    <iframe class="malla-iframe" id="malla-umce" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1WUYUTqAPNDfP-tm6Vx_Pk7yo-v9hcyLx&embedded=true" frameborder="0"></iframe>
+    <iframe class="malla-iframe" id="malla-upla" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1_nHDuSc3pBQjdY0Pbp1duMj5cV_C-5Gu&embedded=true" frameborder="0"></iframe>
+    <iframe class="malla-iframe" id="malla-pucv" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1Cc-LO8cCzxdUonIPK9tkPDyHcKttUe6q&embedded=true" frameborder="0"></iframe>
+    <iframe class="malla-iframe" id="malla-ulserena" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1MIcvpDwVPUmK1YnipnhlN5vrPbDlQRs8&embedded=true" frameborder="0"></iframe>
+    <iframe class="malla-iframe" id="malla-uantof" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1zTe_rB6Hhex5ruumn9FBpZjdQhS-lQdX&embedded=true" frameborder="0"></iframe>
+    <iframe class="malla-iframe" id="malla-uah" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1LrcZuhbZ0EgG6m1qjx4kPyjpkRKrCN_3&embedded=true" frameborder="0"></iframe>
+    <iframe class="malla-iframe" id="malla-ufro" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1KJkr359LaFF_Lh5yN_X1-rondrz3hxwz&embedded=true" frameborder="0"></iframe>
+    <iframe class="malla-iframe" id="malla-ucm" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1OqT1tbTf1V9n8fuyw804M2WPm_WW35Ow&embedded=true" frameborder="0"></iframe>
+    <iframe class="malla-iframe" id="malla-udec-concepcion" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1VledyEzyiX1hpn-Y5VeWso8lywAWXLcW&embedded=true" frameborder="0"></iframe>
+    <iframe class="malla-iframe" id="malla-udec-losangeles" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1VledyEzyiX1hpn-Y5VeWso8lywAWXLcW&embedded=true" frameborder="0"></iframe>
+    <iframe class="malla-iframe" id="malla-ubiobio" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1xeqhAg0E3Rt25iHsBy1BtOFDwenjScSR&embedded=true" frameborder="0"></iframe>
+    <iframe class="malla-iframe" id="malla-uoh" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1_VPrhykk6dVMldDJICvF89MMvyK85BFO&embedded=true" frameborder="0"></iframe>
+    <iframe class="malla-iframe" id="malla-ucsc" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1gXCU4SXGC-QRm1Fx1MqIJMqbMJSIO2nM&embedded=true" frameborder="0"></iframe>
+    <iframe class="malla-iframe" id="malla-uchile" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1Cf5NBjejVPtYNKPB8gjYQpUaPzUVL8WH&embedded=true" frameborder="0"></iframe>
+    <iframe class="malla-iframe" id="malla-utalca" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1EydTIyRULb80s0xAARA_n2n0-jaIWhfy&embedded=true" frameborder="0"></iframe>
+    <iframe class="malla-iframe" id="malla-puc" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1QZJyrd6IDh4luQutpPdp9X63LvSW7Dp8&embedded=true" frameborder="0"></iframe>
+    <iframe class="malla-iframe" id="malla-usach" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1rf7BajQmng0hDhx2WZw4khEg_wfcC-sq&embedded=true" frameborder="0"></iframe>
+</div>
+
+        <!-- Contenedor de Google Sheets con pestañas -->
+        <div class="sheets-container">
+            <div class="tabs">
+                <button class="tab-button active" onclick="openTab('datos-generales')">Datos Generales</button>
+                <button class="tab-button" onclick="openTab('indicadores-desempeno')">Indicadores de Desempeño</button>
+            </div>
+            <div id="datos-generales" class="tab-content active">
+                <iframe class="sheets-iframe" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSS3KfWcimf-s38CpJPeyOx4zpev2O0xa2cFTPZuJKFP7y2zGHazGE3QFTuJR1Fxw/pubhtml?gid=1837151372&single=true" frameborder="0"></iframe>
+            </div>
+            <div id="indicadores-desempeno" class="tab-content">
+                <iframe class="sheets-iframe" src="[Pegar link aquí]" frameborder="0"></iframe>
+            </div>
+        </div>
+
+        <!-- Galería de Imágenes -->
+        <div class="image-gallery">
+            <ul>
+                <li>
+                    <img src="https://github.com/Leolib87/Educacion_Biologia-/blob/main/matricula_1er_ano_2024_por_universidad.png?raw=true" alt="Matrícula 1er Año 2024">
+                    <p>Matrícula 1er Año 2024</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/Educacion_Biologia-/blob/main/matricula_total_2024_personalizado.png?raw=true" alt="Matrícula Total 2024">
+                    <p>Matrícula Total 2024</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/Educacion_Biologia-/blob/main/matriculados_establecimiento_origen.png?raw=true" alt="Establecimiento de Origen">
+                    <p>Establecimiento de Origen</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/Educacion_Biologia-/blob/main/prom_paes_2024_por_universidad.png?raw=true" alt="Promedio PAES 2024">
+                    <p>Promedio PAES 2024</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/Educacion_Biologia-/blob/main/prom_nem_2024_por_universidad.png?raw=true" alt="Promedio NEM 2024">
+                    <p>Promedio NEM 2024</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/Educacion_Biologia-/blob/main/vacantes_primer_semestre_por_universidad.png?raw=true" alt="Vacantes 1er Semestre">
+                    <p>Vacantes 1er Semestre</p>
+                </li>
+                <li>
+                    <img src="https://raw.githubusercontent.com/Leolib87/Educacion_Biologia-/350e09edf41c9c1a5af744bb94ab305c93825cf3/duracion_formal_promedio.svg" alt="Duración Formal Promedio">
+                    <p>Duración Formal Promedio</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/Educacion_Biologia-/blob/main/titulacion_2023_por_genero.png?raw=true" alt="Titulación 2023 por Género">
+                    <p>Titulación 2023 por Género</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/Educacion_Biologia-/blob/main/ponderaciones_ciencias_por_universidad.png?raw=true" alt="Ponderaciones Ciencias">
+                    <p>Ponderaciones Ciencias</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/Educacion_Biologia-/blob/main/ponderaciones_matematica_m1_por_universidad.png?raw=true" alt="Ponderaciones Matemática M1">
+                    <p>Ponderaciones Matemática M1</p>
+                </li>
+                <li>
+                    <img src="https://raw.githubusercontent.com/Leolib87/Educacion_Biologia-/350e09edf41c9c1a5af744bb94ab305c93825cf3/ponderaciones_matematica_m2_por_universidad.svg" alt="Ponderaciones Matemática M2">
+                    <p>Ponderaciones Matemática M2</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/Educacion_Biologia-/blob/main/ponderaciones_lenguaje_por_universidad.png?raw=true" alt="Ponderaciones Lenguaje">
+                    <p>Ponderaciones Lenguaje</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/Educacion_Biologia-/blob/main/ponderaciones_historia_y_cs_sociales_por_universidad.png?raw=true" alt="Ponderaciones Historia y Cs. Sociales">
+                    <p>Ponderaciones Historia y Cs. Sociales</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/Educacion_Biologia-/blob/main/ponderaciones_nem_por_universidad.png?raw=true" alt="Ponderaciones NEM">
+                    <p>Ponderaciones NEM</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/Educacion_Biologia-/blob/main/ponderaciones_ranking_por_universidad.png?raw=true" alt="Ponderaciones Ranking">
+                    <p>Ponderaciones Ranking</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/Educacion_Biologia-/blob/main/arancel_anual_promedio_2025.png?raw=true" alt="Arancel Anual 2025">
+                    <p>Arancel Anual 2025</p>
+                </li>
+                <li>
+                    <img src="https://raw.githubusercontent.com/Leolib87/Educacion_Biologia-/350e09edf41c9c1a5af744bb94ab305c93825cf3/relacion_arancel_matriculados_burbujas.svg" alt="Relación Arancel-Matriculados">
+                    <p>Relación Arancel-Matriculados</p>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Sección Acerca de / Contacto -->
+        <div class="about-container" id="contacto">
+            <h3>Acerca de</h3>
+            <p>Esta web fue elaborada por Leandro Torres Díaz, PhD.</p>
+        </div>
+    </div>
+
+    <!-- Script para filtrar las tablas, mostrar la malla y manejar las pestañas -->
+    <script>
+        // Mapa de universidades a sus siglas
+        const universitySiglaMap = {
+            "Universidad Metropolitana de Ciencias de la Educación": "umce",
+            "Universidad de Playa Ancha de Ciencias de la Educación": "upla",
+            "Pontificia Universidad Católica de Valparaíso": "pucv",
+            "Universidad de La Serena": "userena",
+            "Universidad de Antofagasta": "uantof",
+            "Universidad Alberto Hurtado": "uah",
+            "Universidad de La Frontera": "ufro",
+            "Universidad Católica del Maule": "ucm",
+            "Universidad de Concepción": "udec",
+            "Universidad del Bío-Bío": "ubiobio",
+            "Universidad de O’Higgins": "uoh",
+            "Universidad Católica de la Santísima Concepción": "ucsc",
+            "Universidad de Chile": "uchile",
+            "Universidad de Talca": "utalca",
+            "Pontificia Universidad Católica de Chile": "puc",
+            "Universidad de Santiago de Chile": "usach"
+        };
+
+        // Mapa de universidades a IDs de iframes
+        const universityIframeMap = {
+            "Universidad Metropolitana de Ciencias de la Educación": "malla-umce",
+            "Universidad de Playa Ancha de Ciencias de la Educación": "malla-upla",
+            "Pontificia Universidad Católica de Valparaíso": "malla-pucv",
+            "Universidad de La Serena": "malla-ulserena",
+            "Universidad de Antofagasta": "malla-uantof",
+            "Universidad Alberto Hurtado": "malla-uah",
+            "Universidad de La Frontera": "malla-ufro",
+            "Universidad Católica del Maule": "malla-ucm",
+            "Universidad de Concepción (Casa Central)": "malla-udec-concepcion",
+            "Universidad de Concepción (Sede Los Ángeles)": "malla-udec-losangeles",
+            "Universidad del Bío-Bío": "malla-ubiobio",
+            "Universidad de O’Higgins": "malla-uoh",
+            "Universidad Católica de la Santísima Concepción": "malla-ucsc",
+            "Universidad de Chile": "malla-uchile",
+            "Universidad de Talca": "malla-utalca",
+            "Pontificia Universidad Católica de Chile": "malla-puc",
+            "Universidad de Santiago de Chile": "malla-usach"
+        };
+
+        function filterTable() {
+            const input = document.getElementById('search').value.toLowerCase().trim();
+            const tables = [document.getElementById('data-table'), document.getElementById('data-table2')];
+            const mallaContainer = document.getElementById('malla-container');
+            const iframes = document.getElementsByClassName('malla-iframe');
+            let selectedUniversity = null;
+
+            // Filtrar las tablas
+            tables.forEach(table => {
+                const rows = table.getElementsByTagName('tr');
+                for (let i = 1; i < rows.length; i++) {
+                    const cells = rows[i].getElementsByTagName('td');
+                    let match = false;
+                    for (let j = 0; j < cells.length; j++) {
+                        const cellText = cells[j].textContent.toLowerCase();
+                        if (cellText.includes(input)) {
+                            match = true;
+                        } else if (j === 0) { // Check sigla for university column
+                            const university = cells[0].textContent;
+                            const sigla = universitySiglaMap[university]?.toLowerCase();
+                            if (sigla && sigla.includes(input)) {
+                                match = true;
+                            }
+                        }
+                        if (match) {
+                            if (!selectedUniversity && j === 0) {
+                                selectedUniversity = cells[0].textContent;
+                            }
+                            break;
+                        }
+                    }
+                    rows[i].style.display = match ? '' : 'none';
+                }
+            });
+
+            // Ocultar todos los iframes
+            for (let iframe of iframes) {
+                iframe.style.display = 'none';
+            }
+
+            // Mostrar el iframe correspondiente a la universidad filtrada
+            if (selectedUniversity) {
+                let iframeId = universityIframeMap[selectedUniversity];
+                if (!iframeId) {
+                    // Manejar casos con sedes específicas
+                    const fullName = selectedUniversity + " (" + document.querySelector(`#data-table tr:not([style*="display: none"]) td:nth-child(4)`).textContent + ")";
+                    iframeId = universityIframeMap[fullName] || iframeId;
+                }
+                if (iframeId) {
+                    document.getElementById(iframeId).style.display = 'block';
+                    mallaContainer.style.display = 'block';
+                } else {
+                    mallaContainer.style.display = 'none';
+                }
+            } else {
+                mallaContainer.style.display = 'none';
+            }
+        }
+
+        // Función para manejar las pestañas de Google Sheets
+        function openTab(tabName) {
+            const tabs = document.getElementsByClassName('tab-content');
+            const buttons = document.getElementsByClassName('tab-button');
+
+            // Ocultar todos los contenidos y desactivar botones
+            for (let tab of tabs) {
+                tab.classList.remove('active');
+            }
+            for (let button of buttons) {
+                button.classList.remove('active');
+            }
+
+            // Mostrar el contenido seleccionado y activar el botón
+            document.getElementById(tabName).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // Activar la primera pestaña por defecto
+        document.querySelector('.tab-button').click();
+    </script>
+</body>
+</html>

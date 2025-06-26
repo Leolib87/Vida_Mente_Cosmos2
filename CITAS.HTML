@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universo de Citas: Voces Segmentadas del Pensamiento Humano</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            background-color: #000000;
+            color: #00FF00;
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        .main-container {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+        .content { grid-column: 1 / 2; }
+        .sidebar {
+            grid-column: 2 / 3;
+            position: sticky;
+            top: 20px;
+            align-self: start;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        .header {
+            grid-column: 1 / 3;
+            position: relative;
+            height: 100vh;
+            background: url('https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center/cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #00FFFF;
+            text-shadow: 0 0 15px #00FF00;
+            animation: fadeIn 2s ease-in;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1;
+        }
+        .header h1, .header p {
+            position: relative;
+            z-index: 2;
+        }
+        .header h1 {
+            font-size: clamp(2em, 4vw, 4em);
+            animation: glow 2s infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 5px #00FF00; }
+            to { text-shadow: 0 0 20px #00FFFF; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .section {
+            margin: 40px 0;
+            padding: 25px;
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF;
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        .sidebar .section {
+            margin: 0;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.1);
+        }
+        #visualization-section { margin-top: 20px; }
+        h2 {
+            color: #00FF00;
+            text-shadow: 0 0 8px #00FF00;
+            border-bottom: 1px solid #00FFFF;
+            padding-bottom: 10px;
+            margin: 0 0 15px 0;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        h3 {
+            color: #00FFFF;
+            margin: 20px 0 10px 0;
+            font-size: 1.2em;
+        }
+        p {
+            color: #00FF00;
+            font-size: 1.1em;
+            margin: 0 0 10px 0;
+        }
+        .highlight {
+            color: #00FFFF;
+            font-weight: bold;
+            text-decoration: none;
+            transition: text-shadow 0.3s ease;
+        }
+        .highlight:hover { text-shadow: 0 0 10px #00FFFF; }
+        a {
+            color: #00FF00;
+            text-decoration: none;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        ul { list-style: none; padding: 0; margin: 0; }
+        ul li { margin: 10px 0; }
+        #visualization {
+            width: 100%;
+            height: 700px;
+            padding: 10px;
+            box-sizing: border-box;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .nodes .node circle {
+            stroke: #00FFFF;
+            stroke-width: 2px;
+            fill: #00FF00;
+            transition: all 0.3s ease;
+        }
+        .nodes .node:hover circle {
+            fill: #FFFFFF;
+            stroke: #00FFFF;
+            r: 12;
+            filter: drop-shadow(0 0 8px #00FFFF);
+        }
+        .nodes .node text {
+            fill: #00FFFF;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 5px #00FF00;
+            font-size: 12px;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        .nodes .node:hover text {
+            fill: #FFFFFF;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        .links .link {
+            stroke: #00FF00;
+            stroke-opacity: 0.7;
+            stroke-width: 1.5px;
+            transition: stroke-opacity 0.3s ease;
+        }
+        .footer {
+            grid-column: 1 / 3;
+            text-align: center;
+            padding: 30px;
+            color: #00FFFF;
+            border-top: 2px solid #00FF00;
+            margin-top: 40px;
+        }
+        .quote {
+            border-left: 4px solid #00FFFF;
+            padding-left: 15px;
+            margin: 15px 0;
+            font-style: italic;
+        }
+        .quote-author {
+            color: #00FFFF;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1>Universo de Citas</h1>
+            <p>Voces segmentadas del pensamiento humano</p>
+        </div>
+
+        <div class="content">
+            <div class="section" id="visualization-section">
+                <h2>Red de Dominios del Pensamiento</h2>
+                <div id="visualization"></div>
+            </div>
+
+            <div class="section" id="intro">
+                <h2>Introducción</h2>
+                <p>Explora citas organizadas por dominios: <span class="highlight"><a href="#filosofia">Filosofía</a></span>, <span class="highlight"><a href="#literatura">Literatura</a></span>, <span class="highlight"><a href="#musica">Música</a></span>, <span class="highlight"><a href="#pintura">Pintura</a></span>, <span class="highlight"><a href="#politica">Política</a></span>, <span class="highlight"><a href="#economia">Economía</a></span>, <span class="highlight"><a href="#ciencia">Ciencia</a></span>, <span class="highlight"><a href="#tecnologia">Tecnología</a></span>, <span class="highlight"><a href="#cine-series">Cine y Series</a></span>, y <span class="highlight"><a href="#psicologia">Psicología</a></span>. Agrega nuevas citas editando el código.</p>
+            </div>
+
+            <!-- Filosofía -->
+            <div class="section" id="filosofia">
+                <h2>Filosofía</h2>
+                <!--
+                ### Cita 1
+                > "La masa no piensa, siente."  
+                > — José Ortega y Gasset
+                -->
+                <div class="quote">
+                    <p>"La masa no piensa, siente."</p>
+                    <p class="quote-author">— José Ortega y Gasset</p>
+                </div>
+                <!--
+                ### Cita 2
+                > "El mundo es la totalidad de los fenómenos."  
+                > — Edmund Husserl
+                -->
+                <div class="quote">
+                    <p>"El mundo es la totalidad de los fenómenos."</p>
+                    <p class="quote-author">— Edmund Husserl</p>
+                </div>
+                <!--
+                ### Cita 3
+                > "Toda conciencia es conciencia de algo."  
+                > — Franz Brentano
+                -->
+                <div class="quote">
+                    <p>"Toda conciencia es conciencia de algo."</p>
+                    <p class="quote-author">— Franz Brentano</p>
+                </div>
+                <!--
+                ### Cita 4
+                > "La mente es un proceso, no una cosa."  
+                > — Evan Thompson
+                -->
+                <div class="quote">
+                    <p>"La mente es un proceso, no una cosa."</p>
+                    <p class="quote-author">— Evan Thompson</p>
+                </div>
+                <!--
+                ### Cita 5
+                > "El deber es la necesidad de obrar por respeto a la ley."  
+                > — Immanuel Kant
+                -->
+                <div class="quote">
+                    <p>"El deber es la necesidad de obrar por respeto a la ley."</p>
+                    <p class="quote-author">— Immanuel Kant</p>
+                </div>
+                <!--
+                ### Cita 6
+                > "Dondeof yo hablo, el lenguaje termina."  
+                > — Ludwig Wittgenstein
+                -->
+                <div class="quote">
+                    <p>"Dondeof yo hablo, el lenguaje termina."</p>
+                    <p class="quote-author">— Ludwig Wittgenstein</p>
+                </div>
+                <!--
+                ### Cita 7
+                > "La existencia precede a la esencia."  
+                > — Jean-Paul Sartre
+                -->
+                <div class="quote">
+                    <p>"La existencia precede a la esencia."</p>
+                    <p class="quote-author">— Jean-Paul Sartre</p>
+                </div>
+                <!--
+                ### Cita 8
+                > "El hombre es un ser para la muerte."  
+                > — Carlos Peña
+                -->
+                <div class="quote">
+                    <p>"El hombre es un ser para la muerte."</p>
+                    <p class="quote-author">— Carlos Peña</p>
+                </div>
+                <!--
+                ### Cita 9
+                > "El mundo es voluntad y representación."  
+                > — Philipp Mainländer
+                -->
+                <div class="quote">
+                    <p>"El mundo es voluntad y representación."</p>
+                    <p class="quote-author">— Philipp Mainländer</p>
+                </div>
+                <!--
+                ### Cita 10
+                > "La biología es lenguaje."  
+                > — Humberto Maturana
+                -->
+                <div class="quote">
+                    <p>"La biología es lenguaje."</p>
+                    <p class="quote-author">— Humberto Maturana</p>
+                </div>
+                <!--
+                ### Cita 11
+                > "La mente no está en la cabeza, está en el cuerpo."  
+                > — Francisco Varela
+                -->
+                <div class="quote">
+                    <p>"La mente no está en la cabeza, está en el cuerpo."</p>
+                    <p class="quote-author">— Francisco Varela</p>
+                </div>
+                <!--
+                ### Cita 12
+                > "El fin último de la filosofía es la claridad."  
+                > — Alfred North Whitehead
+                -->
+                <div class="quote">
+                    <p>"El fin último de la filosofía es la claridad."</p>
+                    <p class="quote-author">— Alfred North Whitehead</p>
+                </div>
+                <!--
+                ### Cita 13
+                > "La felicidad es el fin de la acción humana."  
+                > — Aristóteles
+                -->
+                <div class="quote">
+                    <p>"La felicidad es el fin de la acción humana."</p>
+                    <p class="quote-author">— Aristóteles</p>
+                </div>
+                <!--
+                ### Cita 14
+                > "Todo lo que sabemos es una sombra de lo real."  
+                > — Sófocles
+                -->
+                <div class="quote">
+                    <p>"Todo lo que sabemos es una sombra de lo real."</p>
+                    <p class="quote-author">— Sófocles</p>
+                </div>
+            </div>
+
+            <!-- Literatura -->
+            <div class="section" id="literatura">
+                <h2>Literatura</h2>
+                <!--
+                ### Cita 1
+                > "El universo es una biblioteca infinita."  
+                > — Jorge Luis Borges
+                -->
+                <div class="quote">
+                    <p>"El universo es una biblioteca infinita."</p>
+                    <p class="quote-author">— Jorge Luis Borges</p>
+                </div>
+                <!--
+                ### Cita 2
+                > "El tiempo es un río que me arrastra."  
+                > — Marcel Proust
+                -->
+                <div class="quote">
+                    <p>"El tiempo es un río que me arrastra."</p>
+                    <p class="quote-author">— Marcel Proust</p>
+                </div>
+                <!--
+                ### Cita 3
+                > "El hombre es un lobo para el hombre."  
+                > — Hermann Hesse
+                -->
+                <div class="quote">
+                    <p>"El hombre es un lobo para el hombre."</p>
+                    <p class="quote-author">— Hermann Hesse</p>
+                </div>
+                <!--
+                ### Cita 4
+                > "Todo hombre es un abismo."  
+                > — Fiódor Dostoyevski
+                -->
+                <div class="quote">
+                    <p>"Todo hombre es un abismo."</p>
+                    <p class="quote-author">— Fiódor Dostoyevski</p>
+                </div>
+                <!--
+                ### Cita 5
+                > "La vida es un malentendido que hay que resolver."  
+                > — Gustave Flaubert
+                -->
+                <div class="quote">
+                    <p>"La vida es un malentendido que hay que resolver."</p>
+                    <p class="quote-author">— Gustave Flaubert</p>
+                </div>
+                <!--
+                ### Cita 6
+                > "La rosa no tiene por qué, florece porque sí."  
+                > — Hafiz
+                -->
+                <div class="quote">
+                    <p>"La rosa no tiene por qué, florece porque sí."</p>
+                    <p class="quote-author">— Hafiz</p>
+                </div>
+                <!--
+                ### Cita 7
+                > "Todo lo que sube debe converger."  
+                > — James Joyce
+                -->
+                <div class="quote">
+                    <p>"Todo lo que sube debe converger."</p>
+                    <p class="quote-author">— James Joyce</p>
+                </div>
+                <!--
+                ### Cita 8
+                > "La poesía es la música del alma."  
+                > — Ezra Pound
+                -->
+                <div class="quote">
+                    <p>"La poesía es la música del alma."</p>
+                    <p class="quote-author">— Ezra Pound</p>
+                </div>
+                <!--
+                ### Cita 9
+                > "La muerte es el despertar de un sueño."  
+                > — Dante Alighieri
+                -->
+                <div class="quote">
+                    <p>"La muerte es el despertar de un sueño."</p>
+                    <p class="quote-author">— Dante Alighieri</p>
+                </div>
+                <!--
+                ### Cita 10
+                > "La palabra es mitad de quien la dice y mitad de quien la escucha."  
+                > — Umberto Eco
+                -->
+                <div class="quote">
+                    <p>"La palabra es mitad de quien la dice y mitad de quien la escucha."</p>
+                    <p class="quote-author">— Umberto Eco</p>
+                </div>
+                <!--
+                ### Cita 11
+                > "Tyger, Tyger, burning bright."  
+                > — William Blake
+                -->
+                <div class="quote">
+                    <p>"Tyger, Tyger, burning bright."</p>
+                    <p class="quote-author">— William Blake</p>
+                </div>
+                <!--
+                ### Cita 12
+                > "El poema es un grito en el vacío."  
+                > — Enrique Lihn
+                -->
+                <div class="quote">
+                    <p>"El poema es un grito en el vacío."</p>
+                    <p class="quote-author">— Enrique Lihn</p>
+                </div>
+                <!--
+                ### Cita 13
+                > "La noche es un espejo de sombras."  
+                > — Emilio Carrere
+                -->
+                <div class="quote">
+                    <p>"La noche es un espejo de sombras."</p>
+                    <p class="quote-author">— Emilio Carrere</p>
+                </div>
+                <!--
+                ### Cita 14
+                > "Canta, oh musa, la cólera de Aquiles."  
+                > — Homero
+                -->
+                <div class="quote">
+                    <p>"Canta, oh musa, la cólera de Aquiles."</p>
+                    <p class="quote-author">— Homero</p>
+                </div>
+            </div>
+
+            <!-- Música -->
+            <div class="section" id="musica">
+                <h2>Música</h2>
+                <!--
+                ### Cita 1
+                > "No hay futuro sin pasado."  
+                > — León Benavente
+                -->
+                <div class="quote">
+                    <p>"No hay futuro sin pasado."</p>
+                    <p class="quote-author">— León Benavente</p>
+                </div>
+                <!--
+                ### Cita 2
+                > "Todo arde si le aplicas la chispa adecuada."  
+                > — Vetusta Morla
+                -->
+                <div class="quote">
+                    <p>"Todo arde si le aplicas la chispa adecuada."</p>
+                    <p class="quote-author">— Vetusta Morla</p>
+                </div>
+                <!--
+                ### Cita 3
+                > "La muerte es solo un cambio de ropa."  
+                > — Sufjan Stevens
+                -->
+                <div class="quote">
+                    <p>"La muerte es solo un cambio de ropa."</p>
+                    <p class="quote-author">— Sufjan Stevens</p>
+                </div>
+                <!--
+                ### Cita 4
+                > "Si quieres cambiar, primero despierta."  
+                > — Tool
+                -->
+                <div class="quote">
+                    <p>"Si quieres cambiar, primero despierta."</p>
+                    <p class="quote-author">— Tool</p>
+                </div>
+                <!--
+                ### Cita 5
+                > "La música es el eco del infinito."  
+                > — The Flaming Lips
+                -->
+                <div class="quote">
+                    <p>"La música es el eco del infinito."</p>
+                    <p class="quote-author">— The Flaming Lips</p>
+                </div>
+            </div>
+
+            <!-- Pintura -->
+            <div class="section" id="pintura">
+                <h2>Pintura</h2>
+                <!--
+                ### Cita 1
+                > "Esto no es una pipa."  
+                > — René Magritte
+                -->
+                <div class="quote">
+                    <p>"Esto no es una pipa."</p>
+                    <p class="quote-author">— René Magritte</p>
+                </div>
+                <!--
+                ### Cita 2
+                > "La naturaleza es un espejo de la mente."  
+                > — Paul Cézanne
+                -->
+                <div class="quote">
+                    <p>"La naturaleza es un espejo de la mente."</p>
+                    <p class="quote-author">— Paul Cézanne</p>
+                </div>
+                <!--
+                ### Cita 3
+                > "El arte es una mentira que revela la verdad."  
+                > — Gustave Doré
+                -->
+                <div class="quote">
+                    <p>"El arte es una mentira que revela la verdad."</p>
+                    <p class="quote-author">— Gustave Doré</p>
+                </div>
+            </div>
+
+            <!-- Política -->
+            <div class="section" id="politica">
+                <h2>Política</h2>
+                <!--
+                ### Cita 1
+                > "La democracia es el peor sistema, salvo todos los demás."  
+                > — Alexis de Tocqueville
+                -->
+                <div class="quote">
+                    <p>"La democracia es el peor sistema, salvo todos los demás."</p>
+                    <p class="quote-author">— Alexis de Tocqueville</p>
+                </div>
+                <!--
+                ### Cita 2
+                > "La libertad es el derecho a la desigualdad."  
+                > — Raymond Aron
+                -->
+                <div class="quote">
+                    <p>"La libertad es el derecho a la desigualdad."</p>
+                    <p class="quote-author">— Raymond Aron</p>
+                </div>
+            </div>
+
+            <!-- Economía -->
+            <div class="section" id="economia">
+                <h2>Economía</h2>
+                <!--
+                ### Cita 1
+                > "Lo que se ve y lo que no se ve."  
+                > — Frédéric Bastiat
+                -->
+                <div class="quote">
+                    <p>"Lo que se ve y lo que no se ve."</p>
+                    <p class="quote-author">— Frédéric Bastiat</p>
+                </div>
+                <!--
+                ### Cita 2
+                > "El mercado es un proceso, no un fin."  
+                > — Antonio Escohotado
+                -->
+                <div class="quote">
+                    <p>"El mercado es un proceso, no un fin."</p>
+                    <p class="quote-author">— Antonio Escohotado</p>
+                </div>
+            </div>
+
+            <!-- Ciencia -->
+            <div class="section" id="ciencia">
+                <h2>Ciencia</h2>
+                <!--
+                ### Cita 1
+                > "La máquina no es más que su programa."  
+                > — John von Neumann
+                -->
+                <div class="quote">
+                    <p>"La máquina no es más que su programa."</p>
+                    <p class="quote-author">— John von Neumann</p>
+                </div>
+                <!--
+                ### Cita 2
+                > "El control es la ilusión de la estabilidad."  
+                > — W. Ross Ashby
+                -->
+                <div class="quote">
+                    <p>"El control es la ilusión de la estabilidad."</p>
+                    <p class="quote-author">— W. Ross Ashby</p>
+                </div>
+                <!--
+                ### Cita 3
+                > "La retroalimentación es el alma de la vida."  
+                > — Norbert Wiener
+                -->
+                <div class="quote">
+                    <p>"La retroalimentación es el alma de la vida."</p>
+                    <p class="quote-author">— Norbert Wiener</p>
+                </div>
+            </div>
+
+            <!-- Tecnología -->
+            <div class="section" id="tecnologia">
+                <h2>Tecnología</h2>
+                <!--
+                ### Cita 1
+                > "El cerebro es una máquina que se escribe a sí misma."  
+                > — Douglas Hofstadter
+                -->
+                <div class="quote">
+                    <p>"El cerebro es una máquina que se escribe a sí misma."</p>
+                    <p class="quote-author">— Douglas Hofstadter</p>
+                </div>
+                <!--
+                ### Cita 2
+                > "La armonía es un fractal de la mente."  
+                > — *Escher, Gödel, Bach* (inspirado en Hofstadter)
+                -->
+                <div class="quote">
+                    <p>"La armonía es un fractal de la mente."</p>
+                    <p class="quote-author">— *Escher, Gödel, Bach* (inspirado en Hofstadter)</p>
+                </div>
+            </div>
+
+            <!-- Cine y Series -->
+            <div class="section" id="cine-series">
+                <h2>Cine y Series</h2>
+                <!--
+                ### Cita 1
+                > "El tiempo es un círculo plano."  
+                > — *True Detective* (Rust Cohle)
+                -->
+                <div class="quote">
+                    <p>"El tiempo es un círculo plano."</p>
+                    <p class="quote-author">— *True Detective* (Rust Cohle)</p>
+                </div>
+            </div>
+
+            <!-- Psicología -->
+            <div class="section" id="psicologia">
+                <h2>Psicología</h2>
+                <!--
+                ### Cita 1
+                > "El inconsciente es el destino."  
+                > — Sigmund Freud
+                -->
+                <div class="quote">
+                    <p>"El inconsciente es el destino."</p>
+                    <p class="quote-author">— Sigmund Freud</p>
+                </div>
+                <!--
+                ### Cita 2
+                > "El sujeto es lo que no se dice."  
+                > — Jacques Lacan
+                -->
+                <div class="quote">
+                    <p>"El sujeto es lo que no se dice."</p>
+                    <p class="quote-author">— Jacques Lacan</p>
+                </div>
+            </div>
+
+            <!-- Lógica -->
+            <div class="section" id="logica">
+                <h2>Lógica</h2>
+                <!--
+                ### Cita 1
+                > "El significado es uso."  
+                > — Gottlob Frege
+                -->
+                <div class="quote">
+                    <p>"El significado es uso."</p>
+                    <p class="quote-author">— Gottlob Frege</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="section" id="dominios">
+                <h2>Dominios</h2>
+                <ul>
+                    <li><a href="#filosofia" class="highlight">Filosofía</a></li>
+                    <li><a href="#literatura" class="highlight">Literatura</a></li>
+                    <li><a href="#musica" class="highlight">Música</a></li>
+                    <li><a href="#pintura" class="highlight">Pintura</a></li>
+                    <li><a href="#politica" class="highlight">Política</a></li>
+                    <li><a href="#economia" class="highlight">Economía</a></li>
+                    <li><a href="#ciencia" class="highlight">Ciencia</a></li>
+                    <li><a href="#tecnologia" class="highlight">Tecnología</a></li>
+                    <li><a href="#cine-series" class="highlight">Cine y Series</a></li>
+                    <li><a href="#psicologia" class="highlight">Psicología</a></li>
+                    <li><a href="#logica" class="highlight">Lógica</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Un espacio para las voces del pensamiento humano | Febrero 2025</p>
+        </div>
+    </div>
+
+    <script>
+        const vizContainer = document.getElementById('visualization');
+        let vizWidth = vizContainer.clientWidth - 20;
+        const vizHeight = 700;
+
+        const svg = d3.select("#visualization")
+            .append("svg")
+            .attr("width", vizWidth)
+            .attr("height", vizHeight)
+            .attr("viewBox", `0 0 ${vizWidth} ${vizHeight}`)
+            .attr("preserveAspectRatio", "xMidYMid meet");
+
+        svg.append("rect")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .attr("fill", "rgba(0, 0, 0, 0.9)")
+            .attr("rx", 5);
+
+        const nodes = [
+            { id: "Filosofía", link: "#filosofia", group: 1 },
+            { id: "Literatura", link: "#literatura", group: 1 },
+            { id: "Música", link: "#musica", group: 1 },
+            { id: "Pintura", link: "#pintura", group: 1 },
+            { id: "Política", link: "#politica", group: 2 },
+            { id: "Economía", link: "#economia", group: 2 },
+            { id: "Ciencia", link: "#ciencia", group: 3 },
+            { id: "Tecnología", link: "#tecnologia", group: 3 },
+            { id: "Cine y Series", link: "#cine-series", group: 4 },
+            { id: "Psicología", link: "#psicologia", group: 4 },
+            { id: "Lógica", link: "#logica", group: 5 }
+        ];
+
+        const links = [
+            { source: "Filosofía", target: "Literatura" },
+            { source: "Filosofía", target: "Música" },
+            { source: "Filosofía", target: "Pintura" },
+            { source: "Política", target: "Economía" },
+            { source: "Ciencia", target: "Tecnología" },
+            { source: "Cine y Series", target: "Psicología" },
+            { source: "Filosofía", target: "Psicología" },
+            { source: "Literatura", target: "Cine y Series" },
+            { source: "Filosofía", target: "Lógica" }
+        ];
+
+        const simulation = d3.forceSimulation(nodes)
+            .force("link", d3.forceLink(links).id(d => d.id).distance(120).strength(0.2))
+            .force("charge", d3.forceManyBody().strength(-300))
+            .force("center", d3.forceCenter(vizWidth / 2, vizHeight / 2))
+            .force("collide", d3.forceCollide(30))
+            .force("x", d3.forceX(vizWidth / 2).strength(0.05))
+            .force("y", d3.forceY(vizHeight / 2).strength(0.05));
+
+        const link = svg.append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(links)
+            .join("line")
+            .attr("class", "link");
+
+        const node = svg.append("g")
+            .attr("class", "nodes")
+            .selectAll("g")
+            .data(nodes)
+            .join("g")
+            .attr("class", "node");
+
+        node.append("circle")
+            .attr("r", 8)
+            .attr("fill", d => d.group === 1 ? "#00FF00" : d.group === 2 ? "#00FFFF" : d.group === 3 ? "#FFFFFF" : d.group === 4 ? "#00FF80" : "#FF00FF");
+
+        node.append("text")
+            .attr("dy", -10)
+            .attr("text-anchor", "middle")
+            .text(d => d.id);
+
+        node.call(d3.drag()
+            .on("start", dragStarted)
+            .on("drag", dragged)
+            .on("end", dragEnded))
+            .on("click", (event, d) => window.location.hash = d.link)
+            .on("mouseover", function() { d3.select(this).select("circle").transition().duration(200).attr("r", 12); })
+            .on("mouseout", function() { d3.select(this).select("circle").transition().duration(200).attr("r", 8); });
+
+        simulation.on("tick", () => {
+            link.attr("x1", d => Math.max(20, Math.min(vizWidth - 20, d.source.x)))
+                .attr("y1", d => Math.max(20, Math.min(vizHeight - 20, d.source.y)))
+                .attr("x2", d => Math.max(20, Math.min(vizWidth - 20, d.target.x)))
+                .attr("y2", d => Math.max(20, Math.min(vizHeight - 20, d.target.y)));
+            node.attr("transform", d => `translate(${Math.max(20, Math.min(vizWidth - 20, d.x))},${Math.max(20, Math.min(vizHeight - 20, d.y))})`);
+        });
+
+        function dragStarted(event) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        }
+        function dragged(event) {
+            event.subject.fx = Math.max(20, Math.min(vizWidth - 20, event.x));
+            event.subject.fy = Math.max(20, Math.min(vizHeight - 20, event.y));
+        }
+        function dragEnded(event) {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
+        }
+
+        function resize() {
+            vizWidth = vizContainer.clientWidth - 20;
+            svg.attr("width", vizWidth).attr("viewBox", `0 0 ${vizWidth} ${vizHeight}`);
+            simulation.force("center", d3.forceCenter(vizWidth / 2, vizHeight / 2));
+            simulation.alpha(1).restart();
+        }
+        window.addEventListener("resize", resize);
+
+        window.addEventListener('load', () => {
+            resize();
+            simulation.alpha(1).restart();
+        });
+    </script>
+</body>
+</html>

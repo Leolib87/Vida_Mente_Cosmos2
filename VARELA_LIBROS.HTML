@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Francisco Varela Books - 2025</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-green: #00FF00;
+            --neon-cyan: #00FFFF;
+            --black-bg: #000000;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: var(--black-bg);
+            color: var(--neon-green);
+            font-family: 'Orbitron', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        nav ul li {
+            margin: 0 20px;
+        }
+        nav ul li a {
+            color: var(--neon-green);
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        .main-container {
+            max-width: 100%;
+            margin: 0;
+            padding: 60px 10px 0 10px;
+            text-align: center;
+            flex: 1;
+            width: 100%;
+        }
+        .intro {
+            margin-bottom: 40px;
+        }
+        .intro h1 {
+            color: var(--neon-cyan);
+            font-size: 2.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 20px;
+        }
+        .intro p {
+            font-size: 1.1em;
+            max-width: 1000px;
+            margin: 0 auto 15px;
+        }
+        .highlight {
+            color: var(--neon-cyan);
+            font-weight: bold;
+        }
+        .filter-container {
+            margin-bottom: 20px;
+        }
+        .filter-container input {
+            padding: 10px;
+            font-size: 1em;
+            font-family: 'Orbitron', sans-serif;
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--neon-green);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+            border-radius: 5px;
+            outline: none;
+            width: 300px;
+            transition: box-shadow 0.3s ease;
+        }
+        .filter-container input:focus {
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 40px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--neon-cyan);
+        }
+        th {
+            background: rgba(0, 0, 0, 0.9);
+            color: var(--neon-cyan);
+            text-shadow: 0 0 5px var(--neon-cyan);
+            position: sticky;
+            top: 0;
+        }
+        tr:hover {
+            background: rgba(0, 255, 255, 0.1);
+        }
+        .paper-container {
+            margin: 40px 0;
+        }
+        .paper-container h3 {
+            color: var(--neon-cyan);
+            font-size: 1.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 15px;
+        }
+        .paper-iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            border-radius: 5px;
+            display: none;
+        }
+        h2 {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 20px;
+        }
+        @media (max-width: 900px) {
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                padding: 10px 0;
+            }
+            nav ul li {
+                margin: 10px 0;
+            }
+            .intro h1 {
+                font-size: 2em;
+            }
+            .intro p {
+                font-size: 1em;
+                padding: 0 15px;
+            }
+            .filter-container input {
+                width: 100%;
+            }
+            .paper-iframe {
+                height: 500px;
+            }
+        }
+        @media (max-width: 600px) {
+            nav {
+                position: static;
+            }
+            .main-container {
+                padding-top: 10px;
+            }
+            .intro h1 {
+                font-size: 1.5em;
+            }
+            .intro p {
+                font-size: 0.9em;
+            }
+            th, td {
+                font-size: 0.85em;
+                padding: 8px;
+            }
+            .paper-iframe {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navegación -->
+    <nav>
+        <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#published">Libros Publicados</a></li>
+            <li><a href="#forthcoming">Libros en Preparación</a></li>
+            <li><a href="#as-editor">As Editor</a></li>
+            <li><a href="#contacto">Acerca de</a></li>
+        </ul>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="main-container" id="inicio">
+        <!-- Introducción -->
+        <div class="intro">
+            <h1>Francisco Varela: Books Collection</h1>
+            <p>Explora la colección completa de libros de <span class="highlight">Francisco Varela</span>, incluyendo <span class="highlight">Libros Publicados</span>, <span class="highlight">Libros en Preparación</span>, y sus trabajos como editor en <span class="highlight">As Editor</span>. Esta recopilación abarca ediciones en múltiples idiomas y su legado en ciencia cognitiva y autopoiesis.</p>
+        </div>
+
+        <!-- Filtro -->
+        <div class="filter-container">
+            <input type="text" id="search" placeholder="Filter by title or author..." onkeyup="filterTables()">
+        </div>
+
+        <!-- Tabla 1: Libros Publicados -->
+        <div class="table-container" id="published">
+            <h2>Libros Publicados</h2>
+            <table id="table-published">
+                <thead>
+                    <tr>
+                        <th>Ref #</th>
+                        <th>Authors</th>
+                        <th>Year</th>
+                        <th>Title</th>
+                        <th>Publication Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>[1]</td><td>Varela, F.</td><td>1974</td><td>Los Ojos de los Insectos</td><td>Editorial Alhambra, Madrid, 118 pp</td></tr>
+                    <tr><td>[2]</td><td>H. Maturana and F. Varela</td><td>1980</td><td>Autopoiesis and Cognition: The realization of the living</td><td>D. Reidel, Boston, 141 pp + xxv; Spanish: De Máquinas y Seres Vivos: Una teoría sobre la organización biológica, Editorial Universitaria, Santiago, 1973, 121 pp (New revised edition with a Preface, 1995); Italian: Autopoiese e Cognizione: La realizazione del vivente, Marsilio Editori, Venezia, 1985, 204 pp; German: in H. Maturana, Erkennen: Die Organisation und Verkörperung von Wirklichkeit, Vieweg, Wiesbaden, 1982, pp. 170-234; Japanese: Kokubun-Sha Publishers, Tokyo, 1991; Portuguese: De Maquinas e Seres Vivos, Intermedica, Sao Paulo, 1997</td></tr>
+                    <tr><td>[3]</td><td>Varela, F.</td><td>1979</td><td>Principles of Biological Autonomy</td><td>Elsevier/North-Holland, New York, 306 pp; French: Autonomie et Connaissance: Essai sur le Vivant, Eds. du Seuil, Paris, 1988</td></tr>
+                    <tr><td>[4]</td><td>H. Maturana and F. Varela</td><td>1987</td><td>The Tree of Knowledge: A new look at the biological roots of human understanding</td><td>Shambhala/New Science Library, Boston; Spanish: El Arbol del Conocimiento: Las bases biológicas del entendimiento humano, Editorial Universitaria, Santiago, 1985; Editorial Debate, Madrid, 1988; German: Der Baum der Erkenntnis, Scherz Verlag, München, 1987; paperback Goldman Verlag, 1990; Italian: L'Albero della Conoscenza, Garzanti Editori, Milano, 1987; Japanese: Asahi Press, Tokyo, 1987; Chikuma Shobo, Tokyo, 1997; Danish: Kinskaben Trae, Forgest Ask, Copenhagen, 1988; Dutch: De Boom der Kennis, Uitgeverij Contact, Amsterdam, 1989; Greek: To Lentro tes Gnoshs, Katoptro, Athens, 1992; French: L'Arbre de la Connaissance, Addison-Wesley France, Paris, 1994; Portuguese: A Arbore do Conhecimiento, Editorial Psy, Sao Paulo, Brasil, 1995; Slovenian: Drevo Spoznanja, Studia Humanitatis, Ljubljana, 1998; Vietnamese: 1999; Russian: Progress-Tradition, Moscow, 2000</td></tr>
+                    <tr><td>[5]</td><td>F. Varela</td><td>1988</td><td>Connaître: Les Sciences Cognitives, tendances et perspectives</td><td>Editions du Seuil, Paris; Deuxième édition: Invitation aux Sciences Cognitives, Seuil, Points Sciences, 1996; Italian: Scienze e Tecnologia della Cognizione, Hopeful Monster, Florence, 1987; Spanish: Conocer: Las Ciencias Cognitivas, Grijalbo, Barcelona, 1990; German: Kognitionwissenschaften-Kognitiontechnik, Suhrkamp, Frankfurt, 1990; Portuguese: Conhecer, Instituto Piaget, Lisbon</td></tr>
+                    <tr><td>[6]</td><td>F. Varela, E. Thompson and E. Rosch</td><td>1991</td><td>The Embodied Mind: Cognitive science and human experience</td><td>MIT Press, Cambridge; German: Der Mittlere Weg der Erkenntnis, Scherz, Munich, 1992; Italian: La via del mezzo della conoscenza, Feltrinelli, Milano, 1993; French: L'Inscription Corporelle de l'Esprit, Seuil, Paris, 1993; Spanish: De Cuerpo Presente: Las ciencias cognitivas y la experiencia humana, Gedisa, Barcelona, 1992; Portuguese: Editora Piaget, Lisbon (in press); Brazil: Editorial Artes Medicas, Sao Paulo (in press); Japanese: Koishaku, Tokyo (in press); Korean: Hyunwoo Publishing Co., Seoul (in press); Chinese: Shy Mau Publishing Co., Taiwan (in press)</td></tr>
+                    <tr><td>[7]</td><td>F. Varela</td><td>1992</td><td>Un Know-how per l'etica, The Italian Lectures 3</td><td>Editrice La Terza, Roma; German: Ethisches Können, Campus Verlag, Frankfurt, 1994; Portuguese: Sobre a Competência Ética, Edições 70, Lisboa, 1996; French: Quel savoir pour l'Éthique? Action, sagesse et cognition, Editions La Découverte, Paris, 1996; Spanish: Ética y Acción, Editorial Dolmen, Santiago, Chile, 1996; English: Ethical Know-How, Stanford Univ. Press, 1999</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tabla 2: Libros en Preparación -->
+        <div class="table-container" id="forthcoming">
+            <h2>Libros en Preparación</h2>
+            <table id="table-forthcoming">
+                <thead>
+                    <tr>
+                        <th>Ref #</th>
+                        <th>Authors</th>
+                        <th>Year</th>
+                        <th>Title</th>
+                        <th>Publication Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>[9]</td><td>E. Thompson and F. Varela</td><td>-</td><td>Lived Body: Why the Mind is not in the Head</td><td>Harvard University Press</td></tr>
+                    <tr><td>[10]</td><td>N. Depraz, F. Varela and P. Vermersch</td><td>-</td><td>On Becoming Aware: Steps to a Phenomenological Pragmatics</td><td>Benjamin Publishing, Advances in Consciousness Research, New York</td></tr>
+                    <tr><td>[11]</td><td>F. Varela</td><td>-</td><td>Laying down a Path in Walking: Cognition from an enactive viewpoint</td><td>(selected papers in preparation)</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tabla 3: As Editor -->
+        <div class="table-container" id="as-editor">
+            <h2>As Editor</h2>
+            <table id="table-editor">
+                <thead>
+                    <tr>
+                        <th>Ref #</th>
+                        <th>Editors</th>
+                        <th>Year</th>
+                        <th>Title</th>
+                        <th>Publication Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>[1]</td><td>Varela, F. (Ed.)</td><td>1983</td><td>Comparative Neurobiology of Vision in Vertebrates</td><td>Proceedings of the International Symposium, Punta de Tralca, Chile, November 1982, Biological Research (ex Arch. Biol. Med. Exp.) Vol. 16, No. 2/3, 145 pp</td></tr>
+                    <tr><td>[2]</td><td>Varela, F. and J.P. Dupuy (Eds.)</td><td>1992</td><td>Understanding Origin: Scientific Ideas on the Origin of Life, Mind, and Society</td><td>(A Stanford University International Symposium), Boston Studies Phil. Sci., Kluwer Assoc., Dordrecht</td></tr>
+                    <tr><td>[3]</td><td>F. Varela and P. Bourgine (Eds.)</td><td>1992</td><td>Towards a Practice of Autonomous Systems: The First European Conference on Artificial Life</td><td>MIT Press/Bradford Books, Cambridge, MA</td></tr>
+                    <tr><td>[4]</td><td>J. Hayward and F. Varela (Eds.)</td><td>1992</td><td>Gentle Bridges: Dialogues between the Cognitive Sciences and the Buddhist Tradition</td><td>Shambhala Publishers, Boston; French: Passerelles, Albin Michel, 1995; German: Gewagte Denkwege, Piper Verlag, 1996; Spanish: Un Puente para Dos Miradas, Dolmen, Santiago de Chile, 1997; Italian: Ponti Sottili, Neri Pozzi Editori, Vincenza, 1998; Japanese: Seidosha, Tokyo; Chinese: Cung Sheng Publishing House, Taiwan</td></tr>
+                    <tr><td>[5]</td><td>W. Stein and F. Varela (Eds.)</td><td>1993</td><td>Thinking About Biology: An introduction to Theoretical Biology</td><td>SFI Series on Complexity, Addison-Wesley, NJ</td></tr>
+                    <tr><td>[6]</td><td>F. Varela (Ed.)</td><td>1997</td><td>Sleeping, Dreaming and Dying: Dialogues between the Sciences and the Buddhist Tradition</td><td>Wisdom Book, Boston; French: Dormir, Rêver, Mourir, NIL Editions, Paris, 1998; German: Traum, Schlaf und Tod, Diederichs, München, 1999; Spanish: Dormir, Soñar, Morir, Dolmen Ediciones, Santiago de Chile, 1999</td></tr>
+                    <tr><td>[7]</td><td>F. Varela and J. Shear (Eds.)</td><td>1999</td><td>The View from Within: First-Person Methodologies in the Study of Consciousness</td><td>Special Issue, Journal of Consciousness Studies, 6(2-3), also available as book: Imprint Academic, London, 1999, http://www.imprint.co.uk/books/</td></tr>
+                    <tr><td>[8]</td><td>J. Petitot, F. Varela, B. Pachoud and J.M. Roy (Eds.)</td><td>1999</td><td>Naturalizing Phenomenology: Contemporary Issues in Phenomenology and Cognitive Science</td><td>Stanford University Press, Stanford, http://www.scico.u-bordeaux2.fr/episteme/bbooka/</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Contenedor para los Libros en Iframes -->
+        <div class="paper-container" id="paper-container">
+            <h3>View Selected Book</h3>
+            <iframe class="paper-iframe" id="book-1" src="[URL-Book-1]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="book-2" src="[URL-Book-2]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="book-3" src="[URL-Book-3]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="book-4" src="[URL-Book-4]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="book-5" src="[URL-Book-5]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="book-6" src="[URL-Book-6]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="book-7" src="[URL-Book-7]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="book-9" src="[URL-Book-9]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="book-10" src="[URL-Book-10]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="book-11" src="[URL-Book-11]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="editor-1" src="[URL-Editor-1]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="editor-2" src="[URL-Editor-2]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="editor-3" src="[URL-Editor-3]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="editor-4" src="[URL-Editor-4]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="editor-5" src="[URL-Editor-5]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="editor-6" src="[URL-Editor-6]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="editor-7" src="[URL-Editor-7]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="editor-8" src="[URL-Editor-8]" frameborder="0"></iframe>
+        </div>
+
+        <!-- Sección Acerca de -->
+        <div class="about-container" id="contacto">
+            <h3>Acerca de</h3>
+            <p>Curated by Grok 3, built by xAI. Data compiled as of March 19, 2025.</p>
+        </div>
+    </div>
+
+    <!-- Script para filtrar las tablas y mostrar iframes -->
+    <script>
+        function filterTables() {
+            const input = document.getElementById('search').value.toLowerCase();
+            const tables = [
+                document.getElementById('table-published'),
+                document.getElementById('table-forthcoming'),
+                document.getElementById('table-editor')
+            ];
+            const paperContainer = document.getElementById('paper-container');
+            const iframes = document.getElementsByClassName('paper-iframe');
+            let selectedBook = null;
+
+            // Filtrar todas las tablas
+            tables.forEach(table => {
+                const rows = table.getElementsByTagName('tr');
+                for (let i = 1; i < rows.length; i++) {
+                    const cells = rows[i].getElementsByTagName('td');
+                    let match = false;
+                    const refNumber = cells[0].textContent.toLowerCase();
+                    const prefix = table.id === 'table-editor' ? 'editor-' : 'book-';
+
+                    for (let j = 0; j < cells.length; j++) {
+                        const cellText = cells[j].textContent.toLowerCase();
+                        if (cellText.includes(input)) {
+                            match = true;
+                            if (!selectedBook && j === 0) {
+                                selectedBook = prefix + refNumber.replace('[', '').replace(']', '');
+                            }
+                            break;
+                        }
+                    }
+                    rows[i].style.display = match ? '' : 'none';
+                }
+            });
+
+            // Ocultar todos los iframes
+            for (let iframe of iframes) {
+                iframe.style.display = 'none';
+            }
+
+            // Mostrar el iframe correspondiente al libro filtrado
+            if (selectedBook) {
+                const selectedIframe = document.getElementById(selectedBook);
+                if (selectedIframe) {
+                    selectedIframe.style.display = 'block';
+                    paperContainer.style.display = 'block';
+                } else {
+                    paperContainer.style.display = 'none';
+                }
+            } else {
+                paperContainer.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

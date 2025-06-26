@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyectos de Investigación 2020 - Análisis 2025</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-green: #00FF00;
+            --neon-cyan: #00FFFF;
+            --black-bg: #000000;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: var(--black-bg);
+            color: var(--neon-green);
+            font-family: 'Orbitron', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        nav ul li {
+            position: relative;
+            margin: 0 20px;
+        }
+        nav ul li a {
+            color: var(--neon-green);
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        .mega-menu {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            width: 800px;
+            max-width: 90vw;
+            padding: 20px;
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        nav ul li:hover .mega-menu {
+            display: grid;
+            opacity: 1;
+        }
+        .mega-menu h3 {
+            color: var(--neon-cyan);
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px var(--neon-cyan);
+        }
+        .mega-menu ul {
+            display: block;
+            padding: 0;
+        }
+        .mega-menu ul li {
+            margin: 5px 0;
+        }
+        .mega-menu a {
+            font-size: 0.9em;
+            color: var(--neon-green);
+            transition: color 0.3s ease;
+        }
+        .mega-menu a:hover {
+            color: #FFFFFF;
+        }
+        .main-container {
+            max-width: 1400px;
+            margin: 80px auto 0;
+            padding: 20px;
+            text-align: center;
+        }
+        .intro {
+            margin-bottom: 40px;
+        }
+        .intro h1 {
+            color: var(--neon-cyan);
+            font-size: 2.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 20px;
+        }
+        .intro p {
+            font-size: 1.1em;
+            max-width: 1000px;
+            margin: 0 auto 15px;
+        }
+        .highlight {
+            color: var(--neon-cyan);
+            font-weight: bold;
+        }
+        .filter-container {
+            margin-bottom: 20px;
+        }
+        .filter-container input {
+            padding: 10px;
+            font-size: 1em;
+            font-family: 'Orbitron', sans-serif;
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--neon-green);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+            border-radius: 5px;
+            outline: none;
+            width: 300px;
+            transition: box-shadow 0.3s ease;
+        }
+        .filter-container input:focus {
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 40px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--neon-cyan);
+        }
+        th {
+            background: rgba(0, 0, 0, 0.9);
+            color: var(--neon-cyan);
+            text-shadow: 0 0 5px var(--neon-cyan);
+            position: sticky;
+            top: 0;
+        }
+        tr:hover {
+            background: rgba(0, 255, 255, 0.1);
+        }
+        .iframe-container {
+            margin: 40px 0;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            border-radius: 5px;
+        }
+        .image-gallery {
+            margin-top: 40px;
+        }
+        .image-gallery ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        .image-gallery li {
+            text-align: center;
+        }
+        .image-gallery img {
+            width: 1200px;
+            height: auto;
+        }
+        .image-gallery p {
+            color: var(--neon-cyan);
+            font-size: 1em;
+            margin-top: 5px;
+            text-shadow: 0 0 5px var(--neon-cyan);
+            border-bottom: 1px dotted var(--neon-green);
+            padding-bottom: 2px;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        .image-gallery li:hover p {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        @media (max-width: 900px) {
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                padding: 10px 0;
+            }
+            nav ul li {
+                margin: 10px 0;
+                width: 100%;
+                text-align: center;
+            }
+            .mega-menu {
+                position: static;
+                transform: none;
+                width: 100%;
+                max-width: 100%;
+                grid-template-columns: 1fr;
+                padding: 15px;
+                box-shadow: none;
+                border: 1px solid var(--neon-cyan);
+            }
+            nav ul li:hover .mega-menu {
+                display: block;
+            }
+            .intro h1 {
+                font-size: 2em;
+            }
+            .intro p {
+                font-size: 1em;
+                padding: 0 15px;
+            }
+            .filter-container input {
+                width: 100%;
+            }
+            iframe {
+                height: 400px;
+            }
+            .image-gallery img {
+                width: 150px;
+            }
+        }
+        @media (max-width: 600px) {
+            .intro h1 {
+                font-size: 1.5em;
+            }
+            .intro p {
+                font-size: 0.9em;
+            }
+            th, td {
+                font-size: 0.85em;
+                padding: 8px;
+            }
+            iframe {
+                height: 300px;
+            }
+            .image-gallery img {
+                width: 120px;
+            }
+            .image-gallery p {
+                font-size: 0.85em;
+            }
+        }
+    </style>
+</head>
+<body>
+         <!-- Navegación con Mega Menú -->
+     <nav>
+        <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li>
+                <a href="#">Exploración Conceptual</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Ideas y Preguntas Existenciales</h3>
+                        <ul>
+                            <li><a href="#trazado-vida">Origen y Fin de la Vida</a></li>
+                            <li><a href="#biologia">Determinismo vs. Libertad</a></li>
+                            <li><a href="#filosofia-mente">Conducta y Creatividad</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Fundamentos Teóricos</h3>
+                        <ul>
+                            <li><a href="#biologia">Filosofía de la Biología</a></li>
+                            <li><a href="#ciencias-cognitivas">Filosofía de las Ciencias Cognitivas</a></li>
+                            <li><a href="#filosofia-mente">Mente y Lenguaje</a></li>
+                            <li><a href="Explorando la Visualización Filosófica.HTML">Visualización Filosófica</a></li>
+                            <li><a href="MAPEO_FILO_MENTE_CHILE.HTML">Mapeo Filosofía de la Mente Chile</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <a href="#">Perspectivas Disciplinarias</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Biología y Ciencias Naturales</h3>
+                        <ul>
+                            <li><a href="#biologia">Histología y Biología Celular</a></li>
+                            <li><a href="HISTOLOGIA.html">Histología</a></li>
+                            <li><a href="https://leolib87.github.io/herbario/">Herbario</a></li>
+                            <li><a href="cuerpo humano completo plantilla Lt.html">Cuerpo Humano Desplegable</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Economía y Política</h3>
+                        <ul>
+                            <li><a href="#economia-politica">Teorías Colectivistas y Liberales</a></li>
+                            <li><a href="#economia-politica">Análisis de Corrientes Ideológicas</a></li>
+                            <li><a href="RED POLITICOS.html">Red de Políticos FA</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Educación y Filosofía</h3>
+                        <ul>
+                            <li><a href="red 2.html">Filosofía de la Educación</a></li>
+                            <li><a href="#trazado-vida">Autoconocimiento y Sentido Humano</a></li>
+                            <li><a href="red3.html">Red Tesis de Magíster Ejemplos</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <a href="#">Metodología y Datos</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Recolección y Procesamiento</h3>
+                        <ul>
+                            <li><a href="#redes-palabras">Visualización y Análisis de Datos</a></li>
+                            <li><a href="#voyant-tools">Herramientas Digitales (Gephi, D3.js)</a></li>
+                            <li><a href="varios graficos.html">Varios Gráficos</a></li>
+                            <li><a href="GRAFICO DE LINEAS Y TREEMAP.html">Gráfico de Líneas y Treemap</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <a href="#">Proyectos & Mapas</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Mapas de Conocimiento</h3>
+                        <ul>
+                            <li><a href="#elementos-comunes">Filosofía de la Mente</a></li>
+                            <li><a href="#economia-politica">Política Chilena</a></li>
+                            <li><a href="VARELA_CARTOGRAFIA.HTML">Cartografía Varela</a></li>
+                            <li><a href="AUTOPOIESIS.HTML">Simulación Autopoiesis Maturana y Varela 1974</a></li>
+                            <li><a href="Pedagogia-Biologia.html">Pedagogías en Biologia - Chile</a></li>
+                             <li><a href="Pedagogia-Biologia.html">Investigacion Facultad de Ciencias - Chile</a></li>
+                             <li><a href="FONDECYT.HTML">Fondecyt Chile - Chile</a></li>
+                           
+                            
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <a href="#">Recursos</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Lecturas y Bibliografía</h3>
+                        <ul>
+                            <li><a href="MI_BIBLIOTECA.HTML">Mi Biblioteca de Humanidades</a></li>
+                            <li><a href="BIBLIOTECA_CIENCIAS.HTML">Mi Biblioteca de Ciencias</a></li>
+                            <li><a href="BIBLIOECAS_DIGITALES_SOMBRA.HTML">Bibliotecas Sombra</a></li>
+                            <li><a href="CITAS.HTML">Fragmentos de Mentes</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Enlaces de Interés</h3>
+                        <ul>
+                            <li><a href="LEOLIB NEWS BLACK.HTML">Leolib News</a></li>
+                            <li><a href="https://leolib87.github.io/herbario/">Herbario</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li><a href="#contacto">Acerca de / Contacto</a></li>
+        </ul>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="main-container" id="inicio">
+          <!-- Introducción -->
+        <div class="intro">
+            <h1>Proyectos de Investigación 2020/2025</h1>
+            <p>El <span class="highlight">FONDECYT Regular</span> (Fondo Nacional de Desarrollo Científico y Tecnológico) es un programa emblemático en Chile, gestionado por la Agencia Nacional de Investigación y Desarrollo (ANID), que financia proyectos de investigación científica y tecnológica de excelencia. Desde su creación en 1981, ha impulsado el avance del conocimiento en diversas disciplinas, apoyando a investigadores de universidades e instituciones acreditadas para desarrollar estudios de alto impacto durante períodos de 2 a 4 años. En <span class="highlight">2020/2024</span>, este programa destacó por su apoyo a proyectos liderados por instituciones como la <span class="highlight">Pontificia Universidad Católica de Chile</span> y la <span class="highlight">Universidad de Chile</span>, reflejando un compromiso con la innovación y el desarrollo nacional.</p>
+            <p>Esta página presenta un análisis de los proyectos FONDECYT Regular registrados en <span class="highlight">2020/2025</span>, con un enfoque en la distribución por institución. Utilice el filtro para explorar los datos por universidad y consulte el enlace a Google Sheets para información completa.</p>
+        </div>
+
+        <!-- Filtro -->
+        <div class="filter-container">
+            <input type="text" id="search" placeholder="Filtrar por universidad o área..." onkeyup="filterTable()">
+        </div>
+
+        <!-- Tabla -->
+        <div class="table-container">
+            <table id="data-table">
+                <thead>
+                    <tr>
+                        <th>Institución</th>
+                        <th>N° Proyectos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>PONTIFICIA UNIVERSIDAD CATÓLICA DE CHILE</td><td>523</td></tr>
+                    <tr><td>UNIVERSIDAD DE CHILE</td><td>520</td></tr>
+                    <tr><td>PONTIFICIA UNIVERSIDAD CATÓLICA DE VALPARAÍSO</td><td>131</td></tr>
+                    <tr><td>UNIVERSIDAD DE SANTIAGO DE CHILE</td><td>156</td></tr>
+                    <tr><td>UNIVERSIDAD AUSTRAL DE CHILE</td><td>144</td></tr>
+                    <tr><td>UNIVERSIDAD DE CONCEPCIÓN</td><td>187</td></tr>
+                    <tr><td>UNIVERSIDAD DE TALCA</td><td>115</td></tr>
+                    <tr><td>UNIVERSIDAD DE LA FRONTERA</td><td>98</td></tr>
+                    <tr><td>UNIVERSIDAD TÉCNICA FEDERICO SANTA MARÍA</td><td>124</td></tr>
+                    <tr><td>UNIVERSIDAD ANDRÉS BELLO</td><td>123</td></tr>
+                    <tr><td>UNIVERSIDAD DE LOS ANDES</td><td>75</td></tr>
+                    <tr><td>UNIVERSIDAD ADOLFO IBÁÑEZ</td><td>102</td></tr>
+                    <tr><td>UNIVERSIDAD DIEGO PORTALES</td><td>54</td></tr>
+                    <tr><td>UNIVERSIDAD DE VALPARAÍSO</td><td>76</td></tr>
+                    <tr><td>UNIVERSIDAD MAYOR</td><td>27</td></tr>
+                    <tr><td>UNIVERSIDAD ALBERTO HURTADO</td><td>45</td></tr>
+                    <tr><td>UNIVERSIDAD DEL DESARROLLO</td><td>23</td></tr>
+                    <tr><td>UNIVERSIDAD DE TARAPACÁ</td><td>38</td></tr>
+                    <tr><td>UNIVERSIDAD DEL BÍO-BÍO</td><td>35</td></tr>
+                    <tr><td>UNIVERSIDAD AUTÓNOMA DE CHILE</td><td>33</td></tr>
+                    <tr><td>UNIVERSIDAD SAN SEBASTIÁN</td><td>18</td></tr>
+                    <tr><td>UNIVERSIDAD DE LA SERENA</td><td>29</td></tr>
+                    <tr><td>UNIVERSIDAD DE LOS LAGOS</td><td>14</td></tr>
+                    <tr><td>UNIVERSIDAD DE O'HIGGINS</td><td>14</td></tr>
+                    <tr><td>UNIVERSIDAD CATÓLICA DEL NORTE</td><td>27</td></tr>
+                    <tr><td>UNIVERSIDAD CATÓLICA DEL MAULE</td><td>13</td></tr>
+                    <tr><td>UNIVERSIDAD CATÓLICA DE LA SANTÍSIMA CONCEPCIÓN</td><td>12</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Iframe para Google Sheets -->
+        <div class="iframe-container">
+            <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRSp63guSczSXIfnLy2q0_V0Np-pZ3vKyS4v5xYBmECNRYw0p4h3BWkDYFZMMfHAw/pubhtml?gid=1769853940&single=true" frameborder="0"></iframe>
+        </div>
+
+<!-- Galería de Imágenes (9 ítems) -->
+<div class="image-gallery">
+    <ul>
+        <!-- Por Institución -->
+        <li>
+            <img src="https://github.com/Leolib87/FONDECYT-REGULAR-/blob/main/Proyectos_por_Institucion.png?raw=true">
+            <p>Proyectos por Institución</p>
+        </li>
+        <li>
+            <img src="https://github.com/Leolib87/FONDECYT-REGULAR-/blob/main/heatmap_instituciones_grupos.png?raw=true">
+            <p>Heatmap Instituciones y Grupos</p>
+        </li>
+        <!-- Por Grupos de Estudio -->
+        <li>
+            <img src="https://github.com/Leolib87/FONDECYT-REGULAR-/blob/main/Proyectos_por_Grupo_de_Estudio.png?raw=true">
+            <p>Proyectos por Grupo de Estudio</p>
+        </li>
+        <li>
+            <img src="https://github.com/Leolib87/FONDECYT-REGULAR-/blob/main/grafico_barras_grupo_estudio.png?raw=true">
+            <p>Gráfico Barras Grupo Estudio</p>
+        </li>
+        <li>
+            <img src="https://raw.githubusercontent.com/Leolib87/FONDECYT-REGULAR-/39e2a7be8df3090d7817fd71aacda95c6b5fc100/Proyectos_por_Grupo_y_Año.svg">
+            <p>Proyectos por Grupo y Año</p>
+        </li>
+        <li>
+            <img src="https://raw.githubusercontent.com/Leolib87/FONDECYT-REGULAR-/39e2a7be8df3090d7817fd71aacda95c6b5fc100/Proyectos_por_Grupo_y_Año3.svg">
+            <p>Proyectos por Grupo y Año 3</p>
+        </li>
+        <li>
+            <img src="https://github.com/Leolib87/FONDECYT-REGULAR-/blob/main/grafico_barras_apiladas_grupos_numerados.png?raw=true">
+            <p>Gráfico Barras Apiladas Grupos Numerados</p>
+        </li>
+        <li>
+            <img src="https://github.com/Leolib87/FONDECYT-REGULAR-/blob/main/grafico_barras_apiladas_grupos_sin_numero.png?raw=true">
+            <p>Gráfico Barras Apiladas Grupos Sin Número</p>
+        </li>
+        <!-- Por Disciplinas -->
+        <li>
+            <img src="https://github.com/Leolib87/FONDECYT-REGULAR-/blob/main/grafico_barras_Disciplinas.png?raw=true">
+            <p>Gráfico Barras Disciplinas</p>
+        </li>
+    </ul>
+</div>
+
+    <!-- Script para filtrar la tabla -->
+    <script>
+        function filterTable() {
+            const input = document.getElementById('search').value.toLowerCase();
+            const table = document.getElementById('data-table');
+            const rows = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                let match = false;
+                for (let j = 0; j < cells.length; j++) {
+                    if (cells[j].textContent.toLowerCase().includes(input)) {
+                        match = true;
+                        break;
+                    }
+                }
+                rows[i].style.display = match ? '' : 'none';
+            }
+        }
+    </script>
+</body>
+</html>

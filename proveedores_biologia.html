@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado Interactivo de Proveedores para Laboratorio en Chile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        th.sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 10; /* Ensure header is above table content */
+        }
+        .category-row th {
+            text-align: left;
+            padding-left: 0.75rem; /* Equivalent to px-3 */
+        }
+        .contact-link {
+            color: #60a5fa; /* text-blue-400 */
+            text-decoration: none;
+        }
+        .contact-link:hover {
+            text-decoration: underline;
+            color: #93c5fd; /* text-blue-300 */
+        }
+
+        /* Estilos para Pestañas de Biología Molecular */
+        .molbio-tab-button.active {
+            border-bottom-width: 2px;
+            --tw-border-opacity: 1;
+            border-color: rgb(96 165 250 / var(--tw-border-opacity)); /* border-blue-400 */
+            color: rgb(96 165 250 / var(--tw-border-opacity)); /* text-blue-400 */
+            font-weight: 600;
+        }
+        .molbio-tab-button:not(.active) {
+            color: rgb(156 163 175 / var(--tw-border-opacity)); /* text-gray-400 */
+            border-bottom-color: transparent;
+        }
+        .molbio-tab-button:not(.active):hover {
+            color: rgb(96 165 250 / var(--tw-border-opacity)); /* hover:text-blue-400 */
+            border-color: rgb(147 197 253 / var(--tw-border-opacity)); /* hover:border-blue-300 */
+        }
+
+        /* Estilos para Nueva Navegación de Secciones */
+        .interactive-nav-link {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+            border: 1px solid transparent; 
+            color: #d1d5db; /* text-gray-300 */
+        }
+        .interactive-nav-link:hover {
+            background-color: #374151; /* bg-gray-700 */
+            color: #f3f4f6; /* text-gray-100 */
+        }
+        .interactive-nav-link.active {
+            background-color: #0d9488; /* bg-teal-600 */
+            color: #f0fdfa; /* text-teal-50 */
+            font-weight: 600;
+            border-color: #0f766e; /* border-teal-700 */
+        }
+        
+        /* Responsive table styles */
+        @media (max-width: 768px) {
+            .responsive-table table,
+            .responsive-table thead,
+            .responsive-table tbody,
+            .responsive-table th,
+            .responsive-table td,
+            .responsive-table tr {
+                display: block;
+            }
+            .responsive-table thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            .responsive-table tr {
+                border: 1px solid #4b5563; /* border-gray-600 */
+                margin-bottom: 0.5rem; /* mb-2 */
+                border-radius: 0.5rem; /* rounded-lg */
+                overflow: hidden;
+                background-color: #374151; /* bg-gray-700 */
+            }
+            .responsive-table td {
+                border: none;
+                border-bottom: 1px solid #4b5563; /* border-gray-600 */
+                position: relative;
+                padding-left: 50% !important; /* Overriding Tailwind for specific layout */
+                text-align: left;
+                white-space: normal;
+                word-wrap: break-word;
+                color: #d1d5db; /* text-gray-300 */
+            }
+            .responsive-table td:before {
+                position: absolute;
+                top: 6px;
+                left: 6px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                font-weight: bold;
+                text-align: left;
+                color: #9ca3af; /* text-gray-400 */
+            }
+            /* Specific labels for each table */
+            .histology-table td:nth-of-type(1):before { content: "Material/Equipo"; }
+            .histology-table td:nth-of-type(2):before { content: "Uso"; }
+            .histology-table td:nth-of-type(3):before { content: "Proveedor"; }
+            .histology-table td:nth-of-type(4):before { content: "Contacto"; }
+
+            .westernblot-table td:nth-of-type(1):before { content: "Material/Equipo"; }
+            .westernblot-table td:nth-of-type(2):before { content: "Función/Uso"; }
+            .westernblot-table td:nth-of-type(3):before { content: "Proveedores"; }
+            .westernblot-table td:nth-of-type(4):before { content: "Contacto Proveedor"; }
+
+            .molbio-table td:nth-of-type(1):before { content: "Material/Insumo"; }
+            .molbio-table td:nth-of-type(2):before { content: "Uso/Función"; }
+            .molbio-table td:nth-of-type(3):before { content: "Proveedor(es)"; }
+            .molbio-table td:nth-of-type(4):before { content: "Contacto Proveedor"; }
+
+            .responsive-table .category-row th {
+                text-align: center;
+                padding: 0.75rem; /* py-3 px-3 */
+            }
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-200">
+
+    <div id="app" class="container mx-auto px-4 py-8">
+        
+        <header class="text-center mb-8 mt-4">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-50">Listado Interactivo de Proveedores para Laboratorio en Chile</h1>
+        </header>
+
+        <nav class="bg-gray-800 shadow-md rounded-lg mb-10 p-3 sticky top-4 z-20">
+            <ul class="flex flex-wrap justify-center items-center space-x-2 sm:space-x-4 md:space-x-6">
+                <li><button data-target="histologia_overview" class="interactive-nav-link py-2 px-3 sm:px-4 rounded-md text-sm sm:text-base">Histología</button></li>
+                <li><button data-target="westernblot" class="interactive-nav-link py-2 px-3 sm:px-4 rounded-md text-sm sm:text-base">Western Blot</button></li>
+                <li><button data-target="biologiamolecular" class="interactive-nav-link py-2 px-3 sm:px-4 rounded-md text-sm sm:text-base">Biología Molecular</button></li>
+            </ul>
+        </nav>
+
+        <main id="content">
+            
+            <section id="histologia_overview" class="page-section mb-12">
+                <div class="bg-gray-900 p-6 md:p-8 rounded-xl shadow-lg">
+                    <div class="m-0 p-0 bg-gray-900 rounded-lg"> 
+                        <h2 class="text-2xl md:text-3xl font-semibold text-teal-400 mb-6">🔬 Histología: Materiales, Equipos y Proveedores</h2>
+                        <div class="mb-6">
+                            <input type="text" id="histologyFilterInput" placeholder="Buscar en Material/Equipo..." class="w-full p-3 bg-gray-700 text-gray-200 border border-gray-600 rounded-lg focus:ring-teal-500 focus:border-teal-500 placeholder-gray-400">
+                        </div>
+                        <div class="overflow-x-auto responsive-table histology-table">
+                            <table class="min-w-full divide-y divide-gray-700">
+                                <thead class="bg-slate-700">
+                                    <tr>
+                                        <th scope="col" class="sticky-header px-4 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">Material/Equipo</th>
+                                        <th scope="col" class="sticky-header px-4 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">Uso</th>
+                                        <th scope="col" class="sticky-header px-4 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">Proveedor Recomendado</th>
+                                        <th scope="col" class="sticky-header px-4 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">Contacto del Proveedor</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-gray-800 divide-y divide-gray-700">
+                                    <tr class="bg-gray-700 category-row">
+                                        <th colspan="4" class="px-4 py-3 text-left text-sm font-semibold text-gray-100">Reactivos de Fijación</th>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Reactivos de Fijación (General)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Fijación de tejidos</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, 🔬 Diprolab Ltda., 🔬 Farmalatina Ltda., 🔬 Importadora Soviquim Ltda, 🔬 Winkler Ltda.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                            <a href="https://amilab.cl" target="_blank" class="contact-link">AMILAB: amilab.cl</a>, <a href="tel:+56222878707" class="contact-link">+562 22878707</a>, <a href="mailto:amilab@amilab.cl" class="contact-link">amilab@amilab.cl</a><br/>
+                                            <a href="https://diprolab.cl" target="_blank" class="contact-link">Diprolab: diprolab.cl</a>, <a href="mailto:ventas@diprolab.cl" class="contact-link">ventas@diprolab.cl</a>, <a href="tel:+56412620730" class="contact-link">(+56 41) 262 0730</a><br/>
+                                            <a href="https://farmalatina.cl" target="_blank" class="contact-link">Farmalatina: farmalatina.cl</a>, <a href="tel:+56228385000" class="contact-link">+56228385000</a><br/>
+                                            <a href="https://soviquim.cl" target="_blank" class="contact-link">Soviquim: soviquim.cl</a>, <a href="mailto:ventas@soviquim.cl" class="contact-link">ventas@soviquim.cl</a>, <a href="tel:+56227738684" class="contact-link">+56 2 2773 8684</a><br/>
+                                            <a href="https://winklerltda.cl" target="_blank" class="contact-link">Winkler: winklerltda.cl</a>, <a href="tel:+56224826500" class="contact-link">+56224826500</a>, <a href="mailto:contacto@winklerltda.cl" class="contact-link">contacto@winklerltda.cl</a>
+                                        </td>
+                                    </tr>
+                                    <tr class="bg-gray-750"> 
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Formalina tamponada 10%</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Fijador primario</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, 🔬 Diprolab Ltda., 🔬 Farmalatina Ltda., 🔬 Importadora Soviquim Ltda, 🔬 RSlab, 🔬 Winkler Ltda.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos generales AMILAB, Diprolab, Farmalatina, Soviquim, RSlab, Winkler)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Fijadores alternativos (Bouin, Alcohol 70%)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Tejidos pequenos, fijación</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, 🔬 Farmalatina Ltda (alcohol), 🔬 Importadora Soviquim Ltda (alcohol), 🔬 Winkler Ltda. (para alcohol).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos generales AMILAB, Farmalatina, Soviquim, Winkler)</td>
+                                    </tr>
+                                
+                                    <tr class="bg-gray-700 category-row">
+                                        <th colspan="4" class="px-4 py-3 text-left text-sm font-semibold text-gray-100">Reactivos de Procesamiento</th>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Reactivos de Procesamiento (General)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Deshidratación, aclaramiento, infiltración</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, 🔬 Diprolab Ltda., 🔬 Farmalatina Ltda., 🔬 Importadora Soviquim Ltda, 🔬 Newpath Chile, 🔬 Winkler Ltda.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos generales AMILAB, Diprolab, Farmalatina, Soviquim, Newpath, Winkler)</td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Etanol 70%, 95%, absoluto</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Deshidratación gradual y completa</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, 🔬 Diprolab Ltda., 🔬 Farmalatina Ltda., 🔬 Importadora Soviquim Ltda, 🔬 RSlab, 🔬 Winkler Ltda.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300"><a href="https://winklerltda.cl" target="_blank" class="contact-link">Winkler: winklerltda.cl</a><br/>(Ver contactos AMILAB, Diprolab, Farmalatina, Soviquim, RSlab)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Xileno grado histológico</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Aclaramiento</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, 🔬 Importadora Soviquim Ltda., 🔬 Newpath Chile, 🔬 Winkler Ltda.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300"><a href="https://newpath.cl" target="_blank" class="contact-link">Newpath Chile: newpath.cl</a>, <a href="mailto:contacto@newpath.cl" class="contact-link">contacto@newpath.cl</a>, Tel: <a href="tel:6003660400" class="contact-link">600 3660 400</a> / <a href="tel:+56226213426" class="contact-link">+56226213426</a><br/> (Ver contactos AMILAB, Soviquim, Winkler)</td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Sustituto xileno (opcional)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Aclaramiento menos tóxico</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, 🔬 Newpath Chile</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos generales)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Parafina histológica</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Infiltración, Medios de inclusión</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, 🔬 Diprolab Ltda., 🔬 Fermelo Biotec, 🔬 Mundolab, 🔬 Newpath Chile.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos generales AMILAB, Diprolab, Mundolab, Newpath Chile)<br/><a href="https://fermelo.cl" target="_blank" class="contact-link">Fermelo Biotec: fermelo.cl</a>, <a href="mailto:contacto@fermelo.cl" class="contact-link">contacto@fermelo.cl</a></td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Parafina bajo punto fusión</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Inclusión tejidos delicados</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, 🔬 Newpath Chile</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos generales)</td>
+                                    </tr>
+                                
+                                    <tr class="bg-gray-700 category-row">
+                                        <th colspan="4" class="px-4 py-3 text-left text-sm font-semibold text-gray-100">Colorantes y Tinción H&E</th>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Colorantes y Tinción H&E (General)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Tinción nuclear (Hematoxilina), Tinción citoplasmática (Eosina)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, 🔬 Importadora Soviquim Ltda., 🔬 Newpath Chile (Leica), 🔬 Winkler Ltda.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                            <a href="https://newpath.cl" target="_blank" class="contact-link">Newpath: newpath.cl</a><br/>
+                                            <a href="https://amilab.cl" target="_blank" class="contact-link">AMILAB: amilab.cl</a><br/>
+                                            <a href="https://winklerltda.cl" target="_blank" class="contact-link">Winkler: winklerltda.cl</a><br/>
+                                            (Ver contacto Soviquim)
+                                        </td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Hematoxilina (Harris o Mayer)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Tinción nuclear</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, 🔬 Newpath Chile (Leica), 🔬 Winkler Ltda.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300"><a href="https://newpath.cl" target="_blank" class="contact-link">Newpath: newpath.cl</a><br/>(Ver contacto AMILAB, Winkler)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Eosina Y alcohólica/acuosa</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Tinción citoplasmática</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, 🔬 Importadora Soviquim Ltda., 🔬 Newpath Chile, 🔬 Winkler Ltda.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos generales)</td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Agua de Scott (azulado)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Viraje azul en tinción</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, Preparación in-house o 🔬 Winkler Ltda.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contacto AMILAB, Winkler si es comercial)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Alcohol ácido 1%</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Control intensidad tinción (Diferenciación)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, Preparación in-house o 🔬 Winkler Ltda.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contacto AMILAB, Winkler si es comercial)</td>
+                                    </tr>
+                                
+                                    <tr class="bg-gray-700 category-row">
+                                        <th colspan="4" class="px-4 py-3 text-left text-sm font-semibold text-gray-100">Consumibles y Fungibles</th>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Consumibles y Fungibles (General)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Preparación y montaje de láminas</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, 🔬 Arquimed Ltda., 🔬 Bioquímica.cl, 🔬 Dilaco, 🔬 Dimerco Chile, 🔬 Diprolab Ltda., 🔬 Farmalatina Ltda., 🔬 Fermelo Biotec, 🔬 Mundolab, 🔬 RSlab.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                            <a href="mailto:ventas@mundolab.cl" class="contact-link">Mundolab: ventas@mundolab.cl</a>, <a href="https://wa.me/56953639718" target="_blank" class="contact-link">WhatsApp: +569 5363 9718</a><br/>
+                                            <a href="https://www.bioquimica.cl" target="_blank" class="contact-link">Bioquímica.cl</a>: <a href="mailto:ventas@bioquimica.cl" class="contact-link">ventas@bioquimica.cl</a>, <a href="tel:+56222252583" class="contact-link">+56 2 2225 2583</a><br/>
+                                            <a href="https://rslab.cl" target="_blank" class="contact-link">RSlab: rslab.cl</a>, <a href="tel:+56992401711" class="contact-link">+569 92401711</a>, <a href="mailto:ventas@rslab.cl" class="contact-link">ventas@rslab.cl</a><br/>
+                                            <a href="https://www.dilaco.com" target="_blank" class="contact-link">Dilaco: dilaco.com</a>, <a href="mailto:ventas@dilaco.com" class="contact-link">ventas@dilaco.com</a><br/>
+                                            <a href="https://fermelo.cl" target="_blank" class="contact-link">Fermelo Biotec: fermelo.cl</a>, <a href="mailto:contacto@fermelo.cl" class="contact-link">contacto@fermelo.cl</a><br/>
+                                            (Ver contactos AMILAB, Arquimed, Dimerco, Diprolab, Farmalatina)
+                                        </td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Casetes inclusión</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Contener tejido durante procesamiento/inclusión</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, 🔬 Bioquímica.cl, 🔬 Diprolab Ltda., 🔬 Mundolab, 🔬 Newpath Chile.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                            (Ver contactos generales)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Moldes metálicos</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Moldear bloque de parafina</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, 🔬 Diprolab Ltda., 🔬 Mundolab, 🔬 Newpath Chile.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300"><a href="mailto:ventas@mundolab.cl" class="contact-link">Mundolab: ventas@mundolab.cl</a><br/>(Ver contactos AMILAB, Diprolab, Newpath)</td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Portaobjetos adherentes</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Montar cortes de tejido</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, 🔬 Bioquímica.cl, 🔬 Diprolab Ltda., 🔬 Mundolab, 🔬 RSlab.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                            (Ver contactos generales)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Cubreobjetos</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Cubrir muestra en portaobjetos (montaje final)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, 🔬 Bioquímica.cl, 🔬 Diprolab Ltda., 🔬 Mundolab, 🔬 RSlab.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                            (Ver contactos generales)
+                                        </td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Cuchillas desechables micrótomo</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Obtener cortes de tejido</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, 🔬 Diprolab Ltda., 🔬 Mundolab, 🔬 Newpath Chile, 🔬 Prolab Chile.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos generales)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Filtros HEPA campana</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Filtración vapores en campana</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Proveedores de equipos (🔬 Arquimed, 🔬 Dimerco, 🔬 HES, 🔬 LTech)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos generales de equipos)</td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Resina sintética / Medios de montaje</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Medio de montaje final</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 AMILAB, 🔬 Diprolab Ltda., 🔬 Fermelo Biotec (Histomount), 🔬 Newpath Chile, 🔬 Winkler Ltda.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos generales AMILAB, Diprolab, Newpath, Winkler)<br/><a href="https://fermelo.cl" target="_blank" class="contact-link">Fermelo Biotec: fermelo.cl</a></td>
+                                    </tr>
+                                
+                                    <tr class="bg-gray-700 category-row">
+                                        <th colspan="4" class="px-4 py-3 text-left text-sm font-semibold text-gray-100">Equipos Principales (Histología)</th>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Equipos Principales (General)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Procesamiento y preparación de muestras</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 Arquimed Ltda., 🔬 Dimerco Chile, 🔬 Kalstein Chile, 🔬 Newpath Chile (Leica), 🔬 Prolab Chile (Sakura).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                            <a href="https://newpath.cl" target="_blank" class="contact-link">Newpath: newpath.cl</a>, <a href="mailto:contacto@newpath.cl" class="contact-link">contacto@newpath.cl</a>, <a href="tel:6003660400" class="contact-link">600 3660 400</a> / <a href="tel:+56226213426" class="contact-link">+56226213426</a><br/>
+                                            <a href="https://prolabchile.com" target="_blank" class="contact-link">Prolab Chile: prolabchile.com</a>, <a href="mailto:prolab@prolab.cl" class="contact-link">prolab@prolab.cl</a>, <a href="tel:+56226958404" class="contact-link">+56226958404</a><br/>
+                                            <a href="https://www.dimerco.cl" target="_blank" class="contact-link">Dimerco: dimerco.cl</a>, <a href="tel:+56227532053" class="contact-link">+56227532053</a><br/>
+                                            <a href="https://arquimed.cl" target="_blank" class="contact-link">Arquimed: arquimed.cl</a>, <a href="mailto:atencionalcliente@arquimed.cl" class="contact-link">atencionalcliente@arquimed.cl</a>, <a href="tel:+56226074000" class="contact-link">+56 2 2607 4000</a><br/>
+                                            <a href="https://kalstein.cl" target="_blank" class="contact-link">Kalstein: kalstein.cl</a>, <a href="mailto:sales@kalstein.com" class="contact-link">sales@kalstein.com</a>
+                                        </td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Procesador de tejidos automático</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Procesamiento automático</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 Arquimed Ltda., 🔬 Kalstein Chile, 🔬 Newpath Chile (Leica TP1020), 🔬 Prolab Chile (Sakura VP1).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                           (Ver arriba para Newpath, Prolab, Arquimed, Kalstein)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Micrótomo rotatorio</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Obtención de cortes (Microtomía)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 Arquimed Ltda., 🔬 Dimerco Chile, 🔬 Kalstein Chile, 🔬 Newpath Chile (HistoCore BIOCUT), 🔬 Prolab Chile.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300"><a href="https://newpath.cl" target="_blank" class="contact-link">Newpath: newpath.cl</a><br/>(Ver contactos Dimerco, Prolab, Arquimed, Kalstein)</td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Estación de inclusión</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Inclusión de tejido en parafina</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 Arquimed Ltda., 🔬 Dimerco Chile, 🔬 Kalstein Chile, 🔬 Newpath Chile (HistoCore Arcadia), 🔬 Prolab Chile.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300"><a href="https://newpath.cl" target="_blank" class="contact-link">Newpath: newpath.cl</a><br/>(Ver contactos Dimerco, Prolab, Arquimed, Kalstein)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Baño de flotación</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Extender cortes de tejido</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 Arquimed Ltda., 🔬 Dimerco Chile, 🔬 Kalstein Chile, 🔬 Newpath Chile (HistoCore Water Bath), 🔬 RSlab.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300"><a href="https://newpath.cl" target="_blank" class="contact-link">Newpath: newpath.cl</a><br/>(Ver contactos Dimerco, RSlab, Arquimed, Kalstein)</td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Tinción automática (opcional)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Tinción de láminas en volumen</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 Arquimed Ltda., 🔬 Newpath Chile (HistoCore SPECTRA), 🔬 Prolab Chile.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300"><a href="https://newpath.cl" target="_blank" class="contact-link">Newpath: newpath.cl</a><br/>(Ver contacto Prolab, Arquimed)</td>
+                                    </tr>
+                                
+                                    <tr class="bg-gray-700 category-row">
+                                        <th colspan="4" class="px-4 py-3 text-left text-sm font-semibold text-gray-100">Equipos Complementarios (Histología)</th>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Equipos Complementarios (General)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Funciones de apoyo y seguridad</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 Arquimed Ltda., 🔬 Bioquimica.cl, 🔬 Dimerco Chile, 🔬 Farmalatina, 🔬 HES, 🔬 Kalstein Chile, 🔬 LTech Chile, 🔬 Mundolab, 🔬 RSlab.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                            <a href="mailto:ventas@mundolab.cl" class="contact-link">Mundolab: ventas@mundolab.cl</a>, <a href="https://wa.me/56953639718" target="_blank" class="contact-link">WhatsApp: +569 5363 9718</a><br/>
+                                            <a href="https://farmalatina.cl" target="_blank" class="contact-link">Farmalatina: farmalatina.cl</a>, <a href="tel:+56228385000" class="contact-link">+56 2 2838 5000</a><br/>
+                                            <a href="https://hesltda.cl" target="_blank" class="contact-link">HES Limitada: hesltda.cl</a>, <a href="tel:228694040" class="contact-link">228694040</a>, <a href="mailto:ventas@hesltda.cl" class="contact-link">ventas@hesltda.cl</a><br/>
+                                            (Ver contactos Arquimed, Bioquimica.cl, Dimerco, Kalstein, LTech, RSlab)
+                                        </td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Campana de extracción</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Protección contra vapores (xileno/formol)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 Arquimed Ltda., 🔬 Dimerco Chile, 🔬 HES, 🔬 Incitec, 🔬 Kalstein Chile, 🔬 LTech Chile.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos generales de equipos)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Estufa secado</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Secado de portaobjetos</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 Arquimed Ltda., 🔬 Dimerco Chile, 🔬 HES, 🔬 Kalstein Chile, 🔬 LTech Chile, 🔬 RSlab.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos generales de equipos)</td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Refrigerador -20°C</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Almacén colorantes y reactivos</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 Arquimed Ltda., 🔬 Dimerco Chile, 🔬 Farmalatina, 🔬 HES, 🔬 Kalstein Chile, 🔬 LTech Chile, 🔬 RSlab.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos generales de equipos)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Balanza analítica</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Preparación de reactivos</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 Arquimed Ltda., 🔬 Bioquimica.cl, 🔬 Dimerco Chile, 🔬 HES, 🔬 Kalstein Chile, 🔬 LTech Chile, 🔬 RSlab.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos generales de equipos)</td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">pH metro</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Control de calidad de reactivos</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 Arquimed Ltda., 🔬 Bioquimica.cl, 🔬 Dimerco Chile, 🔬 HES, 🔬 Kalstein Chile, 🔬 LTech Chile, 🔬 RSlab.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos generales de equipos)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Cubreslipadora</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Montaje automático de cubreobjetos</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 Arquimed Ltda., 🔬 Newpath Chile, 🔬 Prolab Chile.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos Arquimed, Newpath, Prolab)</td>
+                                    </tr>
+                                
+                                    <tr class="bg-gray-700 category-row">
+                                        <th colspan="4" class="px-4 py-3 text-left text-sm font-semibold text-gray-100">Microscopía Docente (Histología)</th>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Microscopía Docente (General)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Observación de láminas para enseñanza</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 Arquimed Ltda., 🔬 BioImaging Chile Spa, 🔬 Dimerco Chile, 🔬 Kalstein Chile, 🔬 LTech Chile, 🔬 Newpath Chile (Leica), 🔬 RSlab.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                            <a href="https://newpath.cl" target="_blank" class="contact-link">Newpath: newpath.cl</a><br/>
+                                            <a href="https://rslab.cl" target="_blank" class="contact-link">RSlab: rslab.cl</a>, <a href="tel:+56992401711" class="contact-link">+56992401711</a><br/>
+                                            <a href="https://bioimagingchile.com" target="_blank" class="contact-link">BioImaging: bioimagingchile.com</a>, <a href="mailto:contacto@bioimagingchile.com" class="contact-link">contacto@bioimagingchile.com</a>, <a href="tel:+56963345024" class="contact-link">+56963345024</a><br/>
+                                            (Ver contactos Arquimed, Dimerco, Kalstein, LTech)
+                                        </td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Microscopios binoculares/triocular</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Visualización de láminas</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 Arquimed Ltda., 🔬 BioImaging Chile Spa, 🔬 Bioquimica.cl, 🔬 Dimerco Chile, 🔬 Kalstein Chile, 🔬 LTech Chile, 🔬 Newpath Chile (Leica), 🔬 RSlab.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300"><a href="https://newpath.cl" target="_blank" class="contact-link">Newpath: newpath.cl</a><br/>(Ver contactos Arquimed, BioImaging, Bioquimica.cl, Dimerco, Kalstein, LTech, RSlab)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-100">Proyector/pantalla</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Docencia grupal</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🔬 Arquimed Ltda., Proveedores de equipos audiovisuales y de oficina.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contacto Arquimed)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-6 p-6 bg-gray-700 rounded-md">
+                            <h3 class="text-lg font-semibold text-gray-100 mb-3">Proveedores Principales en Chile (Histología)</h3>
+                            <p class="text-sm text-gray-300 mb-4">
+                                Resumen de proveedores clave para técnicas de histología, ordenados alfabéticamente:
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 text-sm">
+                                <div>
+                                    <h4 class="font-semibold text-teal-300">🔬 AMILAB</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://amilab.cl" target="_blank" class="contact-link">amilab.cl</a>, Tel: <a href="tel:+56222878707" class="contact-link">+56222878707</a>, Email: <a href="mailto:amilab@amilab.cl" class="contact-link">amilab@amilab.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-teal-300">🔬 Arquimed Ltda.</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://arquimed.cl" target="_blank" class="contact-link">arquimed.cl</a>, Tel: <a href="tel:+56226074000" class="contact-link">+56226074000</a>, Email: <a href="mailto:atencionalcliente@arquimed.cl" class="contact-link">atencionalcliente@arquimed.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-teal-300">🔬 BioImaging Chile Spa</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://bioimagingchile.com" target="_blank" class="contact-link">bioimagingchile.com</a>, Tel: <a href="tel:+56963345024" class="contact-link">+56963345024</a>, Email: <a href="mailto:contacto@bioimagingchile.com" class="contact-link">contacto@bioimagingchile.com</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-teal-300">🔬 Bioquímica.cl</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://www.bioquimica.cl" target="_blank" class="contact-link">bioquimica.cl</a>, Tel: <a href="tel:+56222252583" class="contact-link">+56222252583</a>, Email: <a href="mailto:ventas@bioquimica.cl" class="contact-link">ventas@bioquimica.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-teal-300">🔬 Dimerco Chile</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://www.dimerco.cl" target="_blank" class="contact-link">dimerco.cl</a>, Tel: <a href="tel:+56227532053" class="contact-link">+56227532053</a>, Email: <a href="mailto:contacto@dimerco.cl" class="contact-link">contacto@dimerco.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-teal-300">🔬 Diprolab Ltda.</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://diprolab.cl" target="_blank" class="contact-link">diprolab.cl</a>, Tel: <a href="tel:+56412620730" class="contact-link">(+56 41) 262 0730</a>, Email: <a href="mailto:ventas@diprolab.cl" class="contact-link">ventas@diprolab.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-teal-300">🔬 Farmalatina Ltda.</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://farmalatina.cl" target="_blank" class="contact-link">farmalatina.cl</a>, Tel: <a href="tel:+56228385000" class="contact-link">+56228385000</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-teal-300">🔬 Fermelo Biotec</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://fermelo.cl" target="_blank" class="contact-link">fermelo.cl</a>, Email: <a href="mailto:contacto@fermelo.cl" class="contact-link">contacto@fermelo.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-teal-300">🔬 HES Limitada</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://hesltda.cl" target="_blank" class="contact-link">hesltda.cl</a>, Tel: <a href="tel:228694040" class="contact-link">228694040</a>, Email: <a href="mailto:ventas@hesltda.cl" class="contact-link">ventas@hesltda.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-teal-300">🔬 Importadora Soviquim Ltda.</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://soviquim.cl" target="_blank" class="contact-link">soviquim.cl</a>, Tel: <a href="tel:+56227738684" class="contact-link">+56227738684</a>, Email: <a href="mailto:ventas@soviquim.cl" class="contact-link">ventas@soviquim.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-teal-300">🔬 Incitec</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://www.incitec.cl" target="_blank" class="contact-link">incitec.cl</a>, Email: <a href="mailto:pfuentes@incitec.cl" class="contact-link">pfuentes@incitec.cl</a>, Tel: <a href="tel:+56264691054" class="contact-link">+56264691054</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-teal-300">🔬 Kalstein Chile</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://kalstein.cl" target="_blank" class="contact-link">kalstein.cl</a>, Email: <a href="mailto:sales@kalstein.com" class="contact-link">sales@kalstein.com</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-teal-300">🔬 LTech Chile</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://ltech.cl" target="_blank" class="contact-link">ltech.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-teal-300">🔬 Mundolab</h4>
+                                    <p class="text-xs text-gray-400">Email: <a href="mailto:ventas@mundolab.cl" class="contact-link">ventas@mundolab.cl</a>, WhatsApp: <a href="https://wa.me/56953639718" target="_blank" class="contact-link">+569 5363 9718</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-teal-300">🔬 Newpath Chile</h4>
+                                    <p class="text-xs text-gray-400">Leica. Web: <a href="https://newpath.cl" target="_blank" class="contact-link">newpath.cl</a>, Tel: <a href="tel:6003660400" class="contact-link">600 3660 400</a>, Email: <a href="mailto:contacto@newpath.cl" class="contact-link">contacto@newpath.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-teal-300">🔬 Prolab Chile</h4>
+                                    <p class="text-xs text-gray-400">Sakura. Web: <a href="https://prolabchile.com" target="_blank" class="contact-link">prolabchile.com</a>, Tel: <a href="tel:+56226958404" class="contact-link">+56226958404</a>, Email: <a href="mailto:prolab@prolab.cl" class="contact-link">prolab@prolab.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-teal-300">🔬 RSlab</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://rslab.cl" target="_blank" class="contact-link">rslab.cl</a>, Tel: <a href="tel:+56992401711" class="contact-link">+56992401711</a>, Email: <a href="mailto:ventas@rslab.cl" class="contact-link">ventas@rslab.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-teal-300">🔬 Winkler Ltda.</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://winklerltda.cl" target="_blank" class="contact-link">winklerltda.cl</a>, Tel: <a href="tel:+56224826500" class="contact-link">+56224826500</a>, Email: <a href="mailto:contacto@winklerltda.cl" class="contact-link">contacto@winklerltda.cl</a></p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-6">
+                                Tenga en cuenta que algunos proveedores distribuyen productos de marcas premium. Las fuentes recomiendan una configuración mixta. Se aconseja contactar directamente a los proveedores para obtener cotizaciones exactas y verificar la disponibilidad.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="westernblot" class="page-section mb-12 hidden">
+                <div class="bg-gray-900 p-6 md:p-8 rounded-xl shadow-lg">
+                    <div class="m-0 p-0 bg-gray-900 rounded-lg">
+                        <h2 class="text-2xl md:text-3xl font-semibold text-sky-400 mb-6">🧪 Western Blot: Materiales, Equipos y Proveedores</h2>
+                        <div class="mb-6">
+                            <input type="text" id="westernBlotFilterInput" placeholder="Buscar en Material/Equipo..." class="w-full p-3 bg-gray-700 text-gray-200 border border-gray-600 rounded-lg focus:ring-sky-500 focus:border-sky-500 placeholder-gray-400">
+                        </div>
+                        <div class="overflow-x-auto responsive-table westernblot-table">
+                             <table class="min-w-full divide-y divide-gray-700">
+                                <thead class="bg-sky-700">
+                                    <tr>
+                                        <th scope="col" class="sticky-header px-4 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">Material/Equipo</th>
+                                        <th scope="col" class="sticky-header px-4 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">Función/Uso Principal</th>
+                                        <th scope="col" class="sticky-header px-4 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">Proveedores en Chile (Ejemplos)</th>
+                                        <th scope="col" class="sticky-header px-4 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">Información de Contacto del Proveedor (Ejemplos)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-gray-800 divide-y divide-gray-700">
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Buffer de Lisis (ej. RIPA)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Extrae proteínas de la muestra (lisis celular). Puede prepararse o comprarse listo.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧪 Biosonda S.A., 🧪 Importadora Soviquim Ltda (componentes), 🧪 LaboClub, 🧪 Merck Chile (Sigma-Aldrich), 🧪 Thermo Scientific (vía GrupoBios, Gene X-Press, SAGU Chile), 🧪 Winkler Ltda. (componentes).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Merck Chile: <a href="tel:+56223400000" class="contact-link">+56223400000</a>. Thermo (vía GrupoBios, Gene X-Press, SAGU Chile). LaboClub. Winkler. Soviquim. Biosonda.</td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Inhibidores de Proteasas</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Protegen las proteínas de la degradación durante la lisis. Se añaden frescos al buffer.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧪 Biosonda S.A., 🧪 Merck (Sigma-Aldrich, Roche), 🧪 Thermo Halt (vía GrupoBios, Gene X-Press).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Merck Chile. Thermo (vía GrupoBios, Gene X-Press). <a href="https://www.biosonda.cl" target="_blank" class="contact-link">Biosonda: biosonda.cl</a>, <a href="mailto:ventas@biosonda.cl" class="contact-link">ventas@biosonda.cl</a>, <a href="tel:+56222096770" class="contact-link">+56222096770</a>.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Buffer de Carga Laemmli 4X</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Desnaturaliza las proteínas y las prepara para la electroforesis. Se le añade agente reductor (β-mercaptoetanol).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧪 Bio-Rad (vía GrupoBios, Interquimica), Preparado en laboratorio (🧪 Winkler Ltda. para componentes).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Interquimica (Bio-Rad). GrupoBios. Winkler.</td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Kit Cuantificación de Proteínas</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Determina la concentración de proteínas en la muestra (Métodos Bradford o BCA).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧪 Bio-Rad (Bradford - vía GrupoBios, Interquimica), 🧪 Biosonda S.A., 🧪 Thermo Pierce (BCA - vía Gene X-Press, GrupoBios, SAGU Chile).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Ver contactos distribuidores Bio-Rad y Thermo. Biosonda.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Micropipetas y Puntas</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Permiten pipetear volúmenes precisos de muestras y reactivos. Las puntas son descartables.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧪 Arquimed Ltda., 🧪 Bio-Rad (vía Interquimica), 🧪 Dimerco Chile, 🧪 Diprolab Ltda., 🧪 Eppendorf, 🧪 LaboClub, 🧪 Medica-Tec de Chile S.A., 🧪 RSlab, 🧪 Winkler Ltda.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Eppendorf Chile. Dimerco. RSlab. LaboClub. Winkler. Arquimed. Diprolab. Medica-Tec.</td>
+                                    </tr>
+                                     <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Reactivos para Gel (Acrilamida, etc.)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Monómeros (Acrilamida/Bis) y catalizadores (APS, TEMED) para preparar geles de poliacrilamida.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧪 Bio-Rad (vía Interquimica), 🧪 Dimerco Chile, 🧪 Importadora Soviquim Ltda., 🧪 Merck (Sigma-Aldrich), 🧪 Winkler Ltda. (componentes).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Interquimica (Bio-Rad). Merck Chile. Winkler Ltda. Dimerco Chile. Soviquim.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Tampón de Corrida SDS-PAGE</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Llena la cámara de electroforesis, provee conductividad y pH estable.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧪 Bio-Rad (conc. 10X - vía Interquimica), 🧪 Thermo (conc. 10X - vía GrupoBios), 🧪 Winkler Ltda. (componentes: Tris, Glicina, SDS).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Interquimica (Bio-Rad). GrupoBios (Thermo). Winkler Ltda.</td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Marcador de Peso Molecular (Ladder)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Mezcla de proteínas de peso conocido para monitorear la corrida y estimar tamaños.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧪 Andes Import (Nippon Genetics BlueStar), 🧪 Bio-Rad Precision Plus (vía Interquimica), 🧪 Biolab Chile (NEB), 🧪 Bioadvance (NEB), 🧪 Biosonda S.A., 🧪 Thermo PageRuler (vía Gene X-Press, GrupoBios).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                            Gene X-Press. BioAxis. Interquimica (Bio-Rad). Biolab Chile (NEB). Bioadvance (NEB). Andes Import. Biosonda.
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Cámara Electroforesis Vertical</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Contiene el gel y el buffer para separar proteínas por tamaño.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧪 Arquimed Ltda., 🧪 Bio-Rad Mini-PROTEAN (vía GrupoBios, Interquimica), 🧪 Dimerco Chile, 🧪 Kalstein Chile, 🧪 LTech Chile, 🧪 Medica-Tec de Chile S.A., 🧪 RSlab, 🧪 Thermo Mini Gel Tank (vía GrupoBios).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                            Interquimica/GrupoBios (Bio-Rad). GrupoBios (Thermo). Dimerco Chile. LTech Chile. RSlab. Arquimed. Kalstein. Medica-Tec.
+                                        </td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Fuente de Poder DC</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Suministra voltaje/corriente constante.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧪 Arquimed Ltda., 🧪 Bio-Rad PowerPac (vía GrupoBios, Interquimica), 🧪 Dimerco Chile, 🧪 Kalstein Chile, 🧪 LTech Chile.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                            Interquimica/GrupoBios (Bio-Rad). Dimerco. LTech. Arquimed. Kalstein.
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Membrana de Transferencia (PVDF/Nitrocelulosa)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Soporte sólido para inmovilizar proteínas.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧪 Bio-Rad (Immun-Blot - vía GrupoBios, Interquimica), 🧪 Biosonda S.A., 🧪 Cytiva (Amersham Protran - vía Gene X-Press, GrupoBios), 🧪 Merck (Immobilon-P PVDF).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                            Merck Chile. Gene X-Press/GrupoBios (Cytiva). Interquimica/GrupoBios (Bio-Rad). Biosonda.
+                                        </td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Tampón de Transferencia</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Medio buffer con metanol para transferencia.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧪 Bio-Rad (conc. - vía GrupoBios, Interquimica), Preparado (🧪 Winkler Ltda. para componentes).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Winkler Ltda. Interquimica/GrupoBios (Bio-Rad).</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Sistema de Transferencia</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Equipo para mover proteínas del gel a la membrana (húmedo/semiseco).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧪 Arquimed Ltda., 🧪 Bio-Rad (Mini Trans-Blot, Trans-Blot Turbo - vía GrupoBios, Interquimica), 🧪 Kalstein Chile, 🧪 LTech Chile, 🧪 Thermo iBlot (vía GrupoBios).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                            Interquimica/GrupoBios (Bio-Rad). GrupoBios (Thermo). LTech Chile. Arquimed. Kalstein.
+                                        </td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Solución de Bloqueo</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Ocupa sitios inespecíficos (Leche descremada, BSA).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧪 Bio-Rad Blocker (vía GrupoBios, Interquimica), BSA (🧪 Importadora Soviquim, 🧪 Merck, 🧪 Winkler Ltda.), Leche (Supermercados).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Winkler Ltda. Merck Chile. Soviquim. Interquimica/GrupoBios (Bio-Rad).</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Buffer de Lavado (TBST/PBST)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Elimina anticuerpos no unidos (con Tween-20).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧪 Bio-Rad (conc. - vía GrupoBios, Interquimica), Preparado (🧪 Winkler Ltda. para sales, Tween).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Winkler Ltda. Interquimica/GrupoBios (Bio-Rad).</td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Anticuerpo Primario</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Reconoce específicamente la proteína de interés.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧪 Abcam (vía BioAxis Ltda.), 🧪 Biosonda S.A., 🧪 Cell Signaling (CST - vía Andes Biotechnologies), 🧪 Merck (Sigma), 🧪 Rockland (vía Gene X-Press), 🧪 Santa Cruz (vía Andes Biotechnologies), 🧪 Thermo Pierce (vía GrupoBios).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                            <a href="https://www.bioaxis.cl" target="_blank" class="contact-link">BioAxis: bioaxis.cl</a>. Gene X-Press. GrupoBios. Merck/Sigma. Andes Biotechnologies. BIOSONDA.
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Anticuerpo Secundario (conjugado HRP)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Se une al primario, marcado con enzima HRP.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Mismos proveedores que anticuerpos primarios.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Distribuidores locales de anticuerpos.</td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Sustrato Quimioluminiscente (ECL)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Reactivo que produce luz con HRP.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧪 Andes Import (Cyanagen WESTAR-ONE), 🧪 Biosonda S.A., 🧪 Cytiva Amersham (ECL - vía Gene X-Press, GrupoBios).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                            Gene X-Press (Cytiva). GrupoBios (Cytiva). Andes Import. Biosonda.
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Sistema Documentación Imagen</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Captura la señal de luz (Chemidoc, Transiluminador).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧪 Arquimed Ltda., 🧪 Bio-Rad ChemiDoc (vía GrupoBios, Interquimica), 🧪 BioImaging Chile Spa, 🧪 Kalstein Chile, 🧪 LTech Chile (Transiluminador UV), 🧪 Medica-Tec de Chile S.A.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                            Interquimica/GrupoBios (Bio-Rad). LTech Chile. BioImaging Chile. Arquimed. Kalstein. Medica-Tec.
+                                        </td>
+                                    </tr>
+                                    <tr class="bg-gray-750">
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Computador y Software Análisis</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Analizar imágenes y cuantificar bandas.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Software gratuito (ImageJ), Software incluido (ej. Bio-Rad ImageLab).</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Incluido con equipos (Bio-Rad). Descarga online (ImageJ).</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Materiales Generales (Guantes, Tubos, etc.)</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Materiales de uso común en laboratorio.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧪 AMILAB, 🧪 Arquimed Ltda., 🧪 Bioquimica.cl, 🧪 Dilaco, 🧪 Dimerco Chile, 🧪 Diprolab Ltda., 🧪 Farmalatina Ltda., 🧪 LaboClub, 🧪 RSlab, 🧪 Winkler Ltda.</td>
+                                        <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Distribuidores generales.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-6 p-6 bg-gray-700 rounded-md">
+                            <h3 class="text-lg font-semibold text-gray-100 mb-3">Proveedores Principales en Chile (Western Blot)</h3>
+                             <p class="text-sm text-gray-300 mb-4">
+                                Resumen de proveedores clave para Western Blot, ordenados alfabéticamente:
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 text-sm">
+                                <div>
+                                    <h4 class="font-semibold text-sky-300">🧪 Andes Import</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://andesimport.cl" target="_blank" class="contact-link">andesimport.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-sky-300">🧪 Arquimed Ltda.</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://arquimed.cl" target="_blank" class="contact-link">arquimed.cl</a>, Tel: <a href="tel:+56226074000" class="contact-link">+56 2 2607 4000</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-sky-300">🧪 BioImaging Chile Spa</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://bioimagingchile.com" target="_blank" class="contact-link">bioimagingchile.com</a>, Tel: <a href="tel:+56963345024" class="contact-link">+56963345024</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-sky-300">🧪 BIOSONDA S.A.</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://www.biosonda.cl/" target="_blank" class="contact-link">biosonda.cl</a>, Tel: <a href="tel:+56222096770" class="contact-link">+56222096770</a>, Email: <a href="mailto:ventas@biosonda.cl" class="contact-link">ventas@biosonda.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-sky-300">🧪 Dimerco Chile</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://www.dimerco.cl" target="_blank" class="contact-link">dimerco.cl</a>, Tel: <a href="tel:+56227532053" class="contact-link">+56227532053</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-sky-300">🧪 Gene X-Press</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://genexpress.cl" target="_blank" class="contact-link">genexpress.cl</a>, Email: <a href="mailto:info@genex.cl" class="contact-link">info@genex.cl</a>, Tel: <a href="tel:+56222454805" class="contact-link">+56222454805</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-sky-300">🧪 GrupoBios S.A.</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://www.grupobios.cl" target="_blank" class="contact-link">grupobios.cl</a>, Email: <a href="mailto:ventas@grupobios.cl" class="contact-link">ventas@grupobios.cl</a>, Tel: <a href="tel:+56224736100" class="contact-link">+56224736100</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-sky-300">🧪 INCITEC CHILE SpA</h4>
+                                    <p class="text-xs text-gray-400">Email: <a href="mailto:pfuentes@incitec.cl" class="contact-link">pfuentes@incitec.cl</a>, Tel: <a href="tel:+56264691054" class="contact-link">+56 2 6469 1054</a>, Web: <a href="https://www.incitec.cl" target="_blank" class="contact-link">incitec.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-sky-300">🧪 Interquimica (Distribuidor Bio-Rad)</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://www.interquimica.cl" target="_blank" class="contact-link">interquimica.cl</a>, Tel: <a href="tel:+56942786268" class="contact-link">+56942786268</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-sky-300">🧪 LTech Chile</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://ltech.cl" target="_blank" class="contact-link">ltech.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-sky-300">🧪 Medica-Tec de Chile S.A.</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://www.medica-tec.com" target="_blank" class="contact-link">medica-tec.com</a>, Tel: <a href="tel:+56224261830" class="contact-link">+56224261830</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-sky-300">🧪 Merck Chile (Sigma-Aldrich)</h4>
+                                    <p class="text-xs text-gray-400">Tel: <a href="tel:+56223400000" class="contact-link">+56223400000</a>, Email: <a href="mailto:mqch@merckgroup.com" class="contact-link">mqch@merckgroup.com</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-sky-300">🧪 Winkler Ltda.</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://winklerltda.cl" target="_blank" class="contact-link">winklerltda.cl</a>, Tel: <a href="tel:+56224826500" class="contact-link">+56224826500</a></p>
+                                </div>
+                            </div>
+                             <p class="text-xs text-gray-400 mt-6">
+                                Tenga en cuenta que algunos proveedores distribuyen productos de marcas premium. Las fuentes recomiendan una configuración mixta. Se aconseja contactar directamente a los proveedores para obtener cotizaciones exactas y verificar la disponibilidad.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="biologiamolecular" class="page-section mb-12 hidden">
+                <div class="bg-gray-900 p-6 md:p-8 rounded-xl shadow-lg">
+                    <div class="m-0 p-0 bg-gray-900 rounded-lg">
+                        <h2 class="text-2xl md:text-3xl font-semibold text-emerald-400 mb-6">🧬 Electroforesis de ADN, PCR y Huella Genética</h2>
+                        <div class="mb-6">
+                            <input type="text" id="molbioFilterInput" placeholder="Buscar en Material/Insumo..." class="w-full p-3 bg-gray-700 text-gray-200 border border-gray-600 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400">
+                        </div>
+                        <div id="molbioTabsContainer">
+                            <div class="border-b border-gray-700">
+                                <nav class="-mb-px flex space-x-4" aria-label="Tabs">
+                                    <button type="button" id="tab-pcr-btn" role="tab" aria-controls="panel-pcr-molbio" aria-selected="true"
+                                            class="molbio-tab-button whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm">
+                                        PCR
+                                    </button>
+                                    <button type="button" id="tab-electroforesis-btn" role="tab" aria-controls="panel-electroforesis-molbio" aria-selected="false"
+                                            class="molbio-tab-button whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm">
+                                        Electroforesis de ADN
+                                    </button>
+                                    <button type="button" id="tab-huella-btn" role="tab" aria-controls="panel-huella-molbio" aria-selected="false"
+                                            class="molbio-tab-button whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm">
+                                        Huella Genética
+                                    </button>
+                                </nav>
+                            </div>
+
+                            <div class="mt-4">
+                                <div id="panel-pcr-molbio" role="tabpanel" aria-labelledby="tab-pcr-btn" class="focus:outline-none">
+                                    <div class="overflow-x-auto responsive-table molbio-table">
+                                        <table class="min-w-full divide-y divide-gray-700">
+                                            <thead class="bg-emerald-700">
+                                                <tr>
+                                                    <th scope="col" class="sticky-header px-4 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">Material/Insumo</th>
+                                                    <th scope="col" class="sticky-header px-4 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">Uso/Función</th>
+                                                    <th scope="col" class="sticky-header px-4 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">Proveedor(es) Recomendado(s)</th>
+                                                    <th scope="col" class="sticky-header px-4 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">Contacto del Proveedor</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-gray-800 divide-y divide-gray-700">
+                                                <tr>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Buffers PCR (ej. Buffer 10x, MgCl₂)</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Estabilidad pH / co-factor</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧬 Biolab Chile (NEB), 🧬 Biosonda S.A., 🧬 Importadora Soviquim Ltda., 🧬 Roche Chile, 🧬 TAAG-Genetics (TAAG-ls), 🧬 Thermo Fisher (vía Gene X-Press, GrupoBios, SAGU Chile), 🧬 Winkler Ltda (buffers básicos).</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                                        (Ver contactos Biolab, Biosonda, Soviquim, Roche, Thermo distribuidores, Winkler).<br/>
+                                                        <a href="https://taag-ls.cl" target="_blank" class="contact-link">TAAG-Genetics: taag-ls.cl</a>, <a href="mailto:info@taag-ls.cl" class="contact-link">info@taag-ls.cl</a>
+                                                    </td>
+                                                </tr>
+                                                <tr class="bg-gray-750">
+                                                    <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Enzimas PCR (ej. Taq DNA Polimerasa, polimerasas hot-start)</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Síntesis de ADN / PCR específica</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧬 Bioadvance Technology (NEB), 🧬 Biolab Chile (NEB), 🧬 Promega (vía Biosonda S.A.), 🧬 Roche Chile, 🧬 TAAG-Genetics (TAAG-ls), 🧬 Tecnigen S.A., 🧬 Thermo Fisher (vía Gene X-Press, GrupoBios).</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                                        (Ver contactos Bioadvance, Biolab, Biosonda, Roche, Tecnigen, Thermo distribuidores).<br/>
+                                                        <a href="https://taag-ls.cl" target="_blank" class="contact-link">TAAG-Genetics: taag-ls.cl</a>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">dNTPs Mix (10 mM c/u)</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Sustrato nucleótido / Sustrato síntesis</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧬 Biolab Chile (NEB), 🧬 Biosonda S.A., 🧬 Thermo Fisher (vía Gene X-Press, GrupoBios, SAGU Chile), 🧬 Winkler Ltda.</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos Biolab, Biosonda, Thermo distribuidores, Winkler)</td>
+                                                </tr>
+                                                <tr class="bg-gray-750">
+                                                    <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Primers (Forward y reverse)</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Especificidad</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧬 Biosonda S.A., 🧬 IDT (vía Gene X-Press), Síntesis local/importada, 🧬 Tecnigen S.A.</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos Biosonda, Gene X-Press, Tecnigen).</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Kits Extracción ADN (ej. PureLink Genomic DNA Mini Kit)</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Preparación de muestras (Extracción de ADN)</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧬 Bioadvance Technology (NEB), 🧬 Biolab Chile (NEB), 🧬 Biosonda S.A., 🧬 Lab-Diagnostic, 🧬 Tecnigen S.A., 🧬 Thermo Fisher (vía Gene X-Press, GrupoBios).</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                                        (Ver contactos Bioadvance, Biolab, Biosonda, Lab-Diagnostic, Tecnigen, Thermo distribuidores).
+                                                    </td>
+                                                </tr>
+                                                <tr class="bg-gray-750">
+                                                    <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Agua Grado Biología Molecular</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Libre de DNasas/RNasas</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧬 Andes Import (Corning, Cytiva, MoBio), 🧬 Biosonda S.A., 🧬 Fermelo Biotec, 🧬 Gene X-Press, 🧬 Winkler Ltda.</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos Andes Import, Biosonda, Gene X-Press, Winkler).<br/><a href="https://fermelo.cl" target="_blank" class="contact-link">Fermelo Biotec: fermelo.cl</a></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Consumibles (ej. Tubos PCR, tips filtrados, guantes, plásticos SPL)</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Uso general de laboratorio (específico PCR)</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧬 AMILAB, 🧬 Andes Import, 🧬 Arquimed Ltda., 🧬 Bioquimica.cl, 🧬 Dilaco, 🧬 Dimerco Chile, 🧬 Diprolab Ltda., 🧬 Farmalatina Ltda., 🧬 Fermelo Biotec (SPL Life Sciences), 🧬 RSlab, 🧬 Winkler Ltda.</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                                        (Ver contactos generales de consumibles).<br/><a href="https://fermelo.cl" target="_blank" class="contact-link">Fermelo Biotec (SPL): fermelo.cl</a><br/><a href="https://www.dilaco.com" target="_blank" class="contact-link">Dilaco: dilaco.com</a>
+                                                    </td>
+                                                </tr>
+                                                <tr class="bg-gray-750">
+                                                    <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Termociclador</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Amplificación de ADN</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧬 Arquimed Ltda., 🧬 Del Carpio (Thermo Fisher), 🧬 Dimerco Chile, 🧬 Gene X-Press (Thermo Fisher), 🧬 GrupoBios (Thermo Fisher), 🧬 Kalstein Chile, 🧬 LTech Chile, 🧬 Roche Chile, 🧬 TCL GROUP, 🧬 Tecnigen S.A.</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos de proveedores de equipos)</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div id="panel-electroforesis-molbio" role="tabpanel" aria-labelledby="tab-electroforesis-btn" class="hidden focus:outline-none">
+                                     <div class="overflow-x-auto responsive-table molbio-table">
+                                        <table class="min-w-full divide-y divide-gray-700">
+                                            <thead class="bg-emerald-700">
+                                                <tr>
+                                                    <th scope="col" class="sticky-header px-4 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">Material/Insumo</th>
+                                                    <th scope="col" class="sticky-header px-4 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">Uso/Función</th>
+                                                    <th scope="col" class="sticky-header px-4 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">Proveedor(es) Recomendado(s)</th>
+                                                    <th scope="col" class="sticky-header px-4 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">Contacto del Proveedor</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-gray-800 divide-y divide-gray-700">
+                                                <tr>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Agarosa</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Matriz del gel / Purificación (baja fusión)</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧬 Andes Import, 🧬 Bio-Rad (vía GrupoBios, Interquimica), 🧬 Biosonda S.A., 🧬 Importadora Soviquim Ltda., 🧬 Thermo Fisher (vía Gene X-Press, GrupoBios), 🧬 Winkler Ltda.</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos Andes Import, Bio-Rad distribuidores, Biosonda, Soviquim, Thermo distribuidores, Winkler)</td>
+                                                </tr>
+                                                <tr class="bg-gray-750">
+                                                    <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Buffers de corrida (ej. TAE, TBE)</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Conductividad</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧬 Biosonda S.A., 🧬 Thermo Fisher (vía Gene X-Press, GrupoBios), 🧬 Winkler Ltda (componentes y preparados).</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos Biosonda, Thermo distribuidores, Winkler)</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Marcadores de peso (ej. Ladder 100 bp/1 kb)</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Referencia tamaño</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧬 Andes Import (Nippon Genetics), 🧬 Biolab Chile (NEB), 🧬 Biosonda S.A., 🧬 Thermo Fisher (GeneRuler - vía Gene X-Press, GrupoBios).</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos Andes Import, Biolab, Biosonda, Thermo distribuidores)</td>
+                                                </tr>
+                                                <tr class="bg-gray-750">
+                                                    <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Tintes (ej. GelRed, SYBR Safe, BET)</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Visualización / Visualización segura</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧬 Biosonda S.A., 🧬 Biotium (GelRed via Gene X-Press), 🧬 Thermo (SYBR Safe - vía GrupoBios), 🧬 Winkler (BET, con precaución).</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos Biosonda, Gene X-Press, GrupoBios, Winkler).</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Cubas de Electroforesis Horizontal</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Separación de ADN por tamaño</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧬 Arquimed Ltda., 🧬 Dimerco Chile, 🧬 Interquimica (Bio-Rad), 🧬 Kalstein Chile, 🧬 LTech Chile, 🧬 Medica-Tec de Chile S.A., 🧬 RSlab, 🧬 Tecnigen S.A.</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos generales de equipos)</td>
+                                                </tr>
+                                                <tr class="bg-gray-750">
+                                                    <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Fuentes de Poder</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Suministro eléctrico para corrida</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧬 Arquimed Ltda., 🧬 Dimerco Chile, 🧬 Interquimica (Bio-Rad PowerPac), 🧬 Kalstein Chile, 🧬 LTech Chile, 🧬 Tecnigen S.A.</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos generales de equipos)</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Transiluminador UV/Luz Azul</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Visualización de geles teñidos</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧬 Arquimed Ltda., 🧬 BioImaging Chile Spa, 🧬 Dimerco Chile, 🧬 Interquimica (Bio-Rad), 🧬 Kalstein Chile, 🧬 LTech Chile, 🧬 Medica-Tec de Chile S.A.</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos generales de equipos)</td>
+                                                </tr>
+                                                <tr class="bg-gray-750">
+                                                    <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Consumibles (ej. tips filtrados, guantes, plásticos SPL)</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Uso general de laboratorio</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧬 AMILAB, 🧬 Andes Import, 🧬 Arquimed Ltda., 🧬 Dilaco, 🧬 Dimerco Chile, 🧬 Diprolab Ltda., 🧬 Farmalatina Ltda., 🧬 Fermelo Biotec (SPL Life Sciences), 🧬 RSlab, 🧬 Winkler Ltda.</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos generales de consumibles).<br/><a href="https://fermelo.cl" target="_blank" class="contact-link">Fermelo Biotec (SPL): fermelo.cl</a><br/><a href="https://www.dilaco.com" target="_blank" class="contact-link">Dilaco: dilaco.com</a></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div id="panel-huella-molbio" role="tabpanel" aria-labelledby="tab-huella-btn" class="hidden focus:outline-none">
+                                    <div class="overflow-x-auto responsive-table molbio-table">
+                                        <table class="min-w-full divide-y divide-gray-700">
+                                            <thead class="bg-emerald-700">
+                                                <tr>
+                                                    <th scope="col" class="sticky-header px-4 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">Material/Insumo</th>
+                                                    <th scope="col" class="sticky-header px-4 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">Uso/Función</th>
+                                                    <th scope="col" class="sticky-header px-4 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">Proveedor(es) Recomendado(s)</th>
+                                                    <th scope="col" class="sticky-header px-4 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">Contacto del Proveedor</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-gray-800 divide-y divide-gray-700">
+                                                <tr>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Enzimas de restricción (ej. EcoRI, HindIII, BamHI, PstI, HaeIII)</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Corte específico de ADN (RFLP)</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧬 Bioadvance Technology (NEB), 🧬 Biolab Chile (NEB), 🧬 Promega (vía Biosonda S.A.), 🧬 Thermo Fisher (FastDigest - vía Gene X-Press, GrupoBios), 🧬 Winkler Ltda.</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">
+                                                        (Ver contactos Bioadvance, Biolab, Biosonda, Thermo distribuidores, Winkler)
+                                                    </td>
+                                                </tr>
+                                                <tr class="bg-gray-750">
+                                                    <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Buffers de restricción (ej. 10x CutSmart, Buffer R)</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Óptimo de actividad enzimática</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧬 Bioadvance Technology (NEB), 🧬 Biolab Chile (NEB), 🧬 Promega (vía Biosonda S.A.), 🧬 Thermo Fisher (FastDigest Green Buffer - vía Gene X-Press, GrupoBios).</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos Bioadvance, Biolab, Biosonda, Thermo distribuidores)</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm font-medium text-gray-100">Kits de tipificación STR (si aplica)</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">Análisis de Short Tandem Repeats para identificación</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">🧬 Incitec, 🧬 Promega (vía Biosonda S.A.), 🧬 TCL GROUP, 🧬 Tecnigen S.A., 🧬 Thermo Fisher (Applied Biosystems - vía Gene X-Press, GrupoBios).</td>
+                                                    <td class="px-4 py-4 whitespace-normal text-sm text-gray-300">(Ver contactos Incitec, Biosonda, TCL, Tecnigen, Thermo distribuidores)</td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="4" class="px-4 py-4 text-sm text-gray-400 italic">
+                                                        Nota: La huella genética (especialmente basada en STRs o RFLP) también requiere reactivos y consumibles de PCR (para amplificación de regiones de interés o generación de fragmentos) y Electroforesis de ADN (para separación y visualización de fragmentos). Consulte las pestañas correspondientes para esos insumos.
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                         <div class="mt-6 p-6 bg-gray-700 rounded-md">
+                            <h3 class="text-lg font-semibold text-gray-100 mb-3">Proveedores Principales en Chile (PCR, Electroforesis, Huella Genética)</h3>
+                             <p class="text-sm text-gray-300 mb-4">
+                                Resumen de proveedores clave para técnicas de biología molecular, ordenados alfabéticamente:
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 text-sm">
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 AMILAB</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://amilab.cl" target="_blank" class="contact-link">amilab.cl</a>, Tel: <a href="tel:+56222878707" class="contact-link">+56222878707</a>, Email: <a href="mailto:amilab@amilab.cl" class="contact-link">amilab@amilab.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 Andes Import</h4>
+                                    <p class="text-xs text-gray-400">Importador (Nippon Genetics, Cyanagen, Corning, Cytiva, MoBio). Web: <a href="https://andesimport.cl" target="_blank" class="contact-link">andesimport.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 Arquimed Ltda.</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://arquimed.cl" target="_blank" class="contact-link">arquimed.cl</a>, Tel: <a href="tel:+56226074000" class="contact-link">+56 2 2607 4000</a>, Email: <a href="mailto:atencionalcliente@arquimed.cl" class="contact-link">atencionalcliente@arquimed.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 Bioadvance Technology SpA</h4>
+                                    <p class="text-xs text-gray-400">Distribuidor NEB, Sartorius. Web: <a href="https://bioadvance.cl" target="_blank" class="contact-link">bioadvance.cl</a>, Email: <a href="mailto:info@bioadvance.cl" class="contact-link">info@bioadvance.cl</a>, Tel: <a href="tel:+56229516877" class="contact-link">+56229516877</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 BioAxis Ltda.</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://www.bioaxis.cl" target="_blank" class="contact-link">www.bioaxis.cl</a>, Email: <a href="mailto:boris.villalobos@bioaxis.cl" class="contact-link">boris.villalobos@bioaxis.cl</a>, Tel: <a href="tel:+5622373090" class="contact-link">+5622373090</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 BioImaging Chile Spa</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://bioimagingchile.com" target="_blank" class="contact-link">bioimagingchile.com</a>, Email: <a href="mailto:contacto@bioimagingchile.com" class="contact-link">contacto@bioimagingchile.com</a>, Tel: <a href="tel:+56963345024" class="contact-link">+56963345024</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 Biolab Chile</h4>
+                                    <p class="text-xs text-gray-400">Distribuidor NEB, Sigma Aldrich. Web: <a href="https://biolab-chile.cl" target="_blank" class="contact-link">biolab-chile.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 Bioquímica.cl</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://www.bioquimica.cl" target="_blank" class="contact-link">bioquimica.cl</a>, Tel: <a href="tel:+56222252583" class="contact-link">+56222252583</a>, Email: <a href="mailto:ventas@bioquimica.cl" class="contact-link">ventas@bioquimica.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 BIOSONDA S.A.</h4>
+                                    <p class="text-xs text-gray-400">Distribuidor Promega, Norgen Biotek. Web: <a href="https://www.biosonda.cl/" target="_blank" class="contact-link">biosonda.cl</a>, Tel: <a href="tel:+56222096770" class="contact-link">+56222096770</a>, Email: <a href="mailto:ventas@biosonda.cl" class="contact-link">ventas@biosonda.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 Del Carpio</h4>
+                                    <p class="text-xs text-gray-400">Equipos científicos (Thermo Fisher). Web: <a href="https://www.delcarpio.cl" target="_blank" class="contact-link">delcarpio.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 Dilaco</h4>
+                                    <p class="text-xs text-gray-400">Insumos generales. Web: <a href="https://www.dilaco.com" target="_blank" class="contact-link">dilaco.com</a>, Email: <a href="mailto:ventas@dilaco.com" class="contact-link">ventas@dilaco.com</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 Dimerco Chile</h4>
+                                    <p class="text-xs text-gray-400">Equipos/insumos. Web: <a href="https://www.dimerco.cl" target="_blank" class="contact-link">dimerco.cl</a>, Email: <a href="mailto:contacto@dimerco.cl" class="contact-link">contacto@dimerco.cl</a>, Tel: <a href="tel:+56227532053" class="contact-link">+56227532053</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 Diprolab Ltda</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://diprolab.cl" target="_blank" class="contact-link">diprolab.cl</a>, Tel: <a href="tel:+56412620730" class="contact-link">(+56 41) 262 0730</a>, Email: <a href="mailto:ventas@diprolab.cl" class="contact-link">ventas@diprolab.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 Farmalatina Ltda.</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://www.farmalatina.cl" target="_blank" class="contact-link">www.farmalatina.cl</a>, Email: <a href="mailto:farmalatina@farmalatina.cl" class="contact-link">farmalatina@farmalatina.cl</a>, Tel: <a href="tel:+56228385000" class="contact-link">+56228385000</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 Fermelo Biotec</h4>
+                                    <p class="text-xs text-gray-400">SPL Life Sciences, Histomount. Web: <a href="https://fermelo.cl" target="_blank" class="contact-link">fermelo.cl</a>, Email: <a href="mailto:contacto@fermelo.cl" class="contact-link">contacto@fermelo.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 Gene X-Press Chile S.A.</h4>
+                                    <p class="text-xs text-gray-400">Distribuidor Thermo Fisher, Biotium, IDT. Web: <a href="https://genexpress.cl" target="_blank" class="contact-link">genexpress.cl</a>, Email: <a href="mailto:info@genex.cl" class="contact-link">info@genex.cl</a>, Tel: <a href="tel:+56222454805" class="contact-link">+56222454805</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 GrupoBios S.A.</h4>
+                                    <p class="text-xs text-gray-400">Distribuidor Thermo Scientific, Bio-Rad. Web: <a href="https://www.grupobios.cl" target="_blank" class="contact-link">grupobios.cl</a>, Email: <a href="mailto:ventas@grupobios.cl" class="contact-link">ventas@grupobios.cl</a>, Tel: <a href="tel:+56224736100" class="contact-link">+56224736100</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 HES Limitada</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://hesltda.cl" target="_blank" class="contact-link">hesltda.cl</a>, Tel: <a href="tel:228694040" class="contact-link">228694040</a>, Email: <a href="mailto:ventas@hesltda.cl" class="contact-link">ventas@hesltda.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 Importadora Soviquim Ltda</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://soviquim.cl" target="_blank" class="contact-link">soviquim.cl</a>, Tel: <a href="tel:+56227738684" class="contact-link">+56227738684</a>, Email: <a href="mailto:ventas@soviquim.cl" class="contact-link">ventas@soviquim.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 INCITEC CHILE SpA</h4>
+                                    <p class="text-xs text-gray-400">Equipos científicos. Web: <a href="https://www.incitec.cl" target="_blank" class="contact-link">incitec.cl</a>, Email: <a href="mailto:pfuentes@incitec.cl" class="contact-link">pfuentes@incitec.cl</a>, Tel: <a href="tel:+56264691054" class="contact-link">+56264691054</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 Interquimica (Distribuidor Bio-Rad)</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://www.interquimica.cl" target="_blank" class="contact-link">interquimica.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 Kalstein Chile</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://kalstein.cl" target="_blank" class="contact-link">kalstein.cl</a>, Email: <a href="mailto:sales@kalstein.com" class="contact-link">sales@kalstein.com</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 Lab-Diagnostic</h4>
+                                    <p class="text-xs text-gray-400">Insumos y equipos. Web: <a href="https://lab-diagnostic.cl" target="_blank" class="contact-link">lab-diagnostic.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 LTech Chile</h4>
+                                    <p class="text-xs text-gray-400">Equipamiento. Web: <a href="https://ltech.cl" target="_blank" class="contact-link">ltech.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 Medica-Tec de Chile S.A.</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://www.medica-tec.com" target="_blank" class="contact-link">www.medica-tec.com</a>, Email: <a href="mailto:ventas@medica-tec.cl" class="contact-link">ventas@medica-tec.cl</a>, Tel: <a href="tel:+56224261830" class="contact-link">+56224261830</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 Roche Chile</h4>
+                                    <p class="text-xs text-gray-400">Diagnóstica. Tel: <a href="tel:+56224413375" class="contact-link">+56224413375</a>, Email: <a href="mailto:chile.ventasdiagnostico@roche.com" class="contact-link">chile.ventasdiagnostico@roche.com</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 RSlab</h4>
+                                    <p class="text-xs text-gray-400">Materiales y equipos. Web: <a href="https://rslab.cl" target="_blank" class="contact-link">rslab.cl</a>, Tel: <a href="tel:+56992401711" class="contact-link">+56992401711</a>, Email: <a href="mailto:ventas@rslab.cl" class="contact-link">ventas@rslab.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 SAGU Chile</h4>
+                                    <p class="text-xs text-gray-400">Distribuidor Fisher Scientific. Web: <a href="https://www.saguchile.com" target="_blank" class="contact-link">saguchile.com</a>, Email: <a href="mailto:ventas@saguchile.com" class="contact-link">ventas@saguchile.com</a>, Tel: <a href="tel:+56226511400" class="contact-link">+56226511400</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 TAAG-Genetics (TAAG-ls)</h4>
+                                    <p class="text-xs text-gray-400">PCR. Web: <a href="https://taag-ls.cl" target="_blank" class="contact-link">taag-ls.cl</a>, Email: <a href="mailto:info@taag-ls.cl" class="contact-link">info@taag-ls.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 TCL GROUP</h4>
+                                    <p class="text-xs text-gray-400">Equipos y reactivos genética. Web: <a href="https://www.tclgroup.cl" target="_blank" class="contact-link">tclgroup.cl</a>, Email: <a href="mailto:ventas@tclgroup.cl" class="contact-link">ventas@tclgroup.cl</a>, Tel: <a href="tel:+56226418465" class="contact-link">+56226418465</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 Tecnigen S.A.</h4>
+                                    <p class="text-xs text-gray-400">Web: <a href="https://tecnigen.cl" target="_blank" class="contact-link">tecnigen.cl</a>, Tel: <a href="tel:+56223960600" class="contact-link">+56 2 2396 0600</a>, Email: <a href="mailto:info@tecnigen.cl" class="contact-link">info@tecnigen.cl</a></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-emerald-300">🧬 Winkler Ltda</h4>
+                                    <p class="text-xs text-gray-400">Reactivos químicos. Web: <a href="https://winklerltda.cl" target="_blank" class="contact-link">winklerltda.cl</a>, Email: <a href="mailto:contacto@winklerltda.cl" class="contact-link">contacto@winklerltda.cl</a>, Tel: <a href="tel:+56224826500" class="contact-link">+56224826500</a></p>
+                                </div>
+                            </div>
+                             <p class="text-xs text-gray-400 mt-6">
+                                Tenga en cuenta que algunos proveedores distribuyen productos de marcas premium. Las fuentes recomiendan una configuración mixta. Se aconseja contactar directamente a los proveedores para obtener cotizaciones exactas y verificar la disponibilidad.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- START: Original Tab and Section Navigation Logic ---
+            const molbioTabsContainer = document.getElementById('molbioTabsContainer');
+            let molbioTabs, molbioTabPanels;
+            let molbioFilterInputGlobal = document.getElementById('molbioFilterInput'); 
+
+            // Helper function to apply filter, used by multiple parts
+            function applyFilterToTable(tableBody, filterText) {
+                if (!tableBody) return;
+                const rows = Array.from(tableBody.querySelectorAll('tr'));
+                let isCategoryVisible = false; 
+                
+                for (let i = rows.length - 1; i >= 0; i--) {
+                    const row = rows[i];
+                    if (row.classList.contains('category-row')) {
+                        if (isCategoryVisible || filterText === "") {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                        isCategoryVisible = false; 
+                    } else { 
+                        const firstCell = row.cells && row.cells[0];
+                        if (firstCell) {
+                            const cellText = firstCell.textContent.toLowerCase();
+                            if (cellText.includes(filterText) || filterText === "") {
+                                row.style.display = '';
+                                isCategoryVisible = true; 
+                            } else {
+                                row.style.display = 'none';
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            function activateMolBioTab(tabToActivate) {
+                if (!molbioTabs || !molbioTabPanels || !tabToActivate) return; 
+                
+                molbioTabPanels.forEach(panel => {
+                    panel.classList.add('hidden');
+                    panel.setAttribute('aria-hidden', 'true');
+                });
+                molbioTabs.forEach(t => {
+                    t.classList.remove('active'); 
+                    t.setAttribute('aria-selected', 'false');
+                });
+
+                const targetPanelId = tabToActivate.getAttribute('aria-controls');
+                const targetPanel = molbioTabsContainer.querySelector('#' + targetPanelId); 
+                if (targetPanel) {
+                    targetPanel.classList.remove('hidden');
+                    targetPanel.setAttribute('aria-hidden', 'false');
+
+                    if (molbioFilterInputGlobal) {
+                        const filterText = molbioFilterInputGlobal.value.toLowerCase().trim();
+                        // Corrected selector to target the table within the .molbio-table div, which is inside the panel
+                        const tableElement = targetPanel.querySelector('.molbio-table table'); 
+                        if (tableElement && tableElement.tBodies && tableElement.tBodies[0]) { 
+                            applyFilterToTable(tableElement.tBodies[0], filterText);
+                        }
+                    }
+                }
+
+                tabToActivate.classList.add('active'); 
+                tabToActivate.setAttribute('aria-selected', 'true');
+            }
+            
+            if (molbioTabsContainer) {
+                molbioTabs = molbioTabsContainer.querySelectorAll('[role="tab"]'); 
+                molbioTabPanels = molbioTabsContainer.querySelectorAll('[role="tabpanel"]'); 
+                
+                molbioTabs.forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        activateMolBioTab(e.currentTarget);
+                    });
+                });
+
+                if (molbioTabs.length > 0) {
+                    activateMolBioTab(molbioTabs[0]); 
+                }
+            }
+
+            const navButtons = document.querySelectorAll('.interactive-nav-link');
+            const contentSections = document.querySelectorAll('main#content > section.page-section');
+
+            function showSection(targetId) {
+                contentSections.forEach(section => {
+                    if (section.id === targetId) {
+                        section.classList.remove('hidden');
+                    } else {
+                        section.classList.add('hidden');
+                    }
+                });
+
+                navButtons.forEach(button => {
+                    if (button.dataset.target === targetId) {
+                        button.classList.add('active');
+                    } else {
+                        button.classList.remove('active');
+                    }
+                });
+                
+                if (targetId === 'biologiamolecular' && molbioTabsContainer && molbioTabs && molbioTabs.length > 0) {
+                    const isActiveTabPresent = Array.from(molbioTabs).some(tab => tab.classList.contains('active'));
+                    if (!isActiveTabPresent) {
+                         activateMolBioTab(molbioTabs[0]); 
+                    } else {
+                        const currentActiveTab = molbioTabsContainer.querySelector('.molbio-tab-button.active');
+                        if (currentActiveTab) {
+                            activateMolBioTab(currentActiveTab); 
+                        }
+                    }
+                }
+            }
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    showSection(this.dataset.target);
+                });
+            });
+
+            if (navButtons.length > 0) {
+                showSection(navButtons[0].dataset.target);
+            }
+            // --- END: Original Tab and Section Navigation Logic ---
+
+
+            // --- START: Filter Logic Setup ---
+            const histologyFilterInput = document.getElementById('histologyFilterInput');
+            // Corrected selector for histologyTable to get the actual <table> element
+            const histologyTableElement = document.querySelector('#histologia_overview .histology-table table');
+            if (histologyFilterInput && histologyTableElement && histologyTableElement.tBodies && histologyTableElement.tBodies[0]) {
+                histologyFilterInput.addEventListener('input', function() {
+                    applyFilterToTable(histologyTableElement.tBodies[0], this.value.toLowerCase().trim());
+                });
+            }
+
+            const westernBlotFilterInput = document.getElementById('westernBlotFilterInput');
+            // Corrected selector for westernBlotTable to get the actual <table> element
+            const westernBlotTableElement = document.querySelector('#westernblot .westernblot-table table');
+            if (westernBlotFilterInput && westernBlotTableElement && westernBlotTableElement.tBodies && westernBlotTableElement.tBodies[0]) {
+                westernBlotFilterInput.addEventListener('input', function() {
+                    applyFilterToTable(westernBlotTableElement.tBodies[0], this.value.toLowerCase().trim());
+                });
+            }
+
+            if (molbioFilterInputGlobal) {
+                molbioFilterInputGlobal.addEventListener('input', function() {
+                    const filterText = this.value.toLowerCase().trim();
+                    const activeMolbioPanel = document.querySelector('#biologiamolecular [role="tabpanel"]:not(.hidden)');
+                    if (activeMolbioPanel) {
+                        // Corrected selector to target the table within the .molbio-table div
+                        const tableElement = activeMolbioPanel.querySelector('.molbio-table table'); 
+                        if (tableElement && tableElement.tBodies && tableElement.tBodies[0]) {
+                            applyFilterToTable(tableElement.tBodies[0], filterText);
+                        }
+                    }
+                });
+            }
+            // --- END: Filter Logic Setup ---
+        });
+    </script>
+</body>
+</html>

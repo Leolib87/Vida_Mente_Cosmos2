@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Química y Farmacia en Chile - Análisis 2025</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-green: #00FF00;
+            --neon-cyan: #00FFFF;
+            --black-bg: #000000;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: var(--black-bg);
+            color: var(--neon-green);
+            font-family: 'Orbitron', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        nav ul li {
+            position: relative;
+            margin: 0 20px;
+        }
+        nav ul li a {
+            color: var(--neon-green);
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        .mega-menu {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            width: 800px;
+            max-width: 90vw;
+            padding: 20px;
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        nav ul li:hover .mega-menu {
+            display: grid;
+            opacity: 1;
+        }
+        .mega-menu h3 {
+            color: var(--neon-cyan);
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px var(--neon-cyan);
+        }
+        .mega-menu ul {
+            display: block;
+            padding: 0;
+        }
+        .mega-menu ul li {
+            margin: 5px 0;
+        }
+        .mega-menu a {
+            font-size: 0.9em;
+            color: var(--neon-green);
+            transition: color 0.3s ease;
+        }
+        .mega-menu a:hover {
+            color: #FFFFFF;
+        }
+        .main-container {
+            max-width: 100%;
+            margin: 0;
+            padding: 60px 10px 0 10px; /* Padding-top para pantallas grandes con nav fijo */
+            text-align: center;
+            flex: 1;
+            width: 100%;
+        }
+        .intro {
+            margin-bottom: 40px;
+        }
+        .intro h1 {
+            color: var(--neon-cyan);
+            font-size: 2.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 20px;
+        }
+        .intro p {
+            font-size: 1.1em;
+            max-width: 1000px;
+            margin: 0 auto 15px;
+        }
+        .highlight {
+            color: var(--neon-cyan);
+            font-weight: bold;
+        }
+        .filter-container {
+            margin-bottom: 20px;
+        }
+        .filter-container input {
+            padding: 10px;
+            font-size: 1em;
+            font-family: 'Orbitron', sans-serif;
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--neon-green);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+            border-radius: 5px;
+            outline: none;
+            width: 300px;
+            transition: box-shadow 0.3s ease;
+        }
+        .filter-container input:focus {
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 40px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--neon-cyan);
+        }
+        th {
+            background: rgba(0, 0, 0, 0.9);
+            color: var(--neon-cyan);
+            text-shadow: 0 0 5px var(--neon-cyan);
+            position: sticky;
+            top: 0;
+        }
+        tr:hover {
+            background: rgba(0, 255, 255, 0.1);
+        }
+        a {
+            color: var(--neon-green);
+            text-decoration: none;
+        }
+        a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        #data-table1 td:last-child a {
+            color: var(--neon-cyan);
+        }
+        .sheets-container {
+            margin: 40px 0;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--neon-cyan);
+            margin-bottom: 15px;
+        }
+        .tab-button {
+            flex: 1;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid var(--neon-cyan);
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            text-align: center;
+            cursor: pointer;
+            font-size: 1.1em;
+            color: var(--neon-green);
+            transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .tab-button.active {
+            background: rgba(0, 255, 255, 0.2);
+            color: #FFFFFF;
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        .tab-button:hover:not(.active) {
+            background: rgba(0, 255, 255, 0.1);
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .sheets-iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            border-radius: 5px;
+        }
+        .malla-container {
+            margin: 40px 0;
+        }
+        .malla-container h3 {
+            color: var(--neon-cyan);
+            font-size: 1.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 15px;
+        }
+        .malla-iframe {
+            width: 100%;
+            height: 1000px;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            border-radius: 5px;
+            display: none;
+        }
+        .image-gallery {
+            margin-top: 40px;
+        }
+        .image-gallery ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        .image-gallery li {
+            text-align: center;
+        }
+        .image-gallery img {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan);
+            border-radius: 5px;
+        }
+        .image-gallery p {
+            color: var(--neon-cyan);
+            font-size: 1em;
+            margin-top: 5px;
+            text-shadow: 0 0 5px var(--neon-cyan);
+            border-bottom: 1px dotted var(--neon-green);
+            padding-bottom: 2px;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        .image-gallery li:hover p {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        .about-container {
+            margin: 40px 0;
+        }
+        .about-container h3 {
+            color: var(--neon-cyan);
+            font-size: 1.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 15px;
+        }
+        .about-container p {
+            font-size: 1em;
+        }
+        @media (max-width: 900px) {
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                padding: 10px 0;
+            }
+            nav ul li {
+                margin: 10px 0;
+                width: 100%;
+                text-align: center;
+            }
+            .mega-menu {
+                position: static;
+                transform: none;
+                width: 100%;
+                max-width: 100%;
+                grid-template-columns: 1fr;
+                padding: 15px;
+                box-shadow: none;
+                border: 2px solid var(--neon-cyan);
+            }
+            nav ul li:hover .mega-menu {
+                display: block;
+            }
+            .intro h1 {
+                font-size: 2em;
+            }
+            .intro p {
+                font-size: 1em;
+                padding: 0 15px;
+            }
+            .filter-container input {
+                width: 100%;
+            }
+            .sheets-iframe, .malla-iframe {
+                height: 800px;
+            }
+            .image-gallery img {
+                width: 100%;
+            }
+            .tabs {
+                flex-direction: column;
+            }
+            .tab-button {
+                border-radius: 5px;
+                margin-bottom: 5px;
+            }
+        }
+        @media (max-width: 600px) {
+            nav {
+                position: static; /* En smartphones, el nav no es fijo y se desplaza con el contenido */
+            }
+            .main-container {
+                padding-top: 10px; /* Reducido el padding-top porque el nav ya no está fijo */
+            }
+            .intro h1 {
+                font-size: 1.5em;
+            }
+            .intro p {
+                font-size: 0.9em;
+            }
+            th, td {
+                font-size: 0.85em;
+                padding: 8px;
+            }
+            .sheets-iframe, .malla-iframe {
+                height: 500px;
+            }
+            .image-gallery p {
+                font-size: 0.85em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navegación con Mega Menú -->
+    <nav>
+        <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li>
+                <a href="#">Datos Académicos</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Aspectos Generales</h3>
+                        <ul>
+                            <li><a href="#tabla1">Información por Universidad</a></li>
+                            <li><a href="#tabla2">Indicadores de Desempeño</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li><a href="#contacto">Acerca de / Contacto</a></li>
+        </ul>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="main-container" id="inicio">
+        <!-- Introducción -->
+        <div class="intro">
+            <h1>Química y Farmacia en Chile: Panorama 2025</h1>
+            <p>Las carreras de <span class="highlight">Química y Farmacia</span> en Chile presentan un escenario diverso para el <span class="highlight">2025</span>. Universidades como la <span class="highlight">Universidad Andrés Bello (Sede Santiago)</span> lideran con 948 matriculados totales en 2024, mientras otras, como la <span class="highlight">Universidad de Viña del Mar</span>, apenas alcanzan 21. Los aranceles anuales varían ampliamente, desde $4.032.000 en la <span class="highlight">Universidad Arturo Prat</span> hasta $7.738.500 en la <span class="highlight">Universidad del Desarrollo</span>, reflejando diferencias en prestigio, infraestructura y ubicación.</p>
+            <p>La empleabilidad al primer año supera el <span class="highlight">97%</span> en la mayoría de las instituciones analizadas, con ingresos promedio al cuarto año rondando los <span class="highlight">$2M a $2.3M CLP</span>. Sin embargo, la duración real de la carrera (hasta 17 semestres en algunos casos) y la retención de primer año (desde un 82% hasta un 98%) plantean desafíos para los futuros profesionales. Explora las tablas, gráficos y datos a continuación para un análisis detallado.</p>
+        </div>
+
+        <!-- Filtro -->
+        <div class="filter-container">
+            <input type="text" id="search" placeholder="Filtrar por universidad o región..." onkeyup="filterTable()">
+        </div>
+
+        <!-- Tabla 1: Datos Generales con Links -->
+        <div class="table-container" id="tabla1">
+            <table id="data-table1">
+                <thead>
+                    <tr>
+                        <th>Universidad</th>
+                        <th>Región</th>
+                        <th>Sede</th>
+                        <th>Arancel Anual 2025 (CLP)</th>
+                        <th>Matrícula Total 2024</th>
+                        <th>Matrícula 1er Año 2024</th>
+                        <th>Titulación Total 2023</th>
+                        <th>Vacantes 1er Semestre</th>
+                        <th>Web</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Universidad del Desarrollo</td><td>Metropolitana</td><td>Sede Santiago (S.C. Apoquindo)</td><td>$7.738.500</td><td>0</td><td>0</td><td>0</td><td>45</td><td><a href="https://medicina.udd.cl/quimica-farmacia-santiago/" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad Tecnológica Metropolitana</td><td>Metropolitana</td><td>Sede Macul</td><td>$4.500.000</td><td>0</td><td>0</td><td>0</td><td>80</td><td><a href="https://www.utem.cl/carreras/quimica-y-farmacia/" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad de Viña del Mar</td><td>Valparaíso</td><td>Casa Central (Viña del Mar)</td><td>$5.250.000</td><td>21</td><td>21</td><td>0</td><td>40</td><td><a href="https://www.uvm.cl/quimica-farmacia/" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad Adventista de Chile</td><td>Ñuble</td><td>Casa Central (Chillán)</td><td>$5.346.000</td><td>79</td><td>45</td><td>0</td><td>45</td><td><a href="https://www.unach.cl/quimica-y-farmacia/" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad Arturo Prat</td><td>Tarapacá</td><td>Casa Central (Iquique)</td><td>$4.032.000</td><td>200</td><td>45</td><td>32</td><td>30</td><td><a href="https://www.unap.cl/prontus_unap/site/artic/20210211/pags/20210211221724.html" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad de Antofagasta</td><td>Antofagasta</td><td>Sede Campus Coloso</td><td>$5.087.000</td><td>81</td><td>46</td><td>0</td><td>40</td><td><a href="https://www.uantof.cl/carreras/quimica-y-farmacia" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad de La Frontera</td><td>Araucanía</td><td>Casa Central (Temuco)</td><td>$4.949.000</td><td>304</td><td>46</td><td>30</td><td>40</td><td><a href="https://admision.ufro.cl/quimica-y-farmacia/" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad San Sebastián (Sede Valdivia)</td><td>Los Ríos</td><td>Sede Valdivia</td><td>$5.289.900</td><td>133</td><td>58</td><td>0</td><td>50</td><td><a href="https://www.uss.cl/facultades-y-carreras/medicina-ciencia/quimica-farmacia" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad Católica del Norte</td><td>Antofagasta</td><td>Casa Central</td><td>$5.345.000</td><td>321</td><td>64</td><td>49</td><td>60</td><td><a href="https://admision.ucn.cl/carreras/salud/quimica-y-farmacia/" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad del Bío-Bío</td><td>Ñuble</td><td>Sede Chillán</td><td>$5.093.000</td><td>131</td><td>65</td><td>0</td><td>50</td><td><a href="https://www.ubiobio.cl/admision/Todas_las_Carreras/45/Quimica_y_Farmacia/" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad Bernardo O'Higgins</td><td>Metropolitana</td><td>Casa Central (Santiago)</td><td>$6.200.000</td><td>259</td><td>70</td><td>13</td><td>80</td><td><a href="https://admision.ubo.cl/facultades/facultad-de-ciencias-medicas/quimica-y-farmacia/" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad Católica de Temuco</td><td>La Araucanía</td><td>Casa Central (Temuco)</td><td>$5.108.000</td><td>129</td><td>71</td><td>0</td><td>30</td><td><a href="https://www.uct.cl/carreras/quimica-y-farmacia/" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad de Santiago de Chile</td><td>Metropolitana</td><td>Casa Central (Santiago)</td><td>$5.274.000</td><td>431</td><td>75</td><td>57</td><td>70</td><td><a href="https://www.admision.usach.cl/carreras/quimica-y-farmacia" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad de Los Lagos</td><td>Los Lagos</td><td>Casa Central (Osorno)</td><td>$5.107.000</td><td>77</td><td>77</td><td>0</td><td>70</td><td><a href="https://admision.ulagos.cl/Carreras/quimica-y-farmacia/" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad San Sebastián (Sede Patagonia)</td><td>Los Lagos</td><td>Sede Patagonia (Puerto Montt)</td><td>$5.142.500</td><td>250</td><td>81</td><td>7</td><td>65</td><td><a href="https://www.uss.cl/facultades-y-carreras/medicina-ciencia/quimica-farmacia" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad Autónoma de Chile</td><td>Maule</td><td>Sede Talca</td><td>$5.008.000</td><td>349</td><td>85</td><td>30</td><td>80</td><td><a href="https://admision.uautonoma.cl/carreras/quimica-y-farmacia/" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad Católica del Maule</td><td>Maule</td><td>Casa Central</td><td>$5.106.000</td><td>381</td><td>86</td><td>0</td><td>75</td><td><a href="https://portal.ucm.cl/carreras/quimica-y-farmacia" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad Andrés Bello (Sede Concepción)</td><td>Biobío</td><td>Sede Concepción</td><td>$5.391.000</td><td>336</td><td>90</td><td>6</td><td>100</td><td><a href="https://facultades.unab.cl/medicina/carrera/quimica-y-farmacia/" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad de Concepción</td><td>Biobío</td><td>Casa Central</td><td>$5.894.972</td><td>635</td><td>91</td><td>83</td><td>82</td><td><a href="https://admision.udec.cl/quimica-y-farmacia/" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad de Valparaíso</td><td>Valparaíso</td><td>Casa Central (Valparaíso)</td><td>$5.500.000</td><td>486</td><td>92</td><td>52</td><td>70</td><td><a href="https://2025.uv.cl/carreras/quimica-y-farmacia" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad Autónoma de Chile</td><td>Metropolitana</td><td>Campus Providencia</td><td>$6.552.000</td><td>443</td><td>96</td><td>36</td><td>80</td><td><a href="https://admision.uautonoma.cl/carreras/quimica-y-farmacia/" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Pontificia Universidad Católica de Chile</td><td>Metropolitana</td><td>Campus San Joaquín</td><td>$6.006.000</td><td>573</td><td>97</td><td>83</td><td>70</td><td><a href="https://admision.uc.cl/carreras/quimica-y-farmacia/" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad Autónoma de Chile</td><td>La Araucanía</td><td>Casa Central (Temuco)</td><td>$5.828.000</td><td>395</td><td>98</td><td>16</td><td>80</td><td><a href="https://admision.uautonoma.cl/carreras/quimica-y-farmacia/" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad Austral de Chile</td><td>Los Ríos</td><td>Casa Central</td><td>$5.588.000</td><td>500</td><td>112</td><td>46</td><td>90</td><td><a href="https://www.uach.cl/admision/valdivia/quimica-y-farmacia" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad Andrés Bello (Sede Viña del Mar)</td><td>Valparaíso</td><td>Sede Viña del Mar</td><td>$5.736.000</td><td>406</td><td>114</td><td>28</td><td>85</td><td><a href="https://facultades.unab.cl/medicina/carrera/quimica-y-farmacia/" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad San Sebastián (Sede Santiago)</td><td>Metropolitana</td><td>Sede Santiago</td><td>$6.819.900</td><td>618</td><td>161</td><td>69</td><td>180</td><td><a href="https://www.uss.cl/facultades-y-carreras/medicina-ciencia/quimica-farmacia" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad de Chile</td><td>Metropolitana</td><td>Santiago</td><td>$5.967.900</td><td>329</td><td>163</td><td>0</td><td>140</td><td><a href="https://quimica.uchile.cl/carreras/4989/quimica-y-farmacia" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad Andrés Bello (Casa Central Santiago)</td><td>Metropolitana</td><td>Casa Central (Santiago)</td><td>$6.875.000</td><td>948</td><td>189</td><td>102</td><td>190</td><td><a href="https://facultades.unab.cl/medicina/carrera/quimica-y-farmacia/" target="_blank">Sitio</a></td></tr>
+                    <tr><td>Universidad San Sebastián (Sede Concepción)</td><td>Biobío</td><td>Sede Concepción</td><td>$5.778.200</td><td>754</td><td>197</td><td>68</td><td>190</td><td><a href="https://www.uss.cl/facultades-y-carreras/medicina-ciencia/quimica-farmacia" target="_blank">Sitio</a></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tabla 2: Indicadores de Desempeño -->
+        <div class="table-container" id="tabla2">
+            <table id="data-table2">
+                <thead>
+                    <tr>
+                        <th>Universidad</th>
+                        <th>Acreditación Institución</th>
+                        <th>% Titulados Continuidad</th>
+                        <th>Retención 1er Año</th>
+                        <th>Duración Real (semestres)</th>
+                        <th>Empleabilidad 1er Año</th>
+                        <th>Employability 2º Año</th>
+                        <th>Ingreso Promedio 4° Año</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Pontificia Universidad Católica de Chile</td><td>7 años</td><td>4,6%</td><td>98,0%</td><td>14.2</td><td>98,9%</td><td>98,6%</td><td>De $2.1M a $2.2M</td></tr>
+                    <tr><td>Universidad Andrés Bello</td><td>6 años</td><td>0,0%</td><td>88,9%</td><td>16.1</td><td>98,3%</td><td>98,6%</td><td>De $2.1M a $2.2M</td></tr>
+                    <tr><td>Universidad Austral de Chile</td><td>6 años</td><td>0,0%</td><td>88,6%</td><td>17.1</td><td>100,0%</td><td>95,8%</td><td>De $2.1M a $2.2M</td></tr>
+                    <tr><td>Universidad de Chile</td><td>7 años</td><td>3,9%</td><td>93,8%</td><td>16.7</td><td>98,7%</td><td>98,1%</td><td>De $2.2M a $2.3M</td></tr>
+                    <tr><td>Universidad de Concepción</td><td>7 años</td><td>3,6%</td><td>91,4%</td><td>16.8</td><td>97,9%</td><td>99,4%</td><td>De $2.1M a $2.2M</td></tr>
+                    <tr><td>Universidad de Santiago de Chile</td><td>7 años</td><td>0,0%</td><td>82,0%</td><td>12.6</td><td>100,0%</td><td>98,8%</td><td>s/i</td></tr>
+                    <tr><td>Universidad de Valparaíso</td><td>6 años</td><td>6,6%</td><td>93,6%</td><td>14.9</td><td>99,1%</td><td>98,8%</td><td>De $2M a $2.1M</td></tr>
+                    <tr><td>Universidad San Sebastián</td><td>5 años</td><td>1,4%</td><td>83,0%</td><td>12.7</td><td>99,5%</td><td>97,3%</td><td>De $2M a $2.1M</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Contenedor para las mallas curriculares -->
+        <div class="malla-container" id="malla-container">
+            <h3>Malla Curricular</h3>
+            <iframe class="malla-iframe" id="malla-udd" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1eDU2fp_5151hnlxKOus4AEesO4gDwGoF&embedded=true" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-utem" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=13PR_gn6eW_nG7FY51z-HWoMBNl8C6ZVY&embedded=true" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-uvm" src="[URL-UVM]" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-unach" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=19DI8HHkdRyx9dUazdgpIOHD4-AyyVtp2&embedded=true" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-unap" src="[URL-UNAP]" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-uantof" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1Be0cdQBo_RMNqE7G8WZCjb8UAvrjblRY&embedded=true" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-ufro" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1tULeLSvh8qvW7cmw2hjGieBluR3HSAyu&embedded=true" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-uss" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1K6Cmzy6sQHAh2_PGsrbFzE9fhoCWvGZk&embedded=true" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-ucn" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1lZeke1_GV30mwxn-gT-oEidz9iySe0qH&embedded=true" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-ubiobio" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1FahEw0B7KvIEzixi867Y6lQGKZPniQAs&embedded=true" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-ubo" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1Wx1ewcTvwNW2kEN4yiIRW4ZcEUlT8laD&embedded=true" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-uct" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1lZeke1_GV30mwxn-gT-oEidz9iySe0qH&embedded=true" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-usach" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1xM_5drsJXLhZNUWRaYYXcHp1znB0a4BL&embedded=true" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-ulagos" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1e8JJxekREI-Q-wcUn9d6EH48COkc2gAf&embedded=true" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-uss-patagonia" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1K6Cmzy6sQHAh2_PGsrbFzE9fhoCWvGZk&embedded=true" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-uautonoma" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1l9cfRshb1PoTaNalEes3RdTuiUZ5kTeu&embedded=true" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-ucm" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1XD1G991zCE-gDnDs0c2YzTPLTgj2Drrr&embedded=true" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-unab" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1CEyKWlWcMU1MBNJNOrHMNccjlhTBMDJS&embedded=true" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-udec" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1qnq2xhNGSNdywI2szRLHj5PX-7TCo_6R&embedded=true" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-uv" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1lW4Qm2y3Bn-gQ8jX5-v3KO4NXJWta9nN&embedded=true" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-uc" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=122G9cLHwNVdMXd9JjRHpemYLwMDhbuuB&embedded=true" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-uach" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1E3H90b7Okhzepud7rl2uTD3D3QZi19Xk&embedded=true" frameborder="0"></iframe>
+            <iframe class="malla-iframe" id="malla-uchile" src="https://docs.google.com/viewer?url=https://drive.google.com/uc?id=1k0RSgMMpM81DV4VJU2JaAeee8_qghBbB&embedded=true" frameborder="0"></iframe>
+        </div>
+
+        <!-- Contenedor de Google Sheets con pestañas -->
+        <div class="sheets-container">
+            <div class="tabs">
+                <button class="tab-button active" onclick="openTab('datos-generales')">Datos Generales</button>
+                <button class="tab-button" onclick="openTab('indicadores-desempeno')">Indicadores de Desempeño</button>
+            </div>
+            <div id="datos-generales" class="tab-content active">
+                <iframe class="sheets-iframe" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQe7c42LFmutVVlnw3Rnt7g_etKoRHs9jVR87BtU_mxBFMotiWHDFC6RE8-tlcJsg/pubhtml?gid=640263754&single=true" frameborder="0"></iframe>
+            </div>
+            <div id="indicadores-desempeno" class="tab-content">
+                <iframe class="sheets-iframe" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQFo7_2CH-U4K1Q7aT42GpICDFOEftrsc3QYQZRlW47ehZH0DvFwjjrx5Yy00aKXQ/pubhtml?gid=905275416&single=true" frameborder="0"></iframe>
+            </div>
+        </div>
+
+        <!-- Galería de Imágenes -->
+        <div class="image-gallery">
+            <ul>
+                <li>
+                    <img src="https://github.com/Leolib87/QF/blob/main/matricula_total_2024.png?raw=true" alt="Matrícula Total 2024">
+                    <p>Matrícula Total 2024</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/QF/blob/main/matricula_primer_ano_2024.png?raw=true" alt="Matrícula 1er Año 2024">
+                    <p>Matrícula 1er Año 2024</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/QF/blob/main/vacantes_primer_semestre.png?raw=true" alt="Vacantes 1er Semestre">
+                    <p>Vacantes 1er Semestre</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/QF/blob/main/titulados_2023.png?raw=true" alt="Titulación Total 2023">
+                    <p>Titulación Total 2023</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/QF/blob/main/acreditacion.png?raw=true" alt="Acreditación Institucional">
+                    <p>Acreditación Institucional</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/QF/blob/main/retencion.png?raw=true" alt="Retención 1er Año">
+                    <p>Retención de 1er Año</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/QF/blob/main/distribucion_por_region.png?raw=true" alt="Distribución por Región">
+                    <p>Distribución por Región</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/QF/blob/main/aranceles_2025.png?raw=true" alt="Arancel Anual 2025">
+                    <p>Arancel Anual 2025 por Universidad</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/QF/blob/main/arancel_promedio_por_region.png?raw=true" alt="Arancel Promedio por Región">
+                    <p>Arancel Promedio por Región</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/QF/blob/main/criterios_admision.png?raw=true" alt="Criterios de Admisión">
+                    <p>Criterios de Admisión</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/QF/blob/main/titulados_continuidad.png?raw=true" alt="Continuidad de Estudios">
+                    <p>% Titulados con Continuidad de Estudios</p>
+                </li>
+                <li>
+                    <img src="https://github.com/Leolib87/QF/blob/main/ingresos.png?raw=true" alt="Empleabilidad e Ingresos">
+                    <p>Empleabilidad e Ingresos (1er, 2do y 4to Año)</p>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Sección Acerca de / Contacto -->
+        <div class="about-container" id="contacto">
+            <h3>Acerca de</h3>
+            <p>Esta web fue elaborada por Leandro Torres Díaz, PhD.</p>
+        </div>
+    </div>
+
+    <!-- Script para filtrar las tablas, mostrar la malla y manejar las pestañas -->
+    <script>
+        // Mapa de universidades a IDs de iframes
+        const universityIframeMap = {
+            "Universidad del Desarrollo": "malla-udd",
+            "Universidad Tecnológica Metropolitana": "malla-utem",
+            "Universidad de Viña del Mar": "malla-uvm",
+            "Universidad Adventista de Chile": "malla-unach",
+            "Universidad Arturo Prat": "malla-unap",
+            "Universidad de Antofagasta": "malla-uantof",
+            "Universidad de La Frontera": "malla-ufro",
+            "Universidad San Sebastián (Sede Valdivia)": "malla-uss",
+            "Universidad San Sebastián (Sede Patagonia)": "malla-uss",
+            "Universidad San Sebastián (Sede Santiago)": "malla-uss",
+            "Universidad San Sebastián (Sede Concepción)": "malla-uss",
+            "Universidad Católica del Norte": "malla-ucn",
+            "Universidad del Bío-Bío": "malla-ubiobio",
+            "Universidad Bernardo O'Higgins": "malla-ubo",
+            "Universidad Católica de Temuco": "malla-uct",
+            "Universidad de Santiago de Chile": "malla-usach",
+            "Universidad de Los Lagos": "malla-ulagos",
+            "Universidad Autónoma de Chile": "malla-uautonoma",
+            "Universidad Católica del Maule": "malla-ucm",
+            "Universidad Andrés Bello (Sede Concepción)": "malla-unab",
+            "Universidad Andrés Bello (Sede Viña del Mar)": "malla-unab",
+            "Universidad Andrés Bello (Casa Central Santiago)": "malla-unab",
+            "Universidad de Concepción": "malla-udec",
+            "Universidad de Valparaíso": "malla-uv",
+            "Pontificia Universidad Católica de Chile": "malla-uc",
+            "Universidad Austral de Chile": "malla-uach",
+            "Universidad de Chile": "malla-uchile"
+        };
+
+        // Mapa de simplificaciones a nombres completos de universidades
+        const universityShortcuts = {
+            "udd": "Universidad del Desarrollo",
+            "utem": "Universidad Tecnológica Metropolitana",
+            "uvm": "Universidad de Viña del Mar",
+            "unach": "Universidad Adventista de Chile",
+            "unap": "Universidad Arturo Prat",
+            "uantof": "Universidad de Antofagasta",
+            "ufro": "Universidad de La Frontera",
+            "uss": "Universidad San Sebastián",
+            "ucn": "Universidad Católica del Norte",
+            "ubiobio": "Universidad del Bío-Bío",
+            "ubo": "Universidad Bernardo O'Higgins",
+            "uct": "Universidad Católica de Temuco",
+            "usach": "Universidad de Santiago de Chile",
+            "ulagos": "Universidad de Los Lagos",
+            "uautonoma": "Universidad Autónoma de Chile",
+            "ucm": "Universidad Católica del Maule",
+            "unab": "Universidad Andrés Bello",
+            "udec": "Universidad de Concepción",
+            "uv": "Universidad de Valparaíso",
+            "uc": "Pontificia Universidad Católica de Chile",
+            "uach": "Universidad Austral de Chile",
+            "uchile": "Universidad de Chile"
+        };
+
+        function filterTable() {
+            const input = document.getElementById('search').value.toLowerCase();
+            const tables = [document.getElementById('data-table1'), document.getElementById('data-table2')];
+            const mallaContainer = document.getElementById('malla-container');
+            const iframes = document.getElementsByClassName('malla-iframe');
+            let selectedUniversity = null;
+
+            // Verificar si el input coincide con una simplificación y obtener el nombre completo
+            const fullUniversityName = universityShortcuts[input] || null;
+
+            // Filtrar las tablas
+            tables.forEach(table => {
+                const rows = table.getElementsByTagName('tr');
+                for (let i = 1; i < rows.length; i++) {
+                    const cells = rows[i].getElementsByTagName('td');
+                    let match = false;
+                    const universityName = cells[0].textContent.toLowerCase();
+
+                    for (let j = 0; j < cells.length; j++) {
+                        const cellText = cells[j].textContent.toLowerCase();
+                        // Coincidencia con el texto ingresado o con la simplificación mapeada
+                        if (cellText.includes(input) || (fullUniversityName && universityName.includes(fullUniversityName.toLowerCase()))) {
+                            match = true;
+                            if (!selectedUniversity && j === 0) { // Solo tomar la primera universidad coincidente
+                                selectedUniversity = cells[0].textContent;
+                            }
+                            break;
+                        }
+                    }
+                    rows[i].style.display = match ? '' : 'none';
+                }
+            });
+
+            // Ocultar todos los iframes
+            for (let iframe of iframes) {
+                iframe.style.display = 'none';
+            }
+
+            // Mostrar el iframe correspondiente a la universidad filtrada
+            if (selectedUniversity && universityIframeMap[selectedUniversity]) {
+                const iframeId = universityIframeMap[selectedUniversity];
+                document.getElementById(iframeId).style.display = 'block';
+                mallaContainer.style.display = 'block';
+            } else {
+                mallaContainer.style.display = 'none';
+            }
+        }
+
+        // Función para manejar las pestañas de Google Sheets
+        function openTab(tabName) {
+            const tabs = document.getElementsByClassName('tab-content');
+            const buttons = document.getElementsByClassName('tab-button');
+
+            // Ocultar todos los contenidos y desactivar botones
+            for (let tab of tabs) {
+                tab.classList.remove('active');
+            }
+            for (let button of buttons) {
+                button.classList.remove('active');
+            }
+
+            // Mostrar el contenido seleccionado y activar el botón
+            document.getElementById(tabName).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // Activar la primera pestaña por defecto
+        document.querySelector('.tab-button').click();
+    </script>
+</body>
+</html>

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Mental Interactivo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #000000;
+            color: #00FF00;
+            font-family: 'Orbitron', sans-serif;
+            overflow-x: hidden;
+            overflow-y: auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 2px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF;
+            display: flex;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        nav ul {
+            display: flex;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        nav ul li {
+            margin: 0 25px;
+            position: relative;
+        }
+        nav ul li a {
+            color: #00FF00;
+            text-decoration: none;
+            font-size: 1.2em;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 15px #00FFFF;
+        }
+        nav ul li::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background: #00FFFF;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: width 0.3s ease;
+        }
+        nav ul li:hover::after {
+            width: 100%;
+        }
+        .intro {
+            text-align: center;
+            padding: 120px 20px 40px;
+            color: #00FFFF;
+            text-shadow: 0 0 12px #00FFFF;
+            max-width: 900px;
+            margin: 0 auto;
+            z-index: 10;
+            animation: fadeIn 1s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .intro h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+        }
+        .intro p {
+            font-size: 1.1em;
+            color: #00FF00;
+            text-shadow: 0 0 8px #00FF00;
+            line-height: 1.8;
+        }
+        .container {
+            width: 90%;
+            max-width: 1600px;
+            margin: 40px auto;
+            padding: 40px;
+            background: #000000;
+            border: 3px solid #00FFFF;
+            box-shadow: 0 0 25px #00FFFF;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            min-height: 800px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .node rect {
+            stroke: #00FFFF;
+            stroke-width: 2px;
+            fill: rgba(0, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .node.root rect {
+            stroke: #FFFFFF;
+            stroke-width: 3px;
+            fill: rgba(255, 255, 255, 0.1);
+        }
+        .node:hover rect {
+            stroke: #FFFFFF;
+            stroke-width: 4px;
+            fill: rgba(0, 255, 255, 0.2);
+            filter: drop-shadow(0 0 8px #00FFFF);
+        }
+        .node text {
+            fill: #00FFFF;
+            text-shadow: 0 0 10px #00FFFF;
+            font-size: 14px;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .node.root text {
+            fill: #FFFFFF;
+            font-size: 18px;
+            text-shadow: 0 0 20px #FF00CC;
+        }
+        .node.category text {
+            fill: #FFFF00;
+            text-shadow: 0 0 12px #FFFF00;
+        }
+        .node.leaf text {
+            fill: #00FF00;
+            text-shadow: 0 0 10px #00FF00;
+        }
+        .link {
+            stroke: #00FF00;
+            stroke-opacity: 0.7;
+            stroke-width: 1.5px;
+            stroke-dasharray: 5;
+            transition: stroke-width 0.3s ease;
+            z-index: 1;
+        }
+        .link:hover {
+            stroke-width: 2px;
+        }
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: #FFFFFF;
+            padding: 12px;
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 15px #00FFFF;
+            border-radius: 5px;
+            font-size: 11px;
+            pointer-events: none;
+            z-index: 1000;
+            max-width: 300px;
+            line-height: 1.4;
+            animation: tooltipFade 0.3s ease;
+        }
+        @keyframes tooltipFade {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .description-area {
+            width: 90%;
+            max-width: 1600px;
+            margin: 20px auto;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF;
+            border-radius: 10px;
+            color: #FFFFFF;
+            text-shadow: 0 0 8px #00FFFF;
+            font-size: 1em;
+            line-height: 1.6;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            z-index: 1000;
+        }
+        .description-area.active {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .description-area h3 {
+            color: #00FF00;
+            text-shadow: 0 0 10px #00FF00;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+        .control-btn {
+            background: rgba(0, 0, 0, 0.8);
+            color: #00FF00;
+            border: 2px solid #00FFFF;
+            padding: 10px 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 5px;
+            text-transform: uppercase;
+        }
+        .control-btn:hover {
+            background: #00FFFF;
+            color: #000000;
+            box-shadow: 0 0 15px #00FFFF;
+        }
+        .background-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.15) 0%, rgba(0, 0, 0, 1) 70%);
+            z-index: -1;
+            animation: glowPulse 10s infinite alternate;
+        }
+        @keyframes glowPulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+        @media (max-width: 768px) {
+            .intro h1 { font-size: 1.8em; }
+            .intro p { font-size: 0.9em; }
+            .container { min-height: 600px; padding: 20px; }
+            .description-area { font-size: 0.9em; padding: 15px; }
+            nav ul li { margin: 0 15px; }
+            .controls { flex-direction: column; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-glow"></div>
+    <nav>
+        <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#mapa">Mapa Mental</a></li>
+            <li><a href="#contacto">Contacto</a></li>
+        </ul>
+    </nav>
+
+    <div class="intro">
+        <h1>Mapa Mental Interactivo</h1>
+        <p>Explora una estructura fija y profesional que organiza áreas clave de trabajo. Haz clic en los nodos para expandir ramas o mostrar descripciones detalladas debajo, conectado por líneas verdes discontinuas en un diseño horizontal y ordenado.</p>
+    </div>
+
+    <div class="container" id="mapa">
+        <svg></svg>
+        <div class="controls">
+            <button class="control-btn" onclick="resetMap()">Reiniciar</button>
+            <button class="control-btn" onclick="expandAll()">Expandir Todo</button>
+        </div>
+    </div>
+
+    <div class="description-area" id="descriptionArea">
+        <h3 id="descriptionTitle"></h3>
+        <p id="descriptionText"></p>
+    </div>
+
+    <script>
+        // Datos del mapa mental
+        const data = {
+            name: "Mapa Mental",
+            description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+            children: [
+                {
+                    name: "Docencia",
+                    description: "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                    children: [
+                        { name: "Biología Celular (Ped. Biología)", description: "Ut enim ad minim veniam, quis nostrud exercitation ullamco." },
+                        { name: "Biología Cs. Salud (Fono)", description: "Duis aute irure dolor in reprehenderit in voluptate velit." },
+                        { name: "Biología y Qca (UVM)", description: "Excepteur sint occaecat cupidatat non proident." }
+                    ]
+                },
+                {
+                    name: "Gestión",
+                    description: "Ut labore et dolore magna aliqua, sed do eiusmod tempor.",
+                    children: [
+                        { name: "Sustentabilidad", description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit." },
+                        { name: "Comisión Curricular", description: "Quis nostrud exercitation ullamco laboris nisi ut aliquip." },
+                        { name: "Química y Farmacia", description: "Duis aute irure dolor in reprehenderit in voluptate velit." }
+                    ]
+                },
+                {
+                    name: "VCM",
+                    description: "Consectetur adipiscing elit, sed do eiusmod tempor incididunt.",
+                    children: [
+                        { name: "ADAIN", description: "Ut enim ad minim veniam, quis nostrud exercitation ullamco." },
+                        { name: "Sylvia", description: "Excepteur sint occaecat cupidatat non proident." }
+                    ]
+                },
+                {
+                    name: "Investigación",
+                    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                    children: [
+                        { name: "Natalia (Nutri)", description: "Sed do eiusmod tempor incididunt ut labore et dolore." },
+                        { name: "Christian (USS)", description: "Ut enim ad minim veniam, quis nostrud exercitation ullamco." },
+                        { name: "Edgardo (FALP)", description: "Duis aute irure dolor in reprehenderit in voluptate velit." },
+                        { name: "Riveros (UPLA)", description: "Excepteur sint occaecat cupidatat non proident." },
+                        { name: "Sylvia (UPLA)", description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit." },
+                        { name: "David (UNAB)", description: "Quis nostrud exercitation ullamco laboris nisi ut aliquip." }
+                    ]
+                },
+                {
+                    name: "Personal",
+                    description: "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                    children: [
+                        { name: "Libro", description: "Ut enim ad minim veniam, quis nostrud exercitation ullamco." },
+                        { name: "Web", description: "Duis aute irure dolor in reprehenderit in voluptate velit." },
+                        { name: "Empresa", description: "Excepteur sint occaecat cupidatat non proident." }
+                    ]
+                }
+            ]
+        };
+
+        // Configuración inicial
+        const container = document.querySelector('.container');
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        const svg = d3.select("svg")
+            .attr("width", width)
+            .attr("height", height);
+        const g = svg.append("g");
+
+        // Elementos de descripción
+        const descriptionArea = document.getElementById('descriptionArea');
+        const descriptionTitle = document.getElementById('descriptionTitle');
+        const descriptionText = document.getElementById('descriptionText');
+
+        // Crear jerarquía y layout
+        const root = d3.hierarchy(data);
+        const treeLayout = d3.tree()
+            .size([height - 200, width - 300])
+            .separation((a, b) => (a.parent === b.parent ? 1.5 : 2));
+        treeLayout(root);
+
+        // Ajustar espaciado horizontal
+        root.descendants().forEach(d => d.y = d.depth * 350);
+
+        // Funciones
+        const showDescription = (d) => {
+            descriptionTitle.textContent = d.data.name;
+            descriptionText.textContent = d.data.description;
+            descriptionArea.classList.add('active');
+        };
+
+        const hideDescription = () => descriptionArea.classList.remove('active');
+
+        const toggleNode = (d) => {
+            if (d.children) {
+                d._children = d.children;
+                d.children = null;
+            } else if (d._children) {
+                d.children = d._children;
+                d._children = null;
+            }
+            update(d);
+        };
+
+        // Actualizar visualización
+        function update(source) {
+            const nodes = root.descendants();
+            const links = root.links();
+
+            // Enlaces con corrección de alineación
+            const link = g.selectAll(".link")
+                .data(links, d => d.target.data.name);
+
+            link.enter().append("path")
+                .attr("class", "link")
+                .merge(link)
+                .transition()
+                .duration(750)
+                .attr("d", d => {
+                    const sourceRect = d.source.data.rect || { width: 0, height: 0 };
+                    const targetRect = d.target.data.rect || { width: 0, height: 0 };
+                    const sourceX = d.source.y + sourceRect.width / 2; // Borde derecho del padre
+                    const sourceY = d.source.x; // Centro vertical del padre
+                    const targetX = d.target.y - targetRect.width / 2; // Borde izquierdo del hijo
+                    const targetY = d.target.x; // Centro vertical del hijo
+                    // Asegurar que la línea pase por el medio sin solaparse
+                    const midX = (sourceX + targetX) / 2;
+                    return `M${sourceX},${sourceY} H${midX} V${targetY} H${targetX}`;
+                });
+
+            link.exit().transition().duration(750).remove();
+
+            // Nodos
+            const node = g.selectAll(".node")
+                .data(nodes, d => d.data.name);
+
+            const nodeEnter = node.enter().append("g")
+                .attr("class", d => {
+                    if (d.depth === 0) return "node root";
+                    if (d.children || d._children) return "node category";
+                    return "node leaf";
+                })
+                .attr("transform", d => `translate(${d.y},${d.x})`);
+
+            // Agregar texto
+            const text = nodeEnter.append("text")
+                .attr("dy", "0.35em")
+                .attr("text-anchor", "middle")
+                .text(d => d.data.name);
+
+            // Agregar rectángulo
+            nodeEnter.insert("rect", "text")
+                .attr("rx", 8)
+                .each(function(d) {
+                    const bbox = this.nextSibling.getBBox();
+                    const paddingX = 24;
+                    const paddingY = 10;
+                    d.data.rect = {
+                        width: bbox.width + paddingX,
+                        height: bbox.height + paddingY
+                    };
+                    d3.select(this)
+                        .attr("width", d.data.rect.width)
+                        .attr("height", d.data.rect.height)
+                        .attr("x", -d.data.rect.width / 2)
+                        .attr("y", -d.data.rect.height / 2);
+                })
+                .on("click", (event, d) => {
+                    if ((d.children || d._children) && d.depth !== 0) {
+                        toggleNode(d);
+                    }
+                    showDescription(d);
+                })
+                .on("mouseover", (event, d) => {
+                    const tooltip = d3.select("body").append("div")
+                        .attr("class", "tooltip")
+                        .style("left", `${event.pageX + 15}px`)
+                        .style("top", `${event.pageY - 10}px`)
+                        .text(d.data.description);
+                    const tooltipRect = tooltip.node().getBoundingClientRect();
+                    if (tooltipRect.right > window.innerWidth) tooltip.style("left", `${event.pageX - tooltipRect.width - 15}px`);
+                    if (tooltipRect.bottom > window.innerHeight) tooltip.style("top", `${event.pageY - tooltipRect.height - 10}px`);
+                })
+                .on("mouseout", () => d3.select(".tooltip").remove());
+
+            // Actualizar posiciones
+            node.merge(nodeEnter)
+                .transition()
+                .duration(750)
+                .attr("transform", d => `translate(${d.y},${d.x})`);
+
+            node.exit().transition().duration(750).remove();
+
+            // Centrar la red
+            const bounds = g.node().getBBox();
+            g.transition()
+                .duration(750)
+                .attr("transform", `translate(${(width - bounds.width) / 2 - bounds.x},${(height - bounds.height) / 2 - bounds.y})`);
+        }
+
+        // Funciones de control
+        const resetMap = () => {
+            root.descendants().forEach(d => {
+                if (d._children) {
+                    d.children = d._children;
+                    d._children = null;
+                }
+            });
+            update(root);
+            hideDescription();
+        };
+
+        const expandAll = () => {
+            root.descendants().forEach(d => {
+                if (d._children) {
+                    d.children = d._children;
+                    d._children = null;
+                }
+            });
+            update(root);
+            hideDescription();
+        };
+
+        // Inicializar
+        update(root);
+
+        // Redimensionar responsivamente
+        window.addEventListener('resize', () => {
+            const newWidth = container.clientWidth;
+            const newHeight = container.clientHeight;
+            svg.attr("width", newWidth).attr("height", newHeight);
+            update(root);
+        });
+    </script>
+</body>
+</html>

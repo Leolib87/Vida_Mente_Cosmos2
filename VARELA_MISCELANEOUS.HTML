@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Francisco Varela: Contributions to Miscellaneous Works - 2025</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-green: #00FF00;
+            --neon-cyan: #00FFFF;
+            --black-bg: #000000;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: var(--black-bg);
+            color: var(--neon-green);
+            font-family: 'Orbitron', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        nav ul li {
+            margin: 0 20px;
+        }
+        nav ul li a {
+            color: var(--neon-green);
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        .main-container {
+            max-width: 100%;
+            margin: 0;
+            padding: 60px 10px 0 10px;
+            text-align: center;
+            flex: 1;
+            width: 100%;
+        }
+        .intro {
+            margin-bottom: 40px;
+        }
+        .intro h1 {
+            color: var(--neon-cyan);
+            font-size: 2.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 20px;
+        }
+        .intro p {
+            font-size: 1.1em;
+            max-width: 1000px;
+            margin: 0 auto 15px;
+        }
+        .highlight {
+            color: var(--neon-cyan);
+            font-weight: bold;
+        }
+        .filter-container {
+            margin-bottom: 20px;
+        }
+        .filter-container input {
+            padding: 10px;
+            font-size: 1em;
+            font-family: 'Orbitron', sans-serif;
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--neon-green);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+            border-radius: 5px;
+            outline: none;
+            width: 300px;
+            transition: box-shadow 0.3s ease;
+        }
+        .filter-container input:focus {
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 40px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--neon-cyan);
+        }
+        th {
+            background: rgba(0, 0, 0, 0.9);
+            color: var(--neon-cyan);
+            text-shadow: 0 0 5px var(--neon-cyan);
+            position: sticky;
+            top: 0;
+        }
+        tr:hover {
+            background: rgba(0, 255, 255, 0.1);
+        }
+        .paper-container {
+            margin: 40px 0;
+        }
+        .paper-container h3 {
+            color: var(--neon-cyan);
+            font-size: 1.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 15px;
+        }
+        .paper-iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            border-radius: 5px;
+            display: none;
+        }
+        h2 {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 20px;
+        }
+        @media (max-width: 900px) {
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                padding: 10px 0;
+            }
+            nav ul li {
+                margin: 10px 0;
+            }
+            .intro h1 {
+                font-size: 2em;
+            }
+            .intro p {
+                font-size: 1em;
+                padding: 0 15px;
+            }
+            .filter-container input {
+                width: 100%;
+            }
+            .paper-iframe {
+                height: 500px;
+            }
+        }
+        @media (max-width: 600px) {
+            nav {
+                position: static;
+            }
+            .main-container {
+                padding-top: 10px;
+            }
+            .intro h1 {
+                font-size: 1.5em;
+            }
+            .intro p {
+                font-size: 0.9em;
+            }
+            th, td {
+                font-size: 0.85em;
+                padding: 8px;
+            }
+            .paper-iframe {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navegación -->
+    <nav>
+        <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#contributions">Contributions</a></li>
+            <li><a href="#technical">Technical Reports</a></li>
+            <li><a href="#social">Social Affairs</a></li>
+            <li><a href="#videocassettes">Videocassettes</a></li>
+            <li><a href="#contacto">Acerca de</a></li>
+        </ul>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="main-container" id="inicio">
+        <!-- Introducción -->
+        <div class="intro">
+            <h1>Francisco Varela: Contributions to Miscellaneous Works</h1>
+            <p>Explora las contribuciones de <span class="highlight">Francisco Varela</span> a diversos libros y proyectos, organizadas en <span class="highlight">Contributions to Miscellaneous Books and Projects</span>, <span class="highlight">Technical Reports</span>, <span class="highlight">Articles on Social Affairs</span>, y <span class="highlight">Videocassettes</span>. Esta colección refleja su impacto en ciencia, filosofía y sociedad.</p>
+        </div>
+
+        <!-- Filtro -->
+        <div class="filter-container">
+            <input type="text" id="search" placeholder="Filter by title or author..." onkeyup="filterTables()">
+        </div>
+
+        <!-- Tabla 1: Contributions to Miscellaneous Books and Projects -->
+        <div class="table-container" id="contributions">
+            <h2>Contributions to Miscellaneous Books and Projects</h2>
+            <table id="table-contributions">
+                <thead>
+                    <tr>
+                        <th>Authors</th>
+                        <th>Year</th>
+                        <th>Title</th>
+                        <th>Publication Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Varela, F.</td><td>1974</td><td>Contributions to Cybernetics of Cybernetics</td><td>Biological Computer Laboratory, Univ. of Illinois, Urbana, IL</td></tr>
+                    <tr><td>Varela, F.</td><td>1981</td><td>La biologie de la connaissance</td><td>Les Entretiens de Monaco, Paris, pp. 99-104</td></tr>
+                    <tr><td>Varela, F.</td><td>1982</td><td>Introduction</td><td>in: H. von Foerster, Observing Systems: Selected papers by Heinz von Förster, Edited by F. Varela, Intersystems Publications, Santa Barbara, pp. xi-xvi</td></tr>
+                    <tr><td>Varela, F.</td><td>1985</td><td>Die Kunst des Wissens: Foreword to W.I. Thompson's Die Pazifische Herausforderung: Re-vision des politisches Denkens</td><td>Dianus Trikont Verlag, München, pp. 9-13</td></tr>
+                    <tr><td>Varela, F.</td><td>1986</td><td>Interventions</td><td>in: M. Cazenave (Ed.), Signes et Symbols: Les Voies de la Connaissance, Actes du Colloque Intl. de Tsukuba, Aubin Michel/Radio France, Paris</td></tr>
+                    <tr><td>Varela, F.</td><td>1987</td><td>Interventions</td><td>in: Cretivité et Désordre, Editions L'Original, Paris</td></tr>
+                    <tr><td>Varela, F.</td><td>1989</td><td>Creare la danza, Prefazione per M. Ceruti, La Danza che Crea</td><td>Feltrinelli, Milano, pp. 7-9</td></tr>
+                    <tr><td>Varela, F.</td><td>1994</td><td>Intervention</td><td>in: Dalai-Lama, Au-delà des dogmes, Alban Michel Paris, pp. 226-258</td></tr>
+                    <tr><td>Varela, F.</td><td>1995</td><td>Preface to Heinz von Foerster's Interview</td><td>Stanford Humanities Review, vol. 4, No. 2, pp. 285-288</td></tr>
+                    <tr><td>Varela, F.</td><td>1995</td><td>Il corpo come macchina ontologica: il reale del virtuale</td><td>in: Arslab: I sensi del virtuale, Fabbri Editori, Milano, pp. 148-150</td></tr>
+                    <tr><td>Varela, F.</td><td>1995</td><td>Les mystères du cerveau</td><td>dans: A. Sureau (Ed.), Qu'est-ce qu'on ne sait pas?, Les Rencontres Philosophiques de l'Unesco, Découvertes Gallimard, Paris, p. 54-58</td></tr>
+                    <tr><td>Varela, F.</td><td>1996</td><td>Le corps et la expérience vécue</td><td>dans: Y. Tardan-Masquelier (ed.), Les Chemins du Corps, Albin Michel, Paris, pp. 110-124</td></tr>
+                    <tr><td>Varela, F.</td><td>1999</td><td>The Portable Laboratory</td><td>in: Laboratorium, Antwerpen Open, 27 June-3 Octobre</td></tr>
+                    <tr><td>Varela, F.</td><td>1999</td><td>Dialogue avec C. Castoriadis</td><td>Editions de l'Aubre, Paris, pp. 59-83</td></tr>
+                    <tr><td>Varela, F.</td><td>1999</td><td>Levels of a cat</td><td>in: F. Bonami and H.U. Obrist (Eds.), Dreams, Celtevecchi Artes, Torino</td></tr>
+                    <tr><td>Varela, F.</td><td>1999</td><td>The Portable Laboratory</td><td>in Laboratorium Exhibition, Antwerp, June-October 1999, p. 50-51</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tabla 2: Technical Reports -->
+        <div class="table-container" id="technical">
+            <h2>Technical Reports</h2>
+            <table id="table-technical">
+                <thead>
+                    <tr>
+                        <th>Authors</th>
+                        <th>Year</th>
+                        <th>Title</th>
+                        <th>Publication Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Maturana, H. and F. Varela</td><td>1974</td><td>Autopoiesis: The organization of living systems</td><td>Biological Computer Lab. Res. Rep. 9.4, Univ. of Illinois, Urbana, IL, 130 pp</td></tr>
+                    <tr><td>Varela, F.</td><td>1976</td><td>The grounds for a closed logic</td><td>Biological Computer Lab. Res. Rep. 3.5, Univ. of Illinois, Urbana, IL, 79 pp</td></tr>
+                    <tr><td>Varela, F.</td><td>1987</td><td>The science and technology of cognition: Emergent directions</td><td>Technical Report for Shell Int. Co., London</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tabla 3: Articles on Social Affairs -->
+        <div class="table-container" id="social">
+            <h2>Articles on Social Affairs</h2>
+            <table id="table-social">
+                <thead>
+                    <tr>
+                        <th>Authors</th>
+                        <th>Year</th>
+                        <th>Title</th>
+                        <th>Publication Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Varela, F.</td><td>1973</td><td>Lectura de Illich</td><td>CIDOC Documenta I/V 72, 24pp., Cuernavaca, Mexico</td></tr>
+                    <tr><td>Varela, F.</td><td>1979</td><td>Reflections on the Chilean civil war</td><td>Lindisfarne Newsletter, No. 8, pp. 13-20</td></tr>
+                    <tr><td>Varela, F.</td><td>1983</td><td>La no-violencia en Chile, a la hora de las dudas</td><td>en: Alternativas al Pensamiento Social, L. Weinstein (Ed.), Ediciones Minga, Santiago de Chile</td></tr>
+                    <tr><td>Varela, F. and eight other Chilean scientists</td><td>1984</td><td>Scientists in Pinochet's Chile</td><td>Nature 308:310</td></tr>
+                    <tr><td>Varela, F.</td><td>1986</td><td>Interventions in: The ethics of science (with R.D. Laing, J. Halifax, F. Huxley, and others)</td><td>in: The Elmwood Institute Transcripts No. 1, Berkeley, 7pp</td></tr>
+                    <tr><td>Varela, F.</td><td>1987</td><td>Interventions in: Table Ronde sur Psychoanalyse et Sciences Cognitives</td><td>L'Ane: Le magazine freudien, (Paris), No. 31, pp. 39-50</td></tr>
+                    <tr><td>Varela, F.</td><td>1988</td><td>Les multiples figures de la circularité</td><td>in: M. Elkaïm et C. Sluzki (Eds.), Auto-référence et Thérapie Familiale, Privat Cahiers de Thérapie Familiale et Pratiques de Réseaux No. 9, Toulouse, pp. 45-49; also in M. Elkaïm (ed.), La thérapie familiale en changement, Les Empêcheurs de Penser en Rond, Paris, 1994, pp. 151-155</td></tr>
+                    <tr><td>Varela, F.</td><td>1988</td><td>Le corps pense</td><td>in: J. Miermont et R. Neuburger (eds.), Approche familiale des troubles psychosomatiques, 8e Journée du CEFA, Paris, pp. 83-101</td></tr>
+                    <tr><td>Varela, F.</td><td>1989</td><td>Reflections on the circulation between a biology of cognition and systemic family therapy</td><td>Fam. Proc. 28:15-24</td></tr>
+                    <tr><td>Varela, F.</td><td>1989</td><td>Interventions dans la Table Ronde "Psychanalyse et Sciences"</td><td>Esquisses Psychoanalytiques No. 12, Automne 1989, pp. 5-39</td></tr>
+                    <tr><td>Varela, F.</td><td>1990</td><td>The absolute near side: Reflections on cognitive science and human experience</td><td>in: M. Pacini (Ed.), Valori, Scienza e Trascendenza, Vol. 2, Edizioni della Fondazione Giovanni Agnelli, pp. 225-237; Italian: Educazione dall'ambiente, ambiente dall'educazione, Milano, (in press)</td></tr>
+                    <tr><td>Varela, F.</td><td>1990</td><td>Über Farber und Körper</td><td>in: Wahrnehmung und Individualität, Akademie der Kunst in Wien, pp. 25-31</td></tr>
+                    <tr><td>Varela, F.</td><td>1992</td><td>Penser l'IA: Le point de vue d'un biologiste</td><td>Université d'Eté, Assoc. Descartes (sous presse)</td></tr>
+                    <tr><td>Varela, F.</td><td>1992</td><td>Das zweite Gehirn unseres Körpers</td><td>in: The End of Grand Designs, Heidelberg</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tabla 4: Videocassettes -->
+        <div class="table-container" id="videocassettes">
+            <h2>Videocassettes</h2>
+            <table id="table-videocassettes">
+                <thead>
+                    <tr>
+                        <th>Authors</th>
+                        <th>Year</th>
+                        <th>Title</th>
+                        <th>Publication Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Varela, F.</td><td>1975</td><td>On G. Spencer-Brown's Laws of Form, Part I: Foundations, Part II: Self-reference</td><td>4 video cassettes, 3 hrs, General Systems Depository, School of Advanced Technology, SUNY at Binghampton, Binghampton, NY, No. 042075</td></tr>
+                    <tr><td>Varela, F.</td><td>1984</td><td>Awakening the dream of the warrior</td><td>Ojai Foundation, Ojai, CA, 6 hrs videocassettes (with J. Halifax, R.D. Laing, F. Huxley, and others)</td></tr>
+                    <tr><td>Varela, F.</td><td>1984</td><td>Brain Seminar: Conversations with J. Krishnamurti</td><td>Brockwood Park, England, 3 videocassettes, 3 hrs</td></tr>
+                    <tr><td>Varela, F. and other 3 scientists</td><td>1987</td><td>Mind and Life I: Conversation with H.H. Dalai Lama</td><td>Dharamsala, India, 12 videocassettes</td></tr>
+                    <tr><td>Varela, F. and three others</td><td>1991</td><td>Science and Spirituality</td><td>1 videocassette</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Contenedor para las Contribuciones en Iframes -->
+        <div class="paper-container" id="paper-container">
+            <h3>View Selected Contribution</h3>
+            <!-- Contributions -->
+            <iframe class="paper-iframe" id="con-1974-varela" src="[URL-Con-1974-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="con-1981-varela" src="[URL-Con-1981-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="con-1982-varela" src="[URL-Con-1982-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="con-1985-varela" src="[URL-Con-1985-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="con-1986-varela" src="[URL-Con-1986-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="con-1987-varela" src="[URL-Con-1987-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="con-1989-varela" src="[URL-Con-1989-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="con-1994-varela" src="[URL-Con-1994-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="con-1995-varela1" src="[URL-Con-1995-Varela1]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="con-1995-varela2" src="[URL-Con-1995-Varela2]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="con-1995-varela3" src="[URL-Con-1995-Varela3]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="con-1996-varela" src="[URL-Con-1996-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="con-1999-varela1" src="[URL-Con-1999-Varela1]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="con-1999-varela2" src="[URL-Con-1999-Varela2]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="con-1999-varela3" src="[URL-Con-1999-Varela3]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="con-1999-varela4" src="[URL-Con-1999-Varela4]" frameborder="0"></iframe>
+            <!-- Technical Reports -->
+            <iframe class="paper-iframe" id="tec-1974-maturana" src="[URL-Tec-1974-Maturana]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="tec-1976-varela" src="[URL-Tec-1976-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="tec-1987-varela" src="[URL-Tec-1987-Varela]" frameborder="0"></iframe>
+            <!-- Social Affairs -->
+            <iframe class="paper-iframe" id="soc-1973-varela" src="[URL-Soc-1973-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="soc-1979-varela" src="[URL-Soc-1979-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="soc-1983-varela" src="[URL-Soc-1983-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="soc-1984-varela" src="[URL-Soc-1984-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="soc-1986-varela" src="[URL-Soc-1986-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="soc-1987-varela" src="[URL-Soc-1987-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="soc-1988-varela1" src="[URL-Soc-1988-Varela1]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="soc-1988-varela2" src="[URL-Soc-1988-Varela2]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="soc-1989-varela1" src="[URL-Soc-1989-Varela1]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="soc-1989-varela2" src="[URL-Soc-1989-Varela2]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="soc-1990-varela1" src="[URL-Soc-1990-Varela1]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="soc-1990-varela2" src="[URL-Soc-1990-Varela2]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="soc-1992-varela1" src="[URL-Soc-1992-Varela1]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="soc-1992-varela2" src="[URL-Soc-1992-Varela2]" frameborder="0"></iframe>
+            <!-- Videocassettes -->
+            <iframe class="paper-iframe" id="vid-1975-varela" src="[URL-Vid-1975-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="vid-1984-varela1" src="[URL-Vid-1984-Varela1]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="vid-1984-varela2" src="[URL-Vid-1984-Varela2]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="vid-1987-varela" src="[URL-Vid-1987-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="vid-1991-varela" src="[URL-Vid-1991-Varela]" frameborder="0"></iframe>
+        </div>
+
+        <!-- Sección Acerca de -->
+        <div class="about-container" id="contacto">
+            <h3>Acerca de</h3>
+            <p>Curated by Grok 3, built by xAI. Data compiled as of March 19, 2025.</p>
+        </div>
+    </div>
+
+    <!-- Script para filtrar las tablas y mostrar iframes -->
+    <script>
+        function filterTables() {
+            const input = document.getElementById('search').value.toLowerCase();
+            const tables = [
+                document.getElementById('table-contributions'),
+                document.getElementById('table-technical'),
+                document.getElementById('table-social'),
+                document.getElementById('table-videocassettes')
+            ];
+            const paperContainer = document.getElementById('paper-container');
+            const iframes = document.getElementsByClassName('paper-iframe');
+            let selectedItem = null;
+
+            // Filtrar todas las tablas
+            tables.forEach(table => {
+                const rows = table.getElementsByTagName('tr');
+                for (let i = 1; i < rows.length; i++) {
+                    const cells = rows[i].getElementsByTagName('td');
+                    let match = false;
+                    const authors = cells[0].textContent.toLowerCase().split(',')[0].replace(/[^\w\s]/g, '').trim();
+                    const year = cells[1].textContent.toLowerCase();
+                    const prefix = table.id === 'table-contributions' ? 'con' : table.id === 'table-technical' ? 'tec' : table.id === 'table-social' ? 'soc' : 'vid';
+                    const suffix = rows.length > 1 && table.getElementsByTagName('tr')[i-1].cells[1].textContent === year ? `${i}` : '';
+
+                    for (let j = 0; j < cells.length; j++) {
+                        const cellText = cells[j].textContent.toLowerCase();
+                        if (cellText.includes(input)) {
+                            match = true;
+                            if (!selectedItem && j === 0) {
+                                selectedItem = `${prefix}-${year}-${authors.split(' ')[0]}${suffix}`.toLowerCase();
+                            }
+                            break;
+                        }
+                    }
+                    rows[i].style.display = match ? '' : 'none';
+                }
+            });
+
+            // Ocultar todos los iframes
+            for (let iframe of iframes) {
+                iframe.style.display = 'none';
+            }
+
+            // Mostrar el iframe correspondiente al ítem filtrado
+            if (selectedItem) {
+                const selectedIframe = document.getElementById(selectedItem);
+                if (selectedIframe) {
+                    selectedIframe.style.display = 'block';
+                    paperContainer.style.display = 'block';
+                } else {
+                    paperContainer.style.display = 'none';
+                }
+            } else {
+                paperContainer.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

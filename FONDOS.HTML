@@ -1,0 +1,1509 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fondos para Proyectos de Investigación, Innovación y Emprendimiento en Chile 2025</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #00FF00;    /* Verde neon */
+            --secondary: #00FFFF;  /* Cyan neon */
+            --accent: #FF00FF;     /* Magenta neon */
+            --light: rgba(0, 255, 255, 0.1); /* Fondo claro con transparencia cyan */
+            --dark: #000000;       /* Negro puro */
+            --text: #00FF00;       /* Verde neon para texto */
+            --border: #00FFFF;     /* Cyan para bordes */
+            --success: #00CC00;    /* Verde más oscuro para éxito */
+            --warning: #FFFF00;    /* Amarillo neon para advertencias */
+            --danger: #FF33CC;     /* Rosa neon para peligro */
+            --shadow: 0 0 20px rgba(0, 255, 255, 0.5); /* Sombra cyan brillante */
+        }
+    
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+    
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--dark);
+            overflow-x: hidden;
+        }
+    
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+    
+        h1, h2, h3, h4 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            text-shadow: 0 0 8px var(--primary);
+        }
+    
+        h1 {
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            margin: 1rem 0 1.5rem;
+            text-align: center;
+        }
+    
+        h2 {
+            font-size: clamp(1.4rem, 4vw, 1.8rem);
+            margin-top: 2rem;
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 0.5rem;
+        }
+    
+        h3 {
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            margin-top: 1.5rem;
+        }
+    
+        h4 {
+            font-size: clamp(1rem, 2vw, 1.2rem);
+        }
+    
+        p {
+            margin-bottom: 1rem;
+            line-height: 1.7;
+        }
+    
+        .tabs-container {
+            position: sticky;
+            top: 0;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 10px 0;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            border-radius: 8px;
+            border: 2px solid var(--secondary);
+            overflow-x: auto;
+        }
+    
+        .tabs {
+            display: flex;
+            list-style: none;
+            border-bottom: 1px solid var(--border);
+            padding: 0 10px;
+            min-width: max-content;
+        }
+    
+        .tabs li {
+            margin-right: 4px;
+        }
+    
+        .tabs button {
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 6px 6px 0 0;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--primary);
+            transition: all 0.3s ease;
+            font-size: clamp(0.85rem, 2vw, 1rem);
+            white-space: nowrap;
+        }
+    
+        .tabs button:hover {
+            background: rgba(0, 255, 255, 0.2);
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--secondary);
+        }
+    
+        .tabs button.active {
+            color: #FFFFFF;
+            background: var(--secondary);
+            box-shadow: 0 0 15px var(--secondary);
+        }
+    
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            border: 2px solid var(--secondary);
+            animation: fadeIn 0.5s ease forwards;
+        }
+    
+        .tab-content.active {
+            display: block;
+        }
+    
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    
+        .card {
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: 2px solid var(--secondary);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+    
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 30px var(--secondary);
+        }
+    
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+    
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 0;
+            text-shadow: 0 0 5px var(--primary);
+        }
+    
+        .card-body {
+            color: var(--text);
+        }
+    
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+    
+        .badge-primary { background-color: var(--secondary); color: var(--dark); }
+        .badge-success { background-color: var(--success); color: var(--dark); }
+        .badge-warning { background-color: var(--warning); color: var(--dark); }
+        .badge-danger { background-color: var(--danger); color: var(--dark); }
+    
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+    
+        .chart-container {
+            position: relative;
+            margin: 20px 0;
+            height: 400px;
+            width: 100%;
+        }
+    
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: var(--shadow);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+    
+        thead {
+            background: rgba(0, 255, 255, 0.1);
+            color: var(--secondary);
+        }
+    
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border: 1px solid var(--border);
+        }
+    
+        tr:nth-child(even) {
+            background: rgba(0, 255, 255, 0.03);
+        }
+    
+        tr:hover {
+            background: rgba(0, 255, 255, 0.2);
+        }
+    
+        .collapsible {
+            background: rgba(0, 255, 255, 0.1);
+            color: var(--primary);
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: 2px solid var(--secondary);
+            text-align: left;
+            outline: none;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: 0.4s;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-shadow: 0 0 5px var(--primary);
+        }
+    
+        .active-collapse, .collapsible:hover {
+            background: var(--secondary);
+            color: var(--dark);
+            box-shadow: 0 0 15px var(--secondary);
+        }
+    
+        .content {
+            padding: 0 18px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 0 0 8px 8px;
+            border: 2px solid var(--secondary);
+            border-top: none;
+        }
+    
+        .collapsible:after {
+            content: '\002B';
+            color: currentColor;
+            font-weight: bold;
+            float: right;
+            margin-left: 5px;
+        }
+    
+        .active-collapse:after {
+            content: "\2212";
+        }
+    
+        .info-box {
+            background: rgba(0, 255, 255, 0.1);
+            border-left: 4px solid var(--secondary);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            box-shadow: 0 0 10px var(--secondary);
+        }
+    
+        .warning-box {
+            background: rgba(255, 255, 0, 0.1);
+            border-left: 4px solid var(--warning);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            box-shadow: 0 0 10px var(--warning);
+        }
+    
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: var(--secondary);
+            color: var(--dark);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+    
+        .btn:hover {
+            background-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent);
+            color: #FFFFFF;
+        }
+    
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+    
+            .grid {
+                grid-template-columns: 1fr;
+            }
+    
+            .chart-container {
+                height: 300px;
+            }
+    
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+    
+            .tabs button {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+        }
+    
+        .process-step {
+            display: flex;
+            margin-bottom: 20px;
+            position: relative;
+        }
+    
+        .step-number {
+            background-color: var(--secondary);
+            color: var(--dark);
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-right: 15px;
+            flex-shrink: 0;
+            box-shadow: 0 0 10px var(--secondary);
+        }
+    
+        .step-content {
+            flex: 1;
+        }
+    
+        .step-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--primary);
+            text-shadow: 0 0 5px var(--primary);
+        }
+    
+        .timeline {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+    
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 3px;
+            background-color: var(--border);
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -1.5px;
+        }
+    
+        .timeline-container {
+            position: relative;
+            background-color: inherit;
+            width: 50%;
+        }
+    
+        .timeline-container.left {
+            left: 0;
+            padding-right: 40px;
+        }
+    
+        .timeline-container.right {
+            left: 50%;
+            padding-left: 40px;
+        }
+    
+        .timeline-content {
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.05);
+            position: relative;
+            border-radius: 6px;
+            box-shadow: var(--shadow);
+            border: 2px solid var(--secondary);
+        }
+    
+        .timeline-date {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--secondary);
+            text-shadow: 0 0 5px var(--secondary);
+        }
+    
+        @media screen and (max-width: 600px) {
+            .timeline::after {
+                left: 31px;
+            }
+    
+            .timeline-container {
+                width: 100%;
+                padding-left: 70px;
+                padding-right: 25px;
+            }
+    
+            .timeline-container.right, .timeline-container.left {
+                left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fondos para Proyectos de Investigación, Innovación y Emprendimiento en Chile 2025</h1>
+        
+        <div class="tabs-container">
+            <ul class="tabs">
+                <li><button class="tab-btn active" data-tab="introduccion">Introducción</button></li>
+                <li><button class="tab-btn" data-tab="fondos-publicos">Fondos Públicos</button></li>
+                <li><button class="tab-btn" data-tab="sector-privado">Sector Privado</button></li>
+                <li><button class="tab-btn" data-tab="internacional">Oportunidades Internacionales</button></li>
+                <li><button class="tab-btn" data-tab="procesos">Procesos</button></li>
+                <li><button class="tab-btn" data-tab="analisis">Análisis Comparativo</button></li>
+                <li><button class="tab-btn" data-tab="conclusiones">Conclusiones</button></li>
+            </ul>
+        </div>
+
+        <div id="introduccion" class="tab-content active">
+            <h2>Introducción</h2>
+            <p>En un contexto en el que la competitividad y la capacidad de innovación son fundamentales para el desarrollo económico y social de Chile, las oportunidades de financiación para proyectos de investigación, desarrollo tecnológico e iniciativas de emprendimiento resultan esenciales. Durante el año 2025 se presentan diversas convocatorias que involucran organismos públicos, privados y entidades internacionales.</p>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Objetivo del Informe</h3>
+                </div>
+                <div class="card-body">
+                    <p>Este informe tiene como objetivo ofrecer una guía integral que detalle cada una de las oportunidades de financiación disponibles. Se incluyen tanto aquellas iniciativas actualmente abiertas como programas del pasado que pueden servir de referencia para la formulación y consolidación de proyectos en esta nueva etapa.</p>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <h4>Dirigido a:</h4>
+                <p>Este análisis resulta de vital importancia para investigadores, emprendedores, pymes, instituciones y organizaciones no gubernamentales que buscan apoyo para desarrollar proyectos que impulsen la productividad, la competitividad y la innovación en Chile.</p>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="distribucionFondosChart"></canvas>
+            </div>
+        </div>
+
+        <div id="fondos-publicos" class="tab-content">
+            <h2>Fondos y Convocatorias del Sector Público</h2>
+            <p>En el ámbito público se destacan dos grandes actores: CORFO y ANID. A continuación se presentan los programas y convocatorias más relevantes para el año 2025.</p>
+            
+            <button class="collapsible">Fondos CORFO</button>
+            <div class="content">
+                <p>CORFO, a través de su Gerencia de Innovación y diversas líneas de financiamiento, ha estructurado un ecosistema robusto para apoyar la innovación en las empresas chilenas.</p>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Programa</th>
+                            <th>Entidad</th>
+                            <th>Objetivo</th>
+                            <th>Fechas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Crea y Valida</td>
+                            <td>CORFO</td>
+                            <td>Desarrollo de nuevos o mejorados productos o procesos, desde la fase de prototipo hasta la validación técnica</td>
+                            <td>Apertura: 07/02/2025<br>Cierre: 13/05/2025</td>
+                        </tr>
+                        <tr>
+                            <td>Innova Región con foco en Sostenibilidad</td>
+                            <td>CORFO</td>
+                            <td>Impulsar la innovación en productos/procesos con un claro enfoque en la sostenibilidad</td>
+                            <td>Apertura: 07/02/2025<br>Cierre: 16/04/2025</td>
+                        </tr>
+                        <tr>
+                            <td>Capital Humano para la Innovación</td>
+                            <td>CORFO</td>
+                            <td>Fortalecer capacidades técnicas en I+D+i mediante la incorporación de perfiles profesionales altamente calificados</td>
+                            <td>Apertura: 05/11/2024</td>
+                        </tr>
+                        <tr>
+                            <td>Innova Alta Tecnología</td>
+                            <td>CORFO</td>
+                            <td>Apoyo a innovaciones intensivas en I+D que requieran abordar alta incertidumbre tecnológica</td>
+                            <td>Apertura: 05/11/2024</td>
+                        </tr>
+                        <tr>
+                            <td>Programa de Absorción Tecnológica para la Innovación</td>
+                            <td>CORFO</td>
+                            <td>Contribuir a la modernización y fortalecimiento tecnológico en pymes mediante la absorción de nuevas tecnologías</td>
+                            <td>Apertura: 05/11/2024</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <button class="collapsible">Convocatorias ANID</button>
+            <div class="content">
+                <p>ANID (Agencia Nacional de Investigación y Desarrollo) es responsable de impulsar la investigación científica y la transferencia de conocimiento en el país.</p>
+                
+                <h3>Concurso de Proyectos Fondecyt de Iniciación 2025</h3>
+                <p>El concurso Fondecyt de Iniciación está orientado a investigadores que están iniciando su carrera, y busca fomentar la investigación científica de calidad.</p>
+                
+                <h3>Concurso de Investigación Tecnológica IDeA 2025</h3>
+                <p>El concurso IDeA está dirigido a proyectos de investigación tecnológica que se espera avancen hacia resultados con aplicaciones prácticas en dos años.</p>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Convocatoria</th>
+                            <th>Entidad</th>
+                            <th>Objetivo</th>
+                            <th>Monto</th>
+                            <th>Fechas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Fondecyt de Iniciación 2025</td>
+                            <td>ANID</td>
+                            <td>Financiar proyectos de investigación de investigadores en etapa incipiente</td>
+                            <td>No especificado</td>
+                            <td>Resultados: 5 de marzo de 2025</td>
+                        </tr>
+                        <tr>
+                            <td>Investigación Tecnológica IDeA 2025</td>
+                            <td>ANID</td>
+                            <td>Apoyar el financiamiento de proyectos de I+D que validen prototipos avanzados en hasta dos años</td>
+                            <td>Hasta $237 millones CLP</td>
+                            <td>Inicio: 21/11/2024<br>Cierre: 20/03/2025</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="convocatoriasChart"></canvas>
+            </div>
+
+            <div class="warning-box">
+                <h4>Importante:</h4>
+                <p>En algunas convocatorias CORFO la información sobre el monto asignado no se especifica abiertamente, ya que depende del proyecto y del análisis técnico realizado en cada postulación. Se recomienda a los interesados consultar las bases de cada convocatoria a través de los enlaces proporcionados.</p>
+            </div>
+        </div>
+
+        <div id="sector-privado" class="tab-content">
+            <h2>Iniciativas del Sector Privado y Alianzas Estratégicas</h2>
+            <p>El sector privado en Chile complementa la oferta de financiamiento y apoyo mediante iniciativas que abarcan desde aceleradoras de tecnología hasta esquemas de financiamiento para pymes.</p>
+            
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Accelerator of Efficient Technologies</h3>
+                        <span class="badge badge-success">Activo</span>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Entidad:</strong> Proyecto de aceleración impulsado por Aster</p>
+                        <p><strong>Objetivo:</strong> Apoyar la innovación climática, concentrándose en startups que desarrollen soluciones tecnológicas eficientes en temas ambientales.</p>
+                        <p><strong>Monto Asignado:</strong> USD 400,000</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Financiamiento para PYMES</h3>
+                        <span class="badge badge-primary">En curso</span>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Entidad:</strong> Maxxa, Symbiotics y Delphos</p>
+                        <p><strong>Objetivo:</strong> Proveer acceso a financiamiento innovador para pequeñas y medianas empresas.</p>
+                        <p><strong>Monto Asignado:</strong> USD 10.6 millones</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Capital Semilla Emprende</h3>
+                        <span class="badge badge-warning">Próximamente</span>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Entidad:</strong> Sercotec</p>
+                        <p><strong>Objetivo:</strong> Apoyar a emprendedores en la fase inicial de un negocio.</p>
+                        <p><strong>Características:</strong> Enfocado en nuevos emprendimientos con potencial de crecimiento.</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Capital Abeja Emprende</h3>
+                        <span class="badge badge-warning">Próximamente</span>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Entidad:</strong> Sercotec</p>
+                        <p><strong>Objetivo:</strong> Impulsar a mujeres emprendedoras a iniciar sus propios negocios.</p>
+                        <p><strong>Características:</strong> Enfatiza la igualdad y la inclusión; sector con menor participación femenina.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="sectorPrivadoChart"></canvas>
+            </div>
+        </div>
+
+        <div id="internacional" class="tab-content">
+            <h2>Oportunidades Internacionales y Becas</h2>
+            <p>Además de las fuentes nacionales, existen diversos programas de cooperación internacional y becas que facilitan el intercambio académico, el fortalecimiento de capacidades investigativas y la internacionalización de proyectos.</p>
+            
+            <button class="collapsible">Programas de Becas y Movilidad</button>
+            <div class="content">
+                <h3>Programa Fulbright</h3>
+                <p><strong>Entidad:</strong> Fulbright U.S. Student Program</p>
+                <p><strong>Objetivo:</strong> Ofrecer becas para estudiantes y profesionales que deseen participar en programas de intercambio académico y cultural.</p>
+                <p><strong>Convocatoria 2025-2026:</strong> Las aplicaciones ya han cerrado. Se prevé que la próxima convocatoria (2026-2027) se abra en la primavera de 2025.</p>
+                
+                <h3>Becas Nelson Mandela (AGCID)</h3>
+                <p><strong>Entidad:</strong> Agencia Chilena de Cooperación Internacional para el Desarrollo (AGCID)</p>
+                <p><strong>Objetivo:</strong> Ofrecer becas de posgrado a profesionales keniatas, como parte del "Nelson Mandela South-South Cooperation Program".</p>
+                <p><strong>Beneficios:</strong> Cobertura total de matrícula, pasaje aéreo (solo ida), estipendio de mantenimiento, seguro y apoyo para materiales.</p>
+                <p><strong>Fechas:</strong> Postulaciones para 2025, con inicio de estudios entre marzo y septiembre de 2025.</p>
+            </div>
+            
+            <button class="collapsible">Programas de Apoyo a Startups Internacionales</button>
+            <div class="content">
+                <h3>Start-Up Chile: Programas Ignite y Apply!</h3>
+                <p><strong>Start-Up Chile Ignite Program:</strong></p>
+                <ul>
+                    <li><strong>Objetivo:</strong> Acelerar startups que cuenten con un producto o servicio funcional y que estén en etapas tempranas.</li>
+                    <li><strong>Beneficios:</strong> Fondos sin capital (equity-free) de aproximadamente $25 millones de pesos chilenos, espacio de coworking, y programas de aceleración.</li>
+                </ul>
+                
+                <p><strong>Apply! – Start-Up Chile:</strong></p>
+                <ul>
+                    <li><strong>Objetivo:</strong> Brindar apoyo a empresas tecnológicas innovadoras y de alto impacto global.</li>
+                    <li><strong>Proceso:</strong> Apertura de aplicaciones el 7 de noviembre de 2025. Resultados en febrero de 2026.</li>
+                    <li><strong>Beneficios:</strong> Financiamiento, acompañamiento personalizado, acceso a redes de mentores e inversionistas, y apoyo en trámites migratorios.</li>
+                </ul>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="becasInternacionalesChart"></canvas>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Programa</th>
+                        <th>Entidad</th>
+                        <th>Destinatarios</th>
+                        <th>Beneficios</th>
+                        <th>Fechas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Fulbright (2025-2026)</td>
+                        <td>Fulbright U.S. Student Program</td>
+                        <td>Estudiantes y profesionales estadounidenses; no estadounidenses a través de sus comisiones locales</td>
+                        <td>Becas de intercambio académico y cultural</td>
+                        <td>Convocatoria cerrada; Próxima: Primavera 2025</td>
+                    </tr>
+                    <tr>
+                        <td>Becas Nelson Mandela</td>
+                        <td>AGCID, Gobierno de Chile</td>
+                        <td>Profesionales keniatas</td>
+                        <td>Cobertura total en matrícula, pasaje, estipendio, seguros</td>
+                        <td>Inicio: Marzo–Septiembre 2025</td>
+                    </tr>
+                    <tr>
+                        <td>Start-Up Chile Apply!</td>
+                        <td>Start-Up Chile</td>
+                        <td>Empresas tecnológicas y escalables</td>
+                        <td>Aceleración, financiamiento, espacio y apoyo en trámites migratorios</td>
+                        <td>Apertura: 07/11/2025; Resultados: Febrero 2026</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="procesos" class="tab-content">
+            <h2>Procesos y Flujos de Postulación</h2>
+            <p>Para facilitar la comprensión de los procesos de postulación en las principales convocatorias, se presentan las etapas generales que atraviesan las postulaciones en programas como los de CORFO y ANID.</p>
+            
+            <div class="chart-container">
+                <canvas id="procesoPostulacionChart"></canvas>
+            </div>
+            
+            <h3>Etapas del Proceso de Postulación</h3>
+            
+            <div class="process-step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <div class="step-title">Inicio de la Postulación</div>
+                    <p>El proceso se inicia cuando el organismo abre la convocatoria y se da a conocer el llamado.</p>
+                </div>
+            </div>
+            
+            <div class="process-step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <div class="step-title">Recepción de Documentación</div>
+                    <p>Se reciben y registran todas las postulaciones dentro del plazo establecido.</p>
+                </div>
+            </div>
+            
+            <div class="process-step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <div class="step-title">Revisión de Requisitos</div>
+                    <p>Se efectúa una verificación inicial para confirmar la elegibilidad del proyecto o postulante.</p>
+                </div>
+            </div>
+            
+            <div class="process-step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <div class="step-title">Evaluación Técnica y Financiera</div>
+                    <p>En esta fase se profundiza en la calidad y viabilidad del proyecto, incluyendo análisis financiero y técnico.</p>
+                </div>
+            </div>
+            
+            <div class="process-step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <div class="step-title">Evaluación por Comité de Expertos</div>
+                    <p>Un panel de especialistas revisa y califica cada proyecto según criterios específicos de la convocatoria.</p>
+                </div>
+            </div>
+            
+            <div class="process-step">
+                <div class="step-number">6</div>
+                <div class="step-content">
+                    <div class="step-title">Adjudicación / Publicación de Resultados</div>
+                    <p>Se publican los resultados de la evaluación, indicando los proyectos seleccionados y rechazados.</p>
+                </div>
+            </div>
+            
+            <div class="process-step">
+                <div class="step-number">7</div>
+                <div class="step-content">
+                    <div class="step-title">Firma de Convenios y Ejecución del Proyecto</div>
+                    <p>La evaluación culmina con la formalización de los convenios de financiamiento y el inicio de la ejecución.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="analisis" class="tab-content">
+            <h2>Análisis Comparativo y Tablas Resumen</h2>
+            <p>A continuación se presentan tablas que resumen cada grupo de oportunidades de financiación, permitiendo identificar rápidamente las características clave de cada programa y su relevancia para el año 2025.</p>
+            
+            <div class="chart-container">
+                <canvas id="comparativoFondosChart"></canvas>
+            </div>
+            
+            <h3>Tabla General de Fondos Públicos</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Entidad</th>
+                        <th>Programa / Convocatoria</th>
+                        <th>Objetivo Principal</th>
+                        <th>Fechas Relevantes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>CORFO</td>
+                        <td>Crea y Valida</td>
+                        <td>Desarrollar y validar prototipos hasta la escala productiva</td>
+                        <td>07/02/2025 – 13/05/2025</td>
+                    </tr>
+                    <tr>
+                        <td>CORFO</td>
+                        <td>Innova Región con foco en Sostenibilidad</td>
+                        <td>Impulsar innovaciones sostenibles en productos/procesos</td>
+                        <td>07/02/2025 – 16/04/2025</td>
+                    </tr>
+                    <tr>
+                        <td>CORFO</td>
+                        <td>Capital Humano para la Innovación</td>
+                        <td>Reforzar el capital humano en I+D+i en empresas</td>
+                        <td>Apertura desde 05/11/2024</td>
+                    </tr>
+                    <tr>
+                        <td>ANID</td>
+                        <td>Fondecyt de Iniciación 2025</td>
+                        <td>Apoyar proyectos de investigadores incipientes</td>
+                        <td>Fallo 05/03/2025</td>
+                    </tr>
+                    <tr>
+                        <td>ANID</td>
+                        <td>IDeA Investigación Tecnológica 2025</td>
+                        <td>Financiar investigaciones con prototipos avanzados</td>
+                        <td>21/11/2024 – 20/03/2025</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>Tabla General de Fondos Privados y Alianzas</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Entidad / Iniciativa</th>
+                        <th>Programa / Proyecto</th>
+                        <th>Objetivo Principal</th>
+                        <th>Monto / Financiamiento</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Aster (en alianza)</td>
+                        <td>Accelerator of Efficient Technologies</td>
+                        <td>Apoyar la innovación climática y soluciones tecnológicas en startups</td>
+                        <td>USD 400,000</td>
+                    </tr>
+                    <tr>
+                        <td>Maxxa, Symbiotics, Delphos</td>
+                        <td>Financiación para PYMES</td>
+                        <td>Facilitar crédito y financiamiento a pymes</td>
+                        <td>USD 10.6 millones</td>
+                    </tr>
+                    <tr>
+                        <td>Sercotec</td>
+                        <td>Capital Semilla Emprende</td>
+                        <td>Facilitar la creación de nuevos emprendimientos</td>
+                        <td>No especificado</td>
+                    </tr>
+                    <tr>
+                        <td>Sercotec</td>
+                        <td>Capital Abeja Emprende</td>
+                        <td>Impulsar a mujeres emprendedoras</td>
+                        <td>No especificado</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>Tabla General de Oportunidades Internacionales y Becas</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Programa</th>
+                        <th>Entidad</th>
+                        <th>Destinatarios</th>
+                        <th>Beneficios Clave</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Fulbright (2025-2026)</td>
+                        <td>Fulbright U.S. Student Program</td>
+                        <td>Estudiantes y profesionales estadounidenses/internacionales</td>
+                        <td>Becas de intercambio académico y cultural</td>
+                    </tr>
+                    <tr>
+                        <td>Becas Nelson Mandela</td>
+                        <td>AGCID (Chile)</td>
+                        <td>Profesionales keniatas en gobierno, academia, y CS</td>
+                        <td>Cobertura total en matrícula, viaje, estipendio, seguros</td>
+                    </tr>
+                    <tr>
+                        <td>Start-Up Chile Ignite</td>
+                        <td>Start-Up Chile</td>
+                        <td>Startups innovadoras en etapas tempranas</td>
+                        <td>Aceleración, espacio de coworking, financiamiento equity-free</td>
+                    </tr>
+                    <tr>
+                        <td>Apply! – Start-Up Chile</td>
+                        <td>Start-Up Chile</td>
+                        <td>Startups escalables con potencial global</td>
+                        <td>Financiamiento, mentorías, acceso a redes de inversión</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="conclusiones" class="tab-content">
+            <h2>Conclusiones</h2>
+            <p>La revisión en profundidad de las oportunidades de financiamiento para el año 2025 en Chile permite extraer las siguientes conclusiones y recomendaciones:</p>
+            
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Diversificación de Fuentes</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Tanto el sector público (CORFO, ANID) como el privado (aceleradoras y financiamiento para pymes) ofrecen un abanico diverso de oportunidades que abarcan desde la validación de prototipos hasta créditos para emprendimientos. Esta diversificación genera un ecosistema robusto y complementario.</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Enfoque en I+D+i</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Los programas como Crea y Valida, Innova Alta Tecnología y la convocatoria IDeA demuestran un fuerte compromiso con las iniciativas de investigación y desarrollo tecnológico, constituyendo un pilar fundamental para el avance industrial y académico de Chile.</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Fortalecimiento del Capital Humano</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Tanto en programas de CORFO (Capital Humano para la Innovación) como en las becas internacionales (Fulbright y Becas Nelson Mandela), se evidencia la relevancia de invertir en el talento humano, elemento central para sostener la innovación a largo plazo.</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Internacionalización y Cooperación</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Los programas internacionales no solo permiten la movilidad académica y el intercambio cultural, sino que también posicionan a Chile como un hub de innovación en la región, atrayendo talento y recursos de distintas partes del mundo.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <h3>Recomendaciones para Postulantes</h3>
+            <ul>
+                <li>Es clave revisar en detalle las bases de cada convocatoria, ya que cada programa cuenta con requisitos específicos (por ejemplo, niveles TRL en el IDeA o cofinanciamiento en proyectos ANID).</li>
+                <li>Estar al tanto de las actualizaciones oficiales en casos de modificaciones en fechas o en documentación de apoyo.</li>
+                <li>En el caso de programas internacionales, es indispensable preparar documentos en el idioma requerido y garantizar la alineación con los objetivos estratégicos del programa convocante.</li>
+            </ul>
+            
+            <div class="info-box">
+                <h4>Resumen de Hallazgos:</h4>
+                <ul>
+                    <li><strong>Fondos Públicos:</strong> CORFO y ANID ofrecen convocatorias sólidas para el desarrollo de prototipos y la investigación de punta.</li>
+                    <li><strong>Fondos Privados:</strong> Iniciativas como Accelerator de Tecnologías Eficientes y el financiamiento de Maxxa resaltan la importancia de la innovación en el sector privado para apoyar el crecimiento de pymes.</li>
+                    <li><strong>Internacional:</strong> Programas como Fulbright, Becas Nelson Mandela y Start-Up Chile potencian la internacionalización y la vinculación global del ecosistema de innovación chileno.</li>
+                </ul>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="conclusionesChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize window.chartInstances if it doesn't exist
+            if (!window.chartInstances) window.chartInstances = {};
+            
+            // Tab switching functionality
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons and contents
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Add active class to clicked button and corresponding content
+                    button.classList.add('active');
+                    const tabId = button.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Initialize charts for the active tab
+                    initializeChartsForTab(tabId);
+                    
+                    // Scroll to top of content area
+                    window.scrollTo({
+                        top: document.querySelector('.tabs-container').offsetTop,
+                        behavior: 'smooth'
+                    });
+                });
+            });
+            
+            // Collapsible sections functionality
+            const coll = document.getElementsByClassName("collapsible");
+            for (let i = 0; i < coll.length; i++) {
+                coll[i].addEventListener("click", function() {
+                    this.classList.toggle("active-collapse");
+                    const content = this.nextElementSibling;
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    }
+                });
+            }
+            
+            // Initialize charts for the active tab on page load
+            const activeTab = document.querySelector('.tab-content.active').id;
+            initializeChartsForTab(activeTab);
+            
+            // Handle window resize to update charts
+            window.addEventListener('resize', function() {
+                Object.values(window.chartInstances).forEach(chart => {
+                    if (chart && typeof chart.resize === 'function') {
+                        chart.resize();
+                    }
+                });
+            });
+        });
+        
+        function initializeChartsForTab(tabId) {
+            switch(tabId) {
+                case 'introduccion':
+                    initDistribucionFondosChart();
+                    break;
+                case 'fondos-publicos':
+                    initConvocatoriasChart();
+                    break;
+                case 'sector-privado':
+                    initSectorPrivadoChart();
+                    break;
+                case 'internacional':
+                    initBecasInternacionalesChart();
+                    break;
+                case 'procesos':
+                    initProcesoPostulacionChart();
+                    break;
+                case 'analisis':
+                    initComparativoFondosChart();
+                    break;
+                case 'conclusiones':
+                    initConclusionesChart();
+                    break;
+            }
+        }
+        
+        function initDistribucionFondosChart() {
+            const ctx = document.getElementById('distribucionFondosChart');
+            if (!ctx) return;
+            
+            // Destroy existing chart if it exists
+            if (window.chartInstances.distribucionFondos) {
+                window.chartInstances.distribucionFondos.destroy();
+            }
+            
+            window.chartInstances.distribucionFondos = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Sector Público', 'Sector Privado', 'Cooperación Internacional'],
+                    datasets: [{
+                        data: [60, 25, 15],
+                        backgroundColor: [
+                            '#3498DB',
+                            '#27AE60',
+                            '#F39C12'
+                        ],
+                        borderColor: [
+                            '#2980B9',
+                            '#1E8449',
+                            '#D68910'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Distribución de Fondos por Sector',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function initConvocatoriasChart() {
+            const ctx = document.getElementById('convocatoriasChart');
+            if (!ctx) return;
+            
+            // Destroy existing chart if it exists
+            if (window.chartInstances.convocatorias) {
+                window.chartInstances.convocatorias.destroy();
+            }
+            
+            window.chartInstances.convocatorias = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Crea y Valida', 'Innova Región', 'Capital Humano', 'Fondecyt', 'IDeA'],
+                    datasets: [{
+                        label: 'Duración en Meses',
+                        data: [24, 18, 12, 36, 24],
+                        backgroundColor: '#3498DB',
+                        borderColor: '#2980B9',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Duración (Meses)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Programa'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Duración de Programas de Fondos Públicos',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function initSectorPrivadoChart() {
+            const ctx = document.getElementById('sectorPrivadoChart');
+            if (!ctx) return;
+            
+            // Destroy existing chart if it exists
+            if (window.chartInstances.sectorPrivado) {
+                window.chartInstances.sectorPrivado.destroy();
+            }
+            
+            window.chartInstances.sectorPrivado = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Accelerator Tech', 'Financiamiento PYMES'],
+                    datasets: [{
+                        label: 'Monto en USD',
+                        data: [400000, 10600000],
+                        backgroundColor: '#27AE60',
+                        borderColor: '#1E8449',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Monto (USD)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Iniciativa'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Financiamiento del Sector Privado',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function initBecasInternacionalesChart() {
+            const ctx = document.getElementById('becasInternacionalesChart');
+            if (!ctx) return;
+            
+            // Destroy existing chart if it exists
+            if (window.chartInstances.becasInternacionales) {
+                window.chartInstances.becasInternacionales.destroy();
+            }
+            
+            window.chartInstances.becasInternacionales = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'Cobertura Matrícula',
+                        'Estipendio',
+                        'Alojamiento',
+                        'Transporte',
+                        'Seguro',
+                        'Networking'
+                    ],
+                    datasets: [
+                        {
+                            label: 'Fulbright',
+                            data: [100, 90, 80, 100, 100, 85],
+                            fill: true,
+                            backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                            borderColor: 'rgba(52, 152, 219, 1)',
+                            pointBackgroundColor: 'rgba(52, 152, 219, 1)',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(52, 152, 219, 1)'
+                        },
+                        {
+                            label: 'Nelson Mandela',
+                            data: [100, 80, 60, 70, 90, 70],
+                            fill: true,
+                            backgroundColor: 'rgba(243, 156, 18, 0.2)',
+                            borderColor: 'rgba(243, 156, 18, 1)',
+                            pointBackgroundColor: 'rgba(243, 156, 18, 1)',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(243, 156, 18, 1)'
+                        },
+                        {
+                            label: 'Start-Up Chile',
+                            data: [80, 70, 60, 50, 40, 100],
+                            fill: true,
+                            backgroundColor: 'rgba(39, 174, 96, 0.2)',
+                            borderColor: 'rgba(39, 174, 96, 1)',
+                            pointBackgroundColor: 'rgba(39, 174, 96, 1)',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(39, 174, 96, 1)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    elements: {
+                        line: {
+                            borderWidth: 3
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Comparación de Beneficios en Programas Internacionales',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        }
+        
+        function initProcesoPostulacionChart() {
+            const ctx = document.getElementById('procesoPostulacionChart');
+            if (!ctx) return;
+            
+            // Destroy existing chart if it exists
+            if (window.chartInstances.procesoPostulacion) {
+                window.chartInstances.procesoPostulacion.destroy();
+            }
+            
+            window.chartInstances.procesoPostulacion = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Revisión Requisitos', 'Evaluación Técnica', 'Comité Expertos', 'Adjudicación', 'Firma Convenios'],
+                    datasets: [{
+                        label: 'Duración Promedio (Días)',
+                        data: [10, 30, 20, 15, 25],
+                        backgroundColor: [
+                            '#3498DB',
+                            '#27AE60',
+                            '#F39C12',
+                            '#9B59B6',
+                            '#1ABC9C'
+                        ],
+                        borderColor: [
+                            '#2980B9',
+                            '#1E8449',
+                            '#D68910',
+                            '#8E44AD',
+                            '#16A085'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Días (Promedio)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Etapa del Proceso'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Duración Promedio de Etapas de Postulación',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function initComparativoFondosChart() {
+            const ctx = document.getElementById('comparativoFondosChart');
+            if (!ctx) return;
+            
+            // Destroy existing chart if it exists
+            if (window.chartInstances.comparativoFondos) {
+                window.chartInstances.comparativoFondos.destroy();
+            }
+            
+            window.chartInstances.comparativoFondos = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['CORFO', 'ANID', 'Sector Privado', 'Internacional'],
+                    datasets: [
+                        {
+                            label: 'Cantidad de Programas',
+                            data: [5, 2, 4, 4],
+                            backgroundColor: '#3498DB',
+                            borderColor: '#2980B9',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Complejidad de Postulación (1-10)',
+                            data: [7, 8, 5, 6],
+                            backgroundColor: '#F39C12',
+                            borderColor: '#D68910',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Valor'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Entidad / Sector'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Comparativo de Entidades Financiadoras',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function initConclusionesChart() {
+            const ctx = document.getElementById('conclusionesChart');
+            if (!ctx) return;
+            
+            // Destroy existing chart if it exists
+            if (window.chartInstances.conclusiones) {
+                window.chartInstances.conclusiones.destroy();
+            }
+            
+            window.chartInstances.conclusiones = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [
+                        'Prototipos y Validación',
+                        'Investigación Científica',
+                        'Capital Humano',
+                        'Internacionalización',
+                        'Emprendimiento Femenino'
+                    ],
+                    datasets: [{
+                        data: [30, 25, 15, 20, 10],
+                        backgroundColor: [
+                            '#3498DB',
+                            '#27AE60',
+                            '#F39C12',
+                            '#9B59B6',
+                            '#E74C3C'
+                        ],
+                        borderColor: [
+                            '#2980B9',
+                            '#1E8449',
+                            '#D68910',
+                            '#8E44AD',
+                            '#C0392B'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Áreas Clave de Financiamiento (% de Fondos)',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+<script>window.parent.postMessage({ action: "ready" }, "*"); 
+ 
+window.console = new Proxy(console, {
+  get(target, prop) {
+    if (['log', 'warn', 'error'].includes(prop)) {
+      return new Proxy(target[prop], {
+        apply(fn, thisArg, args) {
+          fn.apply(thisArg, args);
+          window.parent.postMessage({ action: 'console', 
+            type: prop, 
+            args: args.map((arg) => {
+              try {
+                return JSON.stringify(arg).replace(/^["']|["']$/g, '');
+              } catch (e) {
+                return arg;
+              }
+            }) 
+          }, '*');
+        }
+      });
+    }
+    return target[prop];
+  }
+});
+</script></body>
+</html>

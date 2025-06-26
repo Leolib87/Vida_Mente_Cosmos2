@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trabajo en Instituciones de Educación Superior - Análisis 2025</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        :root {
+            --neon-green: #00FF00;
+            --neon-cyan: #00FFFF;
+            --black-bg: #000000;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: var(--black-bg);
+            color: var(--neon-green);
+            font-family: 'Orbitron', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        nav ul li {
+            position: relative;
+            margin: 0 20px;
+        }
+        nav ul li a {
+            color: var(--neon-green);
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        .mega-menu {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            width: 800px;
+            max-width: 90vw;
+            padding: 20px;
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        nav ul li:hover .mega-menu {
+            display: grid;
+            opacity: 1;
+        }
+        .mega-menu h3 {
+            color: var(--neon-cyan);
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px var(--neon-cyan);
+        }
+        .mega-menu ul {
+            display: block;
+            padding: 0;
+        }
+        .mega-menu ul li {
+            margin: 5px 0;
+        }
+        .mega-menu a {
+            font-size: 0.9em;
+            color: var(--neon-green);
+            transition: color 0.3s ease;
+        }
+        .mega-menu a:hover {
+            color: #FFFFFF;
+        }
+        .main-container {
+            max-width: 1400px;
+            margin: 80px auto 0;
+            padding: 20px;
+            text-align: center;
+        }
+        .intro {
+            margin-bottom: 40px;
+        }
+        .intro h1 {
+            color: var(--neon-cyan);
+            font-size: 2.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 20px;
+        }
+        .intro p {
+            font-size: 1.1em;
+            max-width: 1000px;
+            margin: 0 auto 15px;
+        }
+        .highlight {
+            color: var(--neon-cyan);
+            font-weight: bold;
+        }
+        .filter-container {
+            margin-bottom: 20px;
+        }
+        .filter-container input {
+            padding: 10px;
+            font-size: 1em;
+            font-family: 'Orbitron', sans-serif;
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--neon-green);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+            border-radius: 5px;
+            outline: none;
+            width: 300px;
+            transition: box-shadow 0.3s ease;
+        }
+        .filter-container input:focus {
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 40px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--neon-cyan);
+        }
+        th {
+            background: rgba(0, 0, 0, 0.9);
+            color: var(--neon-cyan);
+            text-shadow: 0 0 5px var(--neon-cyan);
+            position: sticky;
+            top: 0;
+        }
+        tr:hover {
+            background: rgba(0, 255, 255, 0.1);
+        }
+        a {
+            color: var(--neon-green);
+            text-decoration: none;
+        }
+        a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        #data-table td:last-child a {
+            color: var(--neon-cyan);
+        }
+        .network-container {
+            margin: 50px 0;
+            padding: 30px;
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF;
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .network-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 30px #00FFFF;
+        }
+        .network-container h3 {
+            color: #00FF00;
+            font-size: 1.5em;
+            text-shadow: 0 0 8px #00FF00;
+            border-bottom: 1px solid #00FFFF;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        #network {
+            width: 100%;
+            height: 800px;
+        }
+        .node circle {
+            stroke: #00FFFF;
+            stroke-width: 2px;
+            fill: #00FF00;
+            transition: all 0.3s ease;
+        }
+        .node.category circle {
+            fill: #FF00FF; /* Magenta neón para categorías */
+        }
+        .node:hover circle {
+            fill: #0408FF; /* Azul neón al hover */
+            stroke: #00FFFF;
+            r: d => d.group === "category" ? d.size * 1.2 : 15; /* Aumenta tamaño al hover */
+        }
+        .node text {
+            fill: #00FFFF;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 10px #73FF00;
+            font-size: 11px;
+            pointer-events: none;
+            opacity: 1.0;
+            transition: opacity 0.9s ease;
+        }
+        .node.category text {
+            fill: #FFFF00; /* Amarillo neón para categorías */
+            font-size: 16px;
+            text-shadow: 0 0 10px #FF00FF;
+        }
+        .node:hover text {
+            opacity: 1;
+        }
+        .link {
+            stroke: #00FF00;
+            stroke-opacity: 0.6;
+            stroke-width: 1.5px;
+        }
+        .about-container {
+            margin: 40px 0;
+        }
+        .about-container h3 {
+            color: var(--neon-cyan);
+            font-size: 1.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 15px;
+        }
+        .about-container p {
+            font-size: 1em;
+        }
+        @media (max-width: 900px) {
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                padding: 10px 0;
+            }
+            nav ul li {
+                margin: 10px 0;
+                width: 100%;
+                text-align: center;
+            }
+            .mega-menu {
+                position: static;
+                transform: none;
+                width: 100%;
+                max-width: 100%;
+                grid-template-columns: 1fr;
+                padding: 15px;
+                box-shadow: none;
+                border: 2px solid var(--neon-cyan);
+            }
+            nav ul li:hover .mega-menu {
+                display: block;
+            }
+            .intro h1 {
+                font-size: 2em;
+            }
+            .intro p {
+                font-size: 1em;
+                padding: 0 15px;
+            }
+            .filter-container input {
+                width: 100%;
+            }
+            #network {
+                height: 600px;
+            }
+        }
+        @media (max-width: 600px) {
+            .intro h1 {
+                font-size: 1.5em;
+            }
+            .intro p {
+                font-size: 0.9em;
+            }
+            th, td {
+                font-size: 0.85em;
+                padding: 8px;
+            }
+            #network {
+                height: 500px;
+            }
+            .node text {
+                font-size: 9px;
+            }
+        }
+        @media (max-width: 400px) {
+            #network {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navegación con Mega Menú -->
+    <nav>
+        <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li>
+                <a href="#">Exploración Laboral</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Oportunidades Académicas</h3>
+                        <ul>
+                            <li><a href="#universidades">Universidades</a></li>
+                            <li><a href="#cft">Centros de Formación Técnica</a></li>
+                            <li><a href="#institutos">Institutos Profesionales</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Tendencias 2025</h3>
+                        <ul>
+                            <li><a href="#demanda">Demanda Laboral</a></li>
+                            <li><a href="#perfiles">Perfiles Profesionales</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li><a href="#contacto">Acerca de / Contacto</a></li>
+        </ul>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="main-container" id="inicio">
+        <!-- Introducción -->
+        <div class="intro">
+            <h1>Trabajo en Instituciones de Educación Superior: Oportunidades 2025</h1>
+            <p>El panorama laboral en las <span class="highlight">instituciones de educación superior (IES)</span> en Chile para el <span class="highlight">2025</span> refleja una creciente demanda de profesionales en áreas académicas, administrativas y técnicas. Según estimaciones recientes, las universidades, centros de formación técnica (CFT) e institutos profesionales emplean a más de <span class="highlight">50,000 personas</span> directamente en el país, con un aumento proyectado del <span class="highlight">5-7%</span> anual debido a la expansión de programas y la digitalización educativa.</p>
+            <p>Instituciones como la <span class="highlight">Universidad de Chile</span> y la <span class="highlight">Pontificia Universidad Católica</span> lideran en oferta de empleo académico, mientras que CFTs como <span class="highlight">ENAC</span> e institutos como <span class="highlight">DUOC</span> destacan en roles técnicos y de gestión. Explora las IES a continuación.</p>
+        </div>
+
+        <!-- Filtro -->
+        <div class="filter-container">
+            <input type="text" id="search" placeholder="Filtrar por institución..." onkeyup="filterTable()">
+        </div>
+
+        <!-- Tabla de Datos -->
+        <div class="table-container" id="tabla1">
+            <table id="data-table">
+                <thead>
+                    <tr>
+                        <th>Institución</th>
+                        <th>Descripción</th>
+                        <th>Tipo</th>
+                        <th>Última Actualización</th>
+                        <th>Acceso</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>U. de Chile</td>
+                        <td>Principal universidad pública de Chile, líder en investigación y formación académica.</td>
+                        <td>Pública</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://externouchile.trabajando.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>PUC</td>
+                        <td>Universidad católica de prestigio internacional, enfocada en excelencia académica.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://uccatolica.trabajando.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. Adolfo Ibañez</td>
+                        <td>Institución privada reconocida por su enfoque en negocios y emprendimiento.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://uai.trabajando.cl/empleos/ofertas" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. Católica del Maule</td>
+                        <td>Universidad católica regional con fuerte énfasis en educación y desarrollo local.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://ucatolicamaule.trabajando.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. del Desarrollo</td>
+                        <td>Institución privada innovadora, destacada en diseño y tecnología.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://mercadolaboral.udd.cl/trabajar-en-universidad-del-desarrollo" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. Austral de Chile</td>
+                        <td>Universidad pública en el sur, líder en ciencias y sostenibilidad.</td>
+                        <td>Pública</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://www.uach.cl/trabaja-en-la-uach" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>CFT ENAC</td>
+                        <td>Centro técnico especializado en formación práctica para el trabajo.</td>
+                        <td>CFT</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://enac.trabajando.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. de Viña del Mar</td>
+                        <td>Universidad privada con enfoque en carreras técnicas y profesionales.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://uvm.trabajando.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>PUC de Valparaiso</td>
+                        <td>Institución católica de renombre, destacada en ingeniería y humanidades.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://www.pucv.cl/pucv/site/edic/base/port/concursos_externos.html" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>USACH</td>
+                        <td>Universidad pública histórica, fuerte en tecnología e innovación.</td>
+                        <td>Pública</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://ddp.usach.cl/procesos-de-selecci%C3%B3n-externos" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. Diego Portales</td>
+                        <td>Universidad privada enfocada en ciencias sociales y derecho.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://udp.trabajando.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>DUOC</td>
+                        <td>Instituto profesional líder en formación técnica y tecnológica.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://duoc.trabajando.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. de los Andes</td>
+                        <td>Universidad privada de élite, conocida por su enfoque humanista.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://www.reqlut.com/trabajar-en-universidad-de-los-andes" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. Mayor</td>
+                        <td>Institución privada con programas en salud y artes.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://umayor.trabajando.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. Alberto Hurtado</td>
+                        <td>Universidad jesuita enfocada en justicia social y humanidades.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://www.reqlut.com/trabajar-en-universidad-alberto-hurtado" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>UTEM</td>
+                        <td>Universidad tecnológica pública con énfasis en ingeniería.</td>
+                        <td>Pública</td>
+                        <td>2025-01-24</td>
+                        <td><a href="http://empleos.utem.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. Central</td>
+                        <td>Universidad privada con foco en carreras profesionales aplicadas.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://ucentral.trabajando.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. Finis Terrae</td>
+                        <td>Institución privada destacada en artes y comunicaciones.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://uft.hiringroom.com/jobs?source=linkedinjobs" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>UDLA</td>
+                        <td>Universidad privada con amplia oferta de carreras técnicas.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://udla.trabajando.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>Academia de Humanismo Cristiano</td>
+                        <td>Universidad privada enfocada en ciencias sociales y cultura.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://www.academia.cl/concurso/concurso-para-nuevos-puestos-de-trabajo/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>UBO</td>
+                        <td>Universidad privada con programas en salud y educación.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://ubo.trabajando.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>IACC</td>
+                        <td>Instituto profesional online, líder en educación a distancia.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://iacc.trabajando.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. Andrés Bello</td>
+                        <td>Universidad privada con fuerte presencia nacional y programas diversos.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://unab.trabajando.cl/home/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>UC. de Temuco</td>
+                        <td>Universidad católica regional, enfocada en desarrollo sostenible.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://3w.uct.cl/destacados/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. Arturo Prat</td>
+                        <td>Universidad pública con énfasis en el norte de Chile.</td>
+                        <td>Pública</td>
+                        <td>2025-01-24</td>
+                        <td><a href="http://portal.unap.cl/kb/dewey/app/sispartime/llamado.php" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. Católica del Norte</td>
+                        <td>Universidad católica con enfoque en minería y ciencias.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://www.ucn.cl/trabaja-con-nosotros/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. de Los Lagos</td>
+                        <td>Universidad pública regional, centrada en educación y cultura.</td>
+                        <td>Pública</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://cl.bebee.com/company/universidad-de-los-lagos" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>UC. Silva Henriquez</td>
+                        <td>Universidad católica con foco en inclusión y pedagogía.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://www.ucsh.cl/postulaciones-ucsh/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. Atacama</td>
+                        <td>Universidad pública en el norte, líder en minería y tecnología.</td>
+                        <td>Pública</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://uda.cl/index.php?option=com_content&view=article&id=6206&Itemid=107" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. de Aysen</td>
+                        <td>Universidad pública joven, enfocada en desarrollo patagónico.</td>
+                        <td>Pública</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://www.uaysen.cl/trabaja-con-nosotros" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. de Concepción</td>
+                        <td>Universidad privada tradicional, líder en investigación.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://udec.trabajando.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. de Magallanes</td>
+                        <td>Universidad pública en el extremo sur, enfocada en ciencias polares.</td>
+                        <td>Pública</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://umag.trabajando.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. de Ohiggins</td>
+                        <td>Universidad pública reciente, con énfasis en innovación regional.</td>
+                        <td>Pública</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://www.uoh.cl/trabaja-con-nosotros/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. Playa Ancha</td>
+                        <td>Universidad pública especializada en pedagogía y artes.</td>
+                        <td>Pública</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://empleosupla.trabajando.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. de Talca</td>
+                        <td>Universidad pública con foco en agroindustria y tecnología.</td>
+                        <td>Pública</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://utalca.trabajando.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. de Valparaiso</td>
+                        <td>Universidad pública destacada en ciencias y salud.</td>
+                        <td>Pública</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://cyl.uv.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. del Biobio</td>
+                        <td>Universidad pública con énfasis en ingeniería y diseño.</td>
+                        <td>Pública</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://ubiobio.cl/concursos/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>UMCE</td>
+                        <td>Universidad pública dedicada a la formación de profesores.</td>
+                        <td>Pública</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://umce.trabajando.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>CFT de Magallanes</td>
+                        <td>Centro técnico regional para formación laboral en el sur.</td>
+                        <td>CFT</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://cftdemagallanes.cl/trabaja-con-nosotros/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>CFT Estatal de la R. de Valparaiso</td>
+                        <td>Centro técnico público enfocado en tecnología y oficios.</td>
+                        <td>CFT</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://tecnologicovalparaiso.cl/trabaja-con-nosotros/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>IDMA</td>
+                        <td>Instituto técnico privado especializado en medioambiente.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://idma.trabajando.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>UST</td>
+                        <td>Universidad privada con enfoque técnico y profesional.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://www.trabajando.cl/trabajos-universidad-santo-tomas-69287" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>USS</td>
+                        <td>Universidad privada con programas en salud y tecnología.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://universidadsansebastian.hiringroom.com/jobs" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>UNAB</td>
+                        <td>Universidad privada líder en cobertura y diversidad académica.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://unab.trabajando.cl/jobsholdinglogo/tags/1243" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>EMPLEOS SLEP</td>
+                        <td>Servicio público de educación para gestión escolar.</td>
+                        <td>Pública</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://educacionpublica.gob.cl/trabaja-con-nosotros/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>UDP</td>
+                        <td>Universidad privada con fuerte énfasis en investigación.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://udp.hiringroom.com/jobs/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>INACAP</td>
+                        <td>Instituto técnico privado líder en formación profesional.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://inacap.trabajando.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>UCEN</td>
+                        <td>Universidad privada con programas en arquitectura y derecho.</td>
+                        <td>Privada</td>
+                        <td>2025-01-24</td>
+                        <td><a href="https://ucentral.trabajando.cl/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>U. de los Andes</td>
+                        <td>Universidad privada de excelencia académica y valores cristianos.</td>
+                        <td>Privada</td>
+                        <td>2025-01-26</td>
+                        <td><a href="https://uandes.trabajando.cl/home/" target="_blank">Sitio</a></td>
+                    </tr>
+                    <tr>
+                        <td>UTSM</td>
+                        <td>Universidad pública técnica, líder en ingeniería y ciencias.</td>
+                        <td>Pública</td>
+                        <td>2025-01-27</td>
+                        <td><a href="https://usm.rexmas.com/jobs/universidad-tecnica-federico-santa-maria" target="_blank">Sitio</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Visualización de red con D3.js -->
+        <div class="network-container">
+            <h3>Red Interactiva de Instituciones</h3>
+            <div id="network"></div>
+        </div>
+
+        <!-- Sección Acerca de / Contacto -->
+        <div class="about-container" id="contacto">
+            <h3>Acerca de</h3>
+            <p>Esta web fue elaborada basandose en datos de empleo en IES chilenas.</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Datos para la red D3.js
+        const data = {
+            "Pública": [
+                { "name": "U. de Chile", "url": "https://externouchile.trabajando.cl/" },
+                { "name": "U. Austral de Chile", "url": "https://www.uach.cl/trabaja-en-la-uach" },
+                { "name": "USACH", "url": "https://ddp.usach.cl/procesos-de-selecci%C3%B3n-externos" },
+                { "name": "UTEM", "url": "http://empleos.utem.cl/" },
+                { "name": "U. Arturo Prat", "url": "http://portal.unap.cl/kb/dewey/app/sispartime/llamado.php" },
+                { "name": "U. de Los Lagos", "url": "https://cl.bebee.com/company/universidad-de-los-lagos" },
+                { "name": "U. Atacama", "url": "https://uda.cl/index.php?option=com_content&view=article&id=6206&Itemid=107" },
+                { "name": "U. de Aysen", "url": "https://www.uaysen.cl/trabaja-con-nosotros" },
+                { "name": "U. de Magallanes", "url": "https://umag.trabajando.cl/" },
+                { "name": "U. de Ohiggins", "url": "https://www.uoh.cl/trabaja-con-nosotros/" },
+                { "name": "U. Playa Ancha", "url": "https://empleosupla.trabajando.cl/" },
+                { "name": "U. de Talca", "url": "https://utalca.trabajando.cl/" },
+                { "name": "U. de Valparaiso", "url": "https://cyl.uv.cl/" },
+                { "name": "U. del Biobio", "url": "https://ubiobio.cl/concursos/" },
+                { "name": "UMCE", "url": "https://umce.trabajando.cl/" },
+                { "name": "EMPLEOS SLEP", "url": "https://educacionpublica.gob.cl/trabaja-con-nosotros/" },
+                { "name": "UTSM", "url": "https://usm.rexmas.com/jobs/universidad-tecnica-federico-santa-maria" }
+            ],
+            "Privada": [
+                { "name": "PUC", "url": "https://uccatolica.trabajando.cl/" },
+                { "name": "U. Adolfo Ibañez", "url": "https://uai.trabajando.cl/empleos/ofertas" },
+                { "name": "U. Católica del Maule", "url": "https://ucatolicamaule.trabajando.cl/" },
+                { "name": "U. del Desarrollo", "url": "https://mercadolaboral.udd.cl/trabajar-en-universidad-del-desarrollo" },
+                { "name": "U. de Viña del Mar", "url": "https://uvm.trabajando.cl/" },
+                { "name": "PUC de Valparaiso", "url": "https://www.pucv.cl/pucv/site/edic/base/port/concursos_externos.html" },
+                { "name": "U. Diego Portales", "url": "https://udp.trabajando.cl/" },
+                { "name": "DUOC", "url": "https://duoc.trabajando.cl/" },
+                { "name": "U. de los Andes", "url": "https://www.reqlut.com/trabajar-en-universidad-de-los-andes" },
+                { "name": "U. Mayor", "url": "https://umayor.trabajando.cl/" },
+                { "name": "U. Alberto Hurtado", "url": "https://www.reqlut.com/trabajar-en-universidad-alberto-hurtado" },
+                { "name": "U. Central", "url": "https://ucentral.trabajando.cl/" },
+                { "name": "U. Finis Terrae", "url": "https://uft.hiringroom.com/jobs?source=linkedinjobs" },
+                { "name": "UDLA", "url": "https://udla.trabajando.cl/" },
+                { "name": "Academia de Humanismo Cristiano", "url": "https://www.academia.cl/concurso/concurso-para-nuevos-puestos-de-trabajo/" },
+                { "name": "UBO", "url": "https://ubo.trabajando.cl/" },
+                { "name": "IACC", "url": "https://iacc.trabajando.cl/" },
+                { "name": "U. Andrés Bello", "url": "https://unab.trabajando.cl/home/" },
+                { "name": "UC. de Temuco", "url": "https://3w.uct.cl/destacados/" },
+                { "name": "U. Católica del Norte", "url": "https://www.ucn.cl/trabaja-con-nosotros/" },
+                { "name": "UC. Silva Henriquez", "url": "https://www.ucsh.cl/postulaciones-ucsh/" },
+                { "name": "U. de Concepción", "url": "https://udec.trabajando.cl/" },
+                { "name": "IDMA", "url": "https://idma.trabajando.cl/" },
+                { "name": "UST", "url": "https://www.trabajando.cl/trabajos-universidad-santo-tomas-69287" },
+                { "name": "USS", "url": "https://universidadsansebastian.hiringroom.com/jobs" },
+                { "name": "UNAB", "url": "https://unab.trabajando.cl/jobsholdinglogo/tags/1243" },
+                { "name": "UDP", "url": "https://udp.hiringroom.com/jobs/" },
+                { "name": "INACAP", "url": "https://inacap.trabajando.cl/" },
+                { "name": "UCEN", "url": "https://ucentral.trabajando.cl/" },
+                { "name": "U. de los Andes", "url": "https://uandes.trabajando.cl/home/" }
+            ],
+            "CFT": [
+                { "name": "CFT ENAC", "url": "https://enac.trabajando.cl/" },
+                { "name": "CFT de Magallanes", "url": "https://cftdemagallanes.cl/trabaja-con-nosotros/" },
+                { "name": "CFT Estatal de la R. de Valparaiso", "url": "https://tecnologicovalparaiso.cl/trabaja-con-nosotros/" }
+            ]
+        };
+
+        // Configuración de la red D3.js (idéntica al estilo de tu código)
+        const width = 900;
+        const height = 800;
+        const svg = d3.select("#network")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        const nodes = [];
+        const links = [];
+        const neonColors = d3.scaleOrdinal(["#FF00FF", "#00CCFF", "#FFFF00"]); // Colores neón para categorías
+
+        Object.entries(data).forEach(([category, institutions], index) => {
+            nodes.push({ id: category, group: "category", size: 62 + institutions.length * 1.5, color: neonColors(index) });
+            institutions.forEach(institution => {
+                nodes.push({ id: institution.name, group: "app", size: 9, url: institution.url });
+                links.push({ source: category, target: institution.name });
+            });
+        });
+
+        const categoryNodes = nodes.filter(node => node.group === "category");
+        for (let i = 0; i < categoryNodes.length; i++) {
+            for (let j = i + 1; j < categoryNodes.length; j++) {
+                links.push({ source: categoryNodes[i].id, target: categoryNodes[j].id, distance: -50 });
+            }
+        }
+
+        const simulation = d3.forceSimulation(nodes)
+            .force("link", d3.forceLink(links).id(d => d.id).distance(d => d.group === "category" ? 250 : 180))
+            .force("charge", d3.forceManyBody().strength(d => d.group === "app" ? -40 : -500))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collision", d3.forceCollide().radius(d => d.size + 24))
+            .force("x", d3.forceX().strength(0.05))
+            .force("y", d3.forceY().strength(0.15));
+
+        const link = svg.append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(links)
+            .enter().append("line")
+            .attr("class", "link");
+
+        const node = svg.append("g")
+            .attr("class", "nodes")
+            .selectAll("g")
+            .data(nodes)
+            .enter().append("g")
+            .attr("class", d => d.group === "category" ? "node category" : "node")
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        node.append("circle")
+            .attr("r", d => d.size)
+            .attr("fill", d => d.group === "category" ? d.color : "#00FF00")
+            .on("click", (event, d) => {
+                if (d.url) window.open(d.url, "_blank");
+            });
+
+        const label = node.append("text")
+            .attr("text-anchor", "middle")
+            .attr("dy", d => d.group === "category" ? "0.35em" : d.size + 10)
+            .attr("font-size", d => d.group === "category" ? `${Math.min(d.size / 2, 16)}px` : "11px")
+            .text(d => d.id)
+            .each(function(d) {
+                d.labelOffset = d.group === "category" ? 0 : d.size + 10;
+            });
+
+        simulation.on("tick", () => {
+            node.attr("transform", d => {
+                d.x = Math.max(d.size, Math.min(width - d.size, d.x));
+                d.y = Math.max(d.size, Math.min(height - d.size, d.y));
+                return `translate(${d.x},${d.y})`;
+            });
+
+            label.each(function(d) {
+                const thisNode = d3.select(this);
+                let dx = 0, dy = d.labelOffset;
+                nodes.forEach(other => {
+                    if (other !== d) {
+                        const distX = other.x - d.x;
+                        const distY = other.y - d.y;
+                        const distance = Math.sqrt(distX * distX + distY * distY);
+                        const minDist = d.size + other.size + 20;
+                        if (distance < minDist && distance > 0) {
+                            const angle = Math.atan2(distY, distX);
+                            dx = Math.cos(angle) * (minDist - distance);
+                            dy = Math.sin(angle) * (minDist - distance);
+                            if (d.group === "app") {
+                                dy = Math.abs(dy) + d.size + 10;
+                            }
+                        }
+                    }
+                });
+                thisNode.attr("dx", dx).attr("dy", dy);
+            });
+
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+        });
+
+        function dragstarted(event) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        }
+
+        function dragged(event) {
+            event.subject.fx = Math.max(0, Math.min(width, event.x));
+            event.subject.fy = Math.max(0, Math.min(height, event.y));
+        }
+
+        function dragended(event) {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
+        }
+
+        // Filtrar la tabla
+        function filterTable() {
+            const input = document.getElementById('search').value.toLowerCase().trim();
+            const table = document.getElementById('data-table');
+            const rows = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                let match = false;
+                for (let j = 0; j < cells.length; j++) {
+                    const cellText = cells[j].textContent.toLowerCase();
+                    if (cellText.includes(input)) {
+                        match = true;
+                        break;
+                    }
+                }
+                rows[i].style.display = match ? '' : 'none';
+            }
+        }
+    </script>
+</body>
+</html>

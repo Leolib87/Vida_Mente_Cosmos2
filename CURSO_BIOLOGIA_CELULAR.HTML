@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedagogías en Ciencias Naturales y Biología - Análisis 2025</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-green: #00FF00;
+            --neon-cyan: #00FFFF;
+            --black-bg: #000000;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: var(--black-bg);
+            color: var(--neon-green);
+            font-family: 'Orbitron', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        nav ul li {
+            position: relative;
+            margin: 0 20px;
+        }
+        nav ul li a {
+            color: var(--neon-green);
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        .mega-menu {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            width: 800px;
+            max-width: 90vw;
+            padding: 20px;
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        nav ul li:hover .mega-menu {
+            display: grid;
+            opacity: 1;
+        }
+        .mega-menu h3 {
+            color: var(--neon-cyan);
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px var(--neon-cyan);
+        }
+        .mega-menu ul {
+            display: block;
+            padding: 0;
+        }
+        .mega-menu ul li {
+            margin: 5px 0;
+        }
+        .mega-menu a {
+            font-size: 0.9em;
+            color: var(--neon-green);
+            transition: color 0.3s ease;
+        }
+        .mega-menu a:hover {
+            color: #FFFFFF;
+        }
+        .main-container {
+            max-width: 1400px;
+            margin: 80px auto 0;
+            padding: 20px;
+            text-align: center;
+        }
+        .intro {
+            margin-bottom: 40px;
+        }
+        .intro h1 {
+            color: var(--neon-cyan);
+            font-size: 2.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 20px;
+        }
+        .intro p {
+            font-size: 1.1em;
+            max-width: 1000px;
+            margin: 0 auto 15px;
+        }
+        .highlight {
+            color: var(--neon-cyan);
+            font-weight: bold;
+        }
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 40px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--neon-cyan);
+        }
+        th {
+            background: rgba(0, 0, 0, 0.9);
+            color: var(--neon-cyan);
+            text-shadow: 0 0 5px var(--neon-cyan);
+            position: sticky;
+            top: 0;
+        }
+        tr:hover {
+            background: rgba(0, 255, 255, 0.1);
+        }
+        a {
+            color: var(--neon-green);
+            text-decoration: none;
+        }
+        a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        .course-details, .malla-container, .ppt-container {
+            margin: 40px 0;
+        }
+        .course-details h2, .malla-container h3, .ppt-container h3 {
+            color: var(--neon-cyan);
+            font-size: 1.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 15px;
+        }
+        .course-details p {
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+        .ppt-iframe, .malla-iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            border-radius: 5px;
+        }
+        .select-container {
+            margin-bottom: 20px;
+        }
+        .select-container select {
+            padding: 10px;
+            font-size: 1em;
+            font-family: 'Orbitron', sans-serif;
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--neon-green);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+            border-radius: 5px;
+            outline: none;
+            width: 300px;
+            transition: box-shadow 0.3s ease;
+        }
+        .select-container select:focus {
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        @media (max-width: 900px) {
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                padding: 10px 0;
+            }
+            nav ul li {
+                margin: 10px 0;
+            }
+            .mega-menu {
+                position: static;
+                transform: none;
+                width: 100%;
+                grid-template-columns: 1fr;
+            }
+            .intro h1 {
+                font-size: 2em;
+            }
+            .ppt-iframe, .malla-iframe {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navegación -->
+    <nav>
+        <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li>
+                <a href="#">Exploración Conceptual</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Ideas y Preguntas</h3>
+                        <ul>
+                            <li><a href="#trazado-vida">Origen y Fin de la Vida</a></li>
+                            <li><a href="#biologia">Determinismo vs. Libertad</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li><a href="#contacto">Acerca de / Contacto</a></li>
+        </ul>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="main-container" id="inicio">
+        <!-- Introducción -->
+        <div class="intro">
+            <h1>Biología Celular - Pedagogía en Biología 2025</h1>
+            <p>Programa formativo <span class="highlight">CPB 1533</span> de la Universidad de Playa Ancha, diseñado para comprender los fundamentos de la célula como unidad de vida. Este curso, con <span class="highlight">6 créditos</span>, abarca desde la estructura atómica hasta los procesos celulares en organismos uni y pluricelulares.</p>
+        </div>
+
+        <!-- Detalles del curso -->
+        <div class="course-details">
+            <h2>Especificaciones del Curso</h2>
+            <p><strong>Nombre:</strong> Biología Celular (CPB 1533)</p>
+            <p><strong>Créditos:</strong> 6</p>
+            <p><strong>Docentes:</strong> Sergio Tapia Murúa / Héctor A. Levipan (hector.levipan@upla.cl, +56 9 9768 55 49)</p>
+            <p><strong>Competencia General:</strong> Comprender los conceptos fundamentales relacionados con la célula como unidad de los seres vivos, con énfasis en estructura, función y procesos celulares.</p>
+            <p><strong>Duración:</strong> 18 semanas (17 de marzo al 18 de julio de 2025)</p>
+        </div>
+
+        <!-- Cronograma -->
+        <div class="table-container">
+            <h2>Cronograma Primer Semestre 2025</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Semana</th>
+                        <th>Fechas</th>
+                        <th>Tema o Contenido</th>
+                        <th>Bibliografía</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Semana 1</td>
+                        <td>17 al 21 de marzo</td>
+                        <td>Niveles de organización de la materia viva</td>
+                        <td><a href="https://molecularcellbiologyLodish.com" target="_blank">Molecular Cell Biology 5th ed - Lodish et al.</a></td>
+                    </tr>
+                    <tr>
+                        <td>Semana 2</td>
+                        <td>24 al 28 de marzo</td>
+                        <td>Átomos, moléculas y macromoléculas</td>
+                        <td><a href="https://lehningerbioquimica.com" target="_blank">LEHNINGER: Principios de Bioquímica (6ª Ed.) - Nelson, Cox</a></td>
+                    </tr>
+                    <tr>
+                        <td>Semana 3</td>
+                        <td>31 de marzo al 4 de abril</td>
+                        <td>Química prebiótica, origen y evolución de la célula. Laboratorio: aislamiento de macromoléculas (ADN/ARN, electroforesis)</td>
+                        <td><a href="https://doi.org/10.3390/books978-3-03921-607-9" target="_blank">DOI: 10.3390/books978-3-03921-607-9</a></td>
+                    </tr>
+                    <tr>
+                        <td>Semana 4</td>
+                        <td>7 al 11 de abril</td>
+                        <td>Teoría celular (Oparin-Haldane; Miller-Urey)</td>
+                        <td><a href="https://lacelulaCooper.com" target="_blank">La Célula 6ª Ed. - Cooper & Hausman</a></td>
+                    </tr>
+                    <tr>
+                        <td>Semana 5</td>
+                        <td>14 al 17 de abril</td>
+                        <td>Métodos de estudio de la célula (microscopía; métodos histológicos)</td>
+                        <td><a href="https://histologiaJunqueira.com" target="_blank">Histología básica: texto y atlas - Junqueira, Carneiro (12ª ed.)</a></td>
+                    </tr>
+                    <tr>
+                        <td>Semana 6</td>
+                        <td>21 al 25 de abril</td>
+                        <td>INTEGRAL I</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Semana 7</td>
+                        <td>28 al 30 de abril</td>
+                        <td>Estructura y función de la pared celular y membrana plasmática</td>
+                        <td><a href="https://molecularcellbiologyLodish.com" target="_blank">Molecular Cell Biology 5th ed - Lodish et al.</a></td>
+                    </tr>
+                    <tr>
+                        <td>Semana 8</td>
+                        <td>5 al 9 de mayo</td>
+                        <td>Citoesqueleto. Laboratorio: microscopía, trabajo experimental con unicelulares procariotas y eucariotas</td>
+                        <td><a href="https://doi.org/10.1007/978-3-319-53047-5" target="_blank">Prokaryotic Cytoskeletons</a>, <a href="https://molecularcellbiologyLodish.com" target="_blank">Lodish et al.</a></td>
+                    </tr>
+                    <tr>
+                        <td>Semana 9</td>
+                        <td>12 al 16 de mayo</td>
+                        <td>Estructura y función de los organelos celulares y transporte vesicular</td>
+                        <td><a href="https://lacelulaCooper.com" target="_blank">La Célula 6ª Ed. - Cooper & Hausman</a></td>
+                    </tr>
+                    <tr>
+                        <td>Semana 10</td>
+                        <td>19 al 20 de mayo</td>
+                        <td>Núcleo celular y material genético</td>
+                        <td><a href="https://biologiamolecularAlbert.com" target="_blank">Biología Molecular de la Célula - Albert et al. (2004)</a></td>
+                    </tr>
+                    <tr>
+                        <td>Semana 11</td>
+                        <td>26 al 30 de mayo</td>
+                        <td>INTEGRAL II</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Semana 12</td>
+                        <td>9 al 13 de junio</td>
+                        <td>Conversión Energética</td>
+                        <td><a href="https://molecularcellbiologyLodish.com" target="_blank">Molecular Cell Biology 5th ed - Lodish et al.</a></td>
+                    </tr>
+                    <tr>
+                        <td>Semana 13</td>
+                        <td>16 al 19 de junio</td>
+                        <td>Transmisión de señales entre células</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Semana 14</td>
+                        <td>23 al 27 de junio</td>
+                        <td>Adhesión Celular. Laboratorio: microscopía para observación de preparaciones histológicas</td>
+                        <td><a href="https://lacelulaCooper.com" target="_blank">La Célula 6ª Ed. - Cooper & Hausman</a>, <a href="https://biologiacelularKarp.com" target="_blank">Biología Celular - Karp (1987)</a></td>
+                    </tr>
+                    <tr>
+                        <td>Semana 15</td>
+                        <td>30 de junio al 4 de julio</td>
+                        <td>Crecimiento y división celular (ciclo celular)</td>
+                        <td><a href="https://biologiacelularPaniagua.com" target="_blank">Biología Celular - Paniagua et al. (1999)</a>, <a href="https://molecularcellbiologyLodish.com" target="_blank">Lodish et al.</a></td>
+                    </tr>
+                    <tr>
+                        <td>Semana 16</td>
+                        <td>7 al 11 de julio</td>
+                        <td>Envejecimiento y muerte celular</td>
+                        <td><a href="https://molecularcellbiologyLodish.com" target="_blank">Molecular Cell Biology 5th ed - Lodish et al.</a>, <a href="https://lacelulaCooper.com" target="_blank">Cooper & Hausman</a></td>
+                    </tr>
+                    <tr>
+                        <td>Semana 17</td>
+                        <td>14 al 18 de julio</td>
+                        <td>INTEGRAL III</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Semana 18</td>
+                        <td>14 al 18 de julio</td>
+                        <td>Pruebas Especiales y Examen</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Malla Curricular -->
+        <div class="malla-container">
+            <h3>Malla Curricular</h3>
+            <iframe class="malla-iframe" src="https://www.upla.cl/portal/wp-content/uploads/2023/05/Malla-Pedagogia-en-Biologia.pdf" frameborder="0"></iframe>
+        </div>
+
+        <!-- Presentaciones por semana -->
+        <div class="ppt-container">
+            <h3>Presentaciones del Curso</h3>
+            <div class="select-container">
+                <select id="ppt-select" onchange="updatePPT()">
+                    <option value="">Selecciona una semana</option>
+                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 1: Niveles de organización</option>
+                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 2: Átomos y macromoléculas</option>
+                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 3: Química prebiótica</option>
+                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 4: Teoría celular</option>
+                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 5: Métodos de estudio</option>
+                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 7: Pared celular y membrana</option>
+                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 8: Citoesqueleto</option>
+                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 9: Organelos celulares</option>
+                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 10: Núcleo celular</option>
+                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 12: Conversión energética</option>
+                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 13: Transmisión de señales</option>
+                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 14: Adhesión celular</option>
+                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 15: Crecimiento y división</option>
+                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 16: Envejecimiento y muerte</option>
+                </select>
+            </div>
+            <iframe class="ppt-iframe" id="ppt-iframe" src="" frameborder="0"></iframe>
+        </div>
+
+        <!-- Acerca de -->
+        <div class="about-container" id="contacto">
+            <h3>Acerca de</h3>
+            <p>Desarrollado por Leandro Torres Díaz, PhD.</p>
+        </div>
+    </div>
+
+    <!-- Script -->
+    <script>
+        function updatePPT() {
+            const select = document.getElementById('ppt-select');
+            const iframe = document.getElementById('ppt-iframe');
+            iframe.src = select.value;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modelo de Autopoiesis: Sistemas Autoorganizados</title>
+    <!-- Fuente Orbitron para el estilo cyberpunk -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Librería D3.js para visualización dinámica -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        /* Estilo base del cuerpo */
+        body {
+            background-color: #000000; /* Fondo negro para estética cyberpunk */
+            color: #00FF00; /* Verde neón como color principal de texto */
+            font-family: 'Orbitron', sans-serif; /* Fuente futurista */
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            overflow-x: hidden; /* Evita desplazamiento horizontal */
+        }
+        /* Contenedor principal con diseño en cuadrícula */
+        .main-container {
+            display: grid;
+            grid-template-columns: 3fr 1fr; /* 3 partes contenido, 1 parte barra lateral */
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+        .content { grid-column: 1 / 2; } /* Contenido principal en columna 1 */
+        .sidebar {
+            grid-column: 2 / 3; /* Barra lateral en columna 2 */
+            position: sticky;
+            top: 20px;
+            align-self: start;
+            max-height: calc(100vh - 40px); /* Altura máxima ajustada a ventana */
+            overflow-y: auto; /* Scroll vertical si es necesario */
+        }
+        /* Encabezado con fondo estelar */
+        .header {
+            grid-column: 1 / 3; /* Ocupa ambas columnas */
+            position: relative;
+            height: 60vh;
+            background: url('https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center/cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #00FFFF; /* Cian neón para texto */
+            text-shadow: 0 0 15px #00FF00; /* Sombra verde brillante */
+            animation: fadeIn 2s ease-in; /* Animación de entrada */
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7); /* Capa oscura para contraste */
+            z-index: 1;
+        }
+        .header h1, .header p {
+            position: relative;
+            z-index: 2; /* Encima de la capa oscura */
+        }
+        .header h1 {
+            font-size: clamp(2em, 4vw, 4em); /* Tamaño adaptable */
+            animation: glow 2s infinite alternate; /* Efecto de brillo pulsante */
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 5px #00FF00; }
+            to { text-shadow: 0 0 20px #00FFFF; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        /* Estilo de secciones */
+        .section {
+            margin: 40px 0;
+            padding: 25px;
+            border: 2px solid #00FFFF; /* Borde cian neón */
+            box-shadow: 0 0 20px #00FFFF; /* Sombra brillante */
+            background: rgba(0, 255, 255, 0.05); /* Fondo traslúcido cian */
+            border-radius: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        .sidebar .section {
+            margin: 0;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.1); /* Fondo más opaco en barra lateral */
+        }
+        #visualization-section { margin-top: 20px; }
+        h2 {
+            color: #00FF00; /* Verde neón */
+            text-shadow: 0 0 8px #00FF00;
+            border-bottom: 1px solid #00FFFF;
+            padding-bottom: 10px;
+            margin: 0 0 15px 0;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        h3 {
+            color: #00FFFF; /* Cian para subtítulos */
+            margin: 20px 0 10px 0;
+            font-size: 1.2em;
+        }
+        p {
+            color: #00FF00;
+            font-size: 1.1em;
+            margin: 0 0 10px 0;
+        }
+        /* Estilos para términos destacados */
+        .highlight { color: #00FFFF; font-weight: bold; text-decoration: none; transition: text-shadow 0.3s ease; }
+        .highlight:hover { text-shadow: 0 0 10px #00FFFF; }
+        .substrate { color: #00FF00; font-weight: bold; } /* Verde para sustratos */
+        .catalyst { color: #FF00FF; font-weight: bold; } /* Magenta para catalizadores */
+        .link { color: #00FFFF; font-weight: bold; } /* Cian para enlaces */
+        /* Estilo de botones */
+        button {
+            background: none;
+            border: 2px solid #00FFFF;
+            color: #00FF00;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #00FFFF;
+            color: #000000;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        input[type="range"] {
+            width: 100%;
+            accent-color: #00FFFF; /* Color cian para sliders */
+        }
+        /* Contenedor de visualización */
+        #visualization {
+            width: 100%;
+            height: 600px;
+            padding: 10px;
+            box-sizing: border-box;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        /* Colores de los elementos en la simulación */
+        .circle-substrate { fill: #00FF00; }
+        .circle-enzyme { fill: #FF00FF; }
+        .circle-link { fill: #00FFFF; }
+        .footer {
+            grid-column: 1 / 3;
+            text-align: center;
+            padding: 30px;
+            color: #00FFFF;
+            border-top: 2px solid #00FF00;
+            margin-top: 40px;
+        }
+
+        /* Media Queries para diseño responsivo */
+        @media (max-width: 768px) {
+            /* Ajustar la cuadrícula a una sola columna en pantallas pequeñas */
+            .main-container {
+                grid-template-columns: 1fr; /* Una sola columna */
+                padding: 10px; /* Reducir padding */
+                gap: 10px;
+            }
+            .content, .sidebar, .footer, .header {
+                grid-column: 1 / 2; /* Todo en la misma columna */
+            }
+            /* Ajustar el encabezado */
+            .header {
+                height: 40vh; /* Reducir altura */
+            }
+            .header h1 {
+                font-size: clamp(1.5em, 3vw, 2.5em); /* Tamaño de fuente más pequeño */
+            }
+            .header p {
+                font-size: 0.9em;
+            }
+            /* Barra lateral no fija en móviles */
+            .sidebar {
+                position: static; /* Quitar sticky */
+                max-height: none; /* Sin límite de altura */
+            }
+            /* Reducir márgenes y padding en secciones */
+            .section {
+                margin: 20px 0;
+                padding: 15px;
+            }
+            .sidebar .section {
+                padding: 15px;
+            }
+            /* Ajustar visualización */
+            #visualization {
+                height: 400px; /* Reducir altura en móviles */
+            }
+            h2 {
+                font-size: 1.2em;
+            }
+            h3 {
+                font-size: 1em;
+            }
+            p {
+                font-size: 0.95em; /* Texto ligeramente más pequeño */
+            }
+            button {
+                padding: 8px 16px; /* Botón más compacto */
+                font-size: 0.9em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            /* Ajustes adicionales para pantallas muy pequeñas */
+            .header {
+                height: 30vh; /* Aún más pequeño */
+            }
+            .header h1 {
+                font-size: clamp(1.2em, 2.5vw, 2em);
+            }
+            .header p {
+                font-size: 0.8em;
+            }
+            #visualization {
+                height: 300px; /* Altura mínima para visibilidad */
+            }
+            .section {
+                margin: 15px 0;
+                padding: 10px;
+            }
+            .sidebar .section {
+                padding: 10px;
+            }
+            h2 {
+                font-size: 1em;
+            }
+            h3 {
+                font-size: 0.9em;
+            }
+            p {
+                font-size: 0.85em;
+            }
+            button {
+                padding: 6px 12px;
+                font-size: 0.8em;
+            }
+            input[type="range"] {
+                width: 90%; /* Ajustar sliders para dedos */
+                margin: 0 auto;
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Encabezado -->
+        <div class="header">
+            <h1>Modelo de Autopoiesis</h1>
+            <p>Simulando la Esencia de los Sistemas Vivos</p>
+        </div>
+
+        <div class="content">
+            <!-- Sección de visualización -->
+            <div class="section" id="visualization-section">
+                <h2>Simulación</h2>
+                <div id="visualization"></div>
+            </div>
+
+            <!-- Introducción mejorada -->
+            <div class="section" id="intro">
+                <h2>Introducción a la Autopoiesis</h2>
+                <p>Imagina un sistema que se construye desde dentro, una entidad viva que desafía el caos tejiendo su propia existencia. La <span class="highlight">autopoiesis</span>, un concepto revolucionario de los biólogos Humberto Maturana y Francisco Varela, captura esta esencia de la vida. Describe sistemas que se automantienen al producir y regenerar sus propios componentes mediante una red cerrada de procesos. Visualiza una célula: su danza química sostiene su forma frente a la entropía. En esta simulación, los <span class="substrate">sustratos</span> (verde) se desplazan sin rumbo, los <span class="catalyst">enzimas</span> (magenta) desencadenan la creación de <span class="link">enlaces</span> (cian), y estos enlaces se descomponen de nuevo en sustratos: un eco digital del equilibrio dinámico de la vida.</p>
+            </div>
+
+            <!-- Síntesis del artículo -->
+            <div class="section" id="concepts">
+                <h2>Síntesis de "Autopoiesis: La Organización de los Sistemas Vivos" (Varela y Maturana, 1974)</h2>
+                
+                <h3>1. Introducción</h3>
+                <p>Este trabajo seminal redefine la vida, alejándose de la reproducción y la evolución como rasgos definitorios. En su lugar, centra la atención en la <span class="highlight">unidad</span> de los sistemas vivos y su organización intrínseca.</p>
+
+                <h3>2. Organización</h3>
+                <p>Todo sistema puede verse como una <span class="highlight">unidad</span> singular o como una red compleja de componentes. Su <span class="highlight">organización</span>—la trama relacional que une estas partes—lo convierte en un todo funcional.</p>
+
+                <h3>3. Organización Autopoiética</h3>
+                <p>Un sistema autopoiético se caracteriza por:</p>
+                <ul>
+                    <li>Una <span class="highlight">red de producción</span> donde los componentes se generan recursivamente a sí mismos.</li>
+                    <li>Una unidad que se sostiene gracias a esta red.</li>
+                </ul>
+                <p><strong>Ejemplo:</strong> Una célula, con sus reacciones químicas renovando constantemente su estructura, encarna la autopoiesis.</p>
+
+                <h3>4. Autopoiesis vs. Alopoiesis</h3>
+                <p>Los <span class="highlight">sistemas autopoiéticos</span> crean sus propios componentes, preservando su identidad. Los <span class="highlight">sistemas alopoiéticos</span>, como un ribosoma, producen algo externo a sí mismos.</p>
+
+                <h3>5. La Autopoiesis como Núcleo de la Vida</h3>
+                <p>Los seres vivos son inherentemente autopoiéticos. La reproducción y la evolución son secundarias; el corazón de la vida reside en esta unidad autoconstruida.</p>
+
+                <h3>6. Modelo de Simulación</h3>
+                <p>La simulación bidimensional del artículo, reflejada aquí, incluye:</p>
+                <ul>
+                    <li><span class="substrate">Sustratos (O)</span>: Materias primas que se mueven en el espacio.</li>
+                    <li><span class="catalyst">Catalizadores (*)</span>: Agentes que forman <span class="link">enlaces</span> entre sustratos, creando estructuras cerradas (membranas).</li>
+                    <li><strong>Autoreparación:</strong> Un catalizador atrapado en una membrana puede generar nuevos elementos, manteniendo la estructura y logrando autopoiesis.</li>
+                </ul>
+
+                <h3>7. Implicaciones y Aplicaciones</h3>
+                <p>La autopoiesis depende de dinámicas relacionales, no de materiales específicos. Esto abre caminos hacia:</p>
+                <ul>
+                    <li><span class="highlight">Origen de la Vida:</span> Ejemplo: liposomas con reacciones internas.</li>
+                    <li><span class="highlight">Vida Artificial:</span> Desafíos para sintetizar sistemas autopoiéticos.</li>
+                </ul>
+
+                <h3>8. Conclusión</h3>
+                <p>Un sistema autopoiético:</p>
+                <ol>
+                    <li>Tiene <span class="highlight">límites</span> definidos.</li>
+                    <li>Contiene <span class="highlight">componentes</span> internos.</li>
+                    <li>Opera mecánicamente con interacciones precisas.</li>
+                    <li>Genera sus propios <span class="highlight">límites</span> mediante interacciones.</li>
+                    <li>Produce todos sus <span class="highlight">componentes</span> internamente.</li>
+                    <li>Mantiene su <span class="highlight">organización</span> mientras sus procesos internos permanezcan activos.</li>
+                </ol>
+                <p>Este marco afina nuestra comprensión de lo vivo, conectando biología, inteligencia artificial y filosofía de la mente.</p>
+            </div>
+        </div>
+
+        <!-- Barra lateral con controles -->
+        <div class="sidebar">
+            <div class="section" id="controls">
+                <h2>Controles</h2>
+                <p>Enzimas: <span id="enzymeCountValue">10</span></p>
+                <input type="range" id="enzymeCount" min="1" max="50" value="10">
+                <p>Velocidad de Sustrato (μm/s): <span id="substrateSpeedValue">5</span></p>
+                <input type="range" id="substrateSpeed" min="1" max="10" value="5">
+                <p>Tasa de Decaimiento (s⁻¹): <span id="decayRateValue">0.001</span></p>
+                <input type="range" id="decayRate" min="0" max="0.01" step="0.0001" value="0.001">
+                <p>Estado: <span id="status">Sustratos: 0, Enlaces: 0, Enzimas: 0</span></p>
+                <button onclick="resetSimulation()">Reiniciar</button>
+            </div>
+        </div>
+
+        <!-- Pie de página -->
+        <div class="footer">
+            <p>Explorando la Autopoiesis | Febrero 2025</p>
+        </div>
+    </div>
+
+    <script>
+        // Configuración inicial del SVG
+        const vizContainer = document.getElementById('visualization');
+        let width = vizContainer.clientWidth - 20; // Ancho ajustado al contenedor
+        const cellSize = 10; // Tamaño de celda en la cuadrícula
+        let height = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 600; // Altura dinámica según pantalla
+        const cols = Math.floor(width / cellSize); // Número de columnas
+        const rows = Math.floor(height / cellSize); // Número de filas
+
+        // Crear el SVG con D3
+        const svg = d3.select("#visualization")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .style("background", "rgba(0, 0, 0, 0.9)") // Fondo oscuro
+            .attr("rx", 5); // Bordes redondeados
+
+        // Estructuras de datos
+        let grid = Array(cols).fill().map(() => Array(rows).fill(0)); // Cuadrícula de estado
+        let substrates = []; // Lista de sustratos
+        let enzymes = []; // Lista de enzimas
+        let links = []; // Lista de enlaces
+        let enzymeCount = 10; // Número inicial de enzimas
+        let substrateSpeed = 5; // Velocidad de movimiento de sustratos
+        let decayRate = 0.001; // Tasa de decaimiento de enlaces
+
+        // Listeners para controles interactivos
+        d3.select("#enzymeCount").on("input", function() {
+            enzymeCount = +this.value; // Convertir a número
+            d3.select("#enzymeCountValue").text(enzymeCount); // Actualizar valor visual
+        });
+        d3.select("#substrateSpeed").on("input", function() {
+            substrateSpeed = +this.value;
+            d3.select("#substrateSpeedValue").text(substrateSpeed);
+        });
+        d3.select("#decayRate").on("input", function() {
+            decayRate = +this.value;
+            d3.select("#decayRateValue").text(decayRate.toFixed(4)); // 4 decimales
+        });
+
+        /**
+         * Reinicia la simulación, inicializando sustratos y enzimas
+         */
+        function resetSimulation() {
+            // Ajustar dimensiones según tamaño de pantalla
+            width = vizContainer.clientWidth - 20;
+            height = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 600;
+            svg.attr("width", width).attr("height", height);
+            const newCols = Math.floor(width / cellSize);
+            const newRows = Math.floor(height / cellSize);
+            grid = Array(newCols).fill().map(() => Array(newRows).fill(0));
+            substrates = [];
+            enzymes = [];
+            links = [];
+
+            // Generar 1000 sustratos en posiciones aleatorias (ajustado por tamaño)
+            const substrateCount = Math.min(1000, Math.floor(newCols * newRows * 0.3)); // Máximo 30% de la cuadrícula
+            for (let i = 0; i < substrateCount; i++) {
+                let x, y;
+                do {
+                    x = Math.floor(Math.random() * newCols);
+                    y = Math.floor(Math.random() * newRows);
+                } while (grid[x][y] !== 0); // Evitar colisiones iniciales
+                grid[x][y] = 1; // 1 = sustrato
+                substrates.push({ x, y });
+            }
+
+            // Generar enzimas según enzymeCount
+            for (let i = 0; i < enzymeCount; i++) {
+                let x, y;
+                do {
+                    x = Math.floor(Math.random() * newCols);
+                    y = Math.floor(Math.random() * newRows);
+                } while (grid[x][y] !== 0);
+                grid[x][y] = 2; // 2 = enzima
+                enzymes.push({ x, y });
+            }
+
+            updateVisualization(); // Renderizar estado inicial
+        }
+
+        /**
+         * Mueve los sustratos aleatoriamente según la velocidad
+         */
+        function moveSubstrates() {
+            substrates.forEach(s => {
+                if (Math.random() < substrateSpeed / 10) { // Probabilidad de movimiento
+                    const dir = Math.floor(Math.random() * 4); // 0: derecha, 1: abajo, 2: izquierda, 3: arriba
+                    const newX = s.x + [1, 0, -1, 0][dir];
+                    const newY = s.y + [0, 1, 0, -1][dir];
+                    if (isValid(newX, newY) && grid[newX][newY] === 0) { // Verificar validez y espacio libre
+                        grid[s.x][s.y] = 0; // Liberar posición anterior
+                        s.x = newX;
+                        s.y = newY;
+                        grid[s.x][s.y] = 1; // Actualizar nueva posición
+                    }
+                }
+            });
+        }
+
+        /**
+         * Simula la interacción entre enzimas y sustratos para formar enlaces
+         */
+        function interact() {
+            enzymes.forEach(e => {
+                const neighbors = getNeighbors(e.x, e.y);
+                const substrateNeighbors = neighbors.filter(n => grid[n.x][n.y] === 1);
+                if (substrateNeighbors.length >= 2) { // Necesita al menos 2 sustratos cercanos
+                    const s1 = substrateNeighbors[0];
+                    const s2 = substrateNeighbors[1];
+                    grid[s1.x][s1.y] = 3; // 3 = enlace
+                    grid[s2.x][s2.y] = 0; // Eliminar segundo sustrato
+                    substrates = substrates.filter(s => !(s.x === s1.x && s.y === s1.y) && !(s.x === s2.x && s.y === s2.y));
+                    links.push({ x: s1.x, y: s1.y }); // Agregar nuevo enlace
+                }
+            });
+            disintegrateLinks(); // Procesar decaimiento de enlaces
+        }
+
+        /**
+         * Desintegra enlaces según la tasa de decaimiento, convirtiéndolos en sustratos
+         */
+        function disintegrateLinks() {
+            links = links.filter(l => {
+                if (Math.random() < decayRate) { // Probabilidad de decaimiento
+                    grid[l.x][l.y] = 1; // Convertir enlace en sustrato
+                    substrates.push({ x: l.x, y: l.y });
+                    return false; // Eliminar enlace
+                }
+                return true; // Mantener enlace
+            });
+        }
+
+        /**
+         * Actualiza la visualización en el SVG con D3
+         */
+        function updateVisualization() {
+            const data = [
+                ...substrates.map(d => ({ type: "substrate", x: d.x * cellSize + cellSize / 2, y: d.y * cellSize + cellSize / 2 })),
+                ...enzymes.map(d => ({ type: "enzyme", x: d.x * cellSize + cellSize / 2, y: d.y * cellSize + cellSize / 2 })),
+                ...links.map(d => ({ type: "link", x: d.x * cellSize + cellSize / 2, y: d.y * cellSize + cellSize / 2 }))
+            ];
+
+            const circles = svg.selectAll("circle")
+                .data(data, d => `${d.type}-${d.x}-${d.y}`); // Clave única para cada elemento
+
+            circles.exit().remove(); // Eliminar elementos que ya no existen
+
+            circles.enter()
+                .append("circle")
+                .attr("r", cellSize / 2) // Radio de los círculos
+                .attr("class", d => `circle-${d.type}`) // Clase según tipo
+                .merge(circles)
+                .attr("cx", d => d.x) // Posición X
+                .attr("cy", d => d.y); // Posición Y
+
+            // Actualizar estado en la interfaz
+            d3.select("#status").text(`Sustratos: ${substrates.length}, Enlaces: ${links.length}, Enzimas: ${enzymes.length}`);
+        }
+
+        /**
+         * Obtiene los vecinos de una celda en la cuadrícula
+         * @param {number} x - Coordenada X
+         * @param {number} y - Coordenada Y
+         * @returns {Array} Lista de vecinos válidos
+         */
+        function getNeighbors(x, y) {
+            const neighbors = [];
+            for (let dx of [-1, 0, 1]) {
+                for (let dy of [-1, 0, 1]) {
+                    if (dx === 0 && dy === 0) continue; // Excluir la celda actual
+                    const nx = x + dx;
+                    const ny = y + dy;
+                    if (isValid(nx, ny)) neighbors.push({ x: nx, y: ny });
+                }
+            }
+            return neighbors;
+        }
+
+        /**
+         * Verifica si una posición está dentro de la cuadrícula
+         * @param {number} x - Coordenada X
+         * @param {number} y - Coordenada Y
+         * @returns {boolean} True si es válida
+         */
+        function isValid(x, y) {
+            return x >= 0 && x < grid.length && y >= 0 && y < grid[0].length; // Usar dimensiones dinámicas
+        }
+
+        /**
+         * Bucle de animación principal
+         */
+        function animate() {
+            moveSubstrates(); // Mover sustratos
+            interact(); // Procesar interacciones
+            updateVisualization(); // Actualizar visualización
+            requestAnimationFrame(animate); // Solicitar siguiente frame
+        }
+
+        // Iniciar la simulación
+        resetSimulation();
+        animate();
+
+        /**
+         * Ajusta el tamaño del SVG al redimensionar la ventana
+         */
+        function resize() {
+            width = vizContainer.clientWidth - 20;
+            height = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 600;
+            svg.attr("width", width).attr("height", height);
+            resetSimulation(); // Reiniciar para ajustar a nuevo tamaño
+        }
+        window.addEventListener("resize", resize); // Listener de redimensionamiento
+    </script>
+</body>
+</html>

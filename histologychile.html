@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Avanzada de Reactivos de Histología en Chile - Tema Oscuro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #111827; /* Tailwind gray-900 */
+            --bg-secondary: #1f2937; /* Tailwind gray-800 */
+            --bg-card: #374151; /* Tailwind gray-700 */
+            --text-primary: #f3f4f6; /* Tailwind gray-100 */
+            --text-secondary: #d1d5db; /* Tailwind gray-300 */
+            --text-muted: #9ca3af; /* Tailwind gray-400 */
+            --border-color: #4b5563; /* Tailwind gray-600 */
+            --accent-color: #3b82f6; /* Tailwind blue-500 */
+            --accent-hover: #2563eb; /* Tailwind blue-600 */
+            --danger-color: #ef4444; /* Tailwind red-500 */
+            --danger-hover: #dc2626; /* Tailwind red-600 */
+            --success-color: #10b981; /* Tailwind green-500 */
+            --success-hover: #059669; /* Tailwind green-600 */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        .table-header {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .table-cell-input {
+            width: 100%;
+            padding: 0.65rem 0.75rem;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem; /* rounded-md */
+            box-sizing: border-box;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .table-cell-input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5); /* Tailwind blue-500 con opacidad */
+            outline: none;
+        }
+
+        .btn-supplier {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.375rem; /* rounded-md */
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            display: inline-block;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .btn-supplier:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .section-title {
+            font-size: 2rem; /* text-3xl */
+            font-weight: 700; /* font-bold */
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 3px solid var(--accent-color);
+            display: inline-block;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.25); /* Sombra más pronunciada */
+            padding: 2rem; /* p-8 */
+            margin-bottom: 2rem; /* mb-8 */
+            border: 1px solid var(--border-color);
+        }
+
+        .pro-tip {
+            background-color: rgba(59, 130, 246, 0.1); /* Azul translúcido */
+            border-left: 5px solid var(--accent-color);
+            padding: 1.25rem;
+            margin: 1.5rem 0;
+            border-radius: 0.5rem; /* rounded-lg */
+        }
+        .pro-tip p {
+            margin: 0;
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+        .pro-tip strong {
+            color: #93c5fd; /* Tailwind blue-300 */
+        }
+
+        .alert-warning {
+            background-color: rgba(245, 158, 11, 0.1); /* Amarillo translúcido */
+            border-left: 5px solid #f59e0b; /* Tailwind amber-500 */
+            color: #fcd34d; /* Tailwind amber-300 */
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0.5rem;
+        }
+        .alert-warning strong {
+            color: #fbbf24; /* Tailwind amber-400 */
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 10px;
+            border: 2px solid var(--bg-secondary); /* Para dar efecto de padding */
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-hover);
+        }
+
+        .remove-row {
+            color: var(--danger-color);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        .remove-row:hover {
+            color: var(--danger-hover);
+        }
+        #addRowBtn {
+            background-color: var(--success-color);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        #addRowBtn:hover {
+            background-color: var(--success-hover);
+            transform: translateY(-1px);
+        }
+        .total-cost-value, #grandTotal {
+            color: #6ee7b7; /* Tailwind green-300 para destacar los totales */
+            font-weight: 600;
+        }
+        .table-responsive-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on touch devices */
+        }
+        .contact-info { /* Changed from .contact-email to .contact-info */
+            font-size: 0.875rem; /* text-sm */
+            color: var(--text-muted);
+            margin-top: 0.5rem; /* mt-2 */
+        }
+        .contact-info p { /* Style for paragraphs inside contact-info */
+            margin-bottom: 0.25rem; /* space between email and phone */
+        }
+        .contact-info a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        .contact-info a:hover {
+            text-decoration: underline;
+            color: var(--accent-hover);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-gradient-to-r from-gray-900 via-blue-900 to-gray-900 text-white p-8 shadow-2xl sticky top-0 z-50 backdrop-blur-md bg-opacity-80">
+        <div class="container mx-auto text-center md:text-left">
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight leading-tight">
+                Guía Experta de Reactivos para Histología en Chile
+            </h1>
+            <p class="mt-3 text-lg md:text-xl text-blue-300 opacity-90">
+                Análisis Avanzado, Proveedores Estratégicos y Herramienta de Cotización Optimizada
+            </p>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+
+        <section id="introduccion" class="mb-12">
+            <div class="card">
+                <h2 class="section-title">Introducción a la Guía de Reactivos Optimizada</h2>
+                <p class="mb-4 text-text-secondary">
+                    Esta guía representa una herramienta de referencia esencial, actualizada y modernizada para los laboratorios de histología en Chile. Su propósito es centralizar información crítica sobre insumos, reflejando la dinámica del mercado y las mejores prácticas en diseño para una experiencia de usuario superior. La precisión en precios y la eficiencia en la consulta son vitales para la economía y la operatividad del laboratorio.
+                </p>
+                <div class="pro-tip">
+                    <p><strong>Visión de Experto:</strong> La estandarización de información sobre precios y disponibilidad transforma esta guía en un instrumento que no solo informa, sino que optimiza procesos de compra y contribuye a una gestión presupuestaria eficaz. A largo plazo, puede fomentar mayor transparencia en el mercado.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="reactivos" class="mb-12">
+            <div class="card">
+                <h2 class="section-title">Reactivos Clave para Histología de Rutina</h2>
+                <p class="mb-6 text-text-secondary">Listado de reactivos fundamentales, agrupados por etapa del proceso histológico. La calidad de estos componentes es determinante para resultados diagnósticos fiables.</p>
+
+                <div>
+                    <h3 class="text-xl font-semibold text-blue-400 mb-3 mt-6">1. Fijación</h3>
+                    <ul class="list-disc list-inside text-text-secondary space-y-2 pl-4">
+                        <li><strong>Formalina Tamponada al 10% (pH 7.0-7.4):</strong> Fijador universal por excelencia.</li>
+                        <li><strong>Paraformaldehído:</strong> Para formalina fresca, crucial en IHQ y ME.</li>
+                        <li><strong>Glutaraldehído:</strong> Fijación potente para ultraestructura en ME.</li>
+                        <li><strong>Alcoholes (Etanol, Metanol):</strong> Para citología o preservación de ácidos nucleicos.</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-blue-400 mb-3 mt-6">2. Procesamiento de Tejidos</h3>
+                     <p class="text-text-muted mb-2 italic">Deshidratación, aclaramiento e impregnación.</p>
+                    <ul class="list-disc list-inside text-text-secondary space-y-2 pl-4">
+                        <li><strong>Etanol (Grados ascendentes: 70%-100%):</strong> Deshidratación gradual.</li>
+                        <li><strong>Xileno / Xilol:</strong> Agente aclarante tradicional.</li>
+                        <li><strong>Sustitutos del Xileno:</strong> Alternativas menos tóxicas.</li>
+                        <li><strong>Parafina Histológica:</strong> Medio de inclusión estándar.</li>
+                    </ul>
+                     <h3 class="text-xl font-semibold text-blue-400 mb-3 mt-6">3. Corte (Microtomía)</h3>
+                    <ul class="list-disc list-inside text-text-secondary space-y-2 pl-4">
+                        <li><strong>Adhesivos para Portaobjetos:</strong> Albúmina, Poli-L-Lisina, APES, Portaobjetos cargados.</li>
+                        <li><strong>Agua Destilada/Desionizada:</strong> Para baño de flotación.</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-blue-400 mb-3 mt-6">4. Tinción de Rutina (Hematoxilina y Eosina - H&E)</h3>
+                    <ul class="list-disc list-inside text-text-secondary space-y-2 pl-4">
+                        <li><strong>Hematoxilina (Harris, Mayer, Gill):</strong> Tinción nuclear.</li>
+                        <li><strong>Eosina Y (Acuosa o Alcohólica):</strong> Tinción citoplasmática.</li>
+                        <li><strong>Alcohol Ácido:</strong> Diferenciación.</li>
+                        <li><strong>Agente Azulante (Sol. Scott, Carbonato Litio):</strong> Viraje de hematoxilina.</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-blue-400 mb-3 mt-6">5. Montaje</h3>
+                    <ul class="list-disc list-inside text-text-secondary space-y-2 pl-4">
+                        <li><strong>Medios de Montaje Resinosos (DPX, Histomount, Eukitt):</strong> Permanentes.</li>
+                        <li><strong>Medios de Montaje Acuosos:</strong> Para tinciones especiales.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="proveedores" class="mb-12">
+            <div class="card">
+                <h2 class="section-title">Directorio Estratégico de Proveedores en Chile</h2>
+                <p class="mb-6 text-text-secondary">
+                    Proveedores clave en el mercado chileno. Se recomienda contacto directo para catálogos actualizados y cotizaciones específicas.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8">
+                    <div class="bg-gray-800 p-5 rounded-lg shadow-lg hover:shadow-blue-500/30 transition-shadow duration-300 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-blue-400 mb-2">Diprolab</h3>
+                        <p class="text-sm text-text-muted mb-4">Fabricante/Distribuidor. Formalina, Eosina. Precios con IVA.</p>
+                        <a href="http://www.diprolab.cl" target="_blank" class="btn-supplier w-full">Visitar Diprolab</a>
+                        <div class="contact-info">
+                            <p>Email: <a href="mailto:ventas@diprolab.cl">ventas@diprolab.cl</a> / <a href="mailto:cotizaciones@diprolab.cl">cotizaciones@diprolab.cl</a></p>
+                            <p>Tel: <a href="tel:+56412620730">(41) 262 0730</a> / <a href="tel:+56991959960">+56 9 9195 9960</a> (WhatsApp)</p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 p-5 rounded-lg shadow-lg hover:shadow-blue-500/30 transition-shadow duration-300 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-blue-400 mb-2">Reachem</h3>
+                        <p class="text-sm text-text-muted mb-4">Materiales de laboratorio. Alcoholes (Etanol).</p>
+                        <a href="http://www.reachem.cl" target="_blank" class="btn-supplier w-full">Visitar Reachem</a>
+                        <div class="contact-info">
+                            <p>Email: <a href="mailto:reachem@reachem.cl">reachem@reachem.cl</a></p>
+                            <p>Tel: <a href="tel:+56443699280">+56 44 369 9280</a> (Opción 2)</p>
+                            <p>WhatsApp: <a href="https://wa.me/56963264653">+56 9 6326 4653</a></p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 p-5 rounded-lg shadow-lg hover:shadow-blue-500/30 transition-shadow duration-300 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-blue-400 mb-2">Productos Químicos Chile</h3>
+                        <p class="text-sm text-text-muted mb-4">Químicos industriales y de lab. Xileno, Formalina. Precios general. +IVA.</p>
+                        <a href="https://productosquimicos.cl/" target="_blank" class="btn-supplier w-full">Visitar Productos Químicos</a>
+                        <div class="contact-info">
+                            <p>Email: <a href="mailto:contacto@productosquimicoschile.cl">contacto@productosquimicoschile.cl</a></p>
+                            <p>Tel: <a href="tel:+56226352640">(+56) 2 2635 2640</a></p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 p-5 rounded-lg shadow-lg hover:shadow-blue-500/30 transition-shadow duration-300 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-blue-400 mb-2">Newpath</h3>
+                        <p class="text-sm text-text-muted mb-4">Anatomía Patológica. Distribuidor Leica Biosystems. Parafina, Xilol, H&E.</p>
+                        <a href="https://newpath.cl/" target="_blank" class="btn-supplier w-full">Visitar Newpath</a>
+                        <div class="contact-info">
+                            <p>Email: <a href="mailto:contacto@newpath.cl">contacto@newpath.cl</a></p>
+                            <p>Tel: (Información no disponible directamente en su web, contactar vía email o formulario web)</p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 p-5 rounded-lg shadow-lg hover:shadow-blue-500/30 transition-shadow duration-300 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-blue-400 mb-2">Fermelo Biotec</h3>
+                        <p class="text-sm text-text-muted mb-4">Biología Molecular/Histología. Histomount (National Diagnostics).</p>
+                        <a href="https://fermelo.cl/" target="_blank" class="btn-supplier w-full">Visitar Fermelo Biotec</a>
+                        <div class="contact-info">
+                            <p>Email: <a href="mailto:contacto@fermelo.cl">contacto@fermelo.cl</a></p>
+                            <p>Tel: <a href="tel:+56222472977">(+56) 2 2247 2977</a></p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 p-5 rounded-lg shadow-lg hover:shadow-blue-500/30 transition-shadow duration-300 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-blue-400 mb-2">Galenica</h3>
+                        <p class="text-sm text-text-muted mb-4">Soluciones integrales de laboratorio. Reactivos y equipos para histología.</p>
+                        <a href="https://galenica.cl/" target="_blank" class="btn-supplier w-full">Visitar Galenica</a>
+                        <div class="contact-info">
+                            <p>Email: <a href="mailto:info@galenica.cl">info@galenica.cl</a></p>
+                            <p>Tel: <a href="tel:+56227992900">(+56) 2 2799 2900</a> (Casa Matriz)</p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 p-5 rounded-lg shadow-lg hover:shadow-blue-500/30 transition-shadow duration-300 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-blue-400 mb-2">GrupoMES</h3>
+                        <p class="text-sm text-text-muted mb-4">Insumos médicos y de laboratorio. Eosina, Alcoholes, Giemsa.</p>
+                        <a href="https://www.grupomes.cl/" target="_blank" class="btn-supplier w-full">Visitar GrupoMES</a>
+                        <div class="contact-info">
+                            <p>Email: <a href="mailto:ventas@grupomes.cl">ventas@grupomes.cl</a></p>
+                            <p>Tel: <a href="tel:+56976481366">+56 9 7648 1366</a> (Según web)</p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 p-5 rounded-lg shadow-lg hover:shadow-blue-500/30 transition-shadow duration-300 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-blue-400 mb-2">Merck Chile</h3>
+                        <p class="text-sm text-text-muted mb-4">Multinacional. Amplia gama de reactivos. Consultar catálogo específico.</p>
+                        <a href="https://www.merckgroup.com/cl-es" target="_blank" class="btn-supplier w-full">Visitar Merck Chile</a>
+                        <div class="contact-info">
+                            <p>Email: <a href="mailto:mqch@merckgroup.com">mqch@merckgroup.com</a> (Biopharma)</p>
+                            <p>Tel: <a href="tel:+800340200">800 340 200</a> (Según web)</p>
+                        </div>
+                    </div>
+                     <div class="bg-gray-800 p-5 rounded-lg shadow-lg hover:shadow-blue-500/30 transition-shadow duration-300 border border-gray-700">
+                        <h3 class="text-lg font-semibold text-blue-400 mb-2">RSlab</h3>
+                        <p class="text-sm text-text-muted mb-4">Equipos e insumos de laboratorio. General. Consultar para histología.</p>
+                        <a href="https://rslab.cl/" target="_blank" class="btn-supplier w-full">Visitar RSlab</a>
+                        <div class="contact-info">
+                            <p>Email: <a href="mailto:ventas@rslab.cl">ventas@rslab.cl</a> / <a href="mailto:contacto@rslab.cl">contacto@rslab.cl</a></p>
+                            <p>Tel: <a href="tel:+56992401711">+56 9 9240 1711</a></p>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-8 text-sm text-text-muted italic">
+                    Nota: La disponibilidad, correos y teléfonos pueden variar. Siempre confirme con el proveedor.
+                </p>
+            </div>
+        </section>
+
+        <section id="cotizacion" class="mb-12">
+            <div class="card table-responsive-container">
+                <h2 class="section-title">Herramienta de Cotización de Reactivos (CLP)</h2>
+                <p class="mb-4 text-text-secondary">
+                    Tabla interactiva para estimar costos. Los precios son referenciales y basados en la investigación de mercado más reciente.
+                </p>
+                <div class="alert-warning">
+                    <p><strong>Importante:</strong> Los precios son indicativos y pueden variar. El IVA en Chile es del 19%. "Precio a Consultar" requiere contacto directo. Precios en moneda extranjera (MXN, EUR) deben ser verificados con distribuidores locales para costos finales en CLP.</p>
+                </div>
+                <table class="min-w-full divide-y divide-gray-600" id="tablaCotizacion">
+                    <thead class="table-header">
+                        <tr>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Reactivo</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Presentación/Volumen</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Marca/Proveedor Ejemplo</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Precio Observado</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">IVA</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Cantidad</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Costo Total</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Notas/Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-gray-750 divide-y divide-gray-600">
+                        <tr>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Formalina Tamponada 10%" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="1 Litro" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Diprolab" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="number" value="17136" class="table-cell-input unit-price"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Incluido" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="number" value="1" class="table-cell-input quantity"></td>
+                            <td class="px-4 py-2 whitespace-nowrap total-cost-value">17136.00</td>
+                            <td class="px-4 py-2 whitespace-nowrap"><button class="remove-row">Eliminar</button></td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Formalina Tamponada 10%" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="1 Litro" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Genérico / MercadoLibre" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="number" value="13990" class="table-cell-input unit-price"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Incluido" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="number" value="1" class="table-cell-input quantity"></td>
+                            <td class="px-4 py-2 whitespace-nowrap total-cost-value">13990.00</td>
+                            <td class="px-4 py-2 whitespace-nowrap"><button class="remove-row">Eliminar</button></td>
+                        </tr>
+                         <tr>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Formalina 37%" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="1 Litro" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Productos Químicos Chile" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="number" value="6200" class="table-cell-input unit-price"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="+IVA" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="number" value="1" class="table-cell-input quantity"></td>
+                            <td class="px-4 py-2 whitespace-nowrap total-cost-value">6200.00</td>
+                            <td class="px-4 py-2 whitespace-nowrap">Nota: Rango según volumen<button class="remove-row ml-2">Eliminar</button></td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Etanol Absoluto 99.9% PA" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="1 Litro (base)" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Reachem" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="number" value="16900" class="table-cell-input unit-price"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="No Esp." class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="number" value="1" class="table-cell-input quantity"></td>
+                            <td class="px-4 py-2 whitespace-nowrap total-cost-value">16900.00</td>
+                            <td class="px-4 py-2 whitespace-nowrap">Nota: Rango según formato<button class="remove-row ml-2">Eliminar</button></td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Xilol" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="3.8 Litros" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Leica Biosystems / Newpath" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="number" value="17900" class="table-cell-input unit-price"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="+IVA" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="number" value="1" class="table-cell-input quantity"></td>
+                            <td class="px-4 py-2 whitespace-nowrap total-cost-value">17900.00</td>
+                            <td class="px-4 py-2 whitespace-nowrap">Nota: Precio oferta<button class="remove-row ml-2">Eliminar</button></td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Parafina Histológica Paraplast" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="1 Kg (caja 8u)" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Leica Biosystems / Newpath" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="number" value="11900" class="table-cell-input unit-price"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="+IVA (neto x Kg)" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="number" value="8" class="table-cell-input quantity"></td>
+                            <td class="px-4 py-2 whitespace-nowrap total-cost-value">95200.00</td>
+                            <td class="px-4 py-2 whitespace-nowrap">Nota: Precio oferta, compra x caja<button class="remove-row ml-2">Eliminar</button></td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Hematoxilina de Harris" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="1.9 o 3.8 Litros" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Leica Biosystems / Newpath" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="0" placeholder="Consultar" class="table-cell-input unit-price"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="No Esp." class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="number" value="1" class="table-cell-input quantity"></td>
+                            <td class="px-4 py-2 whitespace-nowrap total-cost-value">0.00</td>
+                            <td class="px-4 py-2 whitespace-nowrap">Precio a Consultar<button class="remove-row ml-2">Eliminar</button></td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Eosina Amarilla Sol. Alcohólica 0.5%" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="100 ml" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Diprolab" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="number" value="16660" class="table-cell-input unit-price"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Incluido" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="number" value="1" class="table-cell-input quantity"></td>
+                            <td class="px-4 py-2 whitespace-nowrap total-cost-value">16660.00</td>
+                            <td class="px-4 py-2 whitespace-nowrap"><button class="remove-row">Eliminar</button></td>
+                        </tr>
+                         <tr>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Medio de Montaje (DPX)" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="N/A" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="Varios" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="0" placeholder="Consultar" class="table-cell-input unit-price"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="text" value="N/A" class="table-cell-input"></td>
+                            <td class="px-4 py-2 whitespace-nowrap"><input type="number" value="1" class="table-cell-input quantity"></td>
+                            <td class="px-4 py-2 whitespace-nowrap total-cost-value">0.00</td>
+                            <td class="px-4 py-2 whitespace-nowrap">No disponible en fuentes, cotizar<button class="remove-row ml-2">Eliminar</button></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="6" class="px-4 py-3 text-right font-bold text-text-primary text-lg">Costo Total Estimado (CLP):</td>
+                            <td id="grandTotal" class="px-4 py-3 font-bold text-lg">0.00</td>
+                            <td class="px-4 py-3"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <button id="addRowBtn" class="mt-6 text-white font-bold py-2.5 px-5 rounded-lg shadow-md transition-colors duration-300">
+                    + Agregar Nuevo Reactivo
+                </button>
+            </div>
+        </section>
+
+        <section id="analisis" class="mb-12">
+            <div class="card">
+                <h2 class="section-title">Análisis Financiero Avanzado y Estrategias de Adquisición</h2>
+                <p class="mb-4 text-text-secondary">
+                    La gestión de costos de reactivos es un pilar para la sostenibilidad del laboratorio. Considere estos factores estratégicos:
+                </p>
+                <ul class="list-disc list-inside text-text-secondary space-y-3 pl-4 mb-6">
+                    <li><strong>Negociación por Volumen y Contratos:</strong> Explore descuentos por volumen y la posibilidad de establecer contratos a mediano/largo plazo con proveedores clave para asegurar precios y suministro.</li>
+                    <li><strong>Balance Calidad-Costo-Impacto:</strong> Priorice la calidad certificada para reactivos críticos. Un reactivo de baja calidad puede generar costos ocultos significativos (repeticiones, diagnósticos erróneos).</li>
+                    <li><strong>Logística Integral:</strong> Incluya costos de envío, aduanas (si aplica) y almacenamiento especializado (refrigeración, seguridad) en el costo total de adquisición.</li>
+                    <li><strong>Gestión de Inventario Inteligente (FEFO/FIFO):</strong> Implemente sistemas First-Expired-First-Out o First-In-First-Out y monitoree fechas de caducidad para minimizar pérdidas.</li>
+                    <li><strong>Optimización y Validación de Protocolos:</strong> Revise protocolos para un uso eficiente de reactivos. Valide cuidadosamente cualquier sustitución.</li>
+                    <li><strong>Presupuestación Proactiva:</strong> Utilice esta herramienta para proyecciones presupuestarias anuales e identifique oportunidades de optimización.</li>
+                </ul>
+                <div class="pro-tip">
+                    <p><strong>Estrategia Senior:</strong> Diversifique su cartera de proveedores. Establezca relaciones sólidas con 2-3 proveedores principales para reactivos críticos y explore alternativas competitivas para consumibles de alto volumen. Considere auditorías de calidad para proveedores estratégicos.</p>
+                </div>
+                <div class="mt-6 p-5 bg-gray-800 border-l-4 border-blue-500 rounded-md">
+                    <h4 class="text-md font-semibold text-blue-300">Planificación Estratégica de Compras:</h4>
+                    <p class="text-sm text-text-muted">
+                        Analice el consumo histórico para prever necesidades. Agrupe pedidos, aproveche ofertas y mantenga un stock de seguridad para reactivos esenciales. La anticipación es clave.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="conclusion" class="mb-8">
+             <div class="card">
+                <h2 class="section-title">Conclusión: Un Recurso Modernizado y Confiable</h2>
+                <p class="mb-4 text-text-secondary">
+                    Esta guía actualizada representa un avance significativo, ofreciendo una interfaz optimizada y datos comerciales pertinentes para la comunidad histológica chilena. Su valor reside en facilitar la toma de decisiones informadas, la gestión eficiente de recursos y la planificación presupuestaria.
+                </p>
+                <p class="font-semibold text-blue-300">Recomendaciones Clave:</p>
+                <ul class="list-disc list-inside text-text-secondary space-y-2 pl-4 mt-2">
+                    <li>Utilice esta guía como referencia principal, pero siempre confirme detalles con los proveedores.</li>
+                    <li>Considere la variabilidad de precios y negocie activamente.</li>
+                    <li>Fomente la retroalimentación para mantener la guía como un "documento vivo" y colaborativo.</li>
+                    <li>Manténgase actualizado sobre innovaciones en reactivos y tecnologías.</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-900 text-text-muted text-center p-8 mt-12 border-t border-gray-700">
+        <p class="text-sm">&copy; <span id="currentYear"></span> Guía Avanzada de Reactivos de Histología. Desarrollo experto para profesionales.</p>
+        <p class="text-xs opacity-75 mt-1">La información es orientativa. Verifique siempre con fuentes oficiales.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tablaCotizacion = document.getElementById('tablaCotizacion');
+            const tbody = tablaCotizacion.querySelector('tbody');
+            const addRowBtn = document.getElementById('addRowBtn');
+            const grandTotalEl = document.getElementById('grandTotal');
+
+            function parsePrice(value) {
+                if (typeof value === 'string') {
+                    // Intentar interpretar como número, si falla, es "Precio a Consultar" o similar
+                    const num = parseFloat(value);
+                    return isNaN(num) ? 0 : num;
+                }
+                return parseFloat(value) || 0;
+            }
+
+            function calculateRowTotal(row) {
+                const quantityInput = row.querySelector('.quantity');
+                const unitPriceInput = row.querySelector('.unit-price');
+                const totalCostCell = row.querySelector('.total-cost-value');
+
+                const quantity = parseFloat(quantityInput.value) || 0;
+                // Usar parsePrice para manejar valores no numéricos en el precio unitario
+                const unitPrice = parsePrice(unitPriceInput.value); 
+                
+                const total = quantity * unitPrice;
+                totalCostCell.textContent = total.toFixed(2);
+                return total;
+            }
+
+            function calculateGrandTotal() {
+                let grandTotal = 0;
+                const rows = tbody.querySelectorAll('tr');
+                rows.forEach(row => {
+                    const totalCostCell = row.querySelector('.total-cost-value');
+                    if (totalCostCell) { // Asegurarse que la celda existe
+                         grandTotal += parseFloat(totalCostCell.textContent) || 0;
+                    }
+                });
+                grandTotalEl.textContent = grandTotal.toFixed(2);
+            }
+
+            function addEventListenersToRow(row) {
+                const inputs = row.querySelectorAll('.quantity, .unit-price');
+                inputs.forEach(input => {
+                    input.addEventListener('input', () => {
+                        calculateRowTotal(row);
+                        calculateGrandTotal();
+                    });
+                });
+
+                const removeBtn = row.querySelector('.remove-row');
+                if (removeBtn) {
+                    removeBtn.addEventListener('click', () => {
+                        row.remove();
+                        calculateGrandTotal();
+                    });
+                }
+            }
+            
+            tbody.querySelectorAll('tr').forEach(row => {
+                // For pre-filled rows, ensure unit price input reflects the value used for calculation
+                // or is empty if it's a "consultar" case.
+                const unitPriceInput = row.querySelector('.unit-price');
+                if (unitPriceInput && unitPriceInput.value === "0" && unitPriceInput.placeholder === "Consultar") {
+                     // No action needed, it's correctly set up for non-numeric
+                } else if (unitPriceInput) {
+                    // Ensure the value is a number for calculation for pre-filled rows
+                    // This might already be handled by how 'value' attribute is set in HTML
+                }
+                calculateRowTotal(row);
+                addEventListenersToRow(row);
+            });
+            calculateGrandTotal();
+
+            addRowBtn.addEventListener('click', () => {
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td class="px-4 py-2 whitespace-nowrap"><input type="text" class="table-cell-input" placeholder="Nombre reactivo"></td>
+                    <td class="px-4 py-2 whitespace-nowrap"><input type="text" class="table-cell-input" placeholder="Presentación"></td>
+                    <td class="px-4 py-2 whitespace-nowrap"><input type="text" class="table-cell-input" placeholder="Proveedor"></td>
+                    <td class="px-4 py-2 whitespace-nowrap"><input type="number" min="0" step="0.01" class="table-cell-input unit-price" placeholder="0.00"></td>
+                    <td class="px-4 py-2 whitespace-nowrap"><input type="text" class="table-cell-input" placeholder="IVA Info"></td>
+                    <td class="px-4 py-2 whitespace-nowrap"><input type="number" min="0" value="1" class="table-cell-input quantity" placeholder="0"></td>
+                    <td class="px-4 py-2 whitespace-nowrap total-cost-value">0.00</td>
+                    <td class="px-4 py-2 whitespace-nowrap"><button class="remove-row">Eliminar</button></td>
+                `;
+                tbody.appendChild(newRow);
+                addEventListenersToRow(newRow);
+                // Calculate total for the new row and update grand total
+                calculateRowTotal(newRow);
+                calculateGrandTotal();
+            });
+
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+        });
+    </script>
+
+</body>
+</html>

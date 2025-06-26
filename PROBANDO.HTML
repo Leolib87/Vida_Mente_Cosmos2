@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Origen, Mente y Cosmos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <script src="https://d3js.org/d3.v7.min.js" defer></script>
+    <style>
+        :root {
+            --neon-green: #00FF00;
+            --neon-cyan: #00FFFF;
+            --black: #000000;
+            --white: #FFFFFF;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+            background-color: var(--black);
+            color: var(--neon-green);
+            font-family: 'Orbitron', sans-serif;
+            line-height: 1.6;
+            scroll-behavior: smooth;
+        }
+        nav {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan);
+            will-change: transform;
+        }
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+            margin: 0;
+            padding: 0;
+        }
+        nav ul li {
+            position: relative;
+            margin: 0 20px;
+        }
+        nav ul li a {
+            color: var(--neon-green);
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: var(--white);
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        .mega-menu {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            width: 800px;
+            max-width: 90vw;
+            padding: 20px;
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            will-change: opacity;
+        }
+        nav ul li:nth-child(2) .mega-menu {
+            left: 0;
+            right: 0;
+            transform: none;
+            margin: 0 auto;
+            width: 600px;
+            max-width: 85vw;
+        }
+        nav ul li:nth-child(6) .mega-menu {
+            left: 50%;
+            transform: translateX(-50%);
+            width: clamp(300px, 80vw, 600px);
+            max-width: 90vw;
+            margin: 0 auto;
+        }
+        nav ul li:hover .mega-menu {
+            display: grid;
+            opacity: 1;
+        }
+        .mega-menu h3 {
+            color: var(--neon-cyan);
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px var(--neon-cyan);
+        }
+        .mega-menu ul {
+            display: block;
+            padding: 0;
+        }
+        .mega-menu ul li {
+            margin: 5px 0;
+        }
+        .mega-menu a {
+            font-size: 0.9em;
+            color: var(--neon-green);
+        }
+        .mega-menu a:hover {
+            color: var(--white);
+        }
+        .main-container {
+            min-height: 100vh;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 20px;
+        }
+        .content {
+            grid-column: 1 / 2;
+        }
+        .sidebar {
+            grid-column: 2 / 3;
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            will-change: transform;
+        }
+        .hero {
+            grid-column: 1 / 3;
+            height: 100vh;
+            background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center/cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 15px var(--neon-green);
+            position: relative;
+            animation: fadeIn 2s ease-in;
+            background-attachment: fixed;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1;
+        }
+        .hero h1, .hero p {
+            position: relative;
+            z-index: 2;
+        }
+        .hero h1 {
+            font-size: 4em;
+            animation: glow 2s infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 5px var(--neon-green); }
+            to { text-shadow: 0 0 20px var(--neon-cyan); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .section {
+            margin: 50px 0;
+            padding: 30px;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            will-change: transform, box-shadow;
+        }
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 30px var(--neon-cyan);
+        }
+        .sidebar .section {
+            margin: 0 0 20px;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.1);
+        }
+        h2 {
+            color: var(--neon-green);
+            text-shadow: 0 0 8px var(--neon-green);
+            border-bottom: 1px solid var(--neon-cyan);
+            padding-bottom: 10px;
+        }
+        h3 {
+            color: var(--neon-cyan);
+            margin-top: 25px;
+        }
+        p {
+            font-size: 1.1em;
+        }
+        .highlight {
+            color: var(--neon-cyan);
+            font-weight: bold;
+        }
+        a {
+            color: var(--neon-green);
+            text-decoration: none;
+            display: block;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+        a:hover {
+            color: var(--white);
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        #visualization, #network-graph {
+            width: 100%;
+            height: 700px;
+            margin: 30px 0;
+            will-change: transform;
+        }
+        .node circle {
+            stroke: var(--neon-cyan);
+            stroke-width: 2px;
+            fill: var(--neon-green);
+            transition: all 0.3s ease;
+        }
+        .node:hover circle {
+            fill: var(--white);
+            stroke: var(--neon-cyan);
+            r: 12;
+        }
+        .node text {
+            fill: var(--neon-cyan);
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 5px var(--neon-green);
+        }
+        .link {
+            stroke: var(--neon-green);
+            stroke-opacity: 0.6;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+            box-shadow: 0 0 15px var(--neon-cyan);
+            loading: lazy;
+        }
+        .footer {
+            grid-column: 1 / 3;
+            text-align: center;
+            padding: 30px;
+            color: var(--neon-cyan);
+            border-top: 2px solid var(--neon-green);
+            margin-top: 50px;
+        }
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 2fr 1fr;
+            }
+            .mega-menu {
+                width: 600px;
+                grid-template-columns: repeat(2, 1fr);
+            }
+            nav ul li {
+                margin: 0 15px;
+            }
+        }
+        @media (max-width: 900px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                padding-top: 120px;
+            }
+            .sidebar {
+                position: static;
+                max-height: none;
+            }
+            .hero h1 {
+                font-size: 2.5em;
+            }
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                padding: 10px 0;
+            }
+            nav ul li {
+                margin: 10px 0;
+                width: 100%;
+                text-align: center;
+            }
+            .mega-menu {
+                position: static;
+                transform: none;
+                width: 100%;
+                max-width: 100%;
+                grid-template-columns: 1fr;
+                padding: 15px;
+                box-shadow: none;
+                border: 1px solid var(--neon-cyan);
+            }
+            nav ul li:nth-child(2) .mega-menu,
+            nav ul li:nth-child(6) .mega-menu {
+                width: 100%;
+                max-width: 100%;
+                left: auto;
+                transform: none;
+            }
+            nav ul li:hover .mega-menu {
+                display: block;
+            }
+            #visualization, #network-graph {
+                height: 500px;
+            }
+        }
+        @media (max-width: 600px) {
+            .hero {
+                height: 70vh;
+            }
+            .hero h1 {
+                font-size: 2em;
+            }
+            .hero p {
+                font-size: 1em;
+                padding: 0 10px;
+            }
+            .section {
+                padding: 20px;
+                margin: 30px 0;
+            }
+            .sidebar .section {
+                padding: 15px;
+            }
+            h2 {
+                font-size: 1.5em;
+            }
+            h3 {
+                font-size: 1.2em;
+            }
+            p {
+                font-size: 1em;
+            }
+            nav ul li a {
+                font-size: 1em;
+            }
+            .mega-menu h3 {
+                font-size: 1.1em;
+            }
+            .mega-menu a {
+                font-size: 0.85em;
+            }
+            iframe {
+                height: 400px;
+            }
+            #visualization, #network-graph {
+                height: 400px;
+            }
+        }
+        @media (max-width: 400px) {
+            .hero h1 {
+                font-size: 1.5em;
+            }
+            .hero p {
+                font-size: 0.9em;
+            }
+            .section {
+                padding: 15px;
+                margin: 20px 0;
+            }
+            h2 {
+                font-size: 1.3em;
+            }
+            h3 {
+                font-size: 1em;
+            }
+            p {
+                font-size: 0.9em;
+            }
+            #visualization, #network-graph {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li>
+                <a href="#">Exploración Conceptual</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Ideas y Preguntas Existenciales</h3>
+                        <ul>
+                            <li><a href="#trazado-vida">Origen y Fin de la Vida</a></li>
+                            <li><a href="#biologia">Determinismo vs. Libertad</a></li>
+                            <li><a href="#filosofia-mente">Conducta y Creatividad</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Fundamentos Teóricos</h3>
+                        <ul>
+                            <li><a href="#biologia">Filosofía de la Biología</a></li>
+                            <li><a href="#ciencias-cognitivas">Filosofía de las Ciencias Cognitivas</a></li>
+                            <li><a href="#filosofia-mente">Mente y Lenguaje</a></li>
+                            <li><a href="Explorando la Visualización Filosófica.HTML">Visualización Filosófica</a></li>
+                            <li><a href="MAPEO_FILO_MENTE_CHILE.HTML">Mapeo Filosofía de la Mente Chile</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <a href="#">Perspectivas Disciplinarias</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Biología y Ciencias Naturales</h3>
+                        <ul>
+                            <li><a href="#biologia">Histología y Biología Celular</a></li>
+                            <li><a href="HISTOLOGIA.html">Histología</a></li>
+                            <li><a href="https://leolib87.github.io/herbario/">Herbario</a></li>
+                            <li><a href="cuerpo humano completo plantilla Lt.html">Cuerpo Humano Desplegable</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Economía y Política</h3>
+                        <ul>
+                            <li><a href="#economia-politica">Teorías Colectivistas y Liberales</a></li>
+                            <li><a href="#economia-politica">Análisis de Corrientes Ideológicas</a></li>
+                            <li><a href="RED POLITICOS.html">Red de Políticos FA</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Educación y Filosofía</h3>
+                        <ul>
+                            <li><a href="red 2.html">Filosofía de la Educación</a></li>
+                            <li><a href="#trazado-vida">Autoconocimiento y Sentido Humano</a></li>
+                            <li><a href="red3.html">Red Tesis de Magíster Ejemplos</a></li>
+                            <li><a href="Feno_style.html">Fenomenología</a></li>                    
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <a href="#">Metodología y Datos</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Recolección y Procesamiento</h3>
+                        <ul>
+                            <li><a href="#redes-palabras">Visualización y Análisis de Datos</a></li>
+                            <li><a href="#voyant-tools">Herramientas Digitales (Gephi, D3.js)</a></li>
+                            <li><a href="varios graficos.html">Varios Gráficos</a></li>
+                            <li><a href="GRAFICO DE LINEAS Y TREEMAP.html">Gráfico de Líneas y Treemap</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <a href="#">Proyectos & Mapas</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Mapas de Conocimiento</h3>
+                        <ul>
+                            <li><a href="#elementos-comunes">Filosofía de la Mente</a></li>
+                            <li><a href="MAPA_MENTAL_TRABAJO.HTML">Mapa mental Trabajo</a></li>                            
+                            <li><a href="#economia-politica">Política Chilena</a></li>
+                            <li><a href="VARELA_CARTOGRAFIA.HTML">Cartografía Varela 3d</a></li>
+                            <li><a href="cartografia_varela_01.html">Cartografía Varela 2d</a></li>                            
+                            <li><a href="AUTOPOIESIS.HTML">Simulación Autopoiesis Maturana y Varela 1974</a></li>
+                            <li><a href="AUTOPOIESIS_3D.HTML">Simulación 3D Autopoiesis Maturana y Varela 1974</a></li>
+                            <li><a href="Autopoiesis_Fractal00.html">Simulación 3D Autopoiesis Maturana y Varela 1974 FRACTAL</a></li>
+                            <li><a href="Paper_Varela_1974.html">PAPER VARELA 1974</a></li>                            
+                            <li><a href="GAME_OF_LIFE.HTML">Simulación de "El juego de la vida" de John Conway</a></li>
+                            <li><a href="GAME_OF_LIFE3D.HTML">Simulación 3D de "El juego de la vida" de John Conway</a></li>
+                            <li><a href="Pedagogia-Biologia.html">Pedagogías en Biologia - Chile</a></li>
+                            <li><a href=" QF.HTML">Quimica Y Farmacia - Chile</a></li>
+                            <li><a href="Pedagogia-Biologia.html">Investigacion Facultad de Ciencias - Chile</a></li>
+                            <li><a href="FONDECYT.HTML">Fondecyt Chile - Chile</a></li>
+                            <li><a href="IAs.html">Red de IAs</a></li>
+                            <li><a href="IAS_BUSQUEDA.HTML">IAs Busquedas</a></li>
+                            <li><a href="googleias.html">IAs de Google</a></li>
+                            <li><a href="treemap_ias.html">Treemap de IAs</a></li>
+                            <li><a href="Empleos_IES.html">Empleos Educación Superior</a></li>
+                            <li><a href="CURSO_BIOLOGIA_CELULAR.HTML">Curso Biología Celular</a></li>                            
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <a href="#">Recursos</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Lecturas y Bibliografía</h3>
+                        <ul>
+                            <li><a href="MI_BIBLIOTECA.HTML">Mi Biblioteca de Humanidades</a></li>
+                            <li><a href="BIBLIOTECA_CIENCIAS.HTML">Mi Biblioteca de Ciencias</a></li>
+                            <li><a href="BIBLIOECAS_DIGITALES_SOMBRA.HTML">Bibliotecas Sombra</a></li>
+                             <li><a href="  peliculas.html">Cine</a></li>                          
+                            <li><a href="CITAS.HTML">Fragmentos de Mentes</a></li>
+                            <li><a href="MUSICA.HTML">Letras de canciones</a></li>    
+                            <li><a href="PAPERS_VARELA.HTML">Publicaciones Francisco Varela</a></li>
+                            <li><a href="FUENTES_FINANCIAMIENTO.HTML">Fuentes de Financiamiento</a></li>
+                            <li><a href="FONDOS.HTML">DEEP Financiamiento</a></li>
+                             <li><a href="Paper_web.html">Paper Web template</a></li>                                                         
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Enlaces de Interés</h3>
+                        <ul>
+                            <li><a href="LEOLIB NEWS BLACK.HTML">Leolib News</a></li>
+                            <li><a href="https://leolib87.github.io/herbario/">Herbario</a></li>
+                            <li><a href="horario_2025.html">Horario</a></li>
+                            <li><a href="HORARIOS_LAB.HTML">HorarioS Lab</a></li>                            
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li><a href="#contacto">Acerca de / Contacto</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-container" id="inicio">
+        <div class="hero">
+            <h1>Origen, Mente y Cosmos</h1>
+            <p>Un viaje transdisciplinario a través de la vida, la conciencia y las redes del saber</p>
+        </div>
+
+        <div class="content">
+            <div class="section" id="trazado-vida">
+                <h2>Trazado de Vida y Preguntas</h2>
+                <h3>El Origen de la Curiosidad</h3>
+                <p>Mi viaje comenzó con la <span class="highlight">biología</span>, fascinado por el origen de la existencia biológica y humana. La <span class="highlight">vida</span> y la <span class="highlight">muerte</span> no son solo eventos, sino los límites que dan sentido a todo.</p>
+                <h3>El Giro Transformador</h3>
+                <p>Tras años de preguntas difusas, una experiencia <span class="highlight">...</span> cristalizó mi visión, tejiendo este camino entre lo personal y lo investigativo.</p>
+            </div>
+
+            <div class="section" id="biologia">
+                <h2>Biología: De las Células al Determinismo</h2>
+                <h3>Histología y Mecanismos Celulares</h3>
+                <p>Mi interés radica en la estructura (<span class="highlight">histología</span>) y los <span class="highlight">mecanismos celulares</span>. ¿Por qué a nivel molecular asumimos conductas unívocas?</p>
+                <h3>Determinismo vs. Libertad</h3>
+                <p>La <span class="highlight">biología celular</span> me llevó a cuestionar el <span class="highlight">determinismo</span> frente a la <span class="highlight">libertad</span> emergente en organismos completos.</p>
+                <h3>Maturana y Varela</h3>
+                <p><span class="highlight">Humberto Maturana</span> y <span class="highlight">Francisco Varela</span> introdujeron el <span class="highlight">determinismo estructural</span>, un puente hacia lo filosófico.</p>
+            </div>
+
+            <div class="section" id="ciencias-cognitivas">
+                <h2>Ciencias Cognitivas: La Mente Encarnada</h2>
+                <h3>Embodied Cognition</h3>
+                <p><span class="highlight">Francisco Varela</span> y su <span class="highlight">embodied cognition</span> unieron las ciencias cognitivas con la <span class="highlight">fenomenología</span>.</p>
+                <h3>Legado de Varela</h3>
+                <p><span class="highlight">Evan Thompson</span> y <span class="highlight">Tom Froese</span> exploran la mente como un proceso vivo.</p>
+            </div>
+
+            <div class="section" id="filosofia-mente">
+                <h2>Filosofía de la Mente y el Lenguaje</h2>
+                <h3>Wittgenstein y el Lenguaje</h3>
+                <p><span class="highlight">Ludwig Wittgenstein</span> redefine la <span class="highlight">mente</span> a través del <span class="highlight">lenguaje</span>.</p>
+                <h3>Conciencia y Libertad</h3>
+                <p><span class="highlight">David Chalmers</span> y <span class="highlight">Andy Clark</span> abordan la conciencia y el <span class="highlight">determinismo</span>.</p>
+            </div>
+
+            <div class="section" id="economia-politica">
+                <h2>Economía y Política: Libertad vs. Control</h2>
+                <h3>Colectivismo y Liberalismo</h3>
+                <p><span class="highlight">Karl Marx</span> vs. <span class="highlight">Hayek</span>: <span class="highlight">control</span> frente a <span class="highlight">libertad</span>.</p>
+                <h3>Chile y el Colapso</h3>
+                <p>En Chile, estas tensiones se hicieron visibles, con autores como <span class="highlight">Carlos Peña</span>.</p>
+            </div>
+
+            <div class="section" id="epistemologia">
+                <h2>Epistemología: El Conocimiento en Juego</h2>
+                <p><span class="highlight">Maturana</span> ve el conocimiento como un proceso biológico y relacional.</p>
+            </div>
+
+            <div class="section" id="redes-palabras">
+                <h2>Redes de Palabras: Lenguaje y Visualización</h2>
+                <p>Exploro cómo el <span class="highlight">lenguaje</span> estructura el pensamiento mediante gráficos.</p>
+                <div id="network-graph"></div>
+            </div>
+
+            <div class="section" id="elementos-comunes">
+                <h2>Elementos Comunes: Un Mapa del Saber</h2>
+                <h3>Visualización de Conceptos</h3>
+                <p>Un mapa dinámico de mis ideas:</p>
+                <div id="visualization"></div>
+                <h3>Fundamentaciones Filosóficas</h3>
+                <ul>
+                    <li><span class="highlight">Biología</span>: Determinismo vs. indeterminación.</li>
+                    <li><span class="highlight">Ciencias Cognitivas</span>: Cognición encarnada.</li>
+                    <li><span class="highlight">Política</span>: Poder y libertad.</li>
+                </ul>
+            </div>
+
+            <div class="section" id="voyant-tools">
+                <h2>Voyant Tools: Análisis de Textos</h2>
+                <iframe src="https://voyant-tools.org/tool/CollocatesGraph/?query=a&query=the&query=powerpuff&mode=corpus&corpus=9e0ea2351023ab13cbc0979214742c17"></iframe>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="section">
+                <h2>Más Temas</h2>
+                <a href="Explorando la Visualización Filosófica.HTML">Visualización Filosófica</a>
+                <a href="MAPEO_FILO_MENTE_CHILE.HTML">Mapeo Filosofía de la Mente Chile</a>
+                <a href="CITAS.HTML">Fragmentos de Mentes</a>
+                <a href="AUTOPOIESIS.HTML">Simulación Autopoiesis Maturana y Varela 1974</a>
+                <a href="MI_BIBLIOTECA.HTML">Mi Biblioteca de Humanidades</a>
+            </div>
+            <div class="section">
+                <h2>Enlaces Relevantes</h2>
+                <a href="varios graficos.html">Varios Gráficos</a>
+                <a href="GRAFICO DE LINEAS Y TREEMAP.html">Gráfico de Líneas y Treemap</a>
+                <a href="RED POLITICOS.html">Red de Políticos FA</a>
+                <a href="https://leolib87.github.io/herbario/">Herbario</a>
+                <a href="cuerpo humano completo plantilla Lt.html">Cuerpo Humano Desplegable</a>
+                <a href="HISTOLOGIA.html">Histología</a>
+                <a href="red 2.html">Red Tesis de Magíster en Enseñanza de las Ciencias</a>
+                <a href="red3.html">Red Tesis de Magíster Ejemplos</a>
+                <a href="LEOLIB NEWS BLACK.HTML">Leolib News</a>
+                <a href="VARELA_CARTOGRAFIA.HTML">Cartografía Varela</a>
+            </div>
+        </div>
+
+        <div class="footer" id="contacto">
+            <p>La vida es terriblemente bella cuando los jugadores juegan. | Febrero 2025</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const vizWidth = window.innerWidth * 0.9, vizHeight = 700;
+            const svgConfig = { width: vizWidth, height: vizHeight };
+
+            function createGraph(containerId, nodes, links) {
+                const svg = d3.select(containerId).append('svg')
+                    .attr('width', svgConfig.width)
+                    .attr('height', svgConfig.height)
+                    .attr('viewBox', `0 0 ${svgConfig.width} ${svgConfig.height}`);
+
+                const simulation = d3.forceSimulation(nodes)
+                    .force('link', d3.forceLink(links).id(d => d.id).distance(120))
+                    .force('charge', d3.forceManyBody().strength(-250))
+                    .force('center', d3.forceCenter(svgConfig.width / 2, svgConfig.height / 2));
+
+                const link = svg.append('g').selectAll('.link')
+                    .data(links).enter().append('line')
+                    .attr('class', 'link');
+
+                const node = svg.append('g').selectAll('.node')
+                    .data(nodes).enter().append('g')
+                    .attr('class', 'node')
+                    .call(d3.drag()
+                        .on('start', dragstarted)
+                        .on('drag', dragged)
+                        .on('end', dragended));
+
+                node.append('circle').attr('r', 10);
+                node.append('text').attr('dy', -15)
+                    .attr('text-anchor', 'middle')
+                    .text(d => d.id);
+                node.on('click', (event, d) => window.location.href = d.link);
+
+                simulation.on('tick', () => {
+                    link.attr('x1', d => d.source.x)
+                        .attr('y1', d => d.source.y)
+                        .attr('x2', d => d.target.x)
+                        .attr('y2', d => d.target.y);
+                    node.attr('transform', d => `translate(${d.x},${d.y})`);
+                });
+
+                function dragstarted(event) {
+                    if (!event.active) simulation.alphaTarget(0.3).restart();
+                    event.subject.fx = event.subject.x;
+                    event.subject.fy = event.subject.y;
+                }
+                function dragged(event) {
+                    event.subject.fx = event.x;
+                    event.subject.fy = event.y;
+                }
+                function dragended(event) {
+                    if (!event.active) simulation.alphaTarget(0);
+                    event.subject.fx = null;
+                    event.subject.fy = null;
+                }
+            }
+
+            const vizNodes = [
+                { id: 'Origen', link: '#trazado-vida' },
+                { id: 'Biología', link: '#biologia' },
+                { id: 'Histología', link: '#biologia' },
+                { id: 'Determinismo', link: '#biologia' },
+                { id: 'Libertad', link: '#filosofia-mente' },
+                { id: 'Ciencias Cognitivas', link: '#ciencias-cognitivas' },
+                { id: 'Mente', link: '#filosofia-mente' },
+                { id: 'Filosofía', link: '#filosofia-mente' },
+                { id: 'Lenguaje', link: '#filosofia-mente' },
+                { id: 'Epistemología', link: '#epistemologia' },
+                { id: 'Economía', link: '#economia-politica' },
+                { id: 'Política', link: '#economia-politica' },
+                { id: 'Subjetividad', link: '#economia-politica' },
+                { id: 'Varela', link: '#ciencias-cognitivas' },
+                { id: 'Maturana', link: '#biologia' }
+            ];
+            const vizLinks = [
+                { source: 'Origen', target: 'Biología' },
+                { source: 'Biología', target: 'Histología' },
+                { source: 'Biología', target: 'Determinismo' },
+                { source: 'Biología', target: 'Maturana' },
+                { source: 'Determinismo', target: 'Libertad' },
+                { source: 'Libertad', target: 'Filosofía' },
+                { source: 'Filosofía', target: 'Ciencias Cognitivas' },
+                { source: 'Ciencias Cognitivas', target: 'Mente' },
+                { source: 'Ciencias Cognitivas', target: 'Varela' },
+                { source: 'Mente', target: 'Lenguaje' },
+                { source: 'Filosofía', target: 'Epistemología' },
+                { source: 'Libertad', target: 'Economía' },
+                { source: 'Economía', target: 'Política' },
+                { source: 'Política', target: 'Subjetividad' }
+            ];
+            createGraph('#visualization', vizNodes, vizLinks);
+
+            const netNodes = [
+                { id: 'Palabras', link: '#redes-palabras' },
+                { id: 'Lenguaje', link: '#filosofia-mente' },
+                { id: 'Visualización', link: '#elementos-comunes' },
+                { id: 'Voyant', link: '#voyant-tools' },
+                { id: 'Histología', link: '#biologia' },
+                { id: 'Herbario', link: 'https://leolib87.github.io/herbario/' }
+            ];
+            const netLinks = [
+                { source: 'Palabras', target: 'Lenguaje' },
+                { source: 'Palabras', target: 'Visualización' },
+                { source: 'Visualización', target: 'Voyant' },
+                { source: 'Visualización', target: 'Histología' },
+                { source: 'Histología', target: 'Herbario' }
+            ];
+            createGraph('#network-graph', netNodes, netLinks);
+        });
+    </script>
+</body>
+</html>

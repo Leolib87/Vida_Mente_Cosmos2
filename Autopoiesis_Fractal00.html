@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autopoiesis Model - Responsive Full-Screen Zoom</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #282c34;
+            font-family: Arial, sans-serif;
+            color: #ffffff;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border: 1px solid #ffffff;
+        }
+        #controls {
+            position: fixed;
+            bottom: 2vw;
+            right: 2vw;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 2vw;
+            border-radius: 1vw;
+            box-shadow: 0 0 1vw rgba(0, 0, 0, 0.5);
+            z-index: 10;
+            max-width: 20vw;
+            box-sizing: border-box;
+        }
+        #controls div {
+            margin-bottom: 1.5vw;
+        }
+        #controls label {
+            display: block;
+            margin-bottom: 0.5vw;
+            font-size: 1.2vw;
+        }
+        #controls input[type="range"] {
+            width: 100%;
+        }
+        #controls span {
+            font-size: 1.2vw;
+        }
+        #status {
+            position: fixed;
+            top: 2vw;
+            left: 2vw;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 1vw;
+            border-radius: 0.5vw;
+            z-index: 10;
+            font-size: 1.2vw;
+        }
+        button {
+            background-color: #61dafb;
+            border: none;
+            padding: 1vw 2vw;
+            border-radius: 0.5vw;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 1.2vw;
+        }
+        button:hover {
+            background-color: #21a1f1;
+        }
+        @media (max-width: 768px) {
+            #controls {
+                bottom: 5vw;
+                right: 5vw;
+                padding: 3vw;
+                max-width: 40vw;
+            }
+            #controls label, #controls span, #status, button {
+                font-size: 2vw;
+            }
+            #status {
+                top: 5vw;
+                left: 5vw;
+                padding: 2vw;
+            }
+        }
+        @media (max-width: 480px) {
+            #controls {
+                bottom: 10vw;
+                right: 10vw;
+                padding: 5vw;
+                max-width: 60vw;
+            }
+            #controls label, #controls span, #status, button {
+                font-size: 3vw;
+            }
+            #status {
+                top: 10vw;
+                left: 10vw;
+                padding: 3vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="status"></div>
+    <div id="controls">
+        <div>
+            <label for="enzymeCount">Enzymes:</label>
+            <input type="range" id="enzymeCount" min="1" max="50" value="10">
+            <span id="enzymeCountValue">10</span>
+        </div>
+        <div>
+            <label for="substrateSpeed">Substrate Speed (μm/s):</label>
+            <input type="range" id="substrateSpeed" min="1" max="10" value="5">
+            <span id="substrateSpeedValue">5</span>
+        </div>
+        <div>
+            <label for="decayRate">Decay Rate (s⁻¹):</label>
+            <input type="range" id="decayRate" min="0" max="0.01" step="0.0001" value="0.001">
+            <span id="decayRateValue">0.001</span>
+        </div>
+        <button onclick="simulation.reset()">Reset</button>
+    </div>
+    <script>
+        class Simulation {
+            constructor(cols, rows, cellSize, level = 0) {
+                this.cols = cols;
+                this.rows = rows;
+                this.cellSize = cellSize;
+                this.level = level;
+                this.grid = [];
+                this.substrate = [];
+                this.enzymes = [];
+                this.links = [];
+                this.zoom = 1;
+                this.targetZoom = 1;
+                this.focusedCell = null;
+                this.childSimulation = null;
+                this.init();
+            }
+
+            init() {
+                this.grid = Array(this.cols).fill().map(() => Array(this.rows).fill(0));
+                this.reset();
+            }
+
+            reset() {
+                this.substrate = [];
+                this.enzymes = [];
+                this.links = [];
+                this.grid.forEach(row => row.fill(0));
+                for (let i = 0; i < 5000 / (this.level + 1); i++) { // Increased from 2000 to 5000
+                    let x = floor(random(this.cols));
+                    let y = floor(random(this.rows));
+                    if (this.grid[x][y] === 0) {
+                        this.grid[x][y] = 1;
+                        this.substrate.push({ x, y });
+                    }
+                }
+                for (let i = 0; i < enzymeCount; i++) {
+                    let x, y;
+                    do {
+                        x = floor(random(this.cols));
+                        y = floor(random(this.rows));
+                    } while (this.grid[x][y] !== 0);
+                    this.grid[x][y] = 2;
+                    this.enzymes.push({ x, y });
+                }
+            }
+
+            update() {
+                this.moveSubstrate();
+                this.interact();
+                this.disintegrateLinks();
+                this.updateZoom();
+                if (this.childSimulation) this.childSimulation.update();
+            }
+
+            moveSubstrate() {
+                for (let s of this.substrate) {
+                    if (random() < substrateSpeed / 10) {
+                        let dir = floor(random(4));
+                        let newX = s.x + [1, 0, -1, 0][dir];
+                        let newY = s.y + [0, 1, 0, -1][dir];
+                        if (this.isValid(newX, newY) && this.grid[newX][newY] === 0) {
+                            this.grid[s.x][s.y] = 0;
+                            s.x = newX;
+                            s.y = newY;
+                            this.grid[s.x][s.y] = 1;
+                        }
+                    }
+                }
+            }
+
+            interact() {
+                for (let enzyme of this.enzymes) {
+                    let neighbors = this.getNeighbors(enzyme.x, enzyme.y);
+                    let substrateNeighbors = neighbors.filter(n => this.grid[n.x][n.y] === 1);
+                    if (substrateNeighbors.length >= 2) {
+                        let s1 = substrateNeighbors[0];
+                        let s2 = substrateNeighbors[1];
+                        this.grid[s1.x][s1.y] = 3;
+                        this.grid[s2.x][s2.y] = 0;
+                        this.substrate = this.substrate.filter(s => !(s.x === s1.x && s.y === s1.y) && !(s.x === s2.x && s.y === s2.y));
+                        this.links.push({ x: s1.x, y: s1.y });
+                    }
+                }
+            }
+
+            disintegrateLinks() {
+                for (let i = this.links.length - 1; i >= 0; i--) {
+                    if (random() < decayRate) {
+                        let l = this.links[i];
+                        this.grid[l.x][l.y] = 1;
+                        this.substrate.push({ x: l.x, y: l.y });
+                        this.links.splice(i, 1);
+                    }
+                }
+            }
+
+            display() {
+                if (this.childSimulation) {
+                    this.childSimulation.display();
+                    return;
+                }
+
+                push();
+                translate(width / 2, height / 2);
+                scale(this.zoom);
+                translate(-this.cols * this.cellSize / 2, -this.rows * this.cellSize / 2);
+                for (let i = 0; i < this.cols; i++) {
+                    for (let j = 0; j < this.rows; j++) {
+                        if (this.grid[i][j] === 1) fill(0, 255, 0);
+                        else if (this.grid[i][j] === 2) fill(255, 0, 0);
+                        else if (this.grid[i][j] === 3) fill(0, 0, 255);
+                        else {
+                            fill(50, 50, 50, 50);
+                            stroke(100);
+                        }
+                        rect(i * this.cellSize, j * this.cellSize, this.cellSize, this.cellSize);
+                    }
+                }
+                pop();
+            }
+
+            getNeighbors(x, y) {
+                let neighbors = [];
+                for (let i = -1; i <= 1; i++) {
+                    for (let j = -1; j <= 1; j++) {
+                        if (i === 0 && j === 0) continue;
+                        let newX = x + i;
+                        let newY = y + j;
+                        if (this.isValid(newX, newY)) neighbors.push({ x: newX, y: newY });
+                    }
+                }
+                return neighbors;
+            }
+
+            isValid(x, y) {
+                return x >= 0 && x < this.cols && y >= 0 && y < this.rows;
+            }
+
+            updateZoom() {
+                this.zoom = lerp(this.zoom, this.targetZoom, 0.1);
+                if (abs(this.zoom - this.cellFullScreenZoom()) < 0.01 && !this.childSimulation && this.focusedCell) {
+                    this.childSimulation = new Simulation(this.cols, this.rows, this.cellSize, this.level + 1);
+                } else if (this.zoom < this.cellFullScreenZoom() - 0.5 && this.childSimulation) {
+                    this.childSimulation = null;
+                }
+            }
+
+            cellFullScreenZoom() {
+                return min(width / this.cellSize, height / this.cellSize);
+            }
+
+            maxZoom() {
+                return this.cellFullScreenZoom();
+            }
+
+            setZoomTarget(delta, mx, my) {
+                let gridX = floor((mx - width / 2) / (this.cellSize * this.zoom) + this.cols / 2);
+                let gridY = floor((my - height / 2) / (this.cellSize * this.zoom) + this.rows / 2);
+                if (this.isValid(gridX, gridY)) {
+                    this.focusedCell = { x: gridX, y: gridY };
+                    this.targetZoom -= delta / 10; // Increased from /20 to /10 for even faster zooming
+                    this.targetZoom = constrain(this.targetZoom, 1, this.maxZoom());
+                }
+            }
+        }
+
+        let simulation;
+        let enzymeCount = 10;
+        let substrateSpeed = 5;
+        let decayRate = 0.001;
+
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            simulation = new Simulation(floor(windowWidth / 10), floor(windowHeight / 10), 10);
+            setupControls();
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+            simulation = new Simulation(floor(windowWidth / 10), floor(windowHeight / 10), 10, simulation.level);
+        }
+
+        function setupControls() {
+            const updateControl = (id, valueId, callback) => {
+                const slider = document.getElementById(id);
+                const valueSpan = document.getElementById(valueId);
+                slider.addEventListener('input', () => {
+                    const val = slider.step === '0.0001' ? parseFloat(slider.value) : parseInt(slider.value);
+                    valueSpan.textContent = slider.step === '0.0001' ? val.toFixed(4) : val;
+                    callback(val);
+                });
+            };
+            updateControl('enzymeCount', 'enzymeCountValue', val => enzymeCount = val);
+            updateControl('substrateSpeed', 'substrateSpeedValue', val => substrateSpeed = val);
+            updateControl('decayRate', 'decayRateValue', val => decayRate = val);
+        }
+
+        function draw() {
+            background(40, 44, 52);
+            simulation.update();
+            simulation.display();
+            displayStatus();
+        }
+
+        function displayStatus() {
+            document.getElementById('status').textContent = 
+                `Zoom: ${simulation.zoom.toFixed(1)}, Level: ${simulation.level}, ` +
+                `Substrate: ${simulation.substrate.length}, Links: ${simulation.links.length}, Enzymes: ${simulation.enzymes.length}`;
+        }
+
+        function mouseWheel(event) {
+            simulation.setZoomTarget(event.delta, mouseX, mouseY);
+            return false;
+        }
+    </script>
+</body>
+</html>

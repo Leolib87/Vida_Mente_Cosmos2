@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red Interactiva de IAs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #000000;
+            color: #00FF00;
+            font-family: 'Orbitron', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 2px solid #00FFFF;
+            box-shadow: 0 0 15px #00FFFF;
+        }
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        nav ul li {
+            position: relative;
+            margin: 0 20px;
+        }
+        nav ul li a {
+            color: #00FF00;
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        .mega-menu {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF;
+            width: 800px;
+            max-width: 90vw;
+            padding: 20px;
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        nav ul li:nth-child(2) .mega-menu {
+            left: 0;
+            right: 0;
+            transform: none;
+            margin-left: auto;
+            margin-right: auto;
+            width: 600px;
+            max-width: 85vw;
+        }
+        nav ul li:hover .mega-menu {
+            display: grid;
+            opacity: 1;
+        }
+        .mega-menu h3 {
+            color: #00FFFF;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px #00FFFF;
+        }
+        .mega-menu ul {
+            display: block;
+            padding: 0;
+        }
+        .mega-menu ul li {
+            margin: 5px 0;
+        }
+        .mega-menu a {
+            font-size: 0.9em;
+            color: #00FF00;
+        }
+        .mega-menu a:hover {
+            color: #FFFFFF;
+        }
+        .main-container {
+            max-width: 1400px;
+            margin: 80px auto 0;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 20px;
+        }
+        .content {
+            grid-column: 1 / 2;
+        }
+        .sidebar {
+            grid-column: 2 / 3;
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            background: rgba(0, 255, 255, 0.1);
+            padding: 20px;
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF;
+        }
+        .section {
+            margin: 50px 0;
+            padding: 30px;
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF;
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 30px #00FFFF;
+        }
+        h2 {
+            color: #00FF00;
+            text-shadow: 0 0 8px #00FF00;
+            border-bottom: 1px solid #00FFFF;
+            padding-bottom: 10px;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .search-bar input {
+            background: #000000;
+            border: 2px solid #00FFFF;
+            color: #00FF00;
+            padding: 10px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1em;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 350px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 5px #00FFFF;
+        }
+        .search-bar input:hover, .search-bar input:focus {
+            background: #00FFFF;
+            color: #000000;
+            box-shadow: 0 0 15px #00FFFF;
+            outline: none;
+        }
+        .filters {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        select {
+            background: #000000;
+            border: 2px solid #00FFFF;
+            color: #00FF00;
+            padding: 8px;
+            font-family: 'Orbitron', sans-serif;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        select:hover, select:focus {
+            background: #00FFFF;
+            color: #000000;
+            outline: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #00FFFF;
+            text-align: left;
+        }
+        th {
+            background: rgba(0, 255, 255, 0.1);
+            color: #00FFFF;
+        }
+        tr:nth-child(even) {
+            background: rgba(0, 255, 255, 0.03);
+        }
+        tr:hover {
+            background: rgba(0, 255, 255, 0.2);
+        }
+        a {
+            color: #00FFFF;
+            text-decoration: none;
+        }
+        a:hover {
+            text-shadow: 0 0 5px #00FFFF;
+        }
+        #network-graph {
+            width: 500%;
+            height: 800px;
+            margin: 30px 0;
+        }
+        .node circle {
+            stroke: #00FFFF;
+            stroke-width: 2px;
+            fill: #00FF00;
+            transition: all 0.3s ease;
+        }
+        .node.category circle {
+            fill: #ff00c8;
+        }
+        .node:hover circle {
+            fill: #0408ff;
+            stroke: #00FFFF;
+            r: 100;
+        }
+        .node text {
+            fill: #00FFFF;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 10px #73ff00;
+            font-size: 8px;
+            pointer-events: none;
+            opacity: 1.0;
+            transition: opacity 0.9s ease;
+        }
+        .node.category text {
+            fill: #fffb00;
+            text-shadow: #ff04ff;
+        }
+        .node:hover text {
+            opacity: 1;
+        }
+        .link {
+            stroke: #00FF00;
+            stroke-opacity: 0.6;
+            stroke-width: 1.5px;
+        }
+        .sidebar a {
+            color: #00FF00;
+            text-decoration: none;
+            display: block;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+        .sidebar a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+        @media (max-width: 900px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                margin-top: 120px;
+            }
+            .sidebar {
+                position: static;
+                max-height: none;
+            }
+            #network-graph {
+                height: 600px;
+            }
+        }
+        @media (max-width: 600px) {
+            .section {
+                padding: 20px;
+                margin: 30px 0;
+            }
+            #network-graph {
+                height: 500px;
+            }
+            .node text {
+                font-size: 9px;
+            }
+            .filters, .search-bar {
+                flex-direction: column;
+                align-items: center;
+            }
+            select, .search-bar input {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
+        @media (max-width: 400px) {
+            #network-graph {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li>
+                <a href="#">Exploración de IAs</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Categorías de IA</h3>
+                        <ul>
+                            <li><a href="#asistentes">Asistentes Virtuales y Automatización</a></li>
+                            <li><a href="#creacion">Creación, Edición de Contenidos y Ventas</a></li>
+                            <li><a href="#desarrollo">Desarrollo de Software y Modelos IA</a></li>
+                            <li><a href="#educacion">Educación y Aprendizaje</a></li>
+                            <li><a href="#investigacion">Investigación y Ciencia</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li><a href="#contacto">Acerca de / Contacto</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-container" id="inicio">
+        <div class="content">
+            <div class="section">
+                <h2>Red Interactiva de IAs por Categoría</h2>
+                <div id="network-graph"></div>
+            </div>
+            <div class="section">
+                <h2>Catálogo de IAs</h2>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Busca por nombre, categoría, función, propósito...">
+                </div>
+                <div class="filters">
+                    <select id="categoryFilter">
+                        <option value="">Todas las Categorías</option>
+                    </select>
+                </div>
+                <table id="iaTable">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Enlace</th>
+                            <th>Categoría</th>
+                            <th>Propósito</th> <!-- Added Purpose column -->
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <h2>Categorías</h2>
+            <ul id="category-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        // Pegar datos aquí
+        // Assuming your const data is already defined with your list of AIs
+        // Example structure expected:
+        const data =  {
+            "Asistentes Virtuales y Automatización": [
+                { "name": "Gemini", "url": "https://gemini.openai.com/", "keywords": ["chatbot", "automation", "virtual assistant"], "purpose": "Proporcionar respuestas conversacionales y automatizar tareas diarias para mejorar la productividad." },
+                { "name": "Learn Prompting", "url": "https://learnprompting.org/", "keywords": ["prompting", "automation", "learning"], "purpose": "Enseñar técnicas de prompting para optimizar interacciones con modelos de IA." },
+                { "name": "Le Chat - Mistral AI", "url": "https://chat.mistral.ai/", "keywords": ["chatbot", "AI assistant", "conversation"], "purpose": "Facilitar conversaciones naturales y asistir en consultas generales mediante IA." },
+                { "name": "Google AI Studio (Prompts)", "url": "https://aistudio.google.com/prompts/new_chat", "keywords": ["prompts", "automation", "Google"], "purpose": "Crear y probar prompts para automatizar tareas con tecnología de Google AI." },
+                { "name": "Perplexity", "url": "https://www.perplexity.ai/", "keywords": ["search", "AI assistant", "information"], "purpose": "Ofrecer respuestas precisas y detalladas a preguntas mediante búsqueda asistida por IA." },
+                { "name": "Abacus.AI Teams", "url": "https://apps.abacus.ai/chatllm/", "keywords": ["team assistant", "chat", "automation"], "purpose": "Asistir a equipos con chatbots personalizados y automatización de flujos de trabajo." },
+                { "name": "Botpress", "url": "https://botpress.com/", "keywords": ["chatbot", "automation", "builder"], "purpose": "Permitir la creación y gestión de chatbots personalizados para automatización." },
+                { "name": "Microsoft Copilot", "url": "https://www.microsoft.com/en-us/microsoft-365/copilot", "keywords": ["productivity", "assistant", "Microsoft"], "purpose": "Mejorar la productividad integrándose con herramientas de Microsoft para asistir en tareas." },
+                { "name": "IFTTT", "url": "https://ifttt.com/", "keywords": ["automation", "integration", "workflows"], "purpose": "Conectar aplicaciones y dispositivos para automatizar flujos de trabajo personalizados." },
+                { "name": "CustomGPT.ai", "url": "https://www.customgpt.ai/", "keywords": ["custom AI", "chatbot", "automation"], "purpose": "Crear chatbots personalizados basados en datos específicos para automatización." },
+                { "name": "Humata", "url": "https://humata.ai/", "keywords": ["document analysis", "assistant", "automation"], "purpose": "Analizar y responder preguntas sobre documentos para automatizar la gestión de información." },
+                { "name": "Supernormal", "url": "https://www.supernormal.com/", "keywords": ["meeting notes", "automation", "AI assistant"], "purpose": "Generar notas automáticas de reuniones para optimizar el seguimiento de discusiones." },
+                { "name": "Dante AI", "url": "https://www.dante.ai/", "keywords": ["chatbot", "automation", "virtual assistant"], "purpose": "Proporcionar asistencia conversacional y automatización para tareas específicas." },
+                { "name": "Essential AI", "url": "https://essentialai.com/", "keywords": ["AI assistant", "automation", "productivity"], "purpose": "Mejorar la productividad con asistencia IA personalizada y automatización de procesos." },
+                { "name": "Tost AI", "url": "https://tost.ai/", "keywords": ["automation", "AI tools", "assistant"], "purpose": "Ofrecer herramientas de IA para automatizar tareas y asistir en diversas funciones." },
+                { "name": "Quivr", "url": "https://quivr.app/", "keywords": ["knowledge management", "assistant", "automation"], "purpose": "Gestionar conocimiento personal y organizacional con asistencia IA automatizada." },
+                { "name": "AI2", "url": "https://allenai.org/", "keywords": ["research assistant", "automation", "AI"], "purpose": "Asistir en investigaciones automatizando análisis y proporcionando insights." },
+                { "name": "Do Browser", "url": "https://www.dobrowser.io/", "keywords": ["browser assistant", "automation", "productivity"], "purpose": "Automatizar tareas en el navegador y mejorar la productividad del usuario." }
+            ],
+            "Creación, Edición de Contenidos y Ventas": [
+                { "name": "Adobe Firefly", "url": "https://firefly.adobe.com/", "keywords": ["image generation", "design", "content creation"], "purpose": "Generar imágenes creativas y editar contenido visual para diseño gráfico profesional." },
+                { "name": "Tools AI", "url": "https://toolsai.io/", "keywords": ["content tools", "creation", "editing"], "purpose": "Proporcionar herramientas de IA para crear y editar contenido de manera eficiente." },
+                { "name": "Clideo", "url": "https://clideo.com/", "keywords": ["video editing", "content creation", "media"], "purpose": "Editar videos en línea para crear contenido multimedia accesible." },
+                { "name": "Leonardo.AI", "url": "https://leonardo.ai/", "keywords": ["art generation", "design", "content creation"], "purpose": "Generar arte digital de alta calidad para proyectos creativos." },
+                { "name": "ElevenLabs", "url": "https://elevenlabs.io/", "keywords": ["voice generation", "audio", "content creation"], "purpose": "Crear voces sintéticas realistas para contenido audiovisual." },
+                { "name": "Opus Clip", "url": "https://www.opus.pro/", "keywords": ["video editing", "clips", "content creation"], "purpose": "Convertir videos largos en clips cortos optimizados para redes sociales." },
+                { "name": "Toolify", "url": "https://www.toolify.ai/", "keywords": ["AI tools", "content creation", "editing"], "purpose": "Ofrecer herramientas de IA para creación y edición de contenido variado." },
+                { "name": "EverArt", "url": "https://everart.ai/", "keywords": ["art generation", "design", "content creation"], "purpose": "Generar ilustraciones y diseños artísticos mediante IA." },
+                { "name": "EffectTextureMaker", "url": "https://effecttexturemaker.com/", "keywords": ["texture design", "content creation", "effects"], "purpose": "Crear texturas y efectos visuales para diseño de contenido." },
+                { "name": "Freepik AI Upscaler", "url": "https://www.freepik.com/ai", "keywords": ["image upscaling", "design", "content creation"], "purpose": "Mejorar la resolución de imágenes para uso en proyectos creativos." },
+                { "name": "BlinkShot", "url": "https://www.blinkshot.io/", "keywords": ["image editing", "content creation", "design"], "purpose": "Editar imágenes rápidamente para contenido visual optimizado." },
+                { "name": "Relume", "url": "https://relume.io/", "keywords": ["web design", "content creation", "sales"], "purpose": "Diseñar sitios web atractivos para mejorar ventas y presencia en línea." },
+                { "name": "OpenRead", "url": "https://openread.io/", "keywords": ["content summarization", "reading", "creation"], "purpose": "Resumir contenido extenso para facilitar la creación de resúmenes." },
+                { "name": "Hailuo AI", "url": "https://hailuo.ai/", "keywords": ["video generation", "content creation", "media"], "purpose": "Generar videos a partir de prompts para contenido multimedia." },
+                { "name": "Dverso", "url": "https://landing.dverso.io/", "keywords": ["content creation", "design", "sales"], "purpose": "Crear contenido visual y estrategias de diseño para ventas." },
+                { "name": "The Voice AI Platform", "url": "https://voice.ai/", "keywords": ["voice editing", "audio", "content creation"], "purpose": "Editar y personalizar voces para proyectos de audio creativos." },
+                { "name": "HeyGen", "url": "https://heygen.com/", "keywords": ["video generation", "content creation", "sales"], "purpose": "Producir videos con avatares IA para marketing y ventas." },
+                { "name": "Character.AI", "url": "https://character.ai/", "keywords": ["character creation", "storytelling", "content"], "purpose": "Crear personajes interactivos para narrativas y contenido." },
+                { "name": "Udio AI Music Generator", "url": "https://udio.ai/", "keywords": ["music creation", "audio", "content"], "purpose": "Generar música original mediante IA para proyectos creativos." },
+                { "name": "Good Tape", "url": "https://goodtape.io/tapes/new", "keywords": ["audio transcription", "content creation", "media"], "purpose": "Transcribir audio automáticamente para crear contenido textual." },
+                { "name": "Talk To Ultravox", "url": "https://ultravox.ai/", "keywords": ["voice AI", "content creation", "audio"], "purpose": "Generar y editar audio conversacional para contenido multimedia." },
+                { "name": "Fish Audio", "url": "https://fish.audio/", "keywords": ["audio generation", "content creation", "music"], "purpose": "Crear pistas de audio y música personalizadas con IA." },
+                { "name": "Suno", "url": "https://suno.ai/", "keywords": ["music generation", "content creation", "audio"], "purpose": "Producir canciones completas a partir de prompts para uso creativo." },
+                { "name": "KREA", "url": "https://krea.ai/", "keywords": ["image generation", "design", "content creation"], "purpose": "Generar imágenes únicas para diseño y creación de contenido." },
+                { "name": "Bolt", "url": "https://bolt.new/", "keywords": ["content creation", "design", "rapid tools"], "purpose": "Crear contenido y diseños rápidamente con herramientas de IA." },
+                { "name": "Cohesive", "url": "https://cohesive.so/", "keywords": ["content editing", "writing", "sales"], "purpose": "Editar y generar contenido escrito optimizado para ventas." },
+                { "name": "Getty Images", "url": "https://www.gettyimages.com/", "keywords": ["stock images", "content creation", "sales"], "purpose": "Proporcionar imágenes de stock para creación de contenido y marketing." },
+                { "name": "MagicQuill", "url": "https://magicquill.online/", "keywords": ["writing assistant", "content creation", "editing"], "purpose": "Asistir en la escritura y edición de contenido creativo." },
+                { "name": "Submagic", "url": "https://www.submagic.co/", "keywords": ["subtitle generation", "video", "content creation"], "purpose": "Generar subtítulos automáticos para videos y mejorar accesibilidad." },
+                { "name": "WeShop AI", "url": "https://weshop.ai/", "keywords": ["e-commerce", "sales", "content creation"], "purpose": "Crear contenido visual para optimizar ventas en e-commerce." },
+                { "name": "fofr/consistent-character", "url": "https://replicate.com/fofr/consistent-character", "keywords": ["character design", "content creation", "art"], "purpose": "Diseñar personajes consistentes para proyectos creativos." },
+                { "name": "TLDRThis", "url": "https://www.tldrthis.com/", "keywords": ["summarization", "content creation", "writing"], "purpose": "Resumir textos largos para crear contenido conciso." },
+                { "name": "POLY.AI", "url": "https://www.poly.ai/", "keywords": ["voice AI", "content creation", "automation"], "purpose": "Desarrollar asistentes de voz para contenido y automatización." },
+                { "name": "VALL-E", "url": "https://lifeiteng.github.io/valle/index.html", "keywords": ["voice synthesis", "audio", "content creation"], "purpose": "Sintetizar voces realistas para producción de contenido auditivo." },
+                { "name": "DALL-E", "url": "https://openai.com/dall-e", "keywords": ["image generation", "art", "content creation"], "purpose": "Crear imágenes únicas a partir de texto para proyectos artísticos." },
+                { "name": "Stable Diffusion", "url": "https://stability.ai/stable-diffusion", "keywords": ["image generation", "art", "content creation"], "purpose": "Generar imágenes de alta calidad mediante difusión estable para arte." },
+                { "name": "Google Collab Stable Diffusion", "url": "https://colab.research.google.com/", "keywords": ["image generation", "collab", "content creation"], "purpose": "Ejecutar Stable Diffusion en Google Colab para crear contenido visual." },
+                { "name": "DreamBooth", "url": "https://dreambooth.github.io/", "keywords": ["image generation", "training", "content creation"], "purpose": "Entrenar modelos para generar imágenes personalizadas." },
+                { "name": "MidJourney", "url": "https://www.midjourney.com/", "keywords": ["image generation", "art", "content creation"], "purpose": "Producir arte digital estilizado a partir de prompts textuales." },
+                { "name": "Imagen", "url": "https://imagen.research.google/", "keywords": ["image generation", "Google", "content creation"], "purpose": "Generar imágenes avanzadas con tecnología de Google para creación de contenido." }
+            ],
+            "Desarrollo de Software y Modelos IA": [
+                { "name": "Replit", "url": "https://replit.com/", "keywords": ["coding", "development", "software"], "purpose": "Proporcionar un entorno en línea para programar y colaborar en software." },
+                { "name": "7Devin", "url": "https://app.devin.ai/", "keywords": ["AI coding", "development", "software"], "purpose": "Asistir en la programación con IA para acelerar el desarrollo de software." },
+                { "name": "Cerebras Inference", "url": "https://www.cerebras.net/", "keywords": ["AI models", "development", "inference"], "purpose": "Ejecutar inferencias de modelos de IA a alta velocidad para desarrollo." },
+                { "name": "NotebookLM", "url": "https://notebooklm.google/", "keywords": ["AI notebook", "development", "Google"], "purpose": "Crear y gestionar cuadernos de IA para desarrollo con Google." },
+                { "name": "Google AI Studio", "url": "https://ai.google/tools/", "keywords": ["AI development", "Google", "software"], "purpose": "Desarrollar aplicaciones de IA utilizando herramientas de Google." },
+                { "name": "ChainGPT", "url": "https://www.chaingpt.org/", "keywords": ["blockchain", "AI development", "software"], "purpose": "Integrar IA con blockchain para desarrollar soluciones descentralizadas." },
+                { "name": "Hedra", "url": "https://hedra.dev/", "keywords": ["AI development", "software", "tools"], "purpose": "Facilitar el desarrollo de modelos de IA con herramientas especializadas." },
+                { "name": "Grep", "url": "https://grep.app/", "keywords": ["code search", "development", "software"], "purpose": "Buscar código en repositorios para optimizar el desarrollo de software." },
+                { "name": "Mendable", "url": "https://mendable.ai/", "keywords": ["AI documentation", "development", "software"], "purpose": "Generar documentación automática para proyectos de desarrollo." },
+                { "name": "Rerun", "url": "https://www.rerun.io/", "keywords": ["visualization", "development", "software"], "purpose": "Visualizar datos en tiempo real para desarrollo de software." },
+                { "name": "Vercel", "url": "https://vercel.com/", "keywords": ["deployment", "development", "software"], "purpose": "Desplegar aplicaciones web fácilmente para desarrolladores." },
+                { "name": "Hugging Face", "url": "https://huggingface.co/", "keywords": ["AI models", "development", "machine learning"], "purpose": "Proporcionar modelos y herramientas para desarrollo de machine learning." },
+                { "name": "Elink.io", "url": "https://elink.io/", "keywords": ["link management", "development", "software"], "purpose": "Gestionar enlaces para proyectos de desarrollo y colaboración." },
+                { "name": "Jasper", "url": "https://www.jasper.ai/", "keywords": ["content AI", "development", "software"], "purpose": "Generar contenido automatizado para soporte en desarrollo de software." }
+            ],
+            "Educación y Aprendizaje": [
+                { "name": "Lucidchart", "url": "https://www.lucidchart.com/", "keywords": ["diagrams", "education", "learning"], "purpose": "Crear diagramas interactivos para facilitar el aprendizaje visual." },
+                { "name": "Llama Tutor", "url": "https://llama-tutor.com/", "keywords": ["tutor", "education", "AI"], "purpose": "Ofrecer tutoría personalizada mediante IA para estudiantes." },
+                { "name": "Gamma", "url": "https://gamma.app/", "keywords": ["presentations", "education", "learning"], "purpose": "Generar presentaciones educativas interactivas con IA." },
+                { "name": "EssayFlow", "url": "https://essayflow.ai/", "keywords": ["essay writing", "education", "learning"], "purpose": "Asistir en la redacción de ensayos para estudiantes y académicos." },
+                { "name": "Illuminate", "url": "https://illuminate.ai/", "keywords": ["education tools", "learning", "AI"], "purpose": "Proporcionar herramientas de IA para mejorar la educación." },
+                { "name": "Kome", "url": "https://kome.ai/", "keywords": ["summarization", "education", "learning"], "purpose": "Resumir textos educativos para facilitar el aprendizaje." },
+                { "name": "NoteGPT", "url": "https://notegpt.ai/", "keywords": ["note-taking", "education", "AI"], "purpose": "Generar notas automáticas para apoyar el aprendizaje." },
+                { "name": "Masterpiece X", "url": "https://masterpiece.studio/", "keywords": ["3D learning", "education", "creation"], "purpose": "Enseñar diseño 3D mediante creación interactiva." },
+                { "name": "VisualMath AI", "url": "https://visualmath-ai.vercel.app/", "keywords": ["math", "education", "visualization"], "purpose": "Visualizar conceptos matemáticos para facilitar la comprensión." },
+                { "name": "Napkin AI", "url": "https://napkin.ai/", "keywords": ["diagrams", "education", "learning"], "purpose": "Crear diagramas rápidos para aprendizaje y enseñanza." },
+                { "name": "Filosofía de la Inteligencia Artificial", "url": "https://www.intelligence.org/", "keywords": ["AI philosophy", "education", "research"], "purpose": "Educar sobre la filosofía y ética de la inteligencia artificial." },
+                { "name": "AI Rankings", "url": "https://airankings.org/", "keywords": ["AI comparison", "education", "learning"], "purpose": "Comparar herramientas de IA para aprendizaje y selección." }
+            ],
+            "Investigación y Ciencia": [
+                { "name": "PubMed", "url": "https://pubmed.ncbi.nlm.nih.gov/", "keywords": ["medical research", "science", "papers"], "purpose": "Acceder a artículos de investigación médica y científica." },
+                { "name": "Research Rabbit", "url": "https://researchrabbitapp.com/", "keywords": ["research tools", "science", "literature"], "purpose": "Mapear y descubrir literatura científica para investigación." },
+                { "name": "Scite", "url": "https://scite.ai/", "keywords": ["citations", "research", "science"], "purpose": "Analizar citas para evaluar la validez de investigaciones." },
+                { "name": "Elicit", "url": "https://elicit.org/", "keywords": ["research assistant", "science", "papers"], "purpose": "Asistir en la búsqueda y análisis de artículos científicos." },
+                { "name": "SciSpace", "url": "https://typeset.io/", "keywords": ["research papers", "science", "formatting"], "purpose": "Formatear y gestionar papers científicos para publicación." },
+                { "name": "OpenAlex", "url": "https://openalex.org/", "keywords": ["research database", "science", "open access"], "purpose": "Proporcionar una base de datos de acceso abierto para investigación." },
+                { "name": "Litmaps", "url": "https://www.litmaps.com/", "keywords": ["literature mapping", "research", "science"], "purpose": "Visualizar conexiones entre literatura científica." },
+                { "name": "DeepSeek", "url": "https://deepseek.com/", "keywords": ["AI research", "science", "exploration"], "purpose": "Explorar datos complejos con IA para investigación científica." },
+                { "name": "Scenario", "url": "https://scenario.com/", "keywords": ["research tools", "science", "data"], "purpose": "Analizar datos para apoyar investigaciones científicas." },
+                { "name": "Storm (Stanford)", "url": "https://storm.stanford.edu/", "keywords": ["research AI", "science", "Stanford"], "purpose": "Generar informes de investigación con IA desarrollada por Stanford." },
+                { "name": "Sourcely", "url": "https://www.sourcely.net/", "keywords": ["source finding", "research", "science"], "purpose": "Encontrar fuentes relevantes para investigaciones académicas." },
+                { "name": "Trellis", "url": "https://runtrellis.com/", "keywords": ["research management", "science", "tools"], "purpose": "Gestionar proyectos de investigación científica con herramientas IA." },
+                { "name": "Jenni", "url": "https://jenni.ai/", "keywords": ["writing assistant", "research", "science"], "purpose": "Asistir en la redacción de artículos científicos y académicos." },
+                { "name": "Protein (Hugging Face)", "url": "https://huggingface.co/protein", "keywords": ["protein research", "science", "AI"], "purpose": "Analizar estructuras de proteínas con modelos de IA." },
+                { "name": "MP Repo", "url": "https://310.ai/mp/repo", "keywords": ["research repository", "science", "AI"], "purpose": "Almacenar y gestionar datos de investigación científica." },
+                { "name": "Glass AI", "url": "https://glass.ai/", "keywords": ["data analysis", "research", "science"], "purpose": "Analizar datos complejos para investigación empresarial y científica." },
+                { "name": "HUMATA", "url": "https://humata.ai/", "keywords": ["document analysis", "research", "science"], "purpose": "Analizar documentos científicos y responder preguntas relacionadas." },
+                { "name": "Wolfram Alpha", "url": "https://www.wolframalpha.com/", "keywords": ["computational knowledge", "science", "research"], "purpose": "Resolver consultas científicas con conocimiento computacional." },
+                { "name": "SemanticScholar", "url": "https://www.semanticscholar.org/", "keywords": ["research papers", "science", "semantics"], "purpose": "Buscar y analizar papers científicos con enfoque semántico." },
+                { "name": "Trinka.ai", "url": "https://www.trinka.ai/", "keywords": ["academic writing", "research", "science"], "purpose": "Corregir y mejorar la redacción de textos científicos." },
+                { "name": "Paperpal", "url": "https://paperpal.com/", "keywords": ["paper editing", "research", "science"], "purpose": "Editar papers científicos para publicación académica." },
+                { "name": "ExplainMe a Paper", "url": "https://explainpaper.com/", "keywords": ["paper explanation", "research", "science"], "purpose": "Explicar artículos científicos complejos de forma sencilla." },
+                { "name": "Scholarcy", "url": "https://www.scholarcy.com/", "keywords": ["research summarization", "science", "papers"], "purpose": "Resumir papers científicos para facilitar la revisión." },
+                { "name": "WriteWise.io", "url": "https://writewise.io/", "keywords": ["academic writing", "research", "science"], "purpose": "Optimizar la escritura académica para investigación." },
+                { "name": "Quillbot", "url": "https://quillbot.com/", "keywords": ["paraphrasing", "research", "writing"], "purpose": "Parafrasear textos para mejorar papers de investigación." },
+                { "name": "Resoomer", "url": "https://resoomer.com/", "keywords": ["text summarization", "research", "science"], "purpose": "Resumir textos científicos largos para análisis rápido." },
+                { "name": "Flowcite", "url": "https://flowcite.com/", "keywords": ["research management", "science", "writing"], "purpose": "Gestionar referencias y escritura para investigación científica." },
+                { "name": "Paper Digest", "url": "https://paperdigest.net/", "keywords": ["paper summarization", "research", "science"], "purpose": "Generar resúmenes de papers científicos automáticamente." },
+                { "name": "Raxter", "url": "https://raxter.io/", "keywords": ["research tools", "science", "data"], "purpose": "Proporcionar herramientas para análisis de datos en investigación." },
+                { "name": "Dimensions.ai", "url": "https://www.dimensions.ai/", "keywords": ["research analytics", "science", "data"], "purpose": "Analizar métricas de investigación científica y publicaciones." },
+                { "name": "Wisdom.ai", "url": "https://www.askwisdom.ai/", "keywords": ["knowledge AI", "research", "science"], "purpose": "Responder preguntas científicas con conocimiento basado en IA." },
+                { "name": "Genei.io", "url": "https://www.genei.io/", "keywords": ["research summarization", "science", "papers"], "purpose": "Resumir y organizar papers para investigación eficiente." },
+                { "name": "BIT.AI", "url": "https://bit.ai/", "keywords": ["document collaboration", "research", "science"], "purpose": "Colaborar en documentos científicos y gestionar investigación." }
+            ]
+        };
+
+        // Enhanced Data Preparation with Purpose
+        const ias = Object.entries(data).flatMap(([category, apps]) =>
+            apps.map(app => ({
+                name: app.name,
+                url: app.url,
+                category: category,
+                keywords: app.keywords,
+                purpose: app.purpose || 'No especificado' // Fallback if purpose is missing
+            }))
+        );
+        const categories = Object.keys(data).sort();
+
+        // Enhanced Search Functionality
+        function renderTable() {
+            const selectedCategory = document.getElementById('categoryFilter').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            let filteredIAs = ias;
+
+            // Filter by selected category if one is chosen
+            if (selectedCategory) {
+                filteredIAs = filteredIAs.filter(ia => ia.category === selectedCategory);
+            }
+
+            // Filter by search term across name, category, keywords, and purpose
+            if (searchTerm) {
+                filteredIAs = filteredIAs.filter(ia => {
+                    const nameMatch = ia.name.toLowerCase().includes(searchTerm);
+                    const categoryMatch = ia.category.toLowerCase().includes(searchTerm);
+                    const keywordMatch = ia.keywords.some(keyword => keyword.toLowerCase().includes(searchTerm));
+                    const purposeMatch = ia.purpose.toLowerCase().includes(searchTerm); // Search by purpose
+                    return nameMatch || categoryMatch || keywordMatch || purposeMatch;
+                });
+            }
+
+            // Render the filtered results into the table
+            const tbody = document.querySelector('#iaTable tbody');
+            tbody.innerHTML = ''; // Clear previous content
+
+            filteredIAs.forEach(ia => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${ia.name}</td>
+                    <td><a href="${ia.url}" target="_blank">Enlace</a></td>
+                    <td>${ia.category}</td>
+                    <td>${ia.purpose}</td> <!-- Display purpose -->
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Event Listeners for Real-Time Filtering
+        document.getElementById('categoryFilter').addEventListener('change', renderTable);
+        document.getElementById('searchInput').addEventListener('input', () => {
+            renderTable(); // Re-render table on every input change
+            console.log(`Buscando: ${document.getElementById('searchInput').value}`); // Debug log
+        });
+
+        // Initial render
+        renderTable();
+
+        // Red D3.js (unchanged)
+        const width = 900, height = 800;
+        const svg = d3.select("#network-graph")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        const nodes = [];
+        const links = [];
+        const neonColors = d3.scaleOrdinal(["#FF00FF", "#00CCFF", "#FFFF00", "#FF6600", "#FF33CC"]);
+
+        Object.entries(data).forEach(([category, apps], index) => {
+            nodes.push({ id: category, group: "category", size: 62 + apps.length * 1.5, color: neonColors(index) });
+            apps.forEach(app => {
+                nodes.push({ id: app.name, group: "app", size: 9, url: app.url });
+                links.push({ source: category, target: app.name });
+            });
+        });
+
+        const categoryNodes = nodes.filter(node => node.group === "category");
+        for (let i = 0; i < categoryNodes.length; i++) {
+            for (let j = i + 1; j < categoryNodes.length; j++) {
+                links.push({ source: categoryNodes[i].id, target: categoryNodes[j].id, distance: -50 });
+            }
+        }
+
+        const simulation = d3.forceSimulation(nodes)
+            .force("link", d3.forceLink(links).id(d => d.id).distance(d => d.group === "category" ? 250 : 180))
+            .force("charge", d3.forceManyBody().strength(d => d.group === "app" ? -40 : -500))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collision", d3.forceCollide().radius(d => d.size + 24))
+            .force("x", d3.forceX().strength(0.05))
+            .force("y", d3.forceY().strength(0.15));
+
+        const link = svg.append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(links)
+            .enter().append("line")
+            .attr("class", "link");
+
+        const node = svg.append("g")
+            .attr("class", "nodes")
+            .selectAll("g")
+            .data(nodes)
+            .enter().append("g")
+            .attr("class", d => d.group === "category" ? "node category" : "node")
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        node.append("circle")
+            .attr("r", d => d.size)
+            .attr("fill", d => d.group === "category" ? d.color : "#00FF00")
+            .on("click", (event, d) => {
+                if (d.url) window.open(d.url, "_blank");
+            });
+
+        const label = node.append("text")
+            .attr("text-anchor", "middle")
+            .attr("dy", d => d.group === "category" ? "0.35em" : d.size + 10)
+            .attr("font-size", d => d.group === "category" ? `${Math.min(d.size / 2, 16)}px` : "11px")
+            .text(d => d.id)
+            .each(function(d) {
+                d.labelOffset = d.group === "category" ? 0 : d.size + 10;
+            });
+
+        simulation.on("tick", () => {
+            node.attr("transform", d => {
+                d.x = Math.max(d.size, Math.min(width - d.size, d.x));
+                d.y = Math.max(d.size, Math.min(height - d.size, d.y));
+                return `translate(${d.x},${d.y})`;
+            });
+
+            label.each(function(d) {
+                const thisNode = d3.select(this);
+                let dx = 0, dy = d.labelOffset;
+                nodes.forEach(other => {
+                    if (other !== d) {
+                        const distX = other.x - d.x;
+                        const distY = other.y - d.y;
+                        const distance = Math.sqrt(distX * distX + distY * distY);
+                        const minDist = d.size + other.size + 20;
+                        if (distance < minDist && distance > 0) {
+                            const angle = Math.atan2(distY, distX);
+                            dx = Math.cos(angle) * (minDist - distance);
+                            dy = Math.sin(angle) * (minDist - distance);
+                            if (d.group === "app") {
+                                dy = Math.abs(dy) + d.size + 10;
+                            }
+                        }
+                    }
+                });
+                thisNode.attr("dx", dx).attr("dy", dy);
+            });
+
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+        });
+
+        function dragstarted(event) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        }
+
+        function dragged(event) {
+            event.subject.fx = Math.max(0, Math.min(width, event.x));
+            event.subject.fy = Math.max(0, Math.min(height, event.y));
+        }
+
+        function dragended(event) {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
+        }
+
+        // Sidebar (unchanged)
+        const categoryList = document.getElementById('category-list');
+        Object.entries(data).forEach(([category, apps]) => {
+            const categoryLi = document.createElement('li');
+            const categoryTitle = `<a style="color: #FF00CC;" onclick="highlightCategory('${category}')">${category}</a>`;
+            categoryLi.innerHTML = categoryTitle;
+            const appList = document.createElement('ul');
+            appList.style.paddingLeft = "15px";
+            apps.forEach(app => {
+                const appLi = document.createElement('li');
+                appLi.innerHTML = `<a href="${app.url}" target="_blank">${app.name}</a>`;
+                appList.appendChild(appLi);
+            });
+            categoryLi.appendChild(appList);
+            categoryList.appendChild(categoryLi);
+        });
+
+        function highlightCategory(category) {
+            node.selectAll("circle")
+                .style("stroke", "#00FFFF")
+                .style("stroke-width", "2px");
+
+            node.selectAll("circle")
+                .filter(d => d.id === category)
+                .style("stroke", "#FFFFFF")
+                .style("stroke-width", "4px");
+
+            document.getElementById('categoryFilter').value = category;
+            document.getElementById('categoryFilter').dispatchEvent(new Event('change'));
+        }
+    </script>
+</body>
+</html>

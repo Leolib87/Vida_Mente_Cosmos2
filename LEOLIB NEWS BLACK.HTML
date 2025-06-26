@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEOLIB NEWS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #000000;
+            color: #00FF00;
+            font-family: 'Orbitron', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        /* Navegación con Mega Menú */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 2px solid #00FFFF;
+            box-shadow: 0 0 15px #00FFFF;
+        }
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        nav ul li {
+            position: relative;
+            margin: 0 20px;
+        }
+        nav ul li a {
+            color: #00FF00;
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        .mega-menu {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF;
+            width: 800px;
+            max-width: 90vw;
+            padding: 20px;
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        nav ul li:hover .mega-menu {
+            display: grid;
+            opacity: 1;
+        }
+        .mega-menu h3 {
+            color: #00FFFF;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px #00FFFF;
+        }
+        .mega-menu ul {
+            display: block;
+            padding: 0;
+        }
+        .mega-menu ul li {
+            margin: 5px 0;
+        }
+        .mega-menu a {
+            font-size: 0.9em;
+            color: #00FF00;
+        }
+        .mega-menu a:hover {
+            color: #FFFFFF;
+        }
+        /* Contenedor principal */
+        .main-container {
+            max-width: 1400px;
+            margin: 80px auto 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #00FFFF;
+            font-size: 4em;
+            text-shadow: 0 0 15px #00FF00;
+            margin: 20px 0;
+        }
+        .logo {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+            border: 1px solid #00FFFF;
+            box-shadow: 0 0 10px #00FFFF;
+        }
+        .video-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .iframe-container {
+            flex: 1 1 calc(33.33% - 20px);
+            min-width: calc(33.33% - 20px);
+            position: relative;
+            padding: 20px;
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF;
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .iframe-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 30px #00FFFF;
+        }
+        .iframe-title {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            color: #00FF00;
+            padding: 5px;
+            font-weight: bold;
+            text-shadow: 0 0 5px #00FF00;
+            border-bottom: 1px solid #00FFFF;
+        }
+        iframe {
+            width: 100%;
+            height: 300px;
+            border: none;
+            box-shadow: 0 0 15px #00FFFF;
+        }
+        /* Responsive Design */
+        @media (max-width: 900px) {
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                padding: 10px 0;
+            }
+            nav ul li {
+                margin: 10px 0;
+                width: 100%;
+                text-align: center;
+            }
+            .mega-menu {
+                position: static;
+                transform: none;
+                width: 100%;
+                max-width: 100%;
+                grid-template-columns: 1fr;
+                padding: 15px;
+                box-shadow: none;
+                border: 1px solid #00FFFF;
+            }
+            nav ul li:hover .mega-menu {
+                display: block;
+            }
+            h1 {
+                font-size: 2.5em;
+            }
+            .iframe-container {
+                flex: 1 1 calc(50% - 20px);
+                min-width: calc(50% - 20px);
+            }
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2em;
+            }
+            .iframe-container {
+                flex: 1 1 100%;
+                min-width: 100%;
+            }
+            nav ul li a {
+                font-size: 1em;
+            }
+            .mega-menu h3 {
+                font-size: 1.1em;
+            }
+            .mega-menu a {
+                font-size: 0.85em;
+            }
+            iframe {
+                height: 200px;
+            }
+        }
+        @media (max-width: 400px) {
+            h1 {
+                font-size: 1.5em;
+            }
+            .logo {
+                width: 30px;
+                height: 30px;
+            }
+            iframe {
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navegación con Mega Menú -->
+    <nav>
+        <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li>
+                <a href="#">Exploración Conceptual</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Ideas y Preguntas Existenciales</h3>
+                        <ul>
+                            <li><a href="#trazado-vida">Origen y Fin de la Vida</a></li>
+                            <li><a href="#biologia">Determinismo vs. Libertad</a></li>
+                            <li><a href="#filosofia-mente">Conducta y Creatividad</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Fundamentos Teóricos</h3>
+                        <ul>
+                            <li><a href="#biologia">Filosofía de la Biología</a></li>
+                            <li><a href="#ciencias-cognitivas">Filosofía de las Ciencias Cognitivas</a></li>
+                            <li><a href="#filosofia-mente">Mente y Lenguaje</a></li>
+                            <li><a href="Explorando la Visualización Filosófica.HTML">Visualización Filosófica</a></li>
+                            <li><a href="MAPEO_FILO_MENTE_CHILE.HTML">Mapeo Filosofía de la Mente Chile</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <a href="#">Perspectivas Disciplinarias</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Biología y Ciencias Naturales</h3>
+                        <ul>
+                            <li><a href="#biologia">Histología y Biología Celular</a></li>
+                            <li><a href="HISTOLOGIA.html">Histología</a></li>
+                            <li><a href="https://leolib87.github.io/herbario/">Herbario</a></li>
+                            <li><a href="cuerpo humano completo plantilla Lt.html">Cuerpo Humano Desplegable</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Economía y Política</h3>
+                        <ul>
+                            <li><a href="#economia-politica">Teorías Colectivistas y Liberales</a></li>
+                            <li><a href="#economia-politica">Análisis de Corrientes Ideológicas</a></li>
+                            <li><a href="RED POLITICOS.html">Red de Políticos FA</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Educación y Filosofía</h3>
+                        <ul>
+                            <li><a href="red 2.html">Filosofía de la Educación</a></li>
+                            <li><a href="#trazado-vida">Autoconocimiento y Sentido Humano</a></li>
+                            <li><a href="red3.html">Red Tesis de Magíster Ejemplos</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <a href="#">Metodología y Datos</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Recolección y Procesamiento</h3>
+                        <ul>
+                            <li><a href="#redes-palabras">Visualización y Análisis de Datos</a></li>
+                            <li><a href="#voyant-tools">Herramientas Digitales (Gephi, D3.js)</a></li>
+                            <li><a href="varios graficos.html">Varios Gráficos</a></li>
+                            <li><a href="GRAFICO DE LINEAS Y TREEMAP.html">Gráfico de Líneas y Treemap</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <a href="#">Proyectos & Mapas</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Mapas de Conocimiento</h3>
+                        <ul>
+                            <li><a href="#elementos-comunes">Filosofía de la Mente</a></li>
+                            <li><a href="#economia-politica">Política Chilena</a></li>
+                            <li><a href="VARELA_CARTOGRAFIA.HTML">Cartografía Varela</a></li>
+                            <li><a href="AUTOPOIESIS.HTML">Simulación Autopoiesis Maturana y Varela 1974</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <a href="#">Recursos</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Lecturas y Bibliografía</h3>
+                        <ul>
+                            <li><a href="MI_BIBLIOTECA.HTML">Mi Biblioteca de Humanidades</a></li>
+                            <li><a href="BIBLIOTECA_CIENCIAS.HTML">Mi Biblioteca de Ciencias</a></li>
+                            <li><a href="BIBLIOECAS_DIGITALES_SOMBRA.HTML">Bibliotecas Sombra</a></li>
+                            <li><a href="CITAS.HTML">Fragmentos de Mentes</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Enlaces de Interés</h3>
+                        <ul>
+                            <li><a href="LEOLIB NEWS BLACK.HTML">Leolib compleetNews</a></li>
+                            <li><a href="https://leolib87.github.io/herbario/">Herbario</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li><a href="#contacto">Acerca de / Contacto</a></li>
+        </ul>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="main-container">
+        <h1>
+            <img src="https://phx02pap002files.storage.live.com/y4mZKowB_YEhqTxCTR1JnRqn_QDhq7cot-q1x_YQfwHlky8XkDYnk_at-dN_Bde5jwg2MaNAsv3Kvi0_5zemHrq4UHMifAVCF97ApNzO43ZeRB76oFA8iL9w3FgqI3bazxBTQ0t18bshdMVowW7i4LisinxMP4pUmCVAZR49sB1v-Tn1BQFM01IC5TlbRLy3qUHuXQdkv0_vsTb5YHtCFHcAN5SeL_HMyD-uga27oC7now?encodeFailures=1&width=414&height=419" alt="Logo" class="logo">
+            LEOLIB NEWS
+        </h1>
+        <div class="video-container">
+            <div class="iframe-container">
+                <div class="iframe-title">BIO BIO TV</div>
+                <iframe src="https://rudo.video/live/bbtv?autostart=1&volume=0&streamingLabel=home&tag=eyJwcmUiOiJodHRwczovL3B1YmFkcy5nLmRvdWJsZWNsaWNrLm5ldC9nYW1wYWQvYWRzP2l1PS8xMDk4Mzg1L2Jpb2Jpb3R2L2FkX3ZpZGVvJnRmY2Q9MCZucGE9MCZzej02NDB4NDgwJmN1c3RfcGFyYW1zPXRpcG8lM0Rob21lLWJidHYlMjZjYXRlZ29yeS1wcmltYXJ5JTNEcG9ydGFkYS1iYnR2JmdkZnBfcmVxPTEmb3V0cHV0PXZhc3QmdW52aWV3ZWRfcG9zaXRpb25fc3RhcnQ9MSZlbnY9dnAmaW1wbD1zJmNvcnJlbGF0b3I9JnZwbXV0ZT0wJnZwYT1jbGljayZ2cG9zPXByZXJvbGwiLCJwb3N0IjowLCJtaWQiOnsidGFnIjowfSwib3ZlciI6eyJ0YWciOjB9fQ==" allowfullscreen></iframe>
+            </div>
+            <div class="iframe-container">
+                <div class="iframe-title">MEGA EN VIVO</div>
+                <iframe src="https://youtu.be/lZWsJBobKds"></iframe>
+            </div>
+            <div class="iframe-container">
+                <div class="iframe-title">TVN EN VIVO</div>
+                <iframe src="https://youtu.be/1NJkxVQsSIo?autoplay=1&mute=1" allowfullscreen></iframe>
+            </div>
+            <div class="iframe-container">
+                <div class="iframe-title">RADIO UCHILE VIVO</div>
+                <iframe src="https://youtu.be/FsBXTG5aATw?autoplay=1&mute=1" allowfullscreen></iframe>
+            </div>
+            <div class="iframe-container">
+                <div class="iframe-title">Título del Canal 5</div>
+                <iframe src="https://www.youtube.com/embed/KXNJ8nOZCpw?autoplay=1&mute=1" allowfullscreen></iframe>
+            </div>
+            <div class="iframe-container">
+                <div class="iframe-title">Título del Canal 6</div>
+                <iframe src="https://mdstrm.com/live-stream/57d1a22064f5d85712b20dab" allowfullscreen></iframe>
+            </div>
+            <div class="iframe-container">
+                <div class="iframe-title">Título del Canal 7</div>
+                <iframe src="https://mdstrm.com/live-stream/57a498c4d7b86d600e5461cb?jsapi=true&autoplay=true&controls=true&volume=75&player=57f40bb4dc5b9f3075c49cfe&access_token=8qR8pNh57cS67 începHtC9OwVJgKQ1JoBxK69MUfnr74EkkqmgDwwcpjCUknCsMGLpOQg6V2J09zm7DG&custom.ui=%2F317342475%2Ftvn&custom.tvn_demo=&custom.tvn_tipo=EnVivo&custom.tvn_seccion=senal-en-vivo&custom.tvn_articulo=57a498c4d7b86d600e5461cb&custom.tvn_tags=" allowfullscreen></iframe>
+            </div>
+            <div class="iframe-container">
+                <div class="iframe-title">Título del Canal 8</div>
+                <iframe src="https://mdstrm.com/live-stream/5aaabe9e2c56420918184c6d" allowfullscreen></iframe>
+            </div>
+            <div class="iframe-container">
+                <div class="iframe-title">Título del Canal 9</div>
+                <iframe src="https://rudo.video/live/t13-13cl?c3=13CL&autostart=1&volume=0&tag=eyJwcmUiOiJodHRwczpcL1wvcHViYWRzLmcuZG91YmxlY2xpY2submV0XC9nYW1wYWRcL2Fkcz9pdT1cLzExMjM3MjIwN1wvZW52aXZvLmNsXC9lbnZpdm8tMlwvcHJlcm9sbCZkZXNjcmlwdGlvbl91cmw9aHR0cCUzQSUyRiUyRnd3dy4xMy5jbCUyRmVuLXZpdm8tMiZlbnY9dnAmaW1wbD1zJmNvcnJlbGF0b3I9JnRmY2Q9MCZucGE9MCZnZGZwX3JlcT0xJm91dHB1dD12YXN0JnN6PTY1NngzNjgmY2l1X3N6cz03Mjh4OTAsOTcweDkwLDk3MHgyNTAsMTkwMHg4MjUsMTkyMHg3NjgsNDAweDYwJnVudmlld2VkX3Bvc2l0aW9uX3N0YXJ0PTEmcG1uZD0wJnBteGQ9MTIwMDAwJnBtYWQ9MiZwb2Q9MS" allowfullscreen></iframe>
+            </div>
+            <div class="iframe-container">
+                <div class="iframe-title">Título del Canal 10</div>
+                <iframe src="https://mdstrm.com/live-stream/5c0e8b19e4c87f3f2d3e6a59?autoplay=0&mute=1" allowfullscreen></iframe>
+            </div>
+            <div class="iframe-container">
+                <div class="iframe-title">Título del Canal 11</div>
+                <iframe src="https://www.santiagotelevision.cl/" allowfullscreen></iframe>
+            </div>
+            <div class="iframe-container">
+                <div class="iframe-title">Título del Canal 12</div>
+                <iframe src="https://rudo.video/live/uchiletv?autoplay=1&mute=1" allowfullscreen></iframe>
+            </div>
+            <div class="iframe-container">
+                <div class="iframe-title">Título del Canal 13</div>
+                <iframe src="https://arica.tv/envivo/?autoplay=1&muted=1" allowfullscreen></iframe>
+            </div>
+            <div class="iframe-container">
+                <div class="iframe-title">Título del Canal 14</div>
+                <iframe src="https://playerv.voxtvhd.com.br/video/canal5/4/true/false/Vm0xd1IySXlVWGhWV0doWFYwZDRWMWxVU205V01XeDBaRWRHV0ZKc2JETldNakZIWVcxS1NHVkljRmRXZWxaTVZrZDRTMlJXUm5KYVJuQlhWakZLU1ZkV1dsWmxSbVJYVW01S1YySkdXbkJWYWtaS1pXeGtWMWRzV214U01EVllWVzAxUjFVeVNraGhSbWhoVmpOb2FGWkZXbUZXYkdSeVYyeENWMkV3Y0ZSV1ZWcFNaREpPYzFadE5WRldSRUU1K1I=/16:9/nocover/nao?autoplay=1&muted=1" allowfullscreen></iframe>
+            </div>
+            <div class="iframe-container">
+                <div class="iframe-title">Título del Canal 15</div>
+                <iframe src="https://panel.tvstream.cl:2020/VideoPlayer/8036?autoplay=1" allowfullscreen></iframe>
+            </div>
+            <div class="iframe-container">
+                <div class="iframe-title">Título del Canal 16</div>
+                <iframe src="https://sthd-player.cl/video/index.php?s=8030" allowfullscreen></iframe>
+            </div>
+            <div class="iframe-container">
+                <div class="iframe-title">Título del Canal 17</div>
+                <iframe src="https://live.grupoz.cl/7092f3c5b7a28815b97373b9d6e84df5"></iframe>
+            </div>
+            <div class="iframe-container">
+                <div class="iframe-title">Título del Canal 18</div>
+                <iframe src="https://rudo.video/live/canal2"></iframe>
+            </div>
+            <div class="iframe-container">
+                <div class="iframe-title">Título del Canal 19</div>
+                <iframe src="https://streaming10.zglobalhost.com:2020/VideoPlayer/8020" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

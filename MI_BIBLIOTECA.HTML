@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Biblioteca Física</title>
+    <!-- Fuente Orbitron para el estilo cyberpunk -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Librería D3.js para visualización dinámica -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        /* Estilo base del cuerpo */
+        body {
+            background-color: #000000; /* Fondo negro */
+            color: #00FF00; /* Verde neón */
+            font-family: 'Orbitron', sans-serif; /* Fuente futurista */
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        /* Contenedor principal */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        /* Encabezado */
+        .header {
+            position: relative;
+            height: 50vh;
+            background: url('https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center/cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #00FFFF; /* Cian neón */
+            text-shadow: 0 0 15px #00FF00; /* Sombra verde */
+            animation: fadeIn 2s ease-in;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7); /* Capa oscura */
+            z-index: 1;
+        }
+        .header h1, .header p {
+            position: relative;
+            z-index: 2;
+        }
+        .header h1 {
+            font-size: clamp(2em, 4vw, 4em); /* Tamaño adaptable */
+            animation: glow 2s infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 5px #00FF00; }
+            to { text-shadow: 0 0 20px #00FFFF; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        /* Secciones */
+        .section {
+            margin: 40px 0;
+            padding: 25px;
+            border: 2px solid #00FFFF; /* Borde cian */
+            box-shadow: 0 0 20px #00FFFF; /* Sombra brillante */
+            background: rgba(0, 255, 255, 0.05); /* Fondo traslúcido */
+            border-radius: 10px;
+            box-sizing: border-box;
+            overflow-x: auto; /* Scroll horizontal para tablas en móviles */
+        }
+        h2 {
+            color: #00FF00;
+            text-shadow: 0 0 8px #00FF00;
+            border-bottom: 1px solid #00FFFF;
+            padding-bottom: 10px;
+            margin: 0 0 15px 0;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        /* Filtros */
+        .filters {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        select {
+            background: #000000;
+            border: 2px solid #00FFFF;
+            color: #00FF00;
+            padding: 8px;
+            font-family: 'Orbitron', sans-serif;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        select:hover, select:focus {
+            background: #00FFFF;
+            color: #000000;
+            outline: none;
+        }
+        /* Tabla */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #00FFFF;
+            text-align: left;
+        }
+        th {
+            background: rgba(0, 255, 255, 0.1); /* Fondo cian traslúcido */
+            color: #00FFFF;
+        }
+        tr:nth-child(even) {
+            background: rgba(0, 255, 255, 0.03); /* Fondo alternado */
+        }
+        tr:hover {
+            background: rgba(0, 255, 255, 0.2); /* Hover brillante */
+        }
+        /* Red D3.js */
+        #network {
+            width: 100%;
+            height: 500px;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .node circle {
+            stroke: #00FFFF;
+            stroke-width: 2px;
+            transition: all 0.3s ease;
+        }
+        .node.book circle {
+            fill: #00FF00; /* Verde para libros */
+            r: 5;
+        }
+        .node.genre circle {
+            fill: #FF00FF; /* Magenta para géneros */
+            r: 10;
+        }
+        .node:hover circle {
+            fill: #FFFFFF;
+            r: 12;
+            filter: drop-shadow(0 0 8px #00FFFF);
+        }
+        .node.selected circle {
+            fill: #FFFF00; /* Amarillo neón para nodos seleccionados */
+            stroke: #000000; /* Borde negro para contraste */
+            stroke-width: 3px;
+            r: 15; /* Tamaño mayor para destacar */
+            filter: drop-shadow(0 0 10px #FFFF00); /* Brillo amarillo */
+        }
+        .node text {
+            fill: #00FFFF;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 5px #00FF00;
+            font-size: 10px;
+            pointer-events: none;
+        }
+        .node.selected text {
+            fill: #FFFFFF; /* Blanco para texto de nodos seleccionados */
+            text-shadow: 0 0 5px #000000; /* Sombra negra para contraste */
+            font-size: 12px; /* Ligeramente más grande */
+        }
+        .link {
+            stroke: #00FF00;
+            stroke-opacity: 0.7;
+            stroke-width: 1px;
+        }
+        .link.genre-link {
+            stroke: #FF00FF; /* Magenta para conexiones entre géneros */
+            stroke-width: 2px;
+            stroke-opacity: 0.9;
+        }
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #00FFFF;
+            border-top: 2px solid #00FF00;
+            margin-top: 40px;
+        }
+        .chart-container {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #00FFFF;
+            border-radius: 5px;
+            background: rgba(0, 255, 255, 0.05);
+        }
+        .chart-container h3 {
+            color: #00FF00;
+            text-shadow: 0 0 8px #00FF00;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        #bar-chart, #pie-chart, #treemap {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .bar {
+            fill: #00FF00;
+            transition: fill 0.3s ease;
+        }
+        .bar:hover {
+            fill: #FFFF00;
+        }
+        .bar-text {
+            fill: #00FFFF;
+            font-size: 10px;
+            text-shadow: 0 0 5px #000000;
+            text-anchor: "middle";
+        }
+        .arc path {
+            stroke: #00FF00; /* Verde neón para bordes */
+            stroke-width: 4px; /* Borde grueso */
+            fill: #000000; /* Interior negro */
+            transition: opacity 0.3s ease;
+        }
+        .arc path:hover {
+            opacity: 0.8;
+        }
+        .arc text {
+            fill: #00FFFF;
+            font-size: 10px;
+            text-shadow: 0 0 5px #000000;
+            pointer-events: none;
+        }
+        .treemap-rect {
+            stroke: #00FF00; /* Verde neón para bordes */
+            stroke-width: 4px; /* Borde grueso */
+            fill: #000000; /* Interior negro */
+            fill-opacity: 0.8;
+            transition: fill-opacity 0.3s ease;
+        }
+        .treemap-rect:hover {
+            fill-opacity: 1;
+        }
+        #treemap-info {
+            color: #00FF00;
+            text-shadow: 0 0 8px #00FF00;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        /* Media Queries para diseño responsivo */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 10px;
+            }
+            .header {
+                height: 40vh;
+            }
+            .header h1 {
+                font-size: clamp(1.5em, 3vw, 2.5em);
+            }
+            .header p {
+                font-size: 0.9em;
+            }
+            .section {
+                margin: 20px 0;
+                padding: 15px;
+            }
+            h2 {
+                font-size: 1.2em;
+            }
+            table {
+                font-size: 0.85em;
+            }
+            th, td {
+                padding: 8px;
+            }
+            #network {
+                height: 400px; /* Reducir altura en tablets */
+            }
+            .chart-container {
+                padding: 15px;
+            }
+        }
+        @media (max-width: 480px) {
+            .header {
+                height: 30vh;
+            }
+            .header h1 {
+                font-size: clamp(1.2em, 2.5vw, 2em);
+            }
+            .header p {
+                font-size: 0.8em;
+            }
+            .section {
+                margin: 15px 0;
+                padding: 10px;
+            }
+            h2 {
+                font-size: 1em;
+            }
+            table {
+                font-size: 0.75em;
+            }
+            th, td {
+                padding: 6px;
+            }
+            .filters {
+                flex-direction: column;
+                align-items: center;
+            }
+            select {
+                width: 100%;
+                max-width: 200px;
+            }
+            #network {
+                height: 300px; /* Reducir altura en móviles */
+            }
+            .node text {
+                font-size: 8px; /* Texto más pequeño en móviles */
+            }
+            .node.selected text {
+                font-size: 10px; /* Ajuste para móviles */
+            }
+            .chart-container {
+                padding: 10px;
+            }
+            .bar-text, .arc text {
+                font-size: 8px; /* Texto más pequeño en móviles */
+            }
+            #treemap-info {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Encabezado -->
+        <div class="header">
+            <h1>Mi Biblioteca Física</h1>
+            <p>Es Mi Universo Literario</p>
+        </div>
+
+        <!-- Sección de la biblioteca -->
+        <div class="section" id="library">
+            <h2>Red de Conexiones Literarias por Género</h2>
+            <div id="network"></div>
+            <h2>Catálogo de Libros</h2>
+            <div class="filters">
+                <select id="genreFilter">
+                    <option value="">Todos los Géneros</option>
+                    <!-- Opciones se llenarán dinámicamente -->
+                </select>
+                <select id="themeFilter">
+                    <option value="">Todos los Temas</option>
+                    <!-- Opciones se llenarán dinámicamente -->
+                </select>
+            </div>
+            <table id="bookTable">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Autor/Editor</th>
+                        <th>Comentarios</th>
+                        <th>Género</th>
+                        <th>Tema</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Pie de página con gráficos -->
+        <div class="footer">
+            <p>Explorando el Conocimiento | Febrero 2025</p>
+            <div class="chart-container">
+                <h3>Distribución por Género (Barras)</h3>
+                <div id="bar-chart"></div>
+            </div>
+            <div class="chart-container">
+                <h3>Distribución por Género (Torta)</h3>
+                <div id="pie-chart"></div>
+            </div>
+            <div class="chart-container">
+                <h3>Libros por Autor (Treemap)</h3>
+                <div id="treemap"></div>
+                <div id="treemap-info"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datos de los libros con géneros recatalogados para consistencia
+        const books = [
+            { title: "From the Closed World to the Infinite Universe", author: "Alexandre Koyré", comments: "Obra filosófica sobre la evolución del pensamiento científico.", genre: "Filosofía", theme: "ESPECIAL" },
+            { title: "Democracia en América (Selección)", author: "Alexis de Tocqueville", comments: "Selección de textos del clásico libro sobre democracia y política.", genre: "Política", theme: "Política" },
+            { title: "El Concepto de Naturaleza", author: "Alfred Whitehead", comments: "Texto fundamental sobre filosofía de la naturaleza.", genre: "Filosofía", theme: "Medio Ambiente" },
+            { title: "La opción creyente", author: "Antonio Bentué", comments: "Reflexión sobre la fe y la religión.", genre: "Religión", theme: "ESPECIAL" },
+            { title: "Rimbaud: Una Temporada en el Infierno", author: "Arthur Rimbaud", comments: "Obra poética fundamental de Arthur Rimbaud.", genre: "Poesía", theme: "Filosofía" },
+            { title: "Ciencia, Filosofía y Política", author: "Bertrand Russell", comments: "Ensayo de Bertrand Russell sobre la relación entre ciencia, filosofía y política.", genre: "Filosofía", theme: "Política" },
+            { title: "Los Esclavos de sus Pasiones", author: "Braulio Arenas", comments: "Obra del escritor chileno Braulio Arenas.", genre: "Narrativa", theme: "ESPECIAL" },
+            { title: "The Infographic Guide to Science", author: "Cabot", comments: "Guía visual sobre ciencia.", genre: "Ciencia", theme: "General" },
+            { title: "Nativos de Este Mundo", author: "Carla Cordua", comments: "Libro filosófico de Carla Cordua.", genre: "Filosofía", theme: "General" },
+            { title: "Las enseñanzas de Don Juan", author: "Carlos Castaneda", comments: "Relato antropológico y filosófico.", genre: "Narrativa", theme: "General" },
+            { title: "Nova Reunião - 23 Livros de Poesia", author: "Carlos Drummond de Andrade", comments: "Libro de poesía del escritor brasileño Carlos Drummond de Andrade.", genre: "Poesía", theme: "General" },
+            { title: "Conversaciones con Sergio Vodanovic", author: "Carlos Lloró", comments: "Entrevistas con el dramaturgo chileno.", genre: "Literatura", theme: "General" },
+            { title: "Lo Que el Dinero Sí Puede Comprar", author: "Carlos Peña", comments: "Libro de Carlos Peña sobre economía y sociedad.", genre: "Política", theme: "ESPECIAL" },
+            { title: "El Desafío Constitucional", author: "Carlos Peña", comments: "Ensayo sobre derecho constitucional y política en Chile.", genre: "Filosofía", theme: "Política" },
+            { title: "La Mentira Noble", author: "Carlos Peña", comments: "Libro de Carlos Peña sobre política y sociedad.", genre: "Filosofía", theme: "Política" },
+            { title: "Por Qué Importa la Filosofía", author: "Carlos Peña", comments: "Ensayo de Carlos Peña sobre la importancia de la filosofía.", genre: "Filosofía", theme: "Filosofía" },
+            { title: "Les Fleurs du Mal", author: "Charles Baudelaire", comments: "Colección de poesía simbolista.", genre: "Poesía", theme: "General" },
+            { title: "La tarea número uno de Chile", author: "Cristián Cox et al.", comments: "Posible texto educativo sobre educación en Chile.", genre: "Economía", theme: "General" },
+            { title: "Liberalismo. Una Cartografía", author: "Cristóbal Bellolio", comments: "Ensayo sobre el liberalismo y su evolución.", genre: "Filosofía", theme: "Biología" },
+            { title: "Salvador Allende", author: "Daniel Mansuy", comments: "Libro sobre la figura de Salvador Allende.", genre: "Filosofía", theme: "General" },
+            { title: "Las Geografías del Neoliberalismo en América del Sur", author: "Daniel Santana, Volker Mauer, Rodrigo Hidalgo", comments: "Estudio sobre el impacto del neoliberalismo en Sudamérica.", genre: "Filosofía", theme: "General" },
+            { title: "La Divina Commedia", author: "Dante Alighieri", comments: "Obra clásica de Dante sobre el infierno, purgatorio y paraíso.", genre: "Narrativa", theme: "General" },
+            { title: "La Teoría Celular", author: "De Dios Vial C.", comments: "Libro sobre la teoría celular y su desarrollo.", genre: "Filosofía", theme: "General" },
+            { title: "Dilemas Éticos en Atención Primaria de Salud", author: "Desconocido", comments: "Libro sobre dilemas éticos en el ámbito de la salud.", genre: "Filosofía", theme: "General" },
+            { title: "Mercado", author: "Desconocido", comments: "No se distingue claramente el autor.", genre: "Economía", theme: "General" },
+            { title: "De Booms y Fiebres Marinas", author: "Desconocido", comments: "No se distingue el autor ni detalles del contenido.", genre: "Economía", theme: "General" },
+            { title: "Um olhar es un bosque encantado", author: "Desconocido", comments: "Título en portugués, no se distingue claramente el contenido.", genre: "Poesía", theme: "General" },
+            { title: "L'Escade de la Raison", author: "Desconocido", comments: "Libro en francés, título y autor poco visibles.", genre: "Narrativa", theme: "General" },
+            { title: "M. C. Escher", author: "Desconocido", comments: "Posiblemente una colección o monografía sobre el artista M.C. Escher.", genre: "Arte", theme: "General" },
+            { title: "StarCraft: Prima's Official Strategy Guide", author: "Desconocido", comments: "Guía oficial de estrategia para el videojuego StarCraft.", genre: "Juegos", theme: "General" },
+            { title: "Historia de la Filosofía", author: "Desconocido", comments: "Texto general sobre la historia de la filosofía.", genre: "Filosofía", theme: "ESPECIAL" },
+            { title: "El Orden Prodigioso del Mundo Natural", author: "Desconocido", comments: "No se distingue claramente el autor.", genre: "Ciencia", theme: "General" },
+            { title: "Teoría de la Expresión", author: "Felix Schwartzman", comments: "No se distingue claramente el autor.", genre: "Filosofía", theme: "ESPECIAL" },
+            { title: "Libro antiguo sin portada visible", author: "Desconocido", comments: "Libro antiguo sin identificación clara en la imagen.", genre: "Narrativa", theme: "ESPECIAL" },
+            { title: "Las Brujas y su Mundo", author: "Desconocido", comments: "Posiblemente un ensayo o investigación sobre la historia de la brujería.", genre: "Historia", theme: "Historia" },
+            { title: "FCM Atoma 2015", author: "Desconocido", comments: "Parece ser un catálogo o publicación académica.", genre: "Ciencia", theme: "General" },
+            { title: "Fort - Pathologie et Clinique Chirurgicales", author: "Desconocido", comments: "Libro en francés sobre patología y cirugía.", genre: "Ciencia", theme: "ESPECIAL" },
+            { title: "Alfons Mucha", author: "Taschen", comments: "Probablemente un libro sobre el arte del pintor y diseñador checo Alfons Mucha.", genre: "Arte", theme: "General" },
+            { title: "Légifos", author: "Desconocido", comments: "Título parcialmente visible, no es claro su contenido.", genre: "Narrativa", theme: "General" },
+            { title: "El Apolo del Comunismo", author: "Desconocido", comments: "No se distingue claramente el autor. Podría estar relacionado con historia o ideología política.", genre: "Historia", theme: "Política" },
+            { title: "Revista de Occidente (Abril 1981, No. 1)", author: "Desconocido", comments: "Número de la Revista de Occidente, el contenido específico no es visible.", genre: "Filosofía", theme: "ESPECIAL" },
+            { title: "Gödel, Escher, Bach", author: "Douglas R. Hofstadter", comments: "Libro clásico sobre matemáticas, arte e inteligencia artificial.", genre: "Ciencia", theme: "Matemáticas" },
+            { title: "Revolucionarios Cibernéticos: Tecnología y Política en el Chile de Salvador Allende", author: "Eden Medina", comments: "Libro sobre la cibernética y la política en el gobierno de Allende.", genre: "Política", theme: "Política" },
+            { title: "Enhancing Resilience in Youth", author: "Editado por Steinebach y Langer", comments: "No se ve el título completo.", genre: "Ciencia", theme: "General" },
+            { title: "El Jugador", author: "Fiódor Dostoyevski", comments: "Novela psicológica sobre el juego y la adicción.", genre: "Narrativa", theme: "General" },
+            { title: "Connaître les Sciences Cognitives", author: "Francisco J. Varela", comments: "Texto introductorio sobre ciencias cognitivas.", genre: "Ciencia", theme: "ESPECIAL" },
+            { title: "Dilemas éticos en atención primaria de salud", author: "Francisco Javier León Correa (coord.)", comments: "Ética en el sistema de salud.", genre: "Filosofía", theme: "Filosofía" },
+            { title: "The Embodied Mind: Cognitive Science and Human Experience (koreano)", author: "Francisco Varela", comments: "El título y autor están en coreano, no identificables desde la imagen.", genre: "Filosofía", theme: "ESPECIAL" },
+            { title: "Conhecer", author: "Francisco Varela", comments: "Obra de Francisco Varela sobre ciencias cognitivas.", genre: "Ciencia", theme: "ESPECIAL" },
+            { title: "The Embodied Mind: Cognitive Science and Human Experience", author: "Francisco Varela, Evan Thompson y Eleanor Rosch", comments: "Libro sobre ciencia cognitiva y experiencia humana.", genre: "Ciencia", theme: "General" },
+            { title: "Ensayos de Semántica y Filosofía de la Lógica", author: "Gottlob Frege", comments: "Obra filosófica sobre lógica y semántica del matemático y filósofo Gottlob Frege.", genre: "Filosofía", theme: "General" },
+            { title: "The Doré Illustrations for Dante's Divine Comedy", author: "Gustave Doré (Dover)", comments: "Recopilación de ilustraciones de Gustave Doré para la Divina Comedia de Dante.", genre: "Arte", theme: "General" },
+            { title: "Madame Bovary", author: "Gustave Flaubert", comments: "Novela clásica de realismo literario francés.", genre: "Narrativa", theme: "Literatura" },
+            { title: "Relacionándonos para Construir", author: "Gustavo Cardozo", comments: "Libro sobre relaciones humanas y construcción social.", genre: "Economía", theme: "General" },
+            { title: "Demian", author: "Hermann Hesse", comments: "Obra filosófica y de formación.", genre: "Narrativa", theme: "ESPECIAL" },
+            { title: "Ciencia Abierta: Singularidad e Irrupción en las Fronteras de la Práctica Artística", author: "Ignacio Nieto y Marcelo Velasco", comments: "Libro sobre el impacto de la ciencia y el arte en la sociedad.", genre: "Arte", theme: "Sociología" },
+            { title: "Finnegans Wake", author: "James Joyce", comments: "Novela experimental de James Joyce, famosa por su complejidad lingüística.", genre: "Narrativa", theme: "ESPECIAL" },
+            { title: "La Mort Dans L'Âme (La Muerte en el Alma)", author: "Jean-Paul Sartre", comments: "Novela filosófica de Jean-Paul Sartre.", genre: "Narrativa", theme: "ESPECIAL" },
+            { title: "La Náusea", author: "Jean-Paul Sartre", comments: "Novela filosófica de Sartre, considerada un pilar del existencialismo.", genre: "Narrativa", theme: "General" },
+            { title: "Jorge Baradit - Synco", author: "Jorge Baradit", comments: "Novela de ciencia ficción y política ucrónica sobre Chile en los años 70.", genre: "Narrativa", theme: "Política" },
+            { title: "Obras Completas de Jorge Luis Borges", author: "Jorge Luis Borges (Emecé)", comments: "Compilación de la obra completa del escritor argentino Jorge Luis Borges.", genre: "Narrativa", theme: "ESPECIAL" },
+            { title: "La rebelión de las masas", author: "José Ortega y Gasset", comments: "Ensayo clásico de filosofía política.", genre: "Filosofía", theme: "Política" },
+            { title: "Poesía Completa y Comentarios en Prosa", author: "Juan de la Cruz", comments: "Recopilación de poesía y comentarios del místico español.", genre: "Poesía", theme: "General" },
+            { title: "Kounboum", author: "Karlés Llord", comments: "Obra de Karlés Llord, contenido no especificado.", genre: "Narrativa", theme: "ESPECIAL" },
+            { title: "El Vagabundo", author: "Khalil Gibrán", comments: "Libro de poesía y reflexiones filosóficas de Khalil Gibrán.", genre: "Poesía", theme: "General" },
+            { title: "Historia Universal (2do Año Medio)", author: "Krebs", comments: "Libro de historia universal para educación secundaria.", genre: "Historia", theme: "Historia" },
+            { title: "Central & South America (Lonely Planet Healthy Travel)", author: "Lonely Planet", comments: "Guía de viaje para Sudamérica y Centroamérica con enfoque en salud.", genre: "Narrativa", theme: "General" },
+            { title: "Relacionándonos para Ser Mejores", author: "Luis Gustavo Cardozo", comments: "Libro sobre relaciones humanas y construcción social.", genre: "Economía", theme: "General" },
+            { title: "Cuentos Visuales", author: "Max Hernández Urbina", comments: "Recopilación de cuentos visuales, el autor es Max Hernández Urbina.", genre: "Narrativa", theme: "General" },
+            { title: "Libro en francés con el nombre 'Michel Houellebecq' visible", author: "Michel Houellebecq (posiblemente)", comments: "Libro en francés, posiblemente del escritor Michel Houellebecq.", genre: "Narrativa", theme: "General" },
+            { title: "La Tía Tula", author: "Miguel de Unamuno", comments: "Novela clásica de Miguel de Unamuno.", genre: "Narrativa", theme: "General" },
+            { title: "Relacionándonos para ser mejores", author: "Mónica Pérez & Matías Calderón Siegel", comments: "Vinculación y educación en establecimientos.", genre: "Educación", theme: "General" },
+            { title: "Sandalias", author: "No se distingue el autor", comments: "No se distingue el contenido.", genre: "Narrativa", theme: "General" },
+            { title: "Enhancing Resilience in Youth", author: "No visible en la imagen", comments: "Libro sobre resiliencia en jóvenes.", genre: "Ciencia", theme: "General" },
+            { title: "La Nueva Izquierda Chilena", author: "Noam Titelman", comments: "Análisis sobre la evolución y rol de la nueva izquierda en Chile.", genre: "Filosofía", theme: "Biología" },
+            { title: "Cibernética", author: "Norbert Wiener", comments: "Obra fundacional sobre cibernética y automatización.", genre: "Ciencia", theme: "Filosofía" },
+            { title: "Naturalizing Phenomenology: Issues in Contemporary Phenomenology and Cognitive Science", author: "Petitot, Varela, Pachoud, Roy", comments: "Análisis sobre fenomenología y ciencia cognitiva.", genre: "Ciencia", theme: "ESPECIAL" },
+            { title: "La filosofía de la redención", author: "Philipp Mainländer", comments: "Obra filosófica sobre pesimismo.", genre: "Filosofía", theme: "ESPECIAL" },
+            { title: "Obras Completas de San Juan de la Cruz", author: "San Juan de la Cruz", comments: "Compilación de la obra completa del místico y poeta español.", genre: "Poesía", theme: "General" },
+            { title: "Poesía completa y comentarios en prosa", author: "San Juan de la Cruz", comments: "Obra poética mística.", genre: "Poesía", theme: "Filosofía" },
+            { title: "The Bodhicaryavatara", author: "Santideva", comments: "Texto clásico del budismo mahayana sobre la práctica del bodhisattva.", genre: "Religión", theme: "General" },
+            { title: "Breve Historia de Chile", author: "Sergio Villalobos R.", comments: "Resumen histórico sobre Chile escrito por Sergio Villalobos.", genre: "Historia", theme: "Historia" },
+            { title: "La Mente Fenomenológica", author: "Shaun Gallagher y Dan Zahavi", comments: "Libro sobre filosofía de la mente y fenomenología.", genre: "Filosofía", theme: "Religión" },
+            { title: "Ensayos sobre Sexualidad", author: "Sigmund Freud", comments: "Ensayos de Freud sobre la teoría de la sexualidad y la psicología.", genre: "Filosofía", theme: "General" },
+            { title: "El Segundo Sexo", author: "Simone de Beauvoir", comments: "Ensayo feminista fundamental de Simone de Beauvoir.", genre: "Filosofía", theme: "Religión" },
+            { title: "Las Rutas de la Complejidad", author: "Susana Genevois", comments: "Libro sobre complejidad y sistemas.", genre: "Ciencia", theme: "General" },
+            { title: "¿Cómo Hacer una Tesis?", author: "Umberto Eco", comments: "Guía clásica sobre metodología de la investigación y escritura de tesis.", genre: "Ciencia", theme: "General" },
+            { title: "El Estado y la Revolución", author: "V. I. Lenin", comments: "Texto fundamental del marxismo sobre la teoría del Estado.", genre: "Filosofía", theme: "Política" },
+            { title: "Introducción a la Cibernética", author: "W. Ross Ashby", comments: "Libro clásico sobre cibernética y sistemas.", genre: "Ciencia", theme: "ESPECIAL" },
+            { title: "William Blake's Divine Comedy Illustrations", author: "William Blake (Dover)", comments: "Edición de Dover con ilustraciones de William Blake para la Divina Comedia.", genre: "Arte", theme: "General" },
+            { title: "El nido ajeno / Cartas de mujeres", author: "Jacinto Benavente", comments: "Obra teatral y epistolar", genre: "Teatro", theme: "Sociedad y relaciones" },
+            { title: "Obras literarias completas", author: "Santiago Ramón y Cajal", comments: "Recopilación de escritos literarios", genre: "Literature", theme: "Ciencia y literatura" },
+            { title: "Obras completas V", author: "Sir Arthur Conan Doyle", comments: "Novelas y relatos históricos", genre: "Narrativa", theme: "Historia y aventura" },
+            { title: "Tragedias completas", author: "Lucio Anneo Séneca", comments: "Compilación de tragedias", genre: "Teatro", theme: "Tragedia clásica" },
+            { title: "Tragedias completas", author: "Sófocles", comments: "Compilación de tragedias", genre: "Teatro", theme: "Tragedia clásica" },
+            { title: "El caballero de la muerte", author: "Emilio Carrere", comments: "Novela de misterio y terror", genre: "Narrativa", theme: "Misterio y muerte" },
+            { title: "El arte de proyectar en Arquitectura", author: "Ernst Neufert", comments: "Arquitectura y Diseño", genre: "Arte", theme: "ESPECIAL" }
+        ];
+
+        // Preparar datos para la red: nodos de libros y géneros
+        const genres = [...new Set(books.map(book => book.genre))].sort();
+        const genreNodes = genres.map((genre, index) => ({
+            id: `genre-${index}`,
+            name: genre,
+            type: "genre"
+        }));
+        const bookNodes = books.map((book, index) => ({
+            id: `book-${index}`,
+            title: book.title,
+            genre: book.genre,
+            theme: book.theme,
+            type: "book"
+        }));
+        const nodes = [...genreNodes, ...bookNodes];
+
+        // Enlaces entre libros y sus géneros
+        const bookLinks = bookNodes.map(bookNode => ({
+            source: bookNode.id,
+            target: genreNodes.find(genreNode => genreNode.name === bookNode.genre).id,
+            type: "book-genre"
+        }));
+
+        // Enlaces entre géneros: conectar todos los géneros al menos con uno
+        const genreLinks = [];
+        for (let i = 0; i < genreNodes.length; i++) {
+            for (let j = i + 1; j < genreNodes.length; j++) {
+                const genre1 = genreNodes[i].name;
+                const genre2 = genreNodes[j].name;
+                const booksInGenre1 = books.filter(b => b.genre === genre1);
+                const booksInGenre2 = books.filter(b => b.genre === genre2);
+                const themesInGenre1 = new Set(booksInGenre1.map(b => b.theme));
+                const themesInGenre2 = new Set(booksInGenre2.map(b => b.theme));
+                const sharedThemes = [...themesInGenre1].filter(theme => themesInGenre2.has(theme));
+                if (sharedThemes.length > 0) {
+                    genreLinks.push({
+                        source: genreNodes[i].id,
+                        target: genreNodes[j].id,
+                        type: "genre-genre"
+                    });
+                }
+            }
+        }
+
+        // Asegurar que todos los géneros estén conectados (conectar "Juegos" al menos con "Ciencia")
+        const isolatedGenres = genreNodes.filter(gn => !genreLinks.some(gl => gl.source === gn.id || gl.target === gn.id));
+        if (isolatedGenres.length > 0) {
+            const scienceGenre = genreNodes.find(gn => gn.name === "Ciencia");
+            isolatedGenres.forEach(ig => {
+                if (ig.id !== scienceGenre.id) {
+                    genreLinks.push({
+                        source: ig.id,
+                        target: scienceGenre.id,
+                        type: "genre-genre"
+                    });
+                }
+            });
+        }
+
+        const links = [...bookLinks, ...genreLinks];
+
+        // Configuración de la red D3.js
+        const width = document.getElementById('network').clientWidth;
+        const height = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 500;
+
+        const svg = d3.select("#network")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        const simulation = d3.forceSimulation(nodes)
+            .force("link", d3.forceLink(links).id(d => d.id).distance(d => d.type === "genre-genre" ? 150 : 100).strength(0.5))
+            .force("charge", d3.forceManyBody().strength(-200))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collide", d3.forceCollide(20))
+            .force("x", d3.forceX(width / 2).strength(0.1))
+            .force("y", d3.forceY(height / 2).strength(0.1));
+
+        const link = svg.append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(links)
+            .join("line")
+            .attr("class", d => `link ${d.type === "genre-genre" ? "genre-link" : ""}`);
+
+        const node = svg.append("g")
+            .attr("class", "nodes")
+            .selectAll("g")
+            .data(nodes)
+            .join("g")
+            .attr("class", d => `node ${d.type}`)
+            .call(d3.drag()
+                .on("start", dragStarted)
+                .on("drag", dragged)
+                .on("end", dragEnded))
+            .on("click", (event, d) => {
+                d3.selectAll(".node").classed("selected", false);
+                d3.select(event.currentTarget).classed("selected", true);
+                if (d.type === "genre") {
+                    const genreFilter = document.getElementById('genreFilter');
+                    genreFilter.value = d.name;
+                    const changeEvent = new Event('change');
+                    genreFilter.dispatchEvent(changeEvent);
+                }
+                const selectedGenre = d.genre || (d.type === "genre" ? d.name : null);
+                if (selectedGenre) {
+                    nodes.forEach(n => {
+                        if (n !== d && (n.genre === selectedGenre || (n.type === "genre" && n.name === selectedGenre))) {
+                            const dx = n.x - d.x;
+                            const dy = n.y - d.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+                            const force = 1000 / distance;
+                            n.vx += (dx / distance) * force;
+                            n.vy += (dy / distance) * force;
+                        }
+                    });
+                    simulation.alpha(0.3).restart();
+                }
+            });
+
+        node.append("circle")
+            .attr("r", d => d.type === "genre" ? 10 : 5)
+            .attr("fill", d => d.type === "genre" ? "#FF00FF" : "#00FF00");
+
+        node.append("text")
+            .attr("dy", -25)
+            .attr("text-anchor", "middle")
+            .text(d => d.type === "genre" ? d.name : d.title);
+
+        simulation.on("tick", () => {
+            link.attr("x1", d => Math.max(10, Math.min(width - 10, d.source.x)))
+                .attr("y1", d => Math.max(10, Math.min(height - 10, d.source.y)))
+                .attr("x2", d => Math.max(10, Math.min(width - 10, d.target.x)))
+                .attr("y2", d => Math.max(10, Math.min(height - 10, d.target.y)));
+            node.attr("transform", d => `translate(${Math.max(10, Math.min(width - 10, d.x))},${Math.max(10, Math.min(height - 10, d.y))})`);
+        });
+
+        function dragStarted(event) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        }
+
+        function dragged(event) {
+            event.subject.fx = Math.max(10, Math.min(width - 10, event.x));
+            event.subject.fy = Math.max(10, Math.min(height - 10, event.y));
+        }
+
+        function dragEnded(event) {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
+        }
+
+        // Llenar filtros dinámicamente
+        const genresList = [...new Set(books.map(book => book.genre))].sort();
+        const themes = [...new Set(books.map(book => book.theme))].sort();
+        
+        const genreFilter = document.getElementById('genreFilter');
+        const themeFilter = document.getElementById('themeFilter');
+
+        genresList.forEach(genre => {
+            const option = document.createElement('option');
+            option.value = genre;
+            option.textContent = genre;
+            genreFilter.appendChild(option);
+        });
+
+        themes.forEach(theme => {
+            const option = document.createElement('option');
+            option.value = theme;
+            option.textContent = theme;
+            themeFilter.appendChild(option);
+        });
+
+        function renderTable() {
+            const selectedGenre = genreFilter.value;
+            const selectedTheme = themeFilter.value;
+            const filteredBooks = books.filter(book => 
+                (!selectedGenre || book.genre === selectedGenre) &&
+                (!selectedTheme || book.theme === selectedTheme)
+            );
+
+            const tbody = document.querySelector('#bookTable tbody');
+            tbody.innerHTML = '';
+
+            filteredBooks.forEach(book => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${book.title}</td>
+                    <td>${book.author}</td>
+                    <td>${book.comments}</td>
+                    <td>${book.genre}</td>
+                    <td>${book.theme}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        genreFilter.addEventListener('change', renderTable);
+        themeFilter.addEventListener('change', renderTable);
+        renderTable();
+
+        function resize() {
+            const newWidth = document.getElementById('network').clientWidth;
+            const newHeight = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 500;
+            svg.attr("width", newWidth).attr("height", newHeight);
+            simulation.force("center", d3.forceCenter(newWidth / 2, newHeight / 2));
+            simulation.force("x", d3.forceX(newWidth / 2).strength(0.1));
+            simulation.force("y", d3.forceY(newHeight / 2).strength(0.1));
+            simulation.alpha(1).restart();
+        }
+        window.addEventListener("resize", resize);
+
+        // Preparar datos para los gráficos
+        const genreCounts = d3.rollup(books, v => v.length, d => d.genre);
+        const genreData = Array.from(genreCounts, ([genre, count]) => ({ genre, count }));
+        const totalBooks = books.length;
+        const authorCounts = d3.rollup(books, v => v.length, d => d.author);
+        const authorData = Array.from(authorCounts, ([author, count]) => ({ name: author, value: count }));
+
+        function updateGenreFilter(genre) {
+            const genreFilter = document.getElementById('genreFilter');
+            genreFilter.value = genre;
+            const changeEvent = new Event('change');
+            genreFilter.dispatchEvent(changeEvent);
+        }
+
+        // Gráfico de barras por género (sin modificaciones)
+        const barSvg = d3.select("#bar-chart")
+            .append("svg")
+            .attr("width", "100%")
+            .attr("height", 400);
+
+        const barMargin = { top: 20, right: 20, bottom: 100, left: 40 };
+        const barWidth = barSvg.node().clientWidth - barMargin.left - barMargin.right;
+        const barHeight = 400 - barMargin.top - barMargin.bottom;
+
+        const barX = d3.scaleBand()
+            .domain(genreData.map(d => d.genre))
+            .range([0, barWidth])
+            .padding(0.1);
+
+        const barY = d3.scaleLinear()
+            .domain([0, d3.max(genreData, d => d.count)])
+            .range([barHeight, 0]);
+
+        const barG = barSvg.append("g")
+            .attr("transform", `translate(${barMargin.left},${barMargin.top})`);
+
+        barG.append("g")
+            .attr("class", "x-axis")
+            .attr("transform", `translate(0,${barHeight})`)
+            .call(d3.axisBottom(barX))
+            .selectAll("text")
+            .attr("fill", "#00FFFF")
+            .attr("text-shadow", "0 0 5px #00FF00")
+            .attr("transform", "rotate(-45)")
+            .style("text-anchor", "end");
+
+        barG.append("g")
+            .attr("class", "y-axis")
+            .call(d3.axisLeft(barY))
+            .selectAll("text")
+            .attr("fill", "#00FFFF");
+
+        barG.selectAll(".bar")
+            .data(genreData)
+            .join("rect")
+            .attr("class", "bar")
+            .attr("x", d => barX(d.genre))
+            .attr("y", d => barY(d.count))
+            .attr("width", barX.bandwidth())
+            .attr("height", d => barHeight - barY(d.count))
+            .on("click", (event, d) => updateGenreFilter(d.genre));
+
+        barG.selectAll(".bar-text")
+            .data(genreData)
+            .join("text")
+            .attr("class", "bar-text")
+            .attr("x", d => barX(d.genre) + barX.bandwidth() / 2)
+            .attr("y", d => barY(d.count) - 5)
+            .text(d => `${d.count} (${((d.count / totalBooks) * 100).toFixed(1)}%)`);
+
+        // Gráfico de torta por género (ajustado para bajar un poco más)
+        const pieSvg = d3.select("#pie-chart")
+            .append("svg")
+            .attr("width", "100%")
+            .attr("height", 400);
+
+        const pieWidth = pieSvg.node().clientWidth - barMargin.left - barMargin.right;
+        const pieHeight = 400 - barMargin.top - barMargin.bottom;
+        const pieRadius = Math.min(pieWidth, pieHeight) / 2 - 20;
+
+        const pieG = pieSvg.append("g")
+            .attr("transform", `translate(${pieWidth / 2 + barMargin.left},${pieHeight / 2 + 40})`); // Ajuste para bajar el gráfico 40px
+
+        const pie = d3.pie()
+            .value(d => d.count)
+            .sort((a, b) => d3.ascending(a.genre, b.genre)); // Ordenar alfabéticamente para consistencia
+
+        const arc = d3.arc()
+            .innerRadius(pieRadius * 0.5) // Donut
+            .outerRadius(pieRadius);
+
+        const outerArc = d3.arc()
+            .innerRadius(pieRadius * 0.9)
+            .outerRadius(pieRadius * 0.9);
+
+        const arcsData = pie(genreData);
+        const arcs = pieG.selectAll(".arc")
+            .data(arcsData)
+            .join("g")
+            .attr("class", "arc");
+
+        // Calcular posiciones ajustadas para etiquetas y evitar solapamiento
+        const labelPositions = [];
+        arcsData.forEach((d, i) => {
+            const pos = outerArc.centroid(d);
+            const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+            const side = midAngle < Math.PI ? 1 : -1;
+            pos[0] = pieRadius * (midAngle < Math.PI ? 1.2 : -1.2);
+            pos[1] += (midAngle > Math.PI/2 && midAngle < 3*Math.PI/2) ? 10 : -10;
+
+            // Ajustar posiciones para evitar solapamiento
+            let adjustedY = pos[1];
+            for (let j = 0; j < labelPositions.length; j++) {
+                const prevPos = labelPositions[j];
+                if (Math.abs(prevPos.y - adjustedY) < 20 && prevPos.side === side) {
+                    adjustedY += (adjustedY > prevPos.y ? 20 : -20);
+                }
+            }
+            labelPositions.push({ y: adjustedY, side });
+            d.adjustedPos = [pos[0], adjustedY];
+        });
+
+        arcs.append("path")
+            .attr("d", arc)
+            .on("click", (event, d) => updateGenreFilter(d.data.genre));
+
+        arcs.append("text")
+            .attr("transform", d => `translate(${d.adjustedPos})`)
+            .attr("dy", ".35em")
+            .style("text-anchor", d => {
+                const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+                return midAngle < Math.PI ? "start" : "end";
+            })
+            .text(d => `${d.data.genre} (${((d.data.count / totalBooks) * 100).toFixed(1)}%)`)
+            .each(function(d) {
+                const bbox = this.getBBox();
+                const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+                const offsetX = midAngle < Math.PI ? bbox.width + 10 : -bbox.width - 10;
+                d3.select(this).attr("dx", offsetX > 0 ? 5 : -5);
+            });
+
+        arcs.append("polyline")
+            .attr("points", d => {
+                const pos = outerArc.centroid(d);
+                const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+                const offset = pieRadius * (midAngle < Math.PI ? 1.2 : -1.2);
+                return [arc.centroid(d), outerArc.centroid(d), [offset, d.adjustedPos[1]]];
+            })
+            .attr("stroke", "#00FFFF")
+            .attr("fill", "none");
+
+        // Gráfico de treemap por autores (sin modificaciones)
+        const treemapSvg = d3.select("#treemap")
+            .append("svg")
+            .attr("width", "100%")
+            .attr("height", 400);
+
+        const treemapWidth = treemapSvg.node().clientWidth - barMargin.left - barMargin.right;
+        const treemapHeight = 400 - barMargin.top - barMargin.bottom;
+
+        const treemap = d3.treemap()
+            .size([treemapWidth, treemapHeight])
+            .padding(4)
+            .round(true);
+
+        const root = d3.hierarchy({ children: authorData })
+            .sum(d => d.value);
+
+        treemap(root);
+
+        const treemapG = treemapSvg.append("g")
+            .attr("transform", `translate(${barMargin.left},${barMargin.top})`);
+
+        treemapG.selectAll(".treemap-rect")
+            .data(root.leaves())
+            .join("rect")
+            .attr("class", "treemap-rect")
+            .attr("x", d => d.x0)
+            .attr("y", d => d.y0)
+            .attr("width", d => d.x1 - d.x0)
+            .attr("height", d => d.y1 - d.y0)
+            .on("click", (event, d) => {
+                const authorBooks = books.filter(b => b.author === d.data.name);
+                if (authorBooks.length > 0) updateGenreFilter(authorBooks[0].genre);
+                d3.select("#treemap-info")
+                    .text(`Autor: ${d.data.name} | Libros: ${d.data.value}`);
+            });
+    </script>
+</body>
+</html>

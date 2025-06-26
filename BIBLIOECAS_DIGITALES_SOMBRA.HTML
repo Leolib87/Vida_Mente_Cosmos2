@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Biblioteca Digital</title>
+    <!-- Fuente Orbitron para el estilo cyberpunk -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Librería D3.js para visualización dinámica -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        /* Estilo base del cuerpo */
+        body {
+            background-color: #000000; /* Fondo negro */
+            color: #00FF00; /* Verde neón */
+            font-family: 'Orbitron', sans-serif; /* Fuente futurista */
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        /* Contenedor principal */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        /* Encabezado */
+        .header {
+            position: relative;
+            height: 50vh;
+            background: url('https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center/cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #00FFFF; /* Cian neón */
+            text-shadow: 0 0 15px #00FF00; /* Sombra verde */
+            animation: fadeIn 2s ease-in;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7); /* Capa oscura */
+            z-index: 1;
+        }
+        .header h1, .header p {
+            position: relative;
+            z-index: 2;
+        }
+        .header h1 {
+            font-size: clamp(2em, 4vw, 4em); /* Tamaño adaptable */
+            animation: glow 2s infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 5px #00FF00; }
+            to { text-shadow: 0 0 20px #00FFFF; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        /* Secciones */
+        .section {
+            margin: 40px 0;
+            padding: 25px;
+            border: 2px solid #00FFFF; /* Borde cian */
+            box-shadow: 0 0 20px #00FFFF; /* Sombra brillante */
+            background: rgba(0, 255, 255, 0.05); /* Fondo traslúcido */
+            border-radius: 10px;
+            box-sizing: border-box;
+            overflow-x: auto; /* Scroll horizontal para tablas en móviles */
+        }
+        h2 {
+            color: #00FF00;
+            text-shadow: 0 0 8px #00FF00;
+            border-bottom: 1px solid #00FFFF;
+            padding-bottom: 10px;
+            margin: 0 0 15px 0;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        /* Filtros */
+        .filters {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        select {
+            background: #000000;
+            border: 2px solid #00FFFF;
+            color: #00FF00;
+            padding: 8px;
+            font-family: 'Orbitron', sans-serif;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        select:hover, select:focus {
+            background: #00FFFF;
+            color: #000000;
+            outline: none;
+        }
+        /* Tabla */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #00FFFF;
+            text-align: left;
+        }
+        th {
+            background: rgba(0, 255, 255, 0.1); /* Fondo cian traslúcido */
+            color: #00FFFF;
+        }
+        tr:nth-child(even) {
+            background: rgba(0, 255, 255, 0.03); /* Fondo alternado */
+        }
+        tr:hover {
+            background: rgba(0, 255, 255, 0.2); /* Hover brillante */
+        }
+        /* Red D3.js */
+        #network {
+            width: 100%;
+            height: 500px;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .node circle {
+            stroke: #00FFFF;
+            stroke-width: 2px;
+            transition: all 0.3s ease;
+        }
+        .node.resource circle {
+            fill: #00FF00; /* Verde para recursos */
+            r: 5;
+        }
+        .node.category circle {
+            fill: #FF00FF; /* Magenta para categorías */
+            r: 10;
+        }
+        .node:hover circle {
+            fill: #FFFFFF;
+            r: 12;
+            filter: drop-shadow(0 0 8px #00FFFF);
+        }
+        .node.selected circle {
+            fill: #FFFF00; /* Amarillo neón para nodos seleccionados */
+            stroke: #000000; /* Borde negro para contraste */
+            stroke-width: 3px;
+            r: 15; /* Tamaño mayor para destacar */
+            filter: drop-shadow(0 0 10px #FFFF00); /* Brillo amarillo */
+        }
+        .node text {
+            fill: #00FFFF;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 5px #00FF00;
+            font-size: 10px;
+            pointer-events: none;
+        }
+        .node.selected text {
+            fill: #FFFFFF; /* Blanco para texto de nodos seleccionados */
+            text-shadow: 0 0 5px #000000; /* Sombra negra para contraste */
+            font-size: 12px; /* Ligeramente más grande */
+        }
+        .link {
+            stroke: #00FF00;
+            stroke-opacity: 0.7;
+            stroke-width: 1px;
+        }
+        .link.category-link {
+            stroke: #FF00FF; /* Magenta para conexiones entre categorías */
+            stroke-width: 2px;
+            stroke-opacity: 0.9;
+        }
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #00FFFF;
+            border-top: 2px solid #00FF00;
+            margin-top: 40px;
+        }
+        .chart-container {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #00FFFF;
+            border-radius: 5px;
+            background: rgba(0, 255, 255, 0.05);
+        }
+        .chart-container h3 {
+            color: #00FF00;
+            text-shadow: 0 0 8px #00FF00;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        #bar-chart, #pie-chart, #type-bar-chart, #treemap {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .bar {
+            fill: #00FF00;
+            transition: fill 0.3s ease;
+        }
+        .bar:hover {
+            fill: #FFFF00;
+        }
+        .bar-text {
+            fill: #00FFFF;
+            font-size: 10px;
+            text-shadow: 0 0 5px #000000;
+            text-anchor: middle;
+        }
+        .arc path {
+            stroke: #00FF00; /* Verde neón para bordes */
+            stroke-width: 4px; /* Borde grueso */
+            fill: #000000; /* Interior negro */
+            transition: opacity 0.3s ease;
+        }
+        .arc path:hover {
+            opacity: 0.8;
+        }
+        .arc text {
+            fill: #00FFFF;
+            font-size: 10px;
+            text-shadow: 0 0 5px #000000;
+            pointer-events: none;
+        }
+        .treemap-rect {
+            stroke: #00FF00; /* Verde neón para bordes */
+            stroke-width: 4px; /* Borde grueso */
+            fill: #000000; /* Interior negro */
+            fill-opacity: 0.8;
+            transition: fill-opacity 0.3s ease;
+        }
+        .treemap-rect:hover {
+            fill-opacity: 1;
+        }
+        #treemap-info {
+            color: #00FF00;
+            text-shadow: 0 0 8px #00FF00;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        /* Media Queries para diseño responsivo */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 10px;
+            }
+            .header {
+                height: 40vh;
+            }
+            .header h1 {
+                font-size: clamp(1.5em, 3vw, 2.5em);
+            }
+            .header p {
+                font-size: 0.9em;
+            }
+            .section {
+                margin: 20px 0;
+                padding: 15px;
+            }
+            h2 {
+                font-size: 1.2em;
+            }
+            table {
+                font-size: 0.85em;
+            }
+            th, td {
+                padding: 8px;
+            }
+            #network {
+                height: 400px; /* Reducir altura en tablets */
+            }
+            .chart-container {
+                padding: 15px;
+            }
+        }
+        @media (max-width: 480px) {
+            .header {
+                height: 30vh;
+            }
+            .header h1 {
+                font-size: clamp(1.2em, 2.5vw, 2em);
+            }
+            .header p {
+                font-size: 0.8em;
+            }
+            .section {
+                margin: 15px 0;
+                padding: 10px;
+            }
+            h2 {
+                font-size: 1em;
+            }
+            table {
+                font-size: 0.75em;
+            }
+            th, td {
+                padding: 6px;
+            }
+            .filters {
+                flex-direction: column;
+                align-items: center;
+            }
+            select {
+                width: 100%;
+                max-width: 200px;
+            }
+            #network {
+                height: 300px; /* Reducir altura en móviles */
+            }
+            .node text {
+                font-size: 8px; /* Texto más pequeño en móviles */
+            }
+            .node.selected text {
+                font-size: 10px; /* Ajuste para móviles */
+            }
+            .chart-container {
+                padding: 10px;
+            }
+            .bar-text, .arc text {
+                font-size: 8px; /* Texto más pequeño en móviles */
+            }
+            #treemap-info {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Encabezado -->
+        <div class="header">
+            <h1>Mi Biblioteca Digital</h1>
+            <p>Explorando Recursos Digitales</p>
+        </div>
+
+        <!-- Sección de la biblioteca -->
+        <div class="section" id="library">
+            <h2>Red de Conexiones por Categoría</h2>
+            <div id="network"></div>
+            <h2>Catálogo de Recursos Digitales</h2>
+            <div class="filters">
+                <select id="categoryFilter">
+                    <option value="">Todas las Categorías</option>
+                    <!-- Opciones se llenarán dinámicamente -->
+                </select>
+                <select id="typeFilter">
+                    <option value="">Todos los Tipos</option>
+                    <!-- Opciones se llenarán dinámicamente -->
+                </select>
+            </div>
+            <table id="resourceTable">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Enlace</th>
+                        <th>Comentarios</th>
+                        <th>Categoría</th>
+                        <th>Tipo de Contenido</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Pie de página con gráficos -->
+        <div class="footer">
+            <p>Explorando el Conocimiento Digital | Marzo 2025</p>
+            <div class="chart-container">
+                <h3>Distribución por Categoría (Barras)</h3>
+                <div id="bar-chart"></div>
+            </div>
+            <div class="chart-container">
+                <h3>Distribución por Categoría (Torta)</h3>
+                <div id="pie-chart"></div>
+            </div>
+            <div class="chart-container">
+                <h3>Distribución por Tipo de Contenido (Barras)</h3>
+                <div id="type-bar-chart"></div>
+            </div>
+            <div class="chart-container">
+                <h3>Recursos por Cantidad de Archivos (Treemap)</h3>
+                <div id="treemap"></div>
+                <div id="treemap-info"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datos de los recursos digitales (con Observatorio de Bibliotecas Sombra como primero)
+        const resources = [
+            { title: "Observatorio de Bibliotecas Sombra", link: "https://open-slum.org/", comments: "Recursos y análisis de bibliotecas alternativas", category: "Archivo", type: "eBooks/Papers" },
+            { title: "Planet eBook", link: "https://www.planetebook.com/", comments: "Clásicos gratuitos en PDF", category: "Literatura", type: "eBooks" },
+            { title: "Free-eBooks.net", link: "https://www.free-ebooks.net/", comments: "eBooks gratuitos y de pago", category: "Literatura", type: "eBooks" },
+            { title: "ManyBooks", link: "https://manybooks.net/", comments: "Miles de eBooks gratuitos", category: "Literatura", type: "eBooks" },
+            { title: "LibriVox", link: "https://librivox.org/", comments: "Audiolibros de dominio público", category: "Audiolibros", type: "Audiolibros" },
+            { title: "Internet Archive", link: "https://archive.org/", comments: "Archivo masivo de textos y multimedia", category: "Archivo", type: "eBooks/Multimedia" },
+            { title: "BookBub", link: "https://www.bookbub.com/", comments: "Ofertas y recomendaciones de eBooks", category: "Literatura", type: "eBooks" },
+            { title: "Open Library", link: "https://openlibrary.org/", comments: "Biblioteca digital abierta", category: "Archivo", type: "eBooks" },
+            { title: "BookBoon", link: "https://bookboon.com/", comments: "Libros educativos y empresariales", category: "Educación", type: "eBooks" },
+            { title: "Feedbooks", link: "https://www.feedbooks.com/", comments: "eBooks gratuitos y comerciales", category: "Literatura", type: "eBooks" },
+            { title: "Smashwords", link: "https://www.smashwords.com/", comments: "Publicación y distribución de eBooks", category: "Literatura", type: "eBooks" },
+            { title: "Project Gutenberg", link: "https://www.gutenberg.org/", comments: "Clásicos gratuitos en múltiples formatos", category: "Literatura", type: "eBooks" },
+            { title: "Google Books", link: "https://books.google.com/", comments: "Vista previa y libros completos", category: "Literatura", type: "eBooks" },
+            { title: "PDFBooksWorld", link: "https://www.pdfbooksworld.com/", comments: "PDFs de dominio público", category: "Literatura", type: "eBooks" },
+            { title: "FreeTechBooks", link: "https://www.freetechbooks.com/", comments: "Libros técnicos gratuitos", category: "Tecnología", type: "eBooks" },
+            { title: "Bookyards", link: "http://www.bookyards.com/", comments: "eBooks y recursos educativos", category: "Educación", type: "eBooks" },
+            { title: "GetFreeBooks", link: "https://www.getfreebooks.com/", comments: "Libros electrónicos gratuitos", category: "Literatura", type: "eBooks" },
+            { title: "eBookLobby", link: "https://www.ebooklobby.com/", comments: "eBooks variados gratuitos", category: "Literatura", type: "eBooks" },
+            { title: "FreeComputerBooks", link: "https://freecomputerbooks.com/", comments: "Libros de informática gratuitos", category: "Tecnología", type: "eBooks" },
+            { title: "OpenCulture", link: "https://www.openculture.com/free_ebooks", comments: "Recursos culturales y educativos", category: "Educación", type: "eBooks" },
+            { title: "Library Genesis (LibGen)", link: "http://libgen.rs/", comments: "Base de datos masiva de libros y artículos", category: "Archivo", type: "eBooks/Papers" },
+            { title: "Goodreads", link: "https://www.goodreads.com/", comments: "Comunidad y reseñas de libros", category: "Comunidad", type: "eBooks" },
+            { title: "Obooko", link: "https://www.obooko.com/", comments: "eBooks gratuitos de autores independientes", category: "Literatura", type: "eBooks" },
+            { title: "O'Reilly", link: "https://www.oreilly.com/", comments: "Libros técnicos y de programación", category: "Tecnología", type: "eBooks" },
+            { title: "PDF Drive", link: "https://www.pdfdrive.com/", comments: "Motor de búsqueda de PDFs", category: "Archivo", type: "eBooks" },
+            { title: "Anna's Archive", link: "http://annas-archive.org/", comments: "Archivo alternativo de textos", category: "Archivo", type: "eBooks" },
+            { title: "PDF Room", link: "https://pdfroom.com/", comments: "Descarga de PDFs variados", category: "Archivo", type: "eBooks" },
+            { title: "PDF Coffee", link: "https://www.pdfcoffee.com/", comments: "Colección de PDFs gratuitos", category: "Archivo", type: "eBooks" },
+            { title: "Dokumen Pub", link: "https://dokumen.pub/", comments: "Documentos y libros en PDF", category: "Archivo", type: "eBooks" },
+            { title: "Z Library", link: "https://z-lib.org/", comments: "Biblioteca digital extensa", category: "Archivo", type: "eBooks" },
+            { title: "Ocean of PDF", link: "https://oceanofpdf.com/", comments: "Descargas de PDFs populares", category: "Literatura", type: "eBooks" },
+            { title: "Dirzon", link: "https://dirzon.com/", comments: "Directorio de recursos digitales", category: "Archivo", type: "eBooks" },
+            { title: "Booksfree", link: "https://booksfree.org/", comments: "Libros gratuitos en PDF", category: "Literatura", type: "eBooks" },
+            { title: "EngbooksPDF", link: "https://www.engbookspdf.com/", comments: "Libros en inglés en PDF", category: "Educación", type: "eBooks" },
+            { title: "Elejandria", link: "https://www.elejandria.com/", comments: "Clásicos en español", category: "Literatura", type: "eBooks" },
+            { title: "Espaebook", link: "https://www.espabeok.com/", comments: "eBooks en español", category: "Literatura", type: "eBooks" },
+            { title: "Wonderful Books", link: "https://www.wonderfulbooks.com/", comments: "Colección de libros digitales", category: "Literatura", type: "eBooks" },
+            { title: "Lectuland", link: "https://lectuland.com/", comments: "Libros gratuitos en español", category: "Literatura", type: "eBooks" },
+            { title: "LeerLibrosOnline", link: "https://www.leerlibrosonline.org/", comments: "Lectura online y descarga", category: "Literatura", type: "eBooks" },
+            { title: "ePubLibre", link: "https://www.epublibre.org/", comments: "eBooks en formato ePub", category: "Literatura", type: "eBooks" },
+            { title: "Standard Ebooks", link: "https://standardebooks.org/", comments: "eBooks bien formateados", category: "Literatura", type: "eBooks" }
+        ];
+
+        // Preparar datos para la red: nodos de recursos y categorías
+        const categories = [...new Set(resources.map(resource => resource.category))].sort();
+        const categoryNodes = categories.map((category, index) => ({
+            id: `category-${index}`,
+            name: category,
+            type: "category"
+        }));
+        const resourceNodes = resources.map((resource, index) => ({
+            id: `resource-${index}`,
+            title: resource.title,
+            category: resource.category,
+            type: resource.type,
+            type: "resource"
+        }));
+        const nodes = [...categoryNodes, ...resourceNodes];
+
+        // Enlaces entre recursos y sus categorías
+        const resourceLinks = resourceNodes.map(resourceNode => ({
+            source: resourceNode.id,
+            target: categoryNodes.find(categoryNode => categoryNode.name === resourceNode.category).id,
+            type: "resource-category"
+        }));
+
+        // Enlaces entre categorías (conexiones basadas en tipos de contenido compartidos)
+        const categoryLinks = [];
+        for (let i = 0; i < categoryNodes.length; i++) {
+            for (let j = i + 1; j < categoryNodes.length; j++) {
+                const cat1 = categoryNodes[i].name;
+                const cat2 = categoryNodes[j].name;
+                const resourcesInCat1 = resources.filter(r => r.category === cat1);
+                const resourcesInCat2 = resources.filter(r => r.category === cat2);
+                const typesInCat1 = new Set(resourcesInCat1.map(r => r.type));
+                const typesInCat2 = new Set(resourcesInCat2.map(r => r.type));
+                const sharedTypes = [...typesInCat1].filter(type => typesInCat2.has(type));
+                if (sharedTypes.length > 0) {
+                    categoryLinks.push({
+                        source: categoryNodes[i].id,
+                        target: categoryNodes[j].id,
+                        type: "category-category"
+                    });
+                }
+            }
+        }
+
+        const links = [...resourceLinks, ...categoryLinks];
+
+        // Configuración de la red D3.js
+        const width = document.getElementById('network').clientWidth;
+        const height = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 500;
+
+        const svg = d3.select("#network")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        const simulation = d3.forceSimulation(nodes)
+            .force("link", d3.forceLink(links).id(d => d.id).distance(d => d.type === "category-category" ? 150 : 100).strength(0.5))
+            .force("charge", d3.forceManyBody().strength(-200))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collide", d3.forceCollide(20))
+            .force("x", d3.forceX(width / 2).strength(0.1))
+            .force("y", d3.forceY(height / 2).strength(0.1));
+
+        const link = svg.append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(links)
+            .join("line")
+            .attr("class", d => `link ${d.type === "category-category" ? "category-link" : ""}`);
+
+        const node = svg.append("g")
+            .attr("class", "nodes")
+            .selectAll("g")
+            .data(nodes)
+            .join("g")
+            .attr("class", d => `node ${d.type}`)
+            .call(d3.drag()
+                .on("start", dragStarted)
+                .on("drag", dragged)
+                .on("end", dragEnded))
+            .on("click", (event, d) => {
+                d3.selectAll(".node").classed("selected", false);
+                d3.select(event.currentTarget).classed("selected", true);
+                if (d.type === "category") {
+                    const categoryFilter = document.getElementById('categoryFilter');
+                    categoryFilter.value = d.name;
+                    const changeEvent = new Event('change');
+                    categoryFilter.dispatchEvent(changeEvent);
+                }
+            });
+
+        node.append("circle")
+            .attr("r", d => d.type === "category" ? 10 : 5)
+            .attr("fill", d => d.type === "category" ? "#FF00FF" : "#00FF00");
+
+        node.append("text")
+            .attr("dy", -25)
+            .attr("text-anchor", "middle")
+            .text(d => d.type === "category" ? d.name : d.title);
+
+        simulation.on("tick", () => {
+            link.attr("x1", d => Math.max(10, Math.min(width - 10, d.source.x)))
+                .attr("y1", d => Math.max(10, Math.min(height - 10, d.source.y)))
+                .attr("x2", d => Math.max(10, Math.min(width - 10, d.target.x)))
+                .attr("y2", d => Math.max(10, Math.min(height - 10, d.target.y)));
+            node.attr("transform", d => `translate(${Math.max(10, Math.min(width - 10, d.x))},${Math.max(10, Math.min(height - 10, d.y))})`);
+        });
+
+        function dragStarted(event) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        }
+
+        function dragged(event) {
+            event.subject.fx = Math.max(10, Math.min(width - 10, event.x));
+            event.subject.fy = Math.max(10, Math.min(height - 10, event.y));
+        }
+
+        function dragEnded(event) {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
+        }
+
+        // Llenar filtros dinámicamente
+        const categoriesList = [...new Set(resources.map(resource => resource.category))].sort();
+        const types = [...new Set(resources.map(resource => resource.type))].sort();
+        
+        const categoryFilter = document.getElementById('categoryFilter');
+        const typeFilter = document.getElementById('typeFilter');
+
+        categoriesList.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category;
+            option.textContent = category;
+            categoryFilter.appendChild(option);
+        });
+
+        types.forEach(type => {
+            const option = document.createElement('option');
+            option.value = type;
+            option.textContent = type;
+            typeFilter.appendChild(option);
+        });
+
+        function renderTable() {
+            const selectedCategory = categoryFilter.value;
+            const selectedType = typeFilter.value;
+            const filteredResources = resources.filter(resource => 
+                (!selectedCategory || resource.category === selectedCategory) &&
+                (!selectedType || resource.type === selectedType)
+            );
+
+            const tbody = document.querySelector('#resourceTable tbody');
+            tbody.innerHTML = '';
+
+            filteredResources.forEach(resource => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${resource.title}</td>
+                    <td><a href="${resource.link}" target="_blank" style="color: #00FFFF">${resource.link}</a></td>
+                    <td>${resource.comments}</td>
+                    <td>${resource.category}</td>
+                    <td>${resource.type}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        categoryFilter.addEventListener('change', renderTable);
+        typeFilter.addEventListener('change', renderTable);
+        renderTable();
+
+        function resize() {
+            const newWidth = document.getElementById('network').clientWidth;
+            const newHeight = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 500;
+            svg.attr("width", newWidth).attr("height", newHeight);
+            simulation.force("center", d3.forceCenter(newWidth / 2, newHeight / 2));
+            simulation.force("x", d3.forceX(newWidth / 2).strength(0.1));
+            simulation.force("y", d3.forceY(newHeight / 2).strength(0.1));
+            simulation.alpha(1).restart();
+        }
+        window.addEventListener("resize", resize);
+
+        // Preparar datos para los gráficos
+        const categoryCounts = d3.rollup(resources, v => v.length, d => d.category);
+        const categoryData = Array.from(categoryCounts, ([category, count]) => ({ category, count }));
+        const totalResources = resources.length;
+        const typeCounts = d3.rollup(resources, v => v.length, d => d.type);
+        const typeData = Array.from(typeCounts, ([type, count]) => ({ type, count }));
+        // Datos ficticios para treemap (número estimado de archivos por recurso)
+        const resourceCounts = resources.map(r => ({
+            name: r.title,
+            value: Math.floor(Math.random() * 10000) + 100 // Valores entre 100 y 10100
+        }));
+
+        function updateCategoryFilter(category) {
+            const categoryFilter = document.getElementById('categoryFilter');
+            categoryFilter.value = category;
+            const changeEvent = new Event('change');
+            categoryFilter.dispatchEvent(changeEvent);
+        }
+
+        function updateTypeFilter(type) {
+            const typeFilter = document.getElementById('typeFilter');
+            typeFilter.value = type;
+            const changeEvent = new Event('change');
+            typeFilter.dispatchEvent(changeEvent);
+        }
+
+        // Gráfico de barras por categoría
+        const barSvg = d3.select("#bar-chart")
+            .append("svg")
+            .attr("width", "100%")
+            .attr("height", 400);
+
+        const barMargin = { top: 20, right: 20, bottom: 100, left: 40 };
+        const barWidth = barSvg.node().clientWidth - barMargin.left - barMargin.right;
+        const barHeight = 400 - barMargin.top - barMargin.bottom;
+
+        const barX = d3.scaleBand()
+            .domain(categoryData.map(d => d.category))
+            .range([0, barWidth])
+            .padding(0.1);
+
+        const barY = d3.scaleLinear()
+            .domain([0, d3.max(categoryData, d => d.count)])
+            .range([barHeight, 0]);
+
+        const barG = barSvg.append("g")
+            .attr("transform", `translate(${barMargin.left},${barMargin.top})`);
+
+        barG.append("g")
+            .attr("class", "x-axis")
+            .attr("transform", `translate(0,${barHeight})`)
+            .call(d3.axisBottom(barX))
+            .selectAll("text")
+            .attr("fill", "#00FFFF")
+            .attr("text-shadow", "0 0 5px #00FF00")
+            .attr("transform", "rotate(-45)")
+            .style("text-anchor", "end");
+
+        barG.append("g")
+            .attr("class", "y-axis")
+            .call(d3.axisLeft(barY))
+            .selectAll("text")
+            .attr("fill", "#00FFFF");
+
+        barG.selectAll(".bar")
+            .data(categoryData)
+            .join("rect")
+            .attr("class", "bar")
+            .attr("x", d => barX(d.category))
+            .attr("y", d => barY(d.count))
+            .attr("width", barX.bandwidth())
+            .attr("height", d => barHeight - barY(d.count))
+            .on("click", (event, d) => updateCategoryFilter(d.category));
+
+        barG.selectAll(".bar-text")
+            .data(categoryData)
+            .join("text")
+            .attr("class", "bar-text")
+            .attr("x", d => barX(d.category) + barX.bandwidth() / 2)
+            .attr("y", d => barY(d.count) - 5)
+            .attr("dy", ".35em")
+            .text(d => `${d.count} (${((d.count / totalResources) * 100).toFixed(1)}%)`)
+            .attr("font-size", d => {
+                const barHeightPx = barHeight - barY(d.count);
+                return Math.min(12, Math.max(8, barHeightPx / 4));
+            });
+
+        // Gráfico de torta por categoría
+        const pieSvg = d3.select("#pie-chart")
+            .append("svg")
+            .attr("width", "100%")
+            .attr("height", 400);
+
+        const pieWidth = pieSvg.node().clientWidth - barMargin.left - barMargin.right;
+        const pieHeight = 400 - barMargin.top - barMargin.bottom;
+        const pieRadius = Math.min(pieWidth, pieHeight) / 2 - 20;
+
+        const pieG = pieSvg.append("g")
+            .attr("transform", `translate(${pieWidth / 2 + barMargin.left},${pieHeight / 2 + 40})`);
+
+        const pie = d3.pie()
+            .value(d => d.count)
+            .sort((a, b) => d3.ascending(a.category, b.category));
+
+        const arc = d3.arc()
+            .innerRadius(pieRadius * 0.5)
+            .outerRadius(pieRadius);
+
+        const outerArc = d3.arc()
+            .innerRadius(pieRadius * 0.9)
+            .outerRadius(pieRadius * 0.9);
+
+        const arcsData = pie(categoryData);
+        const arcs = pieG.selectAll(".arc")
+            .data(arcsData)
+            .join("g")
+            .attr("class", "arc");
+
+        const labelPositions = [];
+        arcsData.forEach((d, i) => {
+            const pos = outerArc.centroid(d);
+            const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+            const side = midAngle < Math.PI ? 1 : -1;
+            pos[0] = pieRadius * (midAngle < Math.PI ? 1.2 : -1.2);
+            pos[1] += (midAngle > Math.PI/2 && midAngle < 3*Math.PI/2) ? 10 : -10;
+
+            let adjustedY = pos[1];
+            for (let j = 0; j < labelPositions.length; j++) {
+                const prevPos = labelPositions[j];
+                if (Math.abs(prevPos.y - adjustedY) < 20 && prevPos.side === side) {
+                    adjustedY += (adjustedY > prevPos.y ? 20 : -20);
+                }
+            }
+            labelPositions.push({ y: adjustedY, side });
+            d.adjustedPos = [pos[0], adjustedY];
+        });
+
+        arcs.append("path")
+            .attr("d", arc)
+            .on("click", (event, d) => updateCategoryFilter(d.data.category));
+
+        arcs.append("text")
+            .attr("transform", d => `translate(${d.adjustedPos})`)
+            .attr("dy", ".35em")
+            .style("text-anchor", d => {
+                const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+                return midAngle < Math.PI ? "start" : "end";
+            })
+            .text(d => `${d.data.category} (${((d.data.count / totalResources) * 100).toFixed(1)}%)`)
+            .each(function(d) {
+                const bbox = this.getBBox();
+                const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+                const offsetX = midAngle < Math.PI ? bbox.width + 10 : -bbox.width - 10;
+                d3.select(this).attr("dx", offsetX > 0 ? 5 : -5);
+            });
+
+        arcs.append("polyline")
+            .attr("points", d => {
+                const pos = outerArc.centroid(d);
+                const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+                const offset = pieRadius * (midAngle < Math.PI ? 1.2 : -1.2);
+                return [arc.centroid(d), outerArc.centroid(d), [offset, d.adjustedPos[1]]];
+            })
+            .attr("stroke", "#00FFFF")
+            .attr("fill", "none");
+
+        // Gráfico de barras por tipo de contenido
+        const typeBarSvg = d3.select("#type-bar-chart")
+            .append("svg")
+            .attr("width", "100%")
+            .attr("height", 400);
+
+        const typeBarWidth = typeBarSvg.node().clientWidth - barMargin.left - barMargin.right;
+        const typeBarHeight = 400 - barMargin.top - barMargin.bottom;
+
+        const typeBarX = d3.scaleBand()
+            .domain(typeData.map(d => d.type))
+            .range([0, typeBarWidth])
+            .padding(0.1);
+
+        const typeBarY = d3.scaleLinear()
+            .domain([0, d3.max(typeData, d => d.count)])
+            .range([typeBarHeight, 0]);
+
+        const typeBarG = typeBarSvg.append("g")
+            .attr("transform", `translate(${barMargin.left},${barMargin.top})`);
+
+        typeBarG.append("g")
+            .attr("class", "x-axis")
+            .attr("transform", `translate(0,${typeBarHeight})`)
+            .call(d3.axisBottom(typeBarX))
+            .selectAll("text")
+            .attr("fill", "#00FFFF")
+            .attr("text-shadow", "0 0 5px #00FF00")
+            .attr("transform", "rotate(-45)")
+            .style("text-anchor", "end");
+
+        typeBarG.append("g")
+            .attr("class", "y-axis")
+            .call(d3.axisLeft(typeBarY))
+            .selectAll("text")
+            .attr("fill", "#00FFFF");
+
+        typeBarG.selectAll(".bar")
+            .data(typeData)
+            .join("rect")
+            .attr("class", "bar")
+            .attr("x", d => typeBarX(d.type))
+            .attr("y", d => typeBarY(d.count))
+            .attr("width", typeBarX.bandwidth())
+            .attr("height", d => typeBarHeight - typeBarY(d.count))
+            .on("click", (event, d) => updateTypeFilter(d.type));
+
+        typeBarG.selectAll(".bar-text")
+            .data(typeData)
+            .join("text")
+            .attr("class", "bar-text")
+            .attr("x", d => typeBarX(d.type) + typeBarX.bandwidth() / 2)
+            .attr("y", d => typeBarY(d.count) - 5)
+            .attr("dy", ".35em")
+            .text(d => `${d.count} (${((d.count / totalResources) * 100).toFixed(1)}%)`)
+            .attr("font-size", d => {
+                const barHeightPx = typeBarHeight - typeBarY(d.count);
+                return Math.min(12, Math.max(8, barHeightPx / 4));
+            });
+
+        // Gráfico de treemap por cantidad de archivos
+        const treemapSvg = d3.select("#treemap")
+            .append("svg")
+            .attr("width", "100%")
+            .attr("height", 400);
+
+        const treemapWidth = treemapSvg.node().clientWidth - barMargin.left - barMargin.right;
+        const treemapHeight = 400 - barMargin.top - barMargin.bottom;
+
+        const treemap = d3.treemap()
+            .size([treemapWidth, treemapHeight])
+            .padding(4)
+            .round(true);
+
+        const root = d3.hierarchy({ children: resourceCounts })
+            .sum(d => d.value);
+
+        treemap(root);
+
+        const treemapG = treemapSvg.append("g")
+            .attr("transform", `translate(${barMargin.left},${barMargin.top})`);
+
+        treemapG.selectAll(".treemap-rect")
+            .data(root.leaves())
+            .join("rect")
+            .attr("class", "treemap-rect")
+            .attr("x", d => d.x0)
+            .attr("y", d => d.y0)
+            .attr("width", d => d.x1 - d.x0)
+            .attr("height", d => d.y1 - d.y0)
+            .on("click", (event, d) => {
+                const resource = resources.find(r => r.title === d.data.name);
+                if (resource) updateCategoryFilter(resource.category);
+                d3.select("#treemap-info")
+                    .text(`Recurso: ${d.data.name} | Archivos: ${d.data.value} (${((d.data.value / d3.sum(resourceCounts, r => r.value)) * 100).toFixed(1)}%)`);
+            });
+    </script>
+</body>
+</html>

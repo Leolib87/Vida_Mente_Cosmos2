@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horarios Laboratorio de Microscopía</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-green: #00FF00;
+            --neon-cyan: #00FFFF;
+            --black-bg: #000000;
+        }
+        body {
+            background-color: var(--black-bg);
+            color: var(--neon-green);
+            font-family: 'Orbitron', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+        h1 {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px var(--neon-cyan);
+            margin-bottom: 20px;
+        }
+        .table-container {
+            width: 90%;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid var(--neon-cyan);
+            border-right: 1px solid var(--neon-cyan);
+            color: var(--neon-green);
+        }
+        th {
+            background: rgba(0, 0, 0, 0.9);
+            color: var(--neon-cyan);
+            text-shadow: 0 0 5px var(--neon-cyan);
+        }
+        tr:hover {
+            background: rgba(0, 255, 255, 0.1);
+        }
+        td:last-child, th:last-child {
+            border-right: none;
+        }
+    </style>
+</head>
+<body>
+<h1>Horarios Laboratorio de Microscopía</h1>
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Hora / Día</th>
+                <th>Lunes</th>
+                <th>Martes</th>
+                <th>Miércoles</th>
+                <th>Jueves</th>
+                <th>Viernes</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>08:00 - 09:15</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>09:30 - 10:45</td>
+                <td></td>
+                <td></td>
+                <td>Caro Báez</td>
+                <td>Samuel</td>
+                <td>Caro Báez</td>
+            </tr>
+            <tr>
+                <td>11:00 - 12:15</td>
+                <td></td>
+                <td></td>
+                <td>Caro Báez</td>
+                <td></td>
+                <td>Caro Báez</td>
+            </tr>
+            <tr>
+                <td>12:30 - 13:45</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>14:00 - 15:15</td>
+                <td></td>
+                <td></td>
+                <td>Valia Vivar / Valdevenito</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>15:30 - 16:45</td>
+                <td></td>
+                <td>Leandro Torres</td>
+                <td>Valia Vivar / Valdevenito</td>
+                <td>Leandro Torres</td>
+                <td>Leandro Torres</td>
+            </tr>
+            <tr>
+                <td>17:00 - 18:15</td>
+                <td></td>
+                <td>Leandro Torres</td>
+                <td></td>
+                <td>Leandro Torres</td>
+                <td>Leandro Torres</td>
+            </tr>
+            <tr>
+                <td>18:30 - 19:45</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

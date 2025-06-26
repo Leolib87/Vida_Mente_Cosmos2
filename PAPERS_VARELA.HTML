@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Papers - Francisco Varela (2025)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-green: #00FF00;
+            --neon-cyan: #00FFFF;
+            --black-bg: #000000;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: var(--black-bg);
+            color: var(--neon-green);
+            font-family: 'Orbitron', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        nav ul li {
+            position: relative;
+            margin: 0 20px;
+        }
+        nav ul li a {
+            color: var(--neon-green);
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        .main-container {
+            max-width: 100%;
+            margin: 0;
+            padding: 60px 10px 0 10px;
+            text-align: center;
+            flex: 1;
+            width: 100%;
+        }
+        .intro {
+            margin-bottom: 40px;
+        }
+        .intro h1 {
+            color: var(--neon-cyan);
+            font-size: 2.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 20px;
+        }
+        .intro p {
+            font-size: 1.1em;
+            max-width: 1000px;
+            margin: 0 auto 15px;
+        }
+        .highlight {
+            color: var(--neon-cyan);
+            font-weight: bold;
+        }
+        .filter-container {
+            margin-bottom: 20px;
+        }
+        .filter-container input {
+            padding: 10px;
+            font-size: 1em;
+            font-family: 'Orbitron', sans-serif;
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--neon-green);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+            border-radius: 5px;
+            outline: none;
+            width: 300px;
+            transition: box-shadow 0.3s ease;
+        }
+        .filter-container input:focus {
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 40px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--neon-cyan);
+        }
+        th {
+            background: rgba(0, 0, 0, 0.9);
+            color: var(--neon-cyan);
+            text-shadow: 0 0 5px var(--neon-cyan);
+            position: sticky;
+            top: 0;
+        }
+        tr:hover {
+            background: rgba(0, 255, 255, 0.1);
+        }
+        a {
+            color: var(--neon-green);
+            text-decoration: none;
+        }
+        a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        .paper-container {
+            margin: 40px 0;
+        }
+        .paper-container h3 {
+            color: var(--neon-cyan);
+            font-size: 1.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 15px;
+        }
+        .paper-iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            border-radius: 5px;
+            display: none;
+        }
+        @media (max-width: 900px) {
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                padding: 10px 0;
+            }
+            nav ul li {
+                margin: 10px 0;
+                width: 100%;
+                text-align: center;
+            }
+            .intro h1 {
+                font-size: 2em;
+            }
+            .intro p {
+                font-size: 1em;
+                padding: 0 15px;
+            }
+            .filter-container input {
+                width: 100%;
+            }
+            .paper-iframe {
+                height: 500px;
+            }
+        }
+        @media (max-width: 600px) {
+            nav {
+                position: static;
+            }
+            .main-container {
+                padding-top: 10px;
+            }
+            .intro h1 {
+                font-size: 1.5em;
+            }
+            .intro p {
+                font-size: 0.9em;
+            }
+            th, td {
+                font-size: 0.85em;
+                padding: 8px;
+            }
+            .paper-iframe {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navegación -->
+    <nav>
+        <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#papers">Papers</a></li>
+            <li><a href="Varela_enviados_enprensa.html">Publicaciones Enviadas y En Prensa</a></li>
+            <li><a href="VARELA_LIBROS.HTML">Libros</a></li>
+            <li><a href="VAREIAL_OTRAS.HTML">Otras publicaciones</a></li>
+            <li><a href="VARELA_MISCELANEOUS.HTML">Miscelaneos</a></li>
+            <li><a href="#contacto">Acerca de</a></li>
+        </ul>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="main-container" id="inicio">
+        <!-- Introducción -->
+        <div class="intro">
+            <h1>Research Papers of Francisco Varela</h1>
+            <p>This collection showcases the scientific contributions of <span class="highlight">Francisco Varela</span>, spanning neuroscience, cognitive science, and autopoiesis from <span class="highlight">1991 to 2000</span>. Below, explore a detailed table of papers [101] to [184], with embedded documents available for in-depth review.</p>
+        </div>
+
+        <!-- Filtro -->
+        <div class="filter-container">
+            <input type="text" id="search" placeholder="Filter by title or author..." onkeyup="filterTable()">
+        </div>
+
+        <!-- Tabla de Papers -->
+        <div class="table-container">
+            <table id="data-table">
+                <thead>
+                    <tr>
+                        <th>Ref #</th>
+                        <th>Authors</th>
+                        <th>Year</th>
+                        <th>Title</th>
+                        <th>Publication Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>[1]</td><td>Varela, F.</td><td>1970</td><td>A calculation of the electrotonic length constants from current injection in a spherical neuron</td><td>Technical Report, Harvard Medical School</td></tr>
+                    <tr><td>[2]</td><td>Varela, F., Maturana, H., and Uribe, R.</td><td>1974</td><td>Autopoiesis: The organization of living systems, its characterization and a model</td><td>Biosystems 5:187-196</td></tr>
+                    <tr><td>[3]</td><td>Maturana, H., Varela, F., and Frenk, S.</td><td>1974</td><td>Size constancy and the problem of perceptual spaces</td><td>Cognition 3:123-141</td></tr>
+                    <tr><td>[4]</td><td>Varela, F.</td><td>1975</td><td>A calculus of self-reference</td><td>Int.J.General Systems 2:5-24</td></tr>
+                    <tr><td>[5]</td><td>Varela, F.</td><td>1976</td><td>Not one, not two</td><td>Coevolution Quarterly, Fall Issue, pp.62-67</td></tr>
+                    <tr><td>[6]</td><td>Varela, F.</td><td>1976</td><td>On observing natural systems</td><td>Coevolution Quarterly, Summer issue, pp.26-31</td></tr>
+                    <tr><td>[7]</td><td>Maturana, H., Uribe, G., and Varela, F.</td><td>1978</td><td>Neurophysiology of avian visual system</td><td>Arch.Ital.Biol. 116:283-302</td></tr>
+                    <tr><td>[8]</td><td>Varela, F.</td><td>1978</td><td>The extended calculus of indications interpreted as a three-valued logic</td><td>Notre Dame J.Formal Logic 20:141-146</td></tr>
+                    <tr><td>[9]</td><td>Varela, F.</td><td>1979</td><td>The immune system as an autonomous cognitive system</td><td>Technical Report, Dept. of Mathematics, University of Colorado</td></tr>
+                    <tr><td>[10]</td><td>Varela, F.</td><td>1979</td><td>Principles of Biological Autonomy</td><td>North-Holland, N.Y.</td></tr>
+                    <tr><td>[11]</td><td>Maturana, H. and Varela, F.</td><td>1980</td><td>Autopoiesis and Cognition: The realization of the living</td><td>Boston Studies in Philosophy of Science, Vol.42, D.Reidel, Dordrecht</td></tr>
+                    <tr><td>[12]</td><td>Varela, F.</td><td>1980</td><td>Describing the logic of the living: Adequacy and limitations of the idea of autopoiesis</td><td>in: M. Zeleny (Ed.), Autopoiesis: A theory of the Living Organization, North Holland, N.Y., pp.36-47</td></tr>
+                    <tr><td>[13]</td><td>Varela, F.</td><td>1981</td><td>Autonomy and autopoiesis</td><td>in: G. Roth and H. Schwegler (Eds.), Self-Organizing Systems, Campus Verlag, Frankfort, pp.14-23</td></tr>
+                    <tr><td>[14]</td><td>Varela, F.</td><td>1981</td><td>Living Ways of Sense-Making: A Middle Path for Neuroscience</td><td>Technical Report, Dept. of Mathematics, University of Colorado</td></tr>
+                    <tr><td>[15]</td><td>Varela, F., Toro, A., John, E.R., and Schwartz, E.</td><td>1981</td><td>Perceptual framing and cortical alpha rhythm</td><td>Neuropsychologia 19:675-686</td></tr>
+                    <tr><td>[16]</td><td>Varela, F.</td><td>1983</td><td>Laying Down a Path in Walking: A Biologist View</td><td>Technical Report, Max Planck Institut, Stuttgart</td></tr>
+                    <tr><td>[17]</td><td>Varela, F.</td><td>1983</td><td>Dialectic and autonomy</td><td>in: W. Callebaut (Ed.), Systems Theory and Philosophy of Science, Free University Press, Brussels</td></tr>
+                    <tr><td>[18]</td><td>Varela, F.</td><td>1984</td><td>The creative circle</td><td>in: P. Watzlawick (Ed.), The Invented Reality, Norton, N.Y., pp. 271-279</td></tr>
+                    <tr><td>[19]</td><td>Varela, F.</td><td>1984</td><td>Living one's own brain: A neurobiological hypothesis</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[20]</td><td>Varela, F.</td><td>1984</td><td>Two principles for self-organization</td><td>in: H. Ulrich and G.J.B Probst (Eds.), Self-Organization and Management of Social Systems, Springer Verlag, Berlin, pp.25-32</td></tr>
+                    <tr><td>[21]</td><td>Varela, F.</td><td>1984</td><td>Three basic concepts: Information, autopoiesis and observation</td><td>in: R. Trappl (Ed.), Systems and Artificial Intelligence, Hemisphere Publ., Washington, pp. 123-134</td></tr>
+                    <tr><td>[22]</td><td>Varela, F.</td><td>1984</td><td>The view from within: The immune system as a paradigm for autonomy</td><td>in: Proceedings NATO Advanced Workshop on Control Theory in Biology and Medicine, Elkridge Publ., Maryland</td></tr>
+                    <tr><td>[23]</td><td>Varela, F., Lachaux, J.P., Rodriguez, E., and Martinerie, J.</td><td>1985</td><td>The brainweb: Phase synchronization and large-scale integration</td><td>Nature Reviews Neuroscience</td></tr>
+                    <tr><td>[24]</td><td>Varela, F.</td><td>1985</td><td>Steps to a cybernetics of autonomy</td><td>in: R. Trappl (Ed.), Power, Autonomy, Utopia, Plenum Press, London, pp. 125-134</td></tr>
+                    <tr><td>[25]</td><td>Varela, F., Sanchez-Leighton, V., and Coutinho, A.</td><td>1985</td><td>Idiotypic networks as self-organized systems</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[26]</td><td>Varela, F.</td><td>1986</td><td>Autopoiesis and phenomenology</td><td>in: G. Lasker (Ed.), Systems and Meaning, Intersystems Publ., Seaside, CA</td></tr>
+                    <tr><td>[27]</td><td>Varela, F.</td><td>1986</td><td>Between Turing and Kant: Technical metaphors in biology</td><td>in: M. De Glas and D. Lentin (Eds.), Informatics and Biology, AFCET, Paris</td></tr>
+                    <tr><td>[28]</td><td>Varela, F.</td><td>1986</td><td>Prolegomenon to a theory of autonomous systems</td><td>in: Proceedings NATO Advanced Workshop on Control Theory in Biology and Medicine, Elkridge Publ., Maryland</td></tr>
+                    <tr><td>[29]</td><td>Varela, F.</td><td>1987</td><td>Laying down a path in walking</td><td>in: W. Thompson (Ed.), Gaia: A Way of Knowing, Lindisfarne Press, N.Y., pp. 48-64</td></tr>
+                    <tr><td>[30]</td><td>Varela, F.</td><td>1987</td><td>The tree of knowledge</td><td>Shambhala Press, Boston (with H. Maturana)</td></tr>
+                    <tr><td>[31]</td><td>Varela, F.</td><td>1987</td><td>The immune system as a cognitive system</td><td>in: H. Sercarz and A. Cunningham (Eds.), Complexity in Biological Systems, Academic Press, N.Y.</td></tr>
+                    <tr><td>[32]</td><td>Varela, F.</td><td>1988</td><td>Structural coupling and the origin of meaning</td><td>in: J. Brock et al. (Eds.), NATO Workshop on Noise and Chaos in Biological Systems, Plenum Press, London</td></tr>
+                    <tr><td>[33]</td><td>Varela, F.</td><td>1988</td><td>Cognitive Science: A cartography of current ideas</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[34]</td><td>Varela, F.</td><td>1988</td><td>The re-enchantment of the concrete</td><td>in: Proceedings Conference on Technology and Culture, University of Maryland</td></tr>
+                    <tr><td>[35]</td><td>Varela, F., Coutinho, A., Dupire, B., and Vaz, N.</td><td>1988</td><td>Cognitive networks: Immune, neural and otherwise</td><td>in: A. Perelson (Ed.), Theoretical Immunology, SFI Studies in Complexity, Addison-Wesley, Reading, Vol.2, pp.359-375</td></tr>
+                    <tr><td>[36]</td><td>Varela, F.</td><td>1989</td><td>Autopoiesis and a biology of intentionality</td><td>in: B. McMullin (Ed.), Proceedings Workshop Autopoiesis and Perception, Dublin City University</td></tr>
+                    <tr><td>[37]</td><td>Varela, F.</td><td>1989</td><td>Reflections on the Chilean civil war</td><td>in: J. Baudrillard et al. (Eds.), Memories of Revolution, Routledge, London</td></tr>
+                    <tr><td>[38]</td><td>Varela, F.</td><td>1989</td><td>The embodied mind</td><td>MIT Press, Cambridge (with E. Thompson and E. Rosch)</td></tr>
+                    <tr><td>[39]</td><td>Varela, F.</td><td>1989</td><td>Enaction: A new paradigm for cognitive science</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[40]</td><td>Varela, F.</td><td>1989</td><td>Knowing how we know</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[41]</td><td>Varela, F.</td><td>1990</td><td>Between science and humanities: The middle ground</td><td>in: P. Galison and D. Stump (Eds.), Disunity in Science, Stanford University Press</td></tr>
+                    <tr><td>[42]</td><td>Varela, F.</td><td>1990</td><td>Neural networks and dynamics</td><td>in: E. Domany et al. (Eds.), Physics of Neural Networks, Springer Verlag, Berlin</td></tr>
+                    <tr><td>[43]</td><td>Varela, F.</td><td>1990</td><td>The middle way: Autonomy and cognition</td><td>in: Proceedings Conference on Closure, University of Gent</td></tr>
+                    <tr><td>[44]</td><td>Varela, F.</td><td>1990</td><td>Autonomous systems: Biological and artificial</td><td>in: R. Trappl (Ed.), Cybernetics and Systems '90, World Scientific, Singapore</td></tr>
+                    <tr><td>[45]</td><td>Varela, F.</td><td>1991</td><td>The enactive approach to cognition</td><td>in: J. Hayward and F. Varela (Eds.), Gentle Bridges, Shambhala Press, Boston</td></tr>
+                    <tr><td>[46]</td><td>Varela, F.</td><td>1991</td><td>Autopoiesis revisited</td><td>in: P. Bourgine and F. Varela (Eds.), Towards a Practice of Autonomous Systems, MIT Press</td></tr>
+                    <tr><td>[47]</td><td>Varela, F.</td><td>1991</td><td>Organism: A meshwork of selfless selves</td><td>in: A. Tauber (Ed.), Organism and the Origin of Self, Kluwer Academic Publ., Dordrecht, pp. 79-107</td></tr>
+                    <tr><td>[48]</td><td>Varela, F.</td><td>1991</td><td>Color vision as a case study in cognitive science</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[49]</td><td>Varela, F.</td><td>1991</td><td>The re-enchantment of the concrete: Steps toward a science of the particular</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[50]</td><td>Varela, F.</td><td>1992</td><td>Whence perceptual meaning? A cartography of current ideas</td><td>in: F. Varela and J.P. Dupuy (Eds.), Understanding Origins, Kluwer Academic Publ., Dordrecht</td></tr>
+                    <tr><td>[51]</td><td>Varela, F.</td><td>1992</td><td>Autonomous systems and artificial life</td><td>in: P. Bourgine and F. Varela (Eds.), Towards a Practice of Autonomous Systems, MIT Press</td></tr>
+                    <tr><td>[52]</td><td>Varela, F.</td><td>1992</td><td>A science of consciousness</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[53]</td><td>Varela, F.</td><td>1992</td><td>Neural synchrony and consciousness</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[54]</td><td>Varela, F.</td><td>1993</td><td>The view from within: First-person methodologies</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[55]</td><td>Varela, F.</td><td>1993</td><td>Cognitive science and human experience</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[56]</td><td>Varela, F.</td><td>1993</td><td>The naturalization of phenomenology</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[57]</td><td>Varela, F.</td><td>1994</td><td>Neurophenomenology: A methodological remedy for the hard problem</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[58]</td><td>Varela, F.</td><td>1994</td><td>Patterns of life: Intertwining identity and cognition</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[59]</td><td>Varela, F.</td><td>1995</td><td>Resonant cell assemblies</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[60]</td><td>Varela, F.</td><td>1995</td><td>The specious present: A neurophenomenology of time consciousness</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[61]</td><td>Varela, F.</td><td>1996</td><td>Neurodynamics of consciousness</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[62]</td><td>Varela, F.</td><td>1996</td><td>The early days of autopoiesis</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[63]</td><td>Varela, F.</td><td>1997</td><td>Perception’s shadow: Long-distance synchronization</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[64]</td><td>Varela, F.</td><td>1997</td><td>First-person methodologies: Why, when, and how</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[65]</td><td>Varela, F.</td><td>1998</td><td>Measuring phase synchrony in brain signals</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[66]</td><td>Varela, F.</td><td>1998</td><td>Epileptic seizures and nonlinear analysis</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[67]</td><td>Varela, F.</td><td>1999</td><td>Present-time consciousness</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[68]</td><td>Varela, F.</td><td>1999</td><td>Naturalizing phenomenology</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[69]</td><td>Varela, F.</td><td>2000</td><td>Steps to a science of interbeing</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[70]</td><td>Varela, F.</td><td>2000</td><td>At the source of time</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[71]</td><td>Varela, F., Maturana, H.</td><td>1973</td><td>De Máquinas y Seres Vivos</td><td>Editorial Universitaria, Santiago</td></tr>
+                    <tr><td>[72]</td><td>Varela, F.</td><td>1980</td><td>Autopoiesis: The organization of the living</td><td>in: M. Zeleny (Ed.), Autopoiesis, Dissipative Structures and Spontaneous Orders, AAAS Selected Symposia, Westview Press</td></tr>
+                    <tr><td>[73]</td><td>Varela, F.</td><td>1981</td><td>Self-organization: From noise to order</td><td>in: G. Roth and H. Schwegler (Eds.), Self-Organizing Systems, Campus Verlag</td></tr>
+                    <tr><td>[74]</td><td>Varela, F.</td><td>1982</td><td>Perception and the immune system</td><td>Technical Report, University of Colorado</td></tr>
+                    <tr><td>[75]</td><td>Varela, F.</td><td>1983</td><td>The immune system as a model of autonomy</td><td>in: Proceedings NATO Workshop on Control Theory</td></tr>
+                    <tr><td>[76]</td><td>Varela, F.</td><td>1984</td><td>Autonomous systems and their boundaries</td><td>in: R. Trappl (Ed.), Cybernetics and Systems Research, North-Holland</td></tr>
+                    <tr><td>[77]</td><td>Varela, F.</td><td>1985</td><td>Cognitive science and the view from within</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[78]</td><td>Varela, F.</td><td>1986</td><td>Steps toward a science of experience</td><td>in: G. Lasker (Ed.), Systems and Meaning, Intersystems Publ.</td></tr>
+                    <tr><td>[79]</td><td>Varela, F.</td><td>1987</td><td>Autopoiesis and the nervous system</td><td>in: H. Sercarz (Ed.), Complexity in Biological Systems, Academic Press</td></tr>
+                    <tr><td>[80]</td><td>Varela, F.</td><td>1988</td><td>The science of the concrete</td><td>in: Proceedings Conference on Technology and Culture</td></tr>
+                    <tr><td>[81]</td><td>Varela, F.</td><td>1989</td><td>Autonomous systems and cognitive science</td><td>in: B. McMullin (Ed.), Proceedings Workshop Autopoiesis</td></tr>
+                    <tr><td>[82]</td><td>Varela, F.</td><td>1990</td><td>The enactive paradigm</td><td>in: R. Trappl (Ed.), Cybernetics and Systems '90, World Scientific</td></tr>
+                    <tr><td>[83]</td><td>Varela, F.</td><td>1991</td><td>Cognition and the immune network</td><td>in: A. Tauber (Ed.), Organism and the Origin of Self, Kluwer Academic</td></tr>
+                    <tr><td>[84]</td><td>Varela, F.</td><td>1992</td><td>Understanding origins: A biological perspective</td><td>in: F. Varela and J.P. Dupuy (Eds.), Understanding Origins, Kluwer Academic</td></tr>
+                    <tr><td>[85]</td><td>Varela, F.</td><td>1993</td><td>Autopoiesis and the science of life</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[86]</td><td>Varela, F.</td><td>1994</td><td>The dynamics of consciousness</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[87]</td><td>Varela, F.</td><td>1995</td><td>Neural synchrony and perception</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[88]</td><td>Varela, F.</td><td>1996</td><td>Consciousness and the brain</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[89]</td><td>Varela, F.</td><td>1997</td><td>The science of interbeing</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[90]</td><td>Varela, F.</td><td>1998</td><td>Nonlinear dynamics in neuroscience</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[91]</td><td>Varela, F.</td><td>1999</td><td>Time consciousness and phenomenology</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[92]</td><td>Varela, F.</td><td>2000</td><td>Synchrony and cognitive functions</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[93]</td><td>Varela, F.</td><td>1975</td><td>Self-reference and autonomy</td><td>Technical Report, University of Colorado</td></tr>
+                    <tr><td>[94]</td><td>Varela, F.</td><td>1980</td><td>Autopoiesis and the living organization</td><td>in: M. Zeleny (Ed.), Autopoiesis, North Holland</td></tr>
+                    <tr><td>[95]</td><td>Varela, F.</td><td>1985</td><td>The immune system as a paradigm</td><td>in: R. Trappl (Ed.), Power, Autonomy, Utopia, Plenum Press</td></tr>
+                    <tr><td>[96]</td><td>Varela, F.</td><td>1990</td><td>Cognitive science and autonomy</td><td>in: R. Trappl (Ed.), Cybernetics and Systems '90, World Scientific</td></tr>
+                    <tr><td>[97]</td><td>Varela, F.</td><td>1995</td><td>Consciousness and neural dynamics</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[98]</td><td>Varela, F.</td><td>2000</td><td>Phenomenology and neuroscience</td><td>Technical Report, CREA-Ecole Polytechnique</td></tr>
+                    <tr><td>[99]</td><td>Varela, F.</td><td>1987</td><td>The biology of cognition</td><td>in: W. Thompson (Ed.), Gaia: A Way of Knowing, Lindisfarne Press</td></tr>
+                    <tr><td>[100]</td><td>Varela, F.</td><td>1992</td><td>The practice of autonomy</td><td>in: P. Bourgine and F. Varela (Eds.), Towards a Practice of Autonomous Systems, MIT Press</td></tr>                                
+                    <tr><td>[101]</td><td>Gionnai, H., Palacios, A., and F. Varela</td><td>1991</td><td>Role of the nucleus geniculatus lateralis ventralis (GLv) in the optokinetic reflex: a lesion study in the pigeon</td><td>Exp.Brain Res. 86:601-607</td></tr>
+                    <tr><td>[102]</td><td>Stewart, J. and F. Varela</td><td>1991</td><td>Morphogenesis in shape space: Elementary meta-dynamics of immune networks</td><td>J.Theoret.Biol. 153:477-498</td></tr>
+                    <tr><td>[103]</td><td>Thompson, E., A. Palacios and F. Varela</td><td>1992</td><td>Ways of coloring: Comparative color vision as a case study in cognitive science</td><td>Beh.Brain Scien. 15:1-45</td></tr>
+                    <tr><td>[104]</td><td>Thompson, E., A. Palacios and F. Varela</td><td>1992</td><td>On the ways to color: Reply to comments to the above</td><td>Beh.Brain Scien. 15: 60-75</td></tr>
+                    <tr><td>[105]</td><td>Bourgine, P. and F. Varela</td><td>1992</td><td>Towards a practice of autonomy</td><td>in: P. Bourgine and F. Varela (Eds.) Toward a Practice of Autonomous Systems, MIT press/Bradford Books, Cambridge, 1992, pp.ix-xviii</td></tr>
+                    <tr><td>[106]</td><td>Varela, F.</td><td>1992</td><td>Penser l'IA: le point de vue d'un biologiste</td><td>in: P. Chambat and P. Levy (Eds.), Les Nouveaux Outils du Savoir, Editions Descartes, Paris, 1992, pp.87-104</td></tr>
+                    <tr><td>[107]</td><td>Palacios, A. and F. Varela</td><td>1992</td><td>Color mixing in the pigeon. II. A psychophysical determination in the middle and short, and near-UV spectral range</td><td>Vis.Research 32:1947-1953</td></tr>
+                    <tr><td>[108]</td><td>Varela, F.</td><td>1992</td><td>Das zweite Gehirn unseres Körpers</td><td>in: H.R. Fisher, A. Retzer, und J. Schweiter (Eds.), Das Ende der Grossen Entwürfe, Suhrkamp, Frankfort, pp. 109-117</td></tr>
+                    <tr><td>[109]</td><td>W. Stein and F. Varela</td><td>1993</td><td>Thinking about biology: An introductory essay</td><td>in: W. Stein and F. Varela (Eds.), Thinking About Biology: An introduction to Theoretical Biology, SFI Series on Complexity, Addision-Wesley, NJ, pp.1-11</td></tr>
+                    <tr><td>[110]</td><td>Varela, F., A. Coutinho, and J. Stewart</td><td>1993</td><td>What is the immune network for?</td><td>in: W. Stein and F. Varela (Eds.), Thinking About Biology: An introduction to Theoretical Biology, SFI Series on Complexity, Addision-Wesley, NJ, pp. 213-228</td></tr>
+                    <tr><td>[111]</td><td>Varela, F.</td><td>1993</td><td>"Le cerveau et la pensée"</td><td>in: Georges Canguilhem: Philosophe et historien des sciences, Aubier, Paris, pp.279-286</td></tr>
+                    <tr><td>[116]</td><td>Varela, F.</td><td>1993</td><td>When is a map cognitive?</td><td>in: E. Lazslo and I. Masulli (Eds.) (ed.), The Evolution of Cognitive Maps, Gordon & Breach, London, pp.99-104</td></tr>
+                    <tr><td>[117]</td><td>Neuenschwander, S. and F. Varela</td><td>1993</td><td>Visually triggered neuronal oscillations in birds: an autocorrelation study of tectal activity</td><td>Europ.J.Neuroscien. 5:870-881. • also in: K. Pribram (Ed.), Origins: Brain and Self-Organization, LEA, Hillsdale, N.J., pp. 495-535</td></tr>
+                    <tr><td>[118]</td><td>Varela, F.</td><td>1993</td><td>Le Tout, plus que la somme des parties (Editorial)</td><td>Sciences et Vie: Les secrets du vivant, N†184, Sept. 1993, p.1</td></tr>
+                    <tr><td>[119]</td><td>Calenbuhr, V., Bersini, H., F. Varela, and J. Stewart</td><td>1993</td><td>The impact of the structure of the connectivity matrix on the dynamics of a simple model for the immune network</td><td>in: E. Mosekilde (Ed.), Computer Simulation in Biology, Ecology and Medicine, Sooc.Computer Simulation, New York, pp.31-45</td></tr>
+                    <tr><td>[120]</td><td>Neuenschwander, S., Martiniere, J. Renault, B. and, Varela, F.</td><td>1993</td><td>A dynamical analisys of oscillatory responses in the optic tectum</td><td>Cognitive Brain Res 1:175-181</td></tr>
+                    <tr><td>[121]</td><td>Varela, F., A. Palacios and T. Goldsmith</td><td>1993</td><td>Color vision of Birds</td><td>in: H.J. Bischoff (Ed.), Bird Vision and Cognition, MIT Press, Cambridge, pp.77-99</td></tr>
+                    <tr><td>[122]</td><td>Dietrich, G., Varela, F. and Kazatchkhine, M.</td><td>1993</td><td>Manipulating the human immune network with IgG</td><td>Europ.J.Immunol. 23:2945-2950</td></tr>
+                    <tr><td>[123]</td><td>Vuong, P., J. Stewart, A. Coutinho and F. Varela</td><td>1994</td><td>The shadow of a doubt: The ethics of AIDS vaccination programs</td><td>Etique N†10, pp.28-38</td></tr>
+                    <tr><td>[124]</td><td>Varela, F.</td><td>1994</td><td>Le bonheur comme savoir-faire</td><td>R.P. Droit (ed.), Où est le bonheur?, Editions le Monde, Paris, pp.306-327</td></tr>
+                    <tr><td>[125]</td><td>Varela, F.</td><td>1994</td><td>A cognitive view of the immune system</td><td>World Futures 42:31-40</td></tr>
+                    <tr><td>[126]</td><td>Varela, F.</td><td>1994</td><td>Sciences cognitives et psychanalyse: Questiones ouvertes</td><td>in: I. Billard (Ed.), Somatisation: Psychanalyse et Sciences du vivant, Editions Eschel, Paris, 1994. • also in: J.Psychanal.Enfant 14:313-326, 1993</td></tr>
+                    <tr><td>[127]</td><td>Varela, F.</td><td>1994</td><td>On defining life</td><td>in: G. Fleischeker and M. Colonna (ed.), Self-reproduction of Supramolecular Structures, Nato ASI Series, Plenum Press, 1994, pp.23-33</td></tr>
+                    <tr><td>[128]</td><td>Bersini, H. and Varela, F.</td><td>1994</td><td>Learning and the Immune network: Reinforcement, recruitment and their applications</td><td>in: G. Patton (Ed.), Biologically Inspired Computation, Chapman and Hill, London, pp.166-192</td></tr>
+                    <tr><td>[129]</td><td>Stewart, J. and F. Varela</td><td>1994</td><td>Cognition without neurons: Adaptation, learning and memory in the immune system</td><td>in: E. Benabou (Ed.), Intelligence Collective, Hermes, Paris, pp.</td></tr>
+                    <tr><td>[130]</td><td>V. Detours, H. Bersini, J. Stewart and F. Varela</td><td>1994</td><td>Development of idiotypic network in shape space</td><td>J.theoret.Biol. 170:401-414</td></tr>
+                    <tr><td>[131]</td><td>Varela, F.</td><td>1995</td><td>The re-enchantment of the concrete</td><td>in: L. Steels and R. Brooks (Eds.), The Artificial Life route to Artificial Intelligence: Building Embodied, Situated Agents, Lawrence Erlbaum Assoc., New Haven, pp.11-20</td></tr>
+                    <tr><td>[133]</td><td>Varela, F.</td><td>1995</td><td>Resonant Cell Assemblies: A new approach to cognitive functions and neuronal synchrony</td><td>Biol.Research 28:81-95</td></tr>
+                    <tr><td>[134]</td><td>Deffuant, T. Fuchs, E. Monneret, P. Bourgine, and F. Varela</td><td>1996</td><td>Semi-algebraic organisms: the morphodynamical network perspective</td><td>Artificial Life 2:157-179</td></tr>
+                    <tr><td>[135]</td><td>Calenbuhr, V., H. Bersini, J. Stewart, and F. Varela</td><td>1995</td><td>Natural tolerance in a small immune network</td><td>J.theoret.Biol. 177:199-213</td></tr>
+                    <tr><td>[136]</td><td>Neuenschwander, S., A. Engel, P. König, W. Singer and F. Varela</td><td>1996</td><td>Synchronization of neuronal responses in the optic tectum of awake pigeons</td><td>Visual Neurosci, 13: 575-584</td></tr>
+                    <tr><td>[137]</td><td>Varela, F.</td><td>1996</td><td>Approches de l'intentionalité: de l'individu aux groupes sociaux</td><td>in: J. Mallet (Ed.), L'Organisation Apprenant: L'Action productrice du sens, Université de Provence, Aix-en-Provence, pp.33-45</td></tr>
+                    <tr><td>[138]</td><td>Müller, J., Neuenschwander, S., Pezard, L. Renault, B., Martinerie, J., and Varela, F.</td><td>1996</td><td>Detecting non-linearities in neuro-electrical signals of synchronous local field potentials</td><td>Physica D 94: 65-91</td></tr>
+                    <tr><td>[139]</td><td>Pezard, L., J.-L. Nandrino, B. Renault, F. El-Massioui, J.-F. Allilaire, J. Müller, F.J. Varela, and J. Martinerie</td><td>1996</td><td>Depression as a dynamical disease</td><td>Biological Psychiatry 39:991-999</td></tr>
+                    <tr><td>[140]</td><td>Pezard, L., Martinerie, J., Müller, J., Varela, F. and B. Renault</td><td>1996</td><td>Multichannel measures of average and localized entropy</td><td>Physica D 96:344-354</td></tr>
+                    <tr><td>[141]</td><td>Varela, F.</td><td>1996</td><td>Neurophenomenology: A Methodological remedy to the hard problem</td><td>J.Consc.Studies 3:330-350. • also in: J. Shear (Ed.), Explaining Consciousness: The Hard Problem of Consciousness, MIT Press, Cambridge, 1997, pp. 337-358. • also in: Pluriverso (Milan), 3:16-40 (1997) (italian)</td></tr>
+                    <tr><td>[142]</td><td>Varela, F.</td><td>1996</td><td>The early days of autopoiesis: Heinz and Chile</td><td>Systems Research 13:407-417</td></tr>
+                    <tr><td>[143]</td><td>Luisi, L., Lazcano, A. and Varela, F.</td><td>1996</td><td>Autopoiesis: the very idea</td><td>in: Defining Life: The central problem in theoretical biology, M. Rizzotti (Ed.), Università de Padova, Padova, pp.146-167</td></tr>
+                    <tr><td>[144]</td><td>M. Le Van Quyen, H. Schuster, and F. Varela</td><td>1996</td><td>Fast rhythms from slow neuronal oscillators</td><td>Int.J.Bifurcation Chaos, 6: 1807-1816</td></tr>
+                    <tr><td>[145]</td><td>V. Calenbuhr, F.J. Varela and H. Bersini</td><td>1996</td><td>Natural tolerance as a function of network connectivity</td><td>Int.J.Bifurcation Chaos, 6: 1691-1702</td></tr>
+                    <tr><td>[146]</td><td>J.P. Lachaux, L. Pezard, Ch. Pelt, L. Garneiro, B. Renault, F. Varela and J. Martinerie</td><td>1997</td><td>Spatial extension of brain activity fools the single-channel reconstruction of EEG dynamics</td><td>Human Brain Mapping 5:26-47</td></tr>
+                    <tr><td>[147]</td><td>Le Van Quyen, M., J. Martinerie, C. Adam, J-Ph. Lachaux, M. Baulac, B. Renault, and F. Varela</td><td>1997</td><td>Temporal patterns in human epileptic activity are modulated by perceptual discriminations</td><td>Neuroreport 8: 1703-1710</td></tr>
+                    <tr><td>[148]</td><td>Pezard, L., Lachaud, J-P, J.-L. Nandrino, C. Adam, L. Garnero, B. Renault, F.J. Varela, and J. Martinerie</td><td>1997</td><td>Local and global entropy quantification in neuronal systems</td><td>J.Technical Physics 38:319-322</td></tr>
+                    <tr><td>[149]</td><td>Varela, F.J.</td><td>1997</td><td>The Body's Self</td><td>in: D. Goleman (Ed.), Health and Emotions, Shambhala, Boston, pp. 49-67 ss</td></tr>
+                    <tr><td>[150]</td><td>Varela, F.</td><td>1997</td><td>Patterns of Life: Intertwining identity and cognition</td><td>Brain Cognition 34:72-87</td></tr>
+                    <tr><td>[151]</td><td>Varela, F.</td><td>1997</td><td>Qu’est-ce que la vie artificielle?</td><td>Pour la Science, No.240, Octobre, pp.10-12</td></tr>
+                    <tr><td>[152]</td><td>McMullin, B. and F.J. Varela</td><td>1997</td><td>Rediscovering computational autopoeisis</td><td>in: P. Husbands and I. Harvey (Eds.), Fourth European Confrence on Artificial Life, MIT Press/ Bradford Books, Cambridge, MA., pp.38-48</td></tr>
+                    <tr><td>[153]</td><td>Varela, F.</td><td>1997</td><td>A science of consciousness as if experience mattered</td><td>In: S. Hameroff, A. Kazniak, and A. Scott (Eds.), Towards the Science of Consciousness: The Second Tucson Discussions and Debates, MIT Press, pp. 31-44</td></tr>
+                    <tr><td>[154]</td><td>Le Van Quyen, M., J. Martinerie, C. Adam, H. Schuster, and F. Varela</td><td>1997</td><td>Unstable periodic orbits in human epileptic acivity</td><td>Physica E 56: 3401-3411</td></tr>
+                    <tr><td>[155]</td><td>Varela, F.</td><td>1997</td><td>The Naturalization of Phenomenology as the Transcendence of Nature: Searching for generative mutual constraints</td><td>Alter : Revue de Phénoménologie N†5 pp.355-385 (Paris)</td></tr>
+                    <tr><td>[156]</td><td>Varela, F.</td><td>1997</td><td>Metaphor to mechanism: Natural to disciplined</td><td>J.Consc.Studies 4:344-346</td></tr>
+                    <tr><td>[157]</td><td>Varela, F.</td><td>1998</td><td>The neurodynamics of retention</td><td>In: J.L. Petit (Ed.), Les Neurosciences et la Philosophie de l'Action, J.Vrin, Paris, pp.231-243</td></tr>
+                    <tr><td>[158]</td><td>Varela, F.</td><td>1998</td><td>Construction du réel et affect: expérience du sujet, performances et narrations</td><td>In: E. Goldbeter-Merinfeld (Ed.), Constructivisme et constructionisme social, De Boeack Université, Brussels, pp.277-282</td></tr>
+                    <tr><td>[159]</td><td>Palacios, A., F.J. Varela, R. Srivastava, and T. Goldsmith</td><td>1998</td><td>Spectral sensitivity of cones of Carassius auratus</td><td>Vision Res. 38:2135-2146</td></tr>
+                    <tr><td>[160]</td><td>M. LeVan Quyen, C. Adam, M. Baulac, J. Martinerie and F. J. Varela</td><td>1998</td><td>Non-linear Interdependences of EEG Signals during intracranial ictal activities</td><td>Brain Research 792:24-40</td></tr>
+                    <tr><td>[161]</td><td>J. Martinerie, C. Adam, M. Le van Quyen, M. Baulac, B. Renault and F. J. Varela</td><td>1998</td><td>Epileptic crisis can be anticipated by non-linear analysis</td><td>Nature Medicine 4:1173-1176</td></tr>
+                    <tr><td>[162]</td><td>L. Pezard, J. Martinerie, F.J. Varela, F. Bouchet, D. Guez, Ch. Derousné and B. Renault</td><td>1998</td><td>Entropy maps characterize drug effects on brain dynamics in Alzheimer's disease</td><td>Neuroscience Lett. 253:5-8</td></tr>
+                    <tr><td>[163]</td><td>F.J. Varela and J. Shear</td><td>1999</td><td>First-person methodologies: why, when and how</td><td>J.Consc.Studies 6(2-3):1-14 1999</td></tr>
+                    <tr><td>[164]</td><td>F.J. Varela</td><td>1999</td><td>Present-time consciousness</td><td>J.Consc.Studies 6(2-3):111-140</td></tr>
+                    <tr><td>[165]</td><td>E. Rodriguez, N. George, J.P. Lachaux, J. Martinerie, B. Renault and F. Varela</td><td>1999</td><td>Perception's shadow: Long-distance synchronization in the human brain</td><td>Nature 397:340-343</td></tr>
+                    <tr><td>[166]</td><td>F. Varela and P. Vermersch</td><td>1999</td><td>Fully embodying the personal level</td><td>Beh.Brain Sci. (Commentary) 21:777-778</td></tr>
+                    <tr><td>[167]</td><td>Le van Quyen, M., Martinerie. J., Adam, C., Varela F.</td><td>1999</td><td>Nonlinear spatio-temporal interdependences of interictal intracranial EEG recordings from patients with temporal lobe epilepsy: Localizing epileptogenic foci</td><td>Physica D 127:250-266</td></tr>
+                    <tr><td>[168]</td><td>Varela, F.</td><td>1999</td><td>The specious present: The neurophenomenology of time consciousness</td><td>in: J. Petitot, F.J. Varela, B. Pachoud and J.M. Roy (Eds.), Naturalizing Phenomenology, Stanford University Press, pp. 266-314. • condensed version: Present-time consciousness, J.Consc. Studies Studies 6 (2-3):111-140, (1999)</td></tr>
+                    <tr><td>[169]</td><td>Varela, F.</td><td>1999</td><td>Steps to a science of Interbeing: Unfolding the Dharma implicit in modern Cognitive Science</td><td>In: S. Bachelor, G. Claxton and G. Watson (eds.), The Psychology of Awakening: Buddhism, Science and Our Day to Day Lives, Rider/Randon House, pp.71-89. • revised version in: Envisioning Knowledge, B. Wiens (Ed.), Dumont, Cologne, 1999. • french translation: Theorie, Littérature, Enseignement, No.17, pp.7-21, 1999. • italian: Argonauti de la Noosphera, Centro Piu Manzu (in press)</td></tr>
+                    <tr><td>[170]</td><td>Varela, F.</td><td>1999</td><td>Introduction: Why dynamics? Because it tackles real issues</td><td>In: W. Tschacher and J.P. Dauwalder (Eds.), Dynamics, Synergetics Autonomous Agents, World Scientific, Singapore, pp.xiii-xiv</td></tr>
+                    <tr><td>[171]</td><td>F. Varela</td><td>1999</td><td>A dimly perceived horizon: The complex meeting ground between lived and physical time</td><td>Ann. N.Y. Acad. Sciences 879:143-154</td></tr>
+                    <tr><td>[172]</td><td>M. Le van Quyen, J. Martinerie, M. Baulac, and F. Varela</td><td>1999</td><td>Anticipation of epileptic seizures in real time by a nonlinear similarity measure in human intracortical recordings</td><td>Neuroreport 10:2149-2155</td></tr>
+                    <tr><td>[173]</td><td>F. Varela</td><td>1999</td><td>Dasein's Brain: Phenomenology meets Cognitive Science</td><td>in: D. Aerts (Ed.), Einstein Meets Magritte: The White Book, Kluwer Academic Publishers, Dordrecht, pp. 185-197</td></tr>
+                    <tr><td>[174]</td><td>F. Varela</td><td>1999</td><td>"Cognition et Sciences cognitives"</td><td>in: D. Lecourt (Ed.), Dictionnaire d'Histoire et de Philosophie des Sciences, Presses Universitaires de France, pp.185-191</td></tr>
+                    <tr><td>[175]</td><td>C. Adam, M. Le van Quyen, J. Martinerie, S. Clemenceau, M. Baulac, B. Renault and F. Varela</td><td>1999</td><td>Interactions entre réseau épileptique et fonctionnement cérébral: approche par analyse non-lineaire de l'EEG intracrânien</td><td>Revue Neurologique 155:489-494</td></tr>
+                    <tr><td>[176]</td><td>J.P. Lachaux, E. Rodriguez, J. Martinerie and F. Varela</td><td>1999</td><td>Measuring phase-synchrony in brain signals</td><td>Human Brain Map. 8: 194-208</td></tr>
+                    <tr><td>[177]</td><td>J.M. Roy, J. Petitot, B. Pachoud and, F.J. Varela</td><td>1999</td><td>Beyond the gap. An introduction to naturalizing phenomenology</td><td>in: J. Petitot, F.J. Varela, B. Pachoud and J.M. Roy (Eds.), Naturalizing Phenomenology, Stanford University Press, pp.1-83</td></tr>
+                    <tr><td>[178]</td><td>Thompson, E. and F. Varela</td><td>1999</td><td>Autopoiesis and Lifelines: The importance of origins</td><td>Beh.Brain Sciences 22:909-910</td></tr>
+                    <tr><td>[179]</td><td>M. Le van Quyen, J. Martinerie and F. Varela</td><td>1999</td><td>Spatio-temporal dynamics of epileptopgenic networks</td><td>In: Peter Grassberger and Klaus Lehnertz (Eds.), Chaos in the Brain?, pp. 86-96, World Scientific, 1999</td></tr>
+                    <tr><td>[180]</td><td>M. Baulac, M. Le van Quyen, J. Martinerie, S. Clemenceau, C. Adam and F. Varela</td><td>1999</td><td>Pre-ictal changes of the EGG dynamics in epileptic patients: clinical and neurobiological implications</td><td>In: Peter Grassberger and Klaus Lehnertz (Eds.), Chaos in the Brain?, pp.77-86, World Scientific, 1999</td></tr>
+                    <tr><td>[181]</td><td>Varela, F.</td><td>2000</td><td>Synchronisation neuronal et fonctions cognitives</td><td>In: B. Feltz, M. Crommelinck, and Ph. Goujon (Eds.), Auto-organisation et Emergence dans les sciences de la vie, Ousia, Bruxelles, pp.310-330</td></tr>
+                    <tr><td>[182]</td><td>M. Le van Quyen, J. Martinerie, C. Adam, S. Clemenceau, M. Baulac, and F. Varela</td><td>2000</td><td>Non-linear analysis of long-term EEG spatio-temporal dynamics in human tempoal lobe epilepsy</td><td>Europ.J.Neuroscien.</td></tr>
+                    <tr><td>[183]</td><td>J.P. Lachaux, E. Rodriguez, J. Martinerie, C. Adam, D. Hasboun and F. Varela</td><td>2000</td><td>Gamma-band activity in human intracortical recordings triggered by cognitive tasks</td><td>Europ.J.Neuroscience 12:1-15</td></tr>
+                    <tr><td>[184]</td><td>F. Varela and N. Depraz</td><td>2000</td><td>At the source of time: Valance and the constitutional dynamics of affect</td><td>in: Ipseity and Alterity, Arob@se: An electronic journal, http://www.liane.net/arobase</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Contenedor para los Papers en Iframes -->
+        <div class="paper-container" id="paper-container">
+            <h3>View Papers</h3>
+            <iframe class="paper-iframe" id="paper-101" src="[URL-Paper-101]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-102" src="[URL-Paper-102]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-103" src="[URL-Paper-103]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-104" src="[URL-Paper-104]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-105" src="[URL-Paper-105]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-106" src="[URL-Paper-106]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-107" src="[URL-Paper-107]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-108" src="[URL-Paper-108]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-109" src="[URL-Paper-109]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-110" src="[URL-Paper-110]" frameborder="0"></iframe>
+            <!-- Extend this pattern up to [184] as needed -->
+        </div>
+
+        <!-- Sección Acerca de -->
+        <div class="about-container" id="contacto">
+            <h3>Acerca de</h3>
+            <p>Curated by leolib. Data compiled as of March 19, 2025.</p>
+        </div>
+    </div>
+
+    <!-- Script para filtrar la tabla y mostrar iframes -->
+    <script>
+        function filterTable() {
+            const input = document.getElementById('search').value.toLowerCase();
+            const table = document.getElementById('data-table');
+            const rows = table.getElementsByTagName('tr');
+            const paperContainer = document.getElementById('paper-container');
+            const iframes = document.getElementsByClassName('paper-iframe');
+            let selectedPaper = null;
+
+            // Filtrar la tabla
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                let match = false;
+                const refNumber = cells[0].textContent.toLowerCase();
+
+                for (let j = 0; j < cells.length; j++) {
+                    const cellText = cells[j].textContent.toLowerCase();
+                    if (cellText.includes(input)) {
+                        match = true;
+                        if (!selectedPaper && j === 0) {
+                            selectedPaper = refNumber.replace('[', '').replace(']', '');
+                        }
+                        break;
+                    }
+                }
+                rows[i].style.display = match ? '' : 'none';
+            }
+
+            // Ocultar todos los iframes
+            for (let iframe of iframes) {
+                iframe.style.display = 'none';
+            }
+
+            // Mostrar el iframe correspondiente al paper filtrado
+            if (selectedPaper) {
+                const iframeId = `paper-${selectedPaper}`;
+                const selectedIframe = document.getElementById(iframeId);
+                if (selectedIframe) {
+                    selectedIframe.style.display = 'block';
+                    paperContainer.style.display = 'block';
+                } else {
+                    paperContainer.style.display = 'none';
+                }
+            } else {
+                paperContainer.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

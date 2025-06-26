@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autopoiesis: La Organización de los Sistemas Vivos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+            font-family: 'Orbitron', sans-serif;
+            color: #00FF00; /* Verde neón cyberpunk */
+            background: linear-gradient(135deg, #000000, #090909); /* Fondo de ProtGPT2 */
+        }
+        canvas#bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        svg#network {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            opacity: 0.7;
+        }
+
+        /* Highlight para títulos */
+        .highlight {
+            color: #00FFFF; /* Cian neón */
+            font-weight: 700;
+            text-shadow: 0 0 8px #00FFFF;
+            background: rgba(0, 255, 255, 0.1);
+            padding: 0.1rem 0.3rem;
+            border-radius: 3px;
+        }
+        sup {
+            font-size: 0.8em;
+            color: #00FFFF; /* Cian neón */
+        }
+
+        /* Encabezado */
+        header {
+            margin: 2rem auto;
+            max-width: 1000px;
+            padding: 1.5rem;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.85); /* Negro cyberpunk */
+            border: 1px solid #00FFFF; /* Borde cian */
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5); /* Sombra cian */
+            position: relative;
+            z-index: 10;
+        }
+        header h1 {
+            font-size: 2.5rem;
+            color: #00FFFF; /* Cian neón */
+            text-shadow: 0 0 12px #00FF00; /* Sombra verde */
+            margin-bottom: 0.5rem;
+        }
+        header p {
+            font-size: 0.9rem;
+            color: #00FF00; /* Verde neón */
+            text-shadow: 0 0 5px #00FF00;
+        }
+
+        /* Contenedor Principal */
+        .section-container {
+            max-width: 1000px;
+            margin: 3rem auto;
+            padding: 0 1rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Acordeones */
+        .accordion {
+            background: rgba(0, 0, 0, 0.9); /* Negro cyberpunk */
+            border: 1px solid #00FFFF; /* Borde cian */
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 12px rgba(0, 255, 255, 0.3); /* Sombra cian */
+            transition: box-shadow 0.3s ease;
+        }
+        .accordion:hover {
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); /* Sombra cian más intensa */
+        }
+        .accordion-header {
+            padding: 1rem 1.2rem;
+            background: rgba(0, 255, 255, 0.05); /* Fondo cian tenue */
+            color: #00FF00; /* Verde neón */
+            font-size: 1.3rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-shadow: 0 0 6px #00FF00; /* Sombra verde */
+            transition: background 0.3s ease;
+        }
+        .accordion-header:hover {
+            background: rgba(0, 255, 255, 0.15); /* Hover cian más intenso */
+        }
+        .accordion-header span {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+        .accordion-header.active span {
+            transform: rotate(180deg);
+        }
+        .accordion-content {
+            max-height: 0;
+            padding: 0 1.2rem;
+            color: #00FF00; /* Verde neón */
+            background: rgba(0, 0, 0, 0.95); /* Negro cyberpunk */
+            overflow-y: auto;
+            transition: max-height 0.5s ease, padding 0.5s ease;
+        }
+        .accordion-content.active {
+            max-height: 600px;
+            padding: 1.2rem;
+        }
+        .accordion-content p {
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+        .accordion-content::-webkit-scrollbar {
+            width: 5px;
+        }
+        .accordion-content::-webkit-scrollbar-thumb {
+            background: #00FFFF; /* Cian neón */
+            border-radius: 3px;
+        }
+        .accordion-content::-webkit-scrollbar-track {
+            background: rgba(0, 255, 255, 0.1); /* Cian tenue */
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.9); /* Negro cyberpunk */
+            color: #00FFFF; /* Cian neón */
+            border-top: 1px solid #00FF00; /* Borde verde */
+            text-shadow: 0 0 5px #00FFFF; /* Sombra cian */
+            font-size: 0.8rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Simulación */
+        button {
+            background: rgba(0, 255, 255, 0.1); /* Fondo cian tenue */
+            border: 1px solid #00FFFF; /* Borde cian */
+            color: #00FF00; /* Verde neón */
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #00FFFF; /* Cian neón */
+            color: #000000;
+            box-shadow: 0 0 12px #00FFFF; /* Sombra cian */
+        }
+        input[type="range"] {
+            width: 100%;
+            accent-color: #00FFFF; /* Cian neón */
+        }
+        #visualization {
+            width: 100%;
+            height: 300px;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.9); /* Negro cyberpunk */
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); /* Sombra cian */
+        }
+        .circle-substrate { fill: #00FF00; } /* Verde neón */
+        .circle-enzyme { fill: #FF00FF; } /* Magenta neón */
+        .circle-link { fill: #00FFFF; } /* Cian neón */
+
+        /* Media Queries */
+        @media (max-width: 768px) {
+            header { margin: 1.5rem auto; padding: 1rem; }
+            header h1 { font-size: 2rem; }
+            header p { font-size: 0.85rem; }
+            .section-container { padding: 0 0.8rem; margin: 2rem auto; }
+            .accordion-header { font-size: 1.1rem; padding: 0.8rem 1rem; }
+            .accordion-content.active { max-height: 500px; padding: 1rem; }
+            .accordion-content p { font-size: 0.9rem; }
+            #visualization { height: 250px; }
+        }
+        @media (max-width: 480px) {
+            header { margin: 1rem auto; padding: 0.8rem; }
+            header h1 { font-size: 1.6rem; }
+            header p { font-size: 0.75rem; }
+            .section-container { padding: 0 0.5rem; }
+            .accordion-header { font-size: 0.95rem; padding: 0.6rem 0.8rem; }
+            .accordion-header span { font-size: 1rem; }
+            .accordion-content.active { max-height: 400px; padding: 0.8rem; }
+            .accordion-content p { font-size: 0.85rem; line-height: 1.5; }
+            footer { padding: 0.8rem; font-size: 0.7rem; }
+            #visualization { height: 200px; }
+            button { padding: 5px 10px; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg"></canvas>
+    <svg id="network"></svg>
+
+    <header>
+        <h1>Autopoiesis: La Organización de los Sistemas Vivos, su Caracterización y un Modelo</h1>
+        <p>Autores: F.G. Varela, H.R. Maturana, R. Uribe</p>
+        <p>Publicado: 1974 | BioSystems 5, 187-196 | North-Holland Publishing Company</p>
+    </header>
+
+    <div class="section-container">
+        <div class="accordion">
+            <div class="accordion-header" data-target="introduccion">Introducción <span>▼</span></div>
+            <div class="accordion-content" id="introduccion">
+                <p>A pesar de la diversidad de los <span class="highlight">sistemas vivos</span>, todos comparten una <span class="highlight">organización común</span> que reconocemos implícitamente al denominarlos "vivos". Sin embargo, la <span class="highlight">biología contemporánea</span>, con su enfoque en aspectos <span class="highlight">moleculares</span>, <span class="highlight">genéticos</span> y <span class="highlight">evolutivos</span>, ha priorizado componentes aislados, como considerar la <span class="highlight">reproducción</span> como una característica esencial de la vida. Esto ha llevado a una confusión entre procesos dependientes de la <span class="highlight">historia</span> (<span class="highlight">evolución</span>, <span class="highlight">ontogénesis</span>) y procesos independientes de la historia (<span class="highlight">organización individual</span>). Por ejemplo, al centrarse en cómo se reproducen los organismos, se ha descuidado la pregunta fundamental sobre qué hace que un sistema sea una <span class="highlight">unidad viva autónoma</span>, con o sin reproducción.</p>
+                <p>Nosotros afirmamos que ni la <span class="highlight">reproducción</span> ni la <span class="highlight">evolución</span> son rasgos constitutivos de la <span class="highlight">organización viva</span>. En lugar de preguntar "¿Cuáles son las propiedades necesarias de los componentes para hacer posible un sistema vivo?", planteamos: "¿Cuál es la <span class="highlight">organización necesaria y suficiente</span> para que un sistema sea una <span class="highlight">unidad viva</span>?" Es decir, no buscamos explicar qué hace que un sistema vivo se reproduzca, sino cuál es la <span class="highlight">organización</span> que se reproduce cuando un sistema vivo da origen a otra unidad viva. Este enfoque nos lleva a especificar una organización que trasciende las propiedades individuales de los <span class="highlight">componentes</span> y se centra en la <span class="highlight">red de interacciones</span> que constituyen al sistema como un todo.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" data-target="organizacion">Organización <span>▼</span></div>
+            <div class="accordion-content" id="organizacion">
+                <p>Toda <span class="highlight">unidad</span> puede ser tratada como un todo indivisible con <span class="highlight">propiedades constitutivas</span> que la definen, o como un <span class="highlight">sistema complejo</span> que se realiza como unidad a través de sus <span class="highlight">componentes</span> y sus <span class="highlight">relaciones mutuas</span>. En este último caso, un sistema complejo se define como una unidad por las <span class="highlight">relaciones</span> entre sus componentes que lo realizan como un todo, no por las propiedades particulares de estos componentes. Estas relaciones son las que constituyen la <span class="highlight">organización</span> del sistema.</p>
+                <p>Por ejemplo, un <span class="highlight">reloj</span> es una unidad definida por cómo sus <span class="highlight">engranajes</span> interactúan, no solo por el metal de los engranajes en sí. La misma organización puede realizarse en diferentes sistemas con componentes distintos, siempre que estos tengan las <span class="highlight">propiedades necesarias</span> para mantener las <span class="highlight">relaciones requeridas</span>. Así, sistemas con la misma organización forman una <span class="highlight">clase</span>, aunque sus componentes físicos o químicos sean diferentes. Esta distinción es crucial para entender que la <span class="highlight">organización de un sistema vivo</span> no depende de la naturaleza específica de sus <span class="highlight">moléculas</span>, sino de cómo estas se relacionan para formar un <span class="highlight">todo coherente</span>.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" data-target="org-autopoietica">Organización Autopoiética <span>▼</span></div>
+            <div class="accordion-content" id="org-autopoietica">
+                <p>La <span class="highlight">organización autopoiética</span> se define como una <span class="highlight">unidad</span> por una <span class="highlight">red de producciones</span> de <span class="highlight">componentes</span> que: (i) participan <span class="highlight">recursivamente</span> en la misma red que los produjo, y (ii) realizan esa red como una unidad en el <span class="highlight">espacio</span> donde existen los componentes. Un ejemplo claro es una <span class="highlight">célula</span>: es una red de <span class="highlight">reacciones químicas</span> que producen <span class="highlight">moléculas</span>, las cuales, a través de sus <span class="highlight">interacciones</span>, generan y sostienen la misma red de reacciones que las creó, mientras mantienen a la célula como una <span class="highlight">unidad material</span> separable del <span class="highlight">entorno</span>.</p>
+                <p>Esta red opera bajo un <span class="highlight">recambio constante</span> de materia: los componentes se <span class="highlight">degradan</span> y son <span class="highlight">reemplazados</span>, pero la <span class="highlight">organización</span> permanece <span class="highlight">invariante</span> mientras la célula existe. Si las relaciones entre los componentes se interrumpen, la célula se <span class="highlight">desintegra</span>. La <span class="highlight">autopoiesis</span>, por tanto, no depende de la forma específica o de los detalles químicos de las reacciones, sino de la <span class="highlight">capacidad de la red</span> para <span class="highlight">autorregenerarse</span> y mantenerse como una <span class="highlight">entidad distinta</span> en su entorno físico.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" data-target="autopoiesis-alopoiesis">Autopoiesis y Alopoiesis <span>▼</span></div>
+            <div class="accordion-content" id="autopoiesis-alopoiesis">
+                <p>Los <span class="highlight">sistemas autopoiéticos</span>, que exhiben la <span class="highlight">organización</span> descrita, son <span class="highlight">autónomos</span>: el producto de su operación es el <span class="highlight">sistema mismo</span>. Mientras existe un sistema autopoiético, su organización permanece <span class="highlight">invariante</span>; si la <span class="highlight">red de producciones</span> se interrumpe, la <span class="highlight">unidad</span> se descompone. Estos sistemas tienen un <span class="highlight">dominio de compensación</span> frente a <span class="highlight">perturbaciones externas</span>, manteniendo su unidad a través de la realización continua de su <span class="highlight">autopoiesis</span>.</p>
+                <p>En contraste, los <span class="highlight">sistemas alopoiéticos</span> son aquellos cuya organización no produce los <span class="highlight">componentes</span> que los realizan como un todo; el producto de su operación es <span class="highlight">diferente</span> de ellos mismos. Por ejemplo, un <span class="highlight">ribosoma</span>, aunque contiene componentes producidos por ribosomas, es generado por <span class="highlight">procesos externos</span> a su propia operación, como la <span class="highlight">maquinaria celular</span> más amplia. Los sistemas alopoiéticos son <span class="highlight">no autónomos</span>, ya que su existencia depende de procesos que no forman parte de su organización. Esta <span class="highlight">distinción</span> resalta que la <span class="highlight">autonomía</span> es una característica exclusiva de la autopoiesis, diferenciándola de otros <span class="highlight">sistemas mecanicistas</span>.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" data-target="org-viva">Autopoiesis: La Organización Viva <span>▼</span></div>
+            <div class="accordion-content" id="org-viva">
+                <p>La <span class="highlight">evidencia biológica</span> actual demuestra que los <span class="highlight">sistemas vivos</span> pertenecen a la <span class="highlight">clase</span> de sistemas <span class="highlight">autopoiéticos</span>. Para probar que la <span class="highlight">autopoiesis</span> es la <span class="highlight">organización viva</span>, basta con mostrar que un sistema autopoiético exhibe la <span class="highlight">fenomenología</span> de un sistema vivo, lo cual se ha argumentado previamente <sup>[4]</sup>. Aquí, la <span class="highlight">reproducción</span> no es un requisito de la organización viva: para que haya reproducción, primero debe existir una <span class="highlight">unidad</span> que se reproduzca. La unidad es <span class="highlight">lógicamente</span> y <span class="highlight">operativamente anterior</span> a su reproducción.</p>
+                <p>En los sistemas vivos, la <span class="highlight">reproducción</span> ocurre dentro del proceso de <span class="highlight">autopoiesis</span>: una nueva unidad surge como <span class="highlight">fragmentación</span> de una unidad existente, llevando consigo la misma <span class="highlight">red autopoiética</span>. Por ejemplo, la <span class="highlight">división celular</span> implica una distribución de la autopoiesis que asegura que los fragmentos mantengan la <span class="highlight">organización original</span>. Aunque la <span class="highlight">autorreproducción</span> no es esencial para la organización viva, en los sistemas vivos que conocemos es una <span class="highlight">condición necesaria</span> para la <span class="highlight">evolución</span>, ya que permite la generación de una <span class="highlight">red histórica</span> de unidades autopoiéticas sucesivas, no necesariamente idénticas, lo que da lugar a la <span class="highlight">diversidad biológica</span> observada.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" data-target="modelo">Un Caso Mínimo: El Modelo <span>▼</span></div>
+            <div class="accordion-content" id="modelo">
+                <p>Presentamos un <span class="highlight">modelo computacional</span> bidimensional que encarna la <span class="highlight">organización autopoiética</span> de manera simple. En un universo en <span class="highlight">cuadrícula</span>, elementos "<span class="highlight">sustrato</span>" (O) y pocos "<span class="highlight">catalizadores</span>" (*) se mueven aleatoriamente. Las <span class="highlight">interacciones</span> producen "<span class="highlight">enlaces</span>" (©) según: [1] * + 2O → © (<span class="highlight">producción</span>), [2] © + © → -©- (<span class="highlight">unión</span>), y [3] © → 2O (<span class="highlight">desintegración</span>). Los enlaces pueden formar <span class="highlight">cadenas</span> que, al cerrarse alrededor de un *, crean una <span class="highlight">unidad autopoiética</span>.</p>
+                <p>En la <span class="highlight">simulación</span> (Figs. 1-2), una cadena de © encierra un *, y los © producidos dentro <span class="highlight">reemplazan</span> los que se desintegran, manteniendo la unidad bajo un <span class="highlight">recambio continuo</span> de componentes. Este sistema no se define por <span class="highlight">relaciones espaciales fijas</span> (como un cristal), sino por la <span class="highlight">dinámica</span> de sus procesos. El modelo muestra cómo la autopoiesis puede surgir <span class="highlight">espontáneamente</span> y permite estudiar sus <span class="highlight">propiedades</span> en un caso más simple que cualquier sistema vivo conocido, además de ofrecer una base para desarrollar <span class="highlight">herramientas formales</span> de análisis y síntesis de sistemas autopoiéticos.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" data-target="simulacion">Simulación <span>▼</span></div>
+            <div class="accordion-content" id="simulacion">
+                <p>A continuación, se presenta una <span class="highlight">simulación interactiva</span> del <span class="highlight">modelo de autopoiesis</span> descrito. Los <span class="highlight">sustratos</span> (verde) se mueven aleatoriamente, los <span class="highlight">catalizadores/enzimas</span> (magenta) convierten sustratos en <span class="highlight">enlaces</span> (cian), y los enlaces pueden <span class="highlight">desintegrarse</span> de nuevo en sustratos, reflejando el <span class="highlight">equilibrio dinámico</span> de la <span class="highlight">autopoiesis</span>.</p>
+                <div id="visualization"></div>
+                <p><span class="highlight">Controles:</span></p>
+                <p>Enzimas: <span id="enzymeCountValue">10</span></p>
+                <input type="range" id="enzymeCount" min="1" max="50" value="10">
+                <p>Velocidad de Sustrato (μm/s): <span id="substrateSpeedValue">5</span></p>
+                <input type="range" id="substrateSpeed" min="1" max="10" value="5">
+                <p>Tasa de Decaimiento (s⁻¹): <span id="decayRateValue">0.001</span></p>
+                <input type="range" id="decayRate" min="0" max="0.01" step="0.0001" value="0.001">
+                <p>Estado: <span id="status">Sustratos: 0, Enlaces: 0, Enzimas: 0</span></p>
+                <button onclick="resetSimulation()">Reiniciar</button>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" data-target="teselacion">Teselación y Moléculas <span>▼</span></div>
+            <div class="accordion-content" id="teselacion">
+                <p>El modelo se inspira en los <span class="highlight">autómatas de teselación</span> <sup>[5]</sup><sup>[3]</sup>, generalizando situaciones físicas. Define un <span class="highlight">espacio</span> donde <span class="highlight">componentes distinguibles</span> interactúan, similar al <span class="highlight">dominio molecular</span> donde ocurre la <span class="highlight">autopoiesis biológica</span>. En nuestro caso, el espacio físico se reemplaza por una <span class="highlight">cuadrícula bidimensional</span> y las <span class="highlight">moléculas</span> por entidades con <span class="highlight">propiedades específicas</span> (<span class="highlight">especificidad de interacción</span>, <span class="highlight">unión</span>, <span class="highlight">movilidad</span>, <span class="highlight">descomposición</span>).</p>
+                <p>Estas propiedades son <span class="highlight">indispensables</span> para la autopoiesis: la unidad requiere una <span class="highlight">frontera dinámica</span> que ella misma produce y que, a su vez, sostiene las <span class="highlight">condiciones</span> para esa producción. Esto sugiere que en el ámbito molecular, sistemas como <span class="highlight">liposomas</span> o <span class="highlight">microesferas</span> <sup>[1]</sup><sup>[2]</sup> podrían ser autopoiéticos si sus <span class="highlight">componentes de membrana</span> fueran producidos por <span class="highlight">reacciones internas</span> dependientes de la propia membrana. Aunque no se han realizado <span class="highlight">experimentos específicos</span>, este enfoque ofrece <span class="highlight">claves</span> para sintetizar <span class="highlight">autopoiesis molecular</span> y explorar los <span class="highlight">orígenes de la vida</span>.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" data-target="resumen">Resumen <span>▼</span></div>
+            <div class="accordion-content" id="resumen">
+                <p>Los <span class="highlight">sistemas autopoiéticos</span> son sistemas <span class="highlight">mecanicistas</span> definidos como <span class="highlight">unidades</span> por una <span class="highlight">organización</span> que los hace <span class="highlight">producirse a sí mismos</span>. Su <span class="highlight">fenomenología</span> es la <span class="highlight">autonomía</span>: todos los <span class="highlight">cambios de estado</span> que no los desintegran perpetúan la <span class="highlight">autopoiesis</span>. Surgen <span class="highlight">espontáneamente</span> de <span class="highlight">interacciones</span> entre elementos independientes que forman una <span class="highlight">red de producciones</span> contigua. Las <span class="highlight">propiedades de los componentes</span> no determinan las <span class="highlight">propiedades de la unidad</span>; estas emergen de la red creada por y que crea a los componentes. Ningún componente o propiedad es intrínsecamente más "<span class="highlight">esencial</span>"; todos son <span class="highlight">necesarios</span> en el contexto de la red autopoiética, sin que ninguno sea <span class="highlight">determinante</span> por sí solo.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" data-target="clave">Clave <span>▼</span></div>
+            <div class="accordion-content" id="clave">
+                <p>Proponemos una <span class="highlight">clave de seis pasos</span> para determinar si una <span class="highlight">unidad</span> es <span class="highlight">autopoiética</span>: (1) ¿Tiene <span class="highlight">fronteras identificables</span> mediante interacciones? (2) ¿Posee <span class="highlight">componentes constitutivos</span> describibles? (3) ¿Es un <span class="highlight">sistema mecanista</span> donde los componentes satisfacen <span class="highlight">relaciones específicas</span>? (4) ¿Las fronteras surgen de <span class="highlight">interacciones preferenciales</span> entre los componentes? (5) ¿Los componentes de las fronteras son <span class="highlight">producidos</span> por interacciones dentro de la unidad? (6) ¿Todos los demás componentes son producidos por la unidad o son <span class="highlight">esenciales</span> para producir otros componentes? Si todas las respuestas son afirmativas, la unidad es autopoiética en el <span class="highlight">espacio</span> de sus componentes.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" data-target="agradecimientos">Agradecimientos <span>▼</span></div>
+            <div class="accordion-content" id="agradecimientos">
+                <p>Los autores expresan su <span class="highlight">gratitud</span> a los miembros del <span class="highlight">Laboratorio de Computación Biológica</span> de la Universidad de Illinois, Urbana, en particular a Richard Howe, Heinz Von Foerster, Paul E. Weston y Kenneth L. Wilson, por su <span class="highlight">aliento continuo</span>, <span class="highlight">discusiones valiosas</span> y ayuda en la <span class="highlight">clarificación</span> y <span class="highlight">refinamiento</span> de las ideas presentadas en este trabajo.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" data-target="referencias">Referencias <span>▼</span></div>
+            <div class="accordion-content" id="referencias">
+                <p>
+                    [1] Bangham, D.D., 1968, <span class="highlight">Membrane models with phospholipids</span>, Progr. Biophys. Mol. Biol., 18, 29.<br>
+                    [2] Fox, S., 1965, <span class="highlight">A theory of macromolecular and cellular origins</span>, Nature, 205, 328.<br>
+                    [3] Gardner, M., 1971, <span class="highlight">On cellular automata, self-reproduction, the Garden of Eden, and the game 'life'</span>, Sci. Amer., 224(2), 112.<br>
+                    [4] Maturana, H.R. y Varela, F.G., 1973, <span class="highlight">De máquinas y seres vivos</span>, Editorial Universitaria, Santiago.<br>
+                    [5] von Neumann, J., 1966, <span class="highlight">The theory of self-reproducing automata</span>, ed. A. Burks, University of Illinois Press, Urbana.
+                </p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" data-target="apendice">Apéndice <span>▼</span></div>
+            <div class="accordion-content" id="apendice">
+                <p>El modelo usa una <span class="highlight">cuadrícula rectangular</span> con <span class="highlight">sustrato</span> (S), <span class="highlight">catalizadores</span> (K), <span class="highlight">enlaces</span> (L) y <span class="highlight">enlaces unidos</span> (BL). El <span class="highlight">algoritmo</span> tiene dos fases: <span class="highlight">movimiento</span> y <span class="highlight">producción/desintegración</span>. <strong>Movimiento:</strong> S, L y K se mueven según "<span class="highlight">masa</span>" (K > L > S); S solo entra en huecos, L y K desplazan S, pero no atraviesan BL. <strong>Producción:</strong> K cerca de dos S produce un L, dejando un hueco. <strong>Desintegración:</strong> Cada L tiene una <span class="highlight">probabilidad uniforme</span> (Pd < 0.01) de descomponerse en 2S. <strong>Unión:</strong> L libres se unen a otros L o BL, evitando ángulos < 90° (Figs. 3-4). Esto asegura la formación de <span class="highlight">estructuras viables</span> que encierran a K, simulando <span class="highlight">autopoiesis</span>.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 1974 North-Holland Publishing Company. Publicado en BioSystems 5, 187-196.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        // Three.js Background - Particle System (con colores cyberpunk)
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg'), alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        const geometry = new THREE.SphereGeometry(0.1, 32, 32);
+        const material = new THREE.MeshBasicMaterial({ color: 0x00FFFF }); /* Cian neón */
+        const particles = [];
+        for (let i = 0; i < 100; i++) {
+            const particle = new THREE.Mesh(geometry, material);
+            particle.position.set(
+                Math.random() * 100 - 50,
+                Math.random() * 100 - 50,
+                Math.random() * 100 - 50
+            );
+            scene.add(particle);
+            particles.push(particle);
+        }
+        camera.position.z = 50;
+
+        function animateParticles() {
+            requestAnimationFrame(animateParticles);
+            particles.forEach(p => {
+                p.position.x += Math.sin(Date.now() * 0.001 + p.position.y) * 0.02;
+                p.position.y += Math.cos(Date.now() * 0.001 + p.position.z) * 0.02;
+            });
+            renderer.render(scene, camera);
+        }
+        animateParticles();
+
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+
+        // D3.js Network - Giant Full-Screen with Strong Repulsion (con celeste neón)
+        const svgNetwork = d3.select("#network")
+            .attr("width", window.innerWidth)
+            .attr("height", window.innerHeight);
+
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        const nodes = d3.range(100).map(() => ({
+            x: Math.random() * width,
+            y: Math.random() * height
+        }));
+
+        const links = [];
+        for (let i = 0; i < nodes.length; i++) {
+            for (let j = i + 1; j < nodes.length; j++) {
+                if (Math.random() > 0.9) {
+                    links.push({ source: i, target: j });
+                }
+            }
+        }
+
+        const simulationNetwork = d3.forceSimulation(nodes)
+            .force("link", d3.forceLink(links).distance(200))
+            .force("charge", d3.forceManyBody().strength(-200))
+            .force("center", d3.forceCenter(width / 2, height / 2).strength(0.05))
+            .force("x", d3.forceX(width / 2).strength(0.05))
+            .force("y", d3.forceY(height / 2).strength(0.05));
+
+        const link = svgNetwork.append("g")
+            .selectAll("line")
+            .data(links)
+            .enter().append("line")
+            .attr("stroke", "#00FF00") /* Verde neón */
+            .attr("stroke-width", 1.5);
+
+        const node = svgNetwork.append("g")
+            .selectAll("circle")
+            .data(nodes)
+            .enter().append("circle")
+            .attr("r", 8)
+            .attr("fill", "#00CCFF") /* Celeste neón */
+            .attr("stroke", "#00FFFF") /* Borde cian */
+            .attr("stroke-width", 1);
+
+        simulationNetwork.on("tick", () => {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+            node
+                .attr("cx", d => Math.max(8, Math.min(width - 8, d.x)))
+                .attr("cy", d => Math.max(8, Math.min(height - 8, d.y)));
+        });
+
+        window.addEventListener('resize', () => {
+            const newWidth = window.innerWidth;
+            const newHeight = window.innerHeight;
+            svgNetwork.attr("width", newWidth).attr("height", newHeight);
+            simulationNetwork.force("center", d3.forceCenter(newWidth / 2, newHeight / 2).strength(0.05))
+                .force("x", d3.forceX(newWidth / 2).strength(0.05))
+                .force("y", d3.forceY(newHeight / 2).strength(0.05));
+            simulationNetwork.alpha(1).restart();
+        });
+
+        // Simulación Autopoiesis (sin cambios)
+        class AutopoiesisSimulation {
+            constructor() {
+                this.container = document.getElementById('visualization');
+                this.width = this.container.clientWidth - 16;
+                this.cellSize = 8;
+                this.height = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 200 : 250) : 300;
+                this.cols = Math.floor(this.width / this.cellSize);
+                this.rows = Math.floor(this.height / this.cellSize);
+                this.initSVG();
+                this.initControls();
+                this.reset();
+                this.animate();
+            }
+
+            initSVG() {
+                this.svg = d3.select("#visualization")
+                    .append("svg")
+                    .attr("width", this.width)
+                    .attr("height", this.height)
+                    .style("background", "rgba(0, 0, 0, 0.9)")
+                    .attr("rx", 5);
+            }
+
+            initControls() {
+                this.enzymeCount = 10;
+                this.substrateSpeed = 5;
+                this.decayRate = 0.001;
+
+                d3.select("#enzymeCount").on("input", () => {
+                    this.enzymeCount = +d3.event.target.value;
+                    d3.select("#enzymeCountValue").text(this.enzymeCount);
+                });
+                d3.select("#substrateSpeed").on("input", () => {
+                    this.substrateSpeed = +d3.event.target.value;
+                    d3.select("#substrateSpeedValue").text(this.substrateSpeed);
+                });
+                d3.select("#decayRate").on("input", () => {
+                    this.decayRate = +d3.event.target.value;
+                    d3.select("#decayRateValue").text(this.decayRate.toFixed(4));
+                });
+            }
+
+            reset() {
+                this.grid = Array(this.cols).fill().map(() => Array(this.rows).fill(0));
+                this.substrates = [];
+                this.enzymes = [];
+                this.links = [];
+
+                const substrateCount = Math.min(800, Math.floor(this.cols * this.rows * 0.3));
+                for (let i = 0; i < substrateCount; i++) {
+                    let x, y;
+                    do { x = Math.floor(Math.random() * this.cols); y = Math.floor(Math.random() * this.rows); } while (this.grid[x][y] !== 0);
+                    this.grid[x][y] = 1;
+                    this.substrates.push({ x, y });
+                }
+
+                for (let i = 0; i < this.enzymeCount; i++) {
+                    let x, y;
+                    do { x = Math.floor(Math.random() * this.cols); y = Math.floor(Math.random() * this.rows); } while (this.grid[x][y] !== 0);
+                    this.grid[x][y] = 2;
+                    this.enzymes.push({ x, y });
+                }
+
+                this.update();
+            }
+
+            moveSubstrates() {
+                this.substrates.forEach(s => {
+                    if (Math.random() < this.substrateSpeed / 10) {
+                        const dir = Math.floor(Math.random() * 4);
+                        const newX = s.x + [1, 0, -1, 0][dir];
+                        const newY = s.y + [0, 1, 0, -1][dir];
+                        if (this.isValid(newX, newY) && this.grid[newX][newY] === 0) {
+                            this.grid[s.x][s.y] = 0;
+                            s.x = newX;
+                            s.y = newY;
+                            this.grid[s.x][s.y] = 1;
+                        }
+                    }
+                });
+            }
+
+            interact() {
+                this.enzymes.forEach(e => {
+                    const neighbors = this.getNeighbors(e.x, e.y);
+                    const substrateNeighbors = neighbors.filter(n => this.grid[n.x][n.y] === 1);
+                    if (substrateNeighbors.length >= 2) {
+                        const s1 = substrateNeighbors[0];
+                        const s2 = substrateNeighbors[1];
+                        this.grid[s1.x][s1.y] = 3;
+                        this.grid[s2.x][s2.y] = 0;
+                        this.substrates = this.substrates.filter(s => !(s.x === s1.x && s.y === s1.y) && !(s.x === s2.x && s.y === s2.y));
+                        this.links.push({ x: s1.x, y: s1.y });
+                    }
+                });
+                this.disintegrateLinks();
+            }
+
+            disintegrateLinks() {
+                this.links = this.links.filter(l => {
+                    if (Math.random() < this.decayRate) {
+                        this.grid[l.x][l.y] = 1;
+                        this.substrates.push({ x: l.x, y: l.y });
+                        return false;
+                    }
+                    return true;
+                });
+            }
+
+            update() {
+                const data = [
+                    ...this.substrates.map(d => ({ type: "substrate", x: d.x * this.cellSize + this.cellSize / 2, y: d.y * this.cellSize + this.cellSize / 2 })),
+                    ...this.enzymes.map(d => ({ type: "enzyme", x: d.x * this.cellSize + this.cellSize / 2, y: d.y * this.cellSize + this.cellSize / 2 })),
+                    ...this.links.map(d => ({ type: "link", x: d.x * this.cellSize + this.cellSize / 2, y: d.y * this.cellSize + this.cellSize / 2 }))
+                ];
+
+                const circles = this.svg.selectAll("circle").data(data, d => `${d.type}-${d.x}-${d.y}`);
+                circles.exit().remove();
+                circles.enter()
+                    .append("circle")
+                    .attr("r", this.cellSize / 2)
+                    .attr("class", d => `circle-${d.type}`)
+                    .merge(circles)
+                    .attr("cx", d => d.x)
+                    .attr("cy", d => d.y);
+
+                d3.select("#status").text(`Sustratos: ${this.substrates.length}, Enlaces: ${this.links.length}, Enzimas: ${this.enzymes.length}`);
+            }
+
+            getNeighbors(x, y) {
+                const neighbors = [];
+                for (let dx of [-1, 0, 1]) {
+                    for (let dy of [-1, 0, 1]) {
+                        if (dx === 0 && dy === 0) continue;
+                        const nx = x + dx;
+                        const ny = y + dy;
+                        if (this.isValid(nx, ny)) neighbors.push({ x: nx, y: ny });
+                    }
+                }
+                return neighbors;
+            }
+
+            isValid(x, y) {
+                return x >= 0 && x < this.cols && y >= 0 && y < this.rows;
+            }
+
+            animate() {
+                this.moveSubstrates();
+                this.interact();
+                this.update();
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        window.resetSimulation = () => simulation.reset();
+        const simulation = new AutopoiesisSimulation();
+
+        // Acordeones (sin cambios)
+        class Accordion {
+            constructor() {
+                this.container = document.querySelector('.section-container');
+                this.initEventListeners();
+                this.initState();
+            }
+
+            initEventListeners() {
+                this.container.addEventListener('click', (e) => {
+                    const header = e.target.closest('.accordion-header');
+                    if (!header) return;
+                    this.toggle(header);
+                });
+            }
+
+            toggle(header) {
+                const content = header.nextElementSibling;
+                const isActive = content.classList.contains('active');
+                this.container.querySelectorAll('.accordion-content').forEach(c => {
+                    if (c !== content) {
+                        c.classList.remove('active');
+                        c.previousElementSibling.classList.remove('active');
+                        c.previousElementSibling.querySelector('span').textContent = '▼';
+                    }
+                });
+
+                if (isActive) {
+                    content.classList.remove('active');
+                    header.classList.remove('active');
+                    header.querySelector('span').textContent = '▼';
+                } else {
+                    content.classList.add('active');
+                    header.classList.add('active');
+                    header.querySelector('span').textContent = '▲';
+                    this.scrollTo(header);
+                }
+            }
+
+            scrollTo(element) {
+                const position = element.getBoundingClientRect().top + window.scrollY - 20;
+                window.scrollTo({ top: position, behavior: 'smooth' });
+            }
+
+            initState() {
+                window.addEventListener('load', () => {
+                    this.container.querySelectorAll('.accordion-content').forEach(c => {
+                        c.classList.remove('active');
+                        c.previousElementSibling.classList.remove('active');
+                        c.previousElementSibling.querySelector('span').textContent = '▼';
+                    });
+                    d3.selectAll('.accordion')
+                        .style('opacity', 0)
+                        .transition()
+                        .duration(600)
+                        .delay((d, i) => i * 100)
+                        .style('opacity', 1);
+                });
+            }
+        }
+
+        new Accordion();
+    </script>
+</body>
+</html>

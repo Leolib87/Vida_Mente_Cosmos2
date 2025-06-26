@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagrama de Relaciones Cognitivas</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #2E2E2E;
+    }
+
+    canvas {
+      background: #000000;
+      display: block;
+      border-radius: 15px;
+      cursor: pointer;
+    }
+
+    .highlighted-text {
+      color: #FFFF00;
+      font-weight: bold;
+    }
+
+    .default-text {
+      color: #00FFFF;
+    }
+
+    .category-label {
+      font-size: 14px;
+      font-weight: bold;
+      color: #00FFFF;
+      text-shadow: 1px 1px 4px #000;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="cognitiveCanvas" width="800" height="800"></canvas>
+
+  <script>
+    const canvas = document.getElementById("cognitiveCanvas");
+    const ctx = canvas.getContext("2d");
+    let hoveredPoint = null;
+
+    const centerX = 400;
+    const centerY = 400;
+    const radius = 300;
+
+    const points = [
+      { x: centerX, y: centerY - radius * 0.5, text: "McCarthy", link: "https://es.wikipedia.org/wiki/John_McCarthy_(inform%C3%A1tico)" },
+      { x: centerX - radius * 0.5, y: centerY - radius * 0.2, text: "Llinás", link: "https://es.wikipedia.org/wiki/Rodolfo_Llin%C3%A1s" },
+      { x: centerX + radius * 0.5, y: centerY - radius * 0.2, text: "Chomsky", link: "https://es.wikipedia.org/wiki/Noam_Chomsky" },
+      { x: centerX - radius * 0.3, y: centerY + radius * 0.3, text: "Neisser", link: "https://es.wikipedia.org/wiki/Ulric_Neisser" },
+      { x: centerX + radius * 0.3, y: centerY + radius * 0.3, text: "Dennett", link: "https://es.wikipedia.org/wiki/Daniel_Dennett" },
+      { x: centerX, y: centerY + radius * 0.75, text: "Varela", link: "https://es.wikipedia.org/wiki/Francisco_Varela" },
+      { x: centerX - radius * 0.6, y: centerY - radius * 0.4, text: "Fodor", link: "https://es.wikipedia.org/wiki/Jerry_Fodor" },
+      { x: centerX + radius * 0.6, y: centerY - radius * 0.4, text: "Hofstadter", link: "https://es.wikipedia.org/wiki/Douglas_Hofstadter" },
+      { x: centerX - radius * 0.7, y: centerY, text: "Rumelhart", link: "https://es.wikipedia.org/wiki/David_Rumelhart" },
+      { x: centerX + radius * 0.7, y: centerY, text: "Searle", link: "https://es.wikipedia.org/wiki/John_Searle" },
+      { x: centerX - radius * 0.3, y: centerY - radius * 0.6, text: "Brooks", link: "https://es.wikipedia.org/wiki/Rodney_Brooks" },
+      { x: centerX + radius * 0.3, y: centerY - radius * 0.6, text: "Winograd", link: "https://es.wikipedia.org/wiki/Terry_Winograd" },
+      { x: centerX - radius * 0.4, y: centerY - radius * 0.4, text: "Newell", link: "https://es.wikipedia.org/wiki/Allen_Newell" },
+      { x: centerX + radius * 0.4, y: centerY - radius * 0.4, text: "Feldman", link: "https://es.wikipedia.org/wiki/Jerome_Feldman" },
+      { x: centerX - radius * 0.5, y: centerY + radius * 0.1, text: "Marr", link: "https://es.wikipedia.org/wiki/David_Marr_(neurocient%C3%ADfico)" },
+      { x: centerX + radius * 0.5, y: centerY + radius * 0.1, text: "Lakoff", link: "https://es.wikipedia.org/wiki/George_Lakoff" },
+      { x: centerX - radius * 0.2, y: centerY + radius * 0.6, text: "Maturana", link: "https://es.wikipedia.org/wiki/Humberto_Maturana" },
+      { x: centerX + radius * 0.2, y: centerY + radius * 0.6, text: "Dreyfus", link: "https://es.wikipedia.org/wiki/Hubert_Dreyfus" },
+      { x: centerX, y: centerY + radius * 0.7, text: "Rorty", link: "https://es.wikipedia.org/wiki/Richard_Rorty" }
+    ];
+
+    const categoryLabels = [
+      { x: centerX, y: centerY - radius, text: "Inteligencia Artificial" },
+      { x: centerX - radius, y: centerY, text: "Neurociencia" },
+      { x: centerX + radius, y: centerY, text: "Lingüística" },
+      { x: centerX - radius * 0.8, y: centerY + radius * 0.8, text: "Ciencias Cognitivas" },
+      { x: centerX + radius * 0.8, y: centerY + radius * 0.8, text: "Filosofía" },
+      { x: centerX, y: centerY + radius * 0.3, text: "Cognitivismo", color: "#FF0000" },
+      { x: centerX, y: centerY + radius * 0.55, text: "Emergencia", color: "#FF0000" },
+      { x: centerX, y: centerY + radius * 0.82, text: "Enactivo", color: "#FF0000" }
+    ];
+
+    function drawCircle(x, y, radius, text, highlighted = false) {
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, 2 * Math.PI);
+      ctx.strokeStyle = highlighted ? "#FFFF00" : "#00FF00";
+      ctx.lineWidth = highlighted ? 3 : 1;
+      ctx.stroke();
+      ctx.fillStyle = highlighted ? "#FFFF00" : "#00FFFF";
+      ctx.fillText(text, x, y - 10);
+    }
+
+    function drawLine(fromX, fromY, toX, toY) {
+      ctx.beginPath();
+      ctx.moveTo(fromX, fromY);
+      ctx.lineTo(toX, toY);
+      ctx.strokeStyle = "#00FF00";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    function drawScene() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.font = "12px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      // Dibujar círculos concéntricos
+      [0.75, 0.5, 0.25].forEach(factor => {
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius * factor, 0, 2 * Math.PI);
+        ctx.strokeStyle = "#00FF00";
+        ctx.stroke();
+      });
+
+      // Dibujar las líneas (radios) hacia las categorías
+      categoryLabels.forEach(label => {
+        drawLine(centerX, centerY, label.x, label.y);
+      });
+
+      // Etiquetas de categorías
+      ctx.font = "16px Arial";
+      ctx.fillStyle = "#00FFFF";
+      categoryLabels.forEach(label => {
+        ctx.fillStyle = label.color || "#00FFFF"; // Si tiene un color definido, usa rojo
+        ctx.fillText(label.text, label.x, label.y - 10);
+      });
+
+      // Dibujar puntos
+      points.forEach(point => drawCircle(point.x, point.y, 5, point.text, hoveredPoint === point));
+    }
+
+    drawScene();
+
+    canvas.addEventListener("mousemove", function (event) {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = event.clientX - rect.left;
+      const mouseY = event.clientY - rect.top;
+
+      hoveredPoint = points.find(point => {
+        const dx = mouseX - point.x;
+        const dy = mouseY - point.y;
+        return Math.sqrt(dx * dx + dy * dy) < 10;
+      });
+
+      drawScene();
+    });
+
+    canvas.addEventListener("click", function () {
+      if (hoveredPoint) {
+        window.open(hoveredPoint.link, "_blank");
+      }
+    });
+  </script>
+</body>
+
+</html>

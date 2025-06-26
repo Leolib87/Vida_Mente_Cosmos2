@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación de Biología</title>
+    <!-- Incluye Tailwind CSS CDN para los estilos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos base para asegurar que html y body ocupen toda la altura disponible */
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden; /* Oculta el scrollbar principal, el scroll será manejado por #app-root */
+        }
+
+        /* Estilos personalizados para animaciones y tipografía */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased; /* Mejora la renderización de fuentes */
+            -moz-osx-font-smoothing: grayscale;
+            /* Deshabilita la selección de texto */
+            -webkit-touch-callout: none; /* iOS Safari */
+            -webkit-user-select: none;   /* Safari */
+            -khtml-user-select: none;    /* Konqueror HTML */
+            -moz-user-select: none;      /* Old versions of Firefox */
+            -ms-user-select: none;       /* Internet Explorer/Edge */
+            user-select: none;           /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+        }
+
+        /* Contenedor del fondo 3D con Three.js */
+        #threejs-background {
+            position: fixed; /* Fija el fondo en la ventana del navegador */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Asegura que esté detrás del contenido del quiz */
+            background-color: #000; /* Fondo base en caso de que Three.js no cargue */
+        }
+
+        /* Estilos del contenedor principal de la aplicación para responsividad */
+        #app-root {
+            position: relative; /* Asegura que el contenido esté sobre el fondo */
+            z-index: 1; /* Mantiene el contenido por encima del fondo */
+            width: 100%; /* Ocupa todo el ancho */
+            height: 100%; /* Ocupa toda la altura disponible del body */
+            min-height: 100vh; /* Asegura que al menos ocupe la altura de la ventana */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; /* Alinea al inicio para permitir el scroll de contenido largo */
+            padding: 1.5rem; /* p-6 en Tailwind */
+            overflow-y: auto; /* Permite el scroll vertical si el contenido excede la altura */
+            background-color: transparent; /* Hace que el fondo de app-root sea transparente para ver Three.js */
+        }
+
+        /* Animación de rebote para el ícono de correcto */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+            50% { transform: translateY(0); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+        }
+        .animate-bounce {
+            animation: bounce 1s forwards;
+        }
+
+        /* Animación de sacudida para el ícono de incorrecto */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
+        }
+        .animate-shake {
+            animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both forwards;
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+            perspective: 1000px;
+        }
+
+        /* Animación de entrada: se desliza desde la derecha y aparece */
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        .animate-fadeInRight {
+            animation: fadeInRight 0.5s ease-out forwards;
+        }
+
+        /* Animación de salida: se desliza hacia la izquierda y desaparece */
+        @keyframes fadeOutLeft {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+        }
+        .animate-fadeOutLeft {
+            animation: fadeOutLeft 0.5s ease-in forwards;
+        }
+    </style>
+</head>
+<body class="bg-black antialiased">
+
+    <!-- Contenedor para el fondo 3D de Three.js -->
+    <div id="threejs-background"></div>
+
+    <!-- Contenedor principal de la aplicación. El contenido se renderizará aquí mediante JavaScript. -->
+    <div id="app-root" class="font-inter">
+        <!-- El contenido de la aplicación se inyectará aquí mediante JavaScript -->
+    </div>
+
+    <!-- Incluye la librería Three.js desde un CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        /**
+         * Datos de las preguntas para el quiz.
+         * Se han eliminado las preguntas de tipo 'development' según la solicitud.
+         * Cada objeto de pregunta incluye el tipo, la pregunta, las opciones (para selección múltiple),
+         * la respuesta correcta y una explicación detallada.
+         * Se han modificado las explicaciones para eliminar caracteres especiales y hacerlas más legibles.
+         * @type {Array<Object>}
+         */
+        const quizData = [
+            {
+                type: 'multiple-choice',
+                question: 'Indique cuales son los 4 elementos con mayor relevancia biológica:',
+                options: [
+                    'A) Carbono, Hidrógeno, Azufre y Oxígeno',
+                    'B) Carbono, Hidrógeno, Sodio y Potasio',
+                    'C) Carbono, Oxígeno, Nitrógeno y Azufre',
+                    'D) Carbono, Oxígeno, Hidrógeno y Nitrógeno',
+                    'E) Carbono, Nitrógeno, Helio y Oxígeno',
+                ],
+                correctAnswer: 'D) Carbono, Oxígeno, Hidrógeno y Nitrógeno',
+                explanation: 'El Carbono, Oxígeno, Hidrógeno y Nitrógeno (C, O, H, N) son los cuatro elementos más abundantes en las biomoléculas y constituyen la base de la vida. Forman el 96% de la masa de la mayoría de los organismos.',
+            },
+            {
+                type: 'multiple-choice',
+                question: 'El agua es una molécula polar, capaz de separar un gran número de moléculas cargadas. Es incorrecto afirmar:',
+                options: [
+                    'A) El oxígeno es más electronegativo que el hidrógeno',
+                    'B) En los hidrógenos está la polaridad negativa',
+                    'C) En el oxígeno está la polaridad negativa',
+                    'D) En los hidrógenos está la polaridad positiva',
+                    'E) El Hidrógeno es menos electronegativo que el oxígeno',
+                ],
+                correctAnswer: 'B) En los hidrógenos está la polaridad negativa',
+                explanation: 'El oxígeno es más electronegativo que el hidrógeno, por lo que atrae los electrones compartidos con más fuerza, creando una carga parcial negativa (delta-) en el oxígeno y cargas parciales positivas (delta+) en los hidrógenos.',
+            },
+            {
+                type: 'multiple-choice',
+                question: 'Las biomoléculas orgánicas se caracterizan por poseer un esqueleto molecular de átomos de carbono unidos a átomos de hidrógeno al que se le unen elementos que se conocen como:',
+                options: [
+                    'A) Grupos reactivos',
+                    'B) Grupos funcionales',
+                    'C) Grupos químicos',
+                    'D) Grupos estequiométricos',
+                    'E) Grupos elementales',
+                ],
+                correctAnswer: 'B) Grupos funcionales',
+                explanation: 'Los grupos funcionales son grupos de átomos dentro de las moléculas que tienen patrones específicos de enlace y que determinan las propiedades químicas de la molécula orgánica a la que están unidos.',
+            },
+            {
+                type: 'multiple-choice',
+                question: '¿Cuál de los siguientes grupos funcionales confiere propiedades básicas a una molécula, ya que puede aceptar un protón (H⁺)?',
+                options: [
+                    'A) Hidroxilo',
+                    'B) Carboxilo',
+                    'C) Carbonilo',
+                    'D) Amino',
+                    'E) Fosfato',
+                ],
+                correctAnswer: 'D) Amino',
+                explanation: 'El grupo amino (-NH2) puede aceptar un protón (H+) para convertirse en -NH3+, lo que le confiere propiedades básicas a la molécula.',
+            },
+            // PREGUNTA CORREGIDA: 5
+            {
+                type: 'multiple-choice',
+                question: 'Con respecto a las reacciones de condensación e hidrólisis, es correcto señalar que:\nI. Dos monómeros forman un dímero mediante una reacción de hidrólisis\nII. Dos monómeros forman un dímero mediante una reacción de condensación\nIII. Un dímero forma dos monómeros mediante una reacción de condensación\nIV. Un dímero forma dos monómeros mediante una reacción de hidrólisis',
+                options: [
+                    'A) I y III',
+                    'B) II y IV',
+                    'C) II y III',
+                    'D) I y IV',
+                    'E) Ninguna de las anteriores',
+                ],
+                correctAnswer: 'B) II y IV',
+                explanation: 'Las reacciones de condensación unen monómeros liberando una molécula de agua, mientras que las reacciones de hidrólisis rompen polímeros añadiendo una molécula de agua.',
+            },
+            {
+                type: 'multiple-choice',
+                question: 'De los siguientes monosacáridos, ¿cuál se clasifica como una cetona debido a la posición de su grupo carbonilo?',
+                options: [
+                    'A) Glucosa',
+                    'B) Fructosa',
+                    'C) Galactosa',
+                    'D) Ribosa',
+                    'E) Manosa',
+                ],
+                correctAnswer: 'B) Fructosa',
+                explanation: 'La fructosa es una cetohexosa, lo que significa que su grupo carbonilo (C=O) se encuentra en una posición intermedia de la cadena de carbono (normalmente en el carbono 2), a diferencia de las aldosas como la glucosa y galactosa que tienen el grupo carbonilo en el extremo (como aldehído).',
+            },
+            {
+                type: 'multiple-choice',
+                question: 'Observando las siguientes estructuras de dos azúcares pentosa, identifique correctamente cada molécula. ¿Cuál es el nombre de la molécula de la izquierda y cuál el de la derecha?',
+                options: [
+                    'A) Izquierda: Ribosa, Derecha: Desoxirribosa',
+                    'B) Izquierda: Desoxirribosa, Derecha: Ribosa',
+                    'C) Izquierda: Glucosa, Derecha: Fructosa',
+                    'D) Izquierda: Fructosa, Derecha: Ribosa',
+                    'E) Ambas son moléculas de Ribosa',
+                ],
+                correctAnswer: 'A) Izquierda: Ribosa, Derecha: Desoxirribosa',
+                explanation: 'La diferencia clave entre ribosa y desoxirribosa es la presencia de un grupo hidroxilo (-OH) en el carbono 2\' de la ribosa, mientras que la desoxirribosa tiene solo un hidrógeno (-H) en esa posición.',
+            },
+            // PREGUNTA CORREGIDA: 8
+            {
+                type: 'multiple-choice',
+                question: 'Con respecto a los polisacáridos, es correcto señalar que:\nI. Se forman a partir de muchos monosacáridos\nII. Las plantas almacenan energía en forma de almidón\nIII. La celulosa es un polisacárido con una función estructural\nIV. Los animales almacenan energía en forma de glucógeno',
+                options: [
+                    'A) Sólo I',
+                    'B) II y IV',
+                    'C) I y III',
+                    'D) I, II y III',
+                    'E) Todas son correctas',
+                ],
+                correctAnswer: 'E) Todas son correctas',
+                explanation: 'Los polisacráridos son polímeros de muchos monosacáridos. El almidón y el glucógeno son polisacáridos de reserva energética en plantas y animales respectivamente. La celulosa es un polisacárido estructural en las paredes celulares de las plantas.',
+            },
+            {
+                type: 'multiple-choice',
+                question: 'Aunque tanto el glucógeno como la celulosa son polímeros de glucosa, difieren significativamente en su estructura y función. ¿Cuál es la principal diferencia en los enlaces glucosídicos que explican estas diferencias?',
+                options: [
+                    'A) El glucógeno tiene solo enlaces beta-1,4 y la celulosa tiene enlaces alfa-1,6.',
+                    'B) La celulosa es una cadena lineal con enlaces alfa-1,4, mientras que el glucógeno es ramificado con enlaces alfa-1,4 y alfa-1,6.',
+                    'C) El glucógeno es una cadena lineal con enlaces beta-1,4, mientras que la celulosa es ramificada.',
+                    'D) La celulosa forma cadenas lineales con enlaces beta-1,4, mientras que el glucógeno es una molécula ramificada con enlaces alfa-1,4 y alfa-1,6.',
+                ],
+                correctAnswer: 'D) La celulosa forma cadenas lineales con enlaces beta-1,4, mientras que el glucógeno es una molécula ramificada con enlaces alfa-1,4 y alfa-1,6.',
+                explanation: 'La celulosa contiene enlaces glucosídicos beta-1,4, que le confieren una estructura lineal y rígida, ideal para su función estructural. El glucógeno, en cambio, tiene enlaces alfa-1,4 y ramificaciones alfa-1,6, lo que lo hace más compacto y adecuado para el almacenamiento de energía.',
+            },
+            {
+                type: 'multiple-choice',
+                question: '¿Cuál es el polisacárido estructural que se encuentra en el exoesqueleto de los artrópodos y en la pared celular de los hongos?',
+                options: [
+                    'A) Almidón',
+                    'B) Glucógeno',
+                    'C) Celulosa',
+                    'D) Quitina',
+                    'E) Sacarosa',
+                ],
+                correctAnswer: 'D) Quitina',
+                explanation: 'La quitina es un polisacárido estructural compuesto por unidades de N-acetilglucosamina, que forma el exoesqueleto de insectos y crustáceos, y la pared celular de los hongos.',
+            },
+            // PREGUNTA CORREGIDA: 11
+            {
+                type: 'multiple-choice',
+                question: 'Cuál(es) de la(s) siguiente(s) característica(s) posee(n) los fosfolípidos:\nI. Forman estructuras secundarias, terciarias y cuaternarias\nII. Cabeza polar y cola apolar\nIII. Cabeza apolar y cola polar\nIV. Forman micelas y/o liposomas en solución acuosa',
+                options: [
+                    'A) I, II y IV',
+                    'B) III y IV',
+                    'C) II y IV',
+                    'D) I y II',
+                    'E) Ninguna de las anteriores',
+                ],
+                correctAnswer: 'C) II y IV',
+                explanation: 'Los fosfolípidos son moléculas anfipáticas, con una cabeza hidrofílica (polar) y dos colas hidrofóbicas (apolares). Esta característica les permite formar bicapas lipídicas, micelas y liposomas en soluciones acuosas.',
+            },
+            {
+                type: 'multiple-choice',
+                question: 'En relación con los lípidos, es correcto afirmar:',
+                options: [
+                    'A) Los ácidos grasos saturados son aquellos que presentan enlaces dobles en su molécula',
+                    'B) Son hidrofílicos',
+                    'C) Se disuelven en agua',
+                    'D) Los ácidos grasos saturados son líquidos a temperatura ambiente',
+                    'E) Se disuelven en solventes orgánicos apolares',
+                ],
+                correctAnswer: 'E) Se disuelven en solventes orgánicos apolares',
+                explanation: 'Los lípidos son hidrofóbicos y, por lo tanto, insolubles en agua, pero son solubles en solventes orgánicos apolares como el éter, el cloroformo o el benceno. Los ácidos grasos saturados no tienen dobles enlaces y suelen ser sólidos a temperatura ambiente.',
+            },
+            {
+                type: 'multiple-choice',
+                question: 'En relación con los niveles de organización de las proteínas, es incorrecto señalar que:',
+                options: [
+                    'A) La estructura primaria corresponde a la secuencia de aminoácidos de una proteína',
+                    'B) La estructura secundaria puede ser del tipo α-hélice o lámina-β',
+                    'C) La estructura terciaria sólo involucra enlaces covalentes',
+                    'D) La estructura cuaternaria se forma mediante la unión de distintas estructuras terciarias',
+                    'E) Ninguna de las anteriores',
+                ],
+                correctAnswer: 'C) La estructura terciaria sólo involucra enlaces covalentes',
+                explanation: 'La estructura terciaria de una proteína se estabiliza por diversas interacciones, incluyendo puentes de hidrógeno, interacciones iónicas, interacciones hidrofóbicas, fuerzas de van der Waals y, en algunos casos, enlaces covalentes (puentes disulfuro). No solo involucra enlaces covalentes.',
+            },
+            {
+                type: 'multiple-choice',
+                question: 'La estructura secundaria de las proteínas, como las hélices-α y las láminas-β, se estabiliza principalmente por:',
+                options: [
+                    'A) Enlaces iónicos',
+                    'B) Puentes disulfuro',
+                    'C) Puentes de hidrógeno',
+                    'D) Interacciones hidrofóbicas',
+                    'E) Enlaces covalentes',
+                ],
+                correctAnswer: 'C) Puentes de hidrógeno',
+                explanation: 'Las hélices-alfa y las láminas-beta se forman por la interacción entre grupos -NH y -C=O del esqueleto polipeptídico, que se unen mediante puentes de hidrógeno, estabilizando estas estructuras regulares.',
+            },
+            {
+                type: 'multiple-choice',
+                question: '¿Cuál de los siguientes enlaces o interacciones NO participa en la estabilización de la estructura TERCIARIA de una proteína?',
+                options: [
+                    'A) Puentes de hidrógeno',
+                    'B) Enlaces peptídicos',
+                    'C) Puentes disulfuro',
+                    'D) Interacciones hidrofóbicas',
+                    'E) Enlaces iónicos',
+                ],
+                correctAnswer: 'B) Enlaces peptídicos',
+                explanation: 'Los enlaces peptídicos son enlaces covalentes que unen los aminoácidos en la estructura primaria de una proteína. No participan directamente en la estabilización de la estructura terciaria, que se refiere al plegamiento tridimensional global de la cadena polipepeptídica.',
+            },
+            {
+                type: 'multiple-choice',
+                question: 'Con respecto a la molécula de ácido ribonucleico (ARN), es correcto señalar que:',
+                options: [
+                    'A) Está formada por Adenina, Guanina, Citosina y Uracilo',
+                    'B) Es más estable que el ácido desoxirribonucleico (ADN)',
+                    'C) Siempre está formando una estructura helicoidal de doble hebra',
+                    'D) Está formada por Adenina, Guanina, Citosina y Timina',
+                    'E) Ninguna de las anteriores',
+                ],
+                correctAnswer: 'A) Está formada por Adenina, Guanina, Citosina y Uracilo',
+                explanation: 'El ARN difiere del ADN en que contiene la base nitrogenada Uracilo (U) en lugar de Timina (T). Ambas moléculas comparten Adenina (A), Guanina (G) y Citosina (C).',
+            },
+            // PREGUNTA CORREGIDA: 17
+            {
+                type: 'multiple-choice',
+                question: 'Cuál(es) de la(s) siguiente(s) aseveración (es) es(son) correcta(s) con respecto al ADN:\nI. Contiene el material genético\nII. Forma una doble hélice\nIII. Está compuesto por nucleótidos\nIV. Cada monómero se une mediante enlaces glucosídicos',
+                options: [
+                    'A) Sólo I',
+                    'B) Sólo III',
+                    'C) I y IV',
+                    'D) I, III y IV',
+                    'E) I, II y III',
+                ],
+                correctAnswer: 'E) I, II y III',
+                explanation: 'El ADN es el portador del material genético, adopta una estructura de doble hélice y está compuesto por unidades monoméricas llamadas nucleótidos. Los nucleótidos se unen por enlaces fosfodiéster, no glucosídicos.',
+            },
+            {
+                type: 'multiple-choice',
+                question: 'Se puede afirmar respecto a los nucleótidos:',
+                options: [
+                    'A) El ATP forma parte del ADN',
+                    'B) En el ADN, las bases nitrogenadas presentes son adenina, citosina, guanina y uracilo.',
+                    'C) Nucleósido se refiere a la unión de una pentosa y un aminoácido',
+                    'D) Cada nucleótido contiene una base nitrogenada',
+                ],
+                correctAnswer: 'D) Cada nucleótido contiene una base nitrogenada',
+                explanation: 'Un nucleótido está compuesto por tres componentes: una base nitrogenada (adenina, guanina, citosina, timina o uracilo), una pentosa (azúcar de cinco carbonos) y uno o más grupos fosfato.',
+            },
+            {
+                type: 'multiple-choice',
+                question: 'En relación con las células eucariontes y procariontes, es falso señalar que:',
+                options: [
+                    'A) Las células eucariontes contienen el material genético en el núcleo',
+                    'B) Sólo las células eucariontes poseen membrana plasmática',
+                    'C) Las células eucariontes son de mayor tamaño que las células procariontes',
+                    'D) Las células animales y vegetales son eucariontes',
+                    'E) Ninguna de las anteriores',
+                ],
+                correctAnswer: 'B) Sólo las células eucariontes poseen membrana plasmática',
+                explanation: 'Todas las células, tanto eucariontes como procariontes, poseen membrana plasmática, ya que es una característica fundamental para la vida, que delimita la célula y regula el paso de sustancias.',
+            },
+            {
+                type: 'multiple-choice',
+                question: '¿Cuál es el orden correcto de Niveles de Organización Celular en pluricelulares?',
+                options: [
+                    'A) Gameto-tejidos-Célula-organismo-sistema',
+                    'B) Biomoléculas-tejidos-órganos-organismo',
+                    'C) Célula-tejidos-órganos-sistema-organismo',
+                    'D) Organismo-órganos-biomoléculas-tejidos',
+                    'E) Célula-gameto-órganos-tejidos-organismo',
+                ],
+                correctAnswer: 'C) Célula-tejidos-órganos-sistema-organismo',
+                explanation: 'Los niveles de organización celular correctos son: Célula -> Tejidos -> Órganos -> Sistema de Órganos -> Organismo.',
+            },
+            {
+                type: 'multiple-choice',
+                question: '¿Cuál de las siguientes opciones describe mejor la distribución y organización de los microtúbulos en el citoplasma de una célula animal típica en interfase?',
+                options: [
+                    'A) Forman una red densa y desordenada por todo el citoplasma.',
+                    'B) Se concentran exclusivamente debajo de la membrana plasmática para dar soporte.',
+                    'C) Se originan en un centro organizador (centrosoma) y se extienden radialmente hacia la periferia celular.',
+                    'D) Forman haces paralelos que conectan directamente el núcleo con el complejo de Golgi.',
+                    'E) Se encuentran libres y dispersos en el citosol, sin un punto de origen fijo.',
+                ],
+                correctAnswer: 'C) Se originan en un centro organizador (centrosoma) y se extienden radialmente hacia la periferia celular.',
+                explanation: 'En las células animales, los microtúbulos se organizan a partir del centrosoma, el cual actúa como un centro organizador de microtúbulos (MTOC), y se extienden radialmente hacia la periferia celular, participando en el transporte intracelular, la forma celular y la división celular.',
+            },
+            {
+                type: 'multiple-choice',
+                question: 'Los lisosomas cumplen la función de:',
+                options: [
+                    'A) Sintetizar fosfolípidos',
+                    'B) Degradar compuestos celulares',
+                    'C) Proveer de energía a la célula',
+                    'D) Contener el material genético',
+                ],
+                correctAnswer: 'B) Degradar compuestos celulares',
+                explanation: 'Los lisosomas son orgánulos que contienen enzimas hidrolíticas que degradan macromoléculas, orgánulos envejecidos y desechos celulares, funcionando como el sistema de "reciclaje" de la célula.',
+            },
+            {
+                type: 'multiple-choice',
+                question: 'Indique cuál de las siguientes aseveraciones es incorrecta con respecto a las mitocondrias:',
+                options: [
+                    'A) Proveen de energía a la célula mediante la síntesis de ATP',
+                    'B) Se ubican en el citoplasma celular',
+                    'C) Existen múltiples mitocondrias dentro de una célula',
+                    'D) Sólo poseen una bicapa lipídica',
+                    'E) Ninguna de las anteriores',
+                ],
+                correctAnswer: 'D) Sólo poseen una bicapa lipídica',
+                explanation: 'Las mitocondrias poseen dos bicapas lipídicas: una membrana externa y una membrana interna, que es altamente plegada formando crestas mitocondriales, aumentando la superficie para la síntesis de ATP.',
+            },
+            {
+                type: 'multiple-choice',
+                question: 'El proteosoma es un complejo proteico que cumple la función de:',
+                options: [
+                    'A) Sintetizar proteínas a partir de aminoácidos disponibles',
+                    'B) Sintetizar lípidos',
+                    'C) Degradar proteínas previamente marcadas',
+                    'D) Generar energía para la célula',
+                    'E) Ninguna de las anteriores',
+                ],
+                correctAnswer: 'C) Degradar proteínas previamente marcadas',
+                explanation: 'El proteosoma es un complejo multiproteico encargado de la degradación selectiva de proteínas que han sido marcadas con ubiquitina, un proceso esencial para la regulación de procesos celulares y la eliminación de proteínas dañadas.',
+            },
+            {
+                type: 'multiple-choice',
+                question: 'En el sistema ubiquitina-proteasoma, ¿cuál es la función principal de la molécula de ubiquitina?',
+                options: [
+                    'A) Degradar directamente las proteínas en péptidos más pequeños.',
+                    'B) Marcar o etiquetar proteínas que están destinadas a ser degradadas.',
+                    'C) Actuar como un chaperón para ayudar en el plegamiento correcto de las proteínas.',
+                    'D) Transportar proteínas desde el retículo endoplasmático al aparato de Golgi.',
+                    'E) Proveer la energía necesaria para la degradación de proteínas.',
+                ],
+                correctAnswer: 'B) Marcar o etiquetar proteínas que están destinadas a ser degradadas.',
+                explanation: 'La ubiquitina es una pequeña proteína que se une a otras proteínas para marcarlas, señalizándolas para su degradación por el proteosoma. Este proceso es clave para la regulación de la vida útil de las proteínas.',
+            },
+            {
+                type: 'multiple-choice',
+                question: '¿Qué organelo es fundamental para la maduración post-traduccional, clasificación y distribución de proteínas a sus destinos finales, funcionando como el "centro de logística" celular?',
+                options: [
+                    'A) Lisosoma',
+                    'B) Mitocondria',
+                    'C) Núcleo',
+                    'D) Complejo de Golgi',
+                    'E) Peroxisoma',
+                ],
+                correctAnswer: 'D) Complejo de Golgi',
+                explanation: 'El Complejo de Golgi se encarga de modificar, clasificar y empaquetar proteínas y lípidos sintetizados en el retículo endoplasmático para su secreción o para su entrega a otros orgánulos celulares.',
+            },
+            {
+                type: 'multiple-choice',
+                question: 'El retículo endoplásmico rugoso (RER) se distingue por la presencia de ribosomas en su superficie. ¿Cuál es su función principal en la célula?',
+                options: [
+                    'A) Síntesis de lípidos y detoxificación celular.',
+                    'B) Síntesis y modificación de proteínas destinadas a la secreción, la membrana o a otros organelos.',
+                    'C) Producción de ATP mediante la respiración celular.',
+                    'D) Digestión de macromoléculas y reciclaje de componentes celulares.',
+                    'E) Almacenamiento de calcio y síntesis de hormonas esteroideas.',
+                ],
+                correctAnswer: 'B) Síntesis y modificación de proteínas destinades a la secreción, la membrana o a otros organelos.',
+                explanation: 'El Retículo Endoplasmático Rugoso (RER) está cubierto de ribosomas y su principal función es la síntesis de proteínas que serán secretadas, insertadas en membranas o destinadas a orgánulos como el Golgi, lisosomas o endosomas.',
+            },
+            {
+                type: 'multiple-choice',
+                question: 'La membrana nuclear externa es una de las dos membranas que componen la envoltura nuclear. Una característica estructural clave de esta membrana es que:',
+                options: [
+                    'A) Es completamente impermeable y aísla el núcleo del citoplasma.',
+                    'B) Está en continuidad directa con la membrana del retículo endoplásmico.',
+                    'C) Contiene los complejos de poro nuclear que regulan el paso exclusivamente hacia adentro del núcleo.',
+                    'D) Es el sitio principal de la replicación del ADN.',
+                    'E) Está cubierta de proteasomas para la degradación de proteínas.',
+                ],
+                correctAnswer: 'B) Está en continuidad directa con la membrana del retículo endoplásmico.',
+                explanation: 'La membrana nuclear externa es una extensión de la membrana del retículo endoplasmático, lo que permite la comunicación entre el interior del núcleo y el citoplasma a través de los poros nucleares.',
+            },
+            {
+                type: 'multiple-choice',
+                question: 'Los peroxisomas llevan a cabo reacciones que producen una sustancia tóxica como subproducto, la cual es inmediatamente neutralizada por la enzima catalasa. Esta sustancia es:',
+                options: [
+                    'A) Dióxido de carbono (CO₂)',
+                    'B) Amoníaco (NH₃)',
+                    'C) Ácido clorhídrico (HCl)',
+                    'D) Peróxido de hidrógeno (H2O2)',
+                    'E) Glucosa',
+                ],
+                correctAnswer: 'D) Peróxido de hidrógeno (H2O2)',
+                explanation: 'Los peroxisomas son orgánulos que contienen enzimas oxidativas que producen peróxido de hidrógeno (H2O2) como subproducto. Esta molécula tóxica es inmediatamente descompuesta por la enzima catalasa dentro del mismo peroxisoma para evitar daños celulares.',
+            },
+            {
+                type: 'multiple-choice',
+                question: 'El proceso mediante el cual la información genética de una molécula de ARNm se utiliza para sintetizar una proteína se denomina:',
+                options: [
+                    'A) Replicación',
+                    'B) Transcripción',
+                    'C) Traducción',
+                    'D) Condensación',
+                    'E) Hidrólisis',
+                ],
+                correctAnswer: 'C) Traducción',
+                explanation: 'La traducción es el proceso en el que la secuencia de nucleótidos de una molécula de ARNm se decodifica en el citoplasma (en los ribosomas) para sintetizar una secuencia específica de aminoácidos, formando una proteína.',
+            },
+            {
+                type: 'multiple-choice',
+                question: 'En relación con los carbohidratos Almidón y glucógeno, es correcto afirmar:',
+                options: [
+                    'A) Ambos son monosacáridos',
+                    'B) El glucógeno un disacárido',
+                    'C) Son constituyentes de la pared celular vegetal',
+                    'D) El almidón es reserva energética',
+                ],
+                correctAnswer: 'D) El almidón es reserva energética',
+                explanation: 'El almidón es el principal polisacárido de reserva energética en las plantas, mientras que el glucógeno cumple la misma función en animales y hongos. Ambos son polímeros de glucosa, no monosacáridos ni disacáridos.',
+            },
+        ];
+
+        // Filtra las preguntas para incluir solo las de opción múltiple
+        const filteredQuizData = quizData.filter(q => q.type === 'multiple-choice');
+
+        // --- Variables de Estado Globales ---
+        let currentPage = 'home'; // Controla la página actual: 'home', 'quiz', 'results'
+        let currentQuestionIndex = 0; // Índice de la pregunta actual en filteredQuizData
+        let selectedOption = null; // Opción seleccionada por el usuario en preguntas de opción múltiple
+        let userAnswers = {}; // Almacena las respuestas del usuario {questionIndex: userAnswer}
+        let showFeedbackModal = false; // Controla la visibilidad del modal de feedback
+        let isAnswerCorrect = false; // Indica si la última respuesta fue correcta
+        let isQuestionAnswered = false; // Indica si la pregunta actual ya ha sido respondida
+
+        // Referencia al elemento raíz del DOM donde se renderiza la aplicación
+        const appRoot = document.getElementById('app-root');
+
+        // --- Configuración y Lógica de Three.js para el Fondo Dinámico ---
+        let scene, camera, renderer, particles, particleSystem;
+
+        function initThreeJSBackground() {
+            const container = document.getElementById('threejs-background');
+            if (!container) return; // Asegúrate de que el contenedor existe
+
+            // Configuración de la escena
+            scene = new THREE.Scene();
+
+            // Configuración de la cámara
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 100; // Ajusta la posición para que las partículas sean visibles
+
+            // Configuración del renderizador
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+
+            // Crear partículas (ejemplo simple de fondo dinámico)
+            const particleCount = 1500;
+            const geometry = new THREE.BufferGeometry();
+            const positions = [];
+            const colors = [];
+
+            const color = new THREE.Color();
+
+            for (let i = 0; i < particleCount; i++) {
+                // Posiciones aleatorias en un cubo
+                positions.push(Math.random() * 2000 - 1000); // x
+                positions.push(Math.random() * 2000 - 1000); // y
+                positions.push(Math.random() * 2000 - 1000); // z
+
+                // Colores sutiles (azul/cian)
+                color.setHSL(0.5 + 0.1 * (i / particleCount), 0.7, 0.5 + 0.5 * (i / particleCount));
+                colors.push(color.r, color.g, color.b);
+            }
+
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 2,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.7,
+                blending: THREE.AdditiveBlending // Para un efecto de brillo
+            });
+
+            particleSystem = new THREE.Points(geometry, material);
+            scene.add(particleSystem);
+
+            // Animación
+            animateThreeJSBackground();
+
+            // Manejar redimensionamiento de ventana
+            window.addEventListener('resize', onWindowResizeThreeJS);
+        }
+
+        function onWindowResizeThreeJS() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animateThreeJSBackground() {
+            requestAnimationFrame(animateThreeJSBackground);
+
+            // Rotar el sistema de partículas para el efecto dinámico
+            if (particleSystem) {
+                particleSystem.rotation.x += 0.0005;
+                particleSystem.rotation.y += 0.001;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        /**
+         * Renderiza el contenido principal de la aplicación según el estado `currentPage`.
+         * Limpia el contenido anterior para evitar duplicados.
+         */
+        function renderApp() {
+            appRoot.innerHTML = ''; // Limpiar contenido anterior para evitar duplicados
+            switch (currentPage) {
+                case 'home':
+                    renderHomePage();
+                    break;
+                case 'quiz':
+                    renderQuizPage();
+                    break;
+                case 'results':
+                    renderResultsPage();
+                    break;
+                default:
+                    // Manejo de estado desconocido, útil para depuración
+                    appRoot.innerHTML = `<p class="text-cyan-400 text-xl">Error: Página no encontrada.</p>`;
+            }
+        }
+
+        /**
+         * Renderiza la pantalla de inicio del quiz.
+         * Muestra el título, descripción, estándares evaluados, instrucciones y un botón para iniciar.
+         */
+        function renderHomePage() {
+            const htmlContent = `
+                <div class="bg-zinc-900 p-10 rounded-3xl shadow-xl max-w-4xl w-full text-center border-b-8 border-cyan-500 transform transition-all duration-500 scale-100 hover:scale-105">
+                    <h1 class="text-5xl font-extrabold text-cyan-400 mb-6 tracking-tight leading-tight">
+                        EVALUACIÓN SUMATIVA: INTEGRAL I
+                    </h1>
+                    <h2 class="text-3xl font-semibold text-cyan-400 mb-8">
+                        Biología Celular (CPB 1533)
+                    </h2>
+                    <div class="bg-zinc-800 p-6 rounded-2xl shadow-inner mb-8 border border-cyan-700 text-left">
+                        <p class="text-lg text-white mb-2">
+                            <span class="font-semibold text-cyan-400">Universidad:</span> Universidad de Playa Ancha
+                        </p>
+                        <p class="text-lg text-white mb-2">
+                            <span class="font-semibold text-cyan-400">Departamento:</span> Departamento de Ciencias y Geografía
+                        </p>
+                        <p class="text-lg text-white mb-2">
+                            <span class="font-semibold text-cyan-400">Facultad:</span> Facultad de Ciencias Naturales y Exactas
+                        </p>
+                        <p class="text-lg text-white mb-2">
+                            <span class="font-semibold text-cyan-400">Docente:</span> Leandro Torres Díaz, PhD.
+                        </p>
+                        <p class="text-lg text-white mb-2">
+                            <span class="font-semibold text-cyan-400">Fecha:</span> 17 de junio de 2025
+                        </p>
+                        <p class="text-md text-white leading-relaxed mt-4">
+                            Esta evaluación aborda los conocimientos y habilidades descritos en el siguiente Estándar Disciplinario para Carreras de Pedagogía en Biología:
+                        </p>
+                        <p class="text-md text-white leading-relaxed mt-2">
+                            <span class="font-semibold text-white">Estándar C: Estructuras y funciones básicas de los seres vivos:</span> Comprende a los seres vivos como sistemas formados por células, capaces de sobrevivir mediante el intercambio de energía y materia, y establece relaciones entre los niveles de organización macroscópico y microscópico.
+                        </p>
+                    </div>
+                    <div class="bg-zinc-800 p-6 rounded-2xl shadow-inner mb-10 border border-cyan-700">
+                        <h3 class="text-2xl font-bold text-cyan-400 mb-4">Instrucciones</h3>
+                        <ul class="list-disc list-inside text-lg text-white text-left mx-auto max-w-xl space-y-2">
+                            <li>Lea atentamente cada pregunta.</li>
+                            <li>La prueba consta de ${filteredQuizData.length} preguntas de selección múltiple.</li>
+                        </ul>
+                    </div>
+                    <button id="startButton" class="px-12 py-5 bg-gradient-to-r from-cyan-600 to-sky-700 text-white font-extrabold text-2xl rounded-full shadow-lg hover:from-cyan-700 hover:to-sky-800 transform hover:scale-105 transition-all duration-300 ease-in-out border-b-4 border-cyan-800 active:border-b-0 active:translate-y-1">
+                        Comenzar Test
+                    </button>
+                </div>
+            `;
+            appRoot.innerHTML = htmlContent;
+            // Asigna el evento click al botón de inicio
+            document.getElementById('startButton').addEventListener('click', () => {
+                currentPage = 'quiz';
+                renderApp(); // Transiciona a la página del quiz
+            });
+        }
+
+        /**
+         * Renderiza la página del quiz, mostrando la pregunta actual y sus opciones.
+         * Incluye la barra de progreso y maneja la lógica para mostrar el botón "Siguiente Pregunta".
+         */
+        function renderQuizPage() {
+            const question = filteredQuizData[currentQuestionIndex];
+            if (!question) {
+                // Si no hay pregunta (por ejemplo, índice fuera de rango), muestra un mensaje de error
+                appRoot.innerHTML = `<p class="text-cyan-400 text-xl">Error: No se encontró la pregunta.</p>`;
+                return;
+            }
+
+            // Calcula el progreso para la barra
+            const progressWidth = ((currentQuestionIndex + (isQuestionAnswered ? 1 : 0)) / filteredQuizData.length) * 100;
+
+            let questionOptionsHtml = '';
+            let actionButtonHtml = '';
+
+            // Renderiza las opciones para preguntas de selección múltiple
+            questionOptionsHtml = question.options.map(option => `
+                <label class="flex items-center p-3 rounded-lg cursor-pointer transition-colors duration-200 shadow-sm
+                    ${isQuestionAnswered && option === question.correctAnswer ? 'bg-green-700 border-2 border-green-500' :
+                    isQuestionAnswered && selectedOption === option && !isAnswerCorrect ? 'bg-red-700 border-2 border-red-500' :
+                    'bg-zinc-800 hover:bg-zinc-700'
+                    }">
+                    <input
+                        type="radio"
+                        name="question-option"
+                        value="${option}"
+                        ${selectedOption === option ? 'checked' : ''}
+                        ${isQuestionAnswered ? 'disabled' : ''}
+                        class="form-radio h-5 w-5 text-cyan-400 border-gray-300 focus:ring-cyan-500"
+                    />
+                    <span class="ml-3 text-lg text-white">${option}</span>
+                </label>
+            `).join('');
+
+            // Muestra el botón "Siguiente Pregunta" solo si la pregunta ya ha sido respondida
+            if (isQuestionAnswered) {
+                actionButtonHtml = `
+                    <button id="nextQuestionBtn" class="mt-8 px-6 py-3 bg-gradient-to-r from-cyan-600 to-sky-700 text-white font-bold rounded-lg shadow-md hover:from-cyan-700 hover:to-sky-800 transition-colors duration-300">
+                        Siguiente Pregunta
+                    </button>
+                `;
+            }
+
+            const htmlContent = `
+                <div id="quiz-content-wrapper" class="bg-zinc-900 p-8 pt-6 rounded-3xl shadow-xl max-w-3xl w-full my-8 border-b-8 border-cyan-500 relative animate-fadeInRight">
+                    <!-- Número de pregunta posicionado un poco más arriba -->
+                    <div class="text-right text-xl font-bold text-cyan-400 -mt-2 mb-2">
+                        ${currentQuestionIndex + 1} de ${filteredQuizData.length}
+                    </div>
+                    <!-- Barra de progreso -->
+                    <div class="w-full bg-zinc-700 rounded-full h-2.5 mb-6">
+                        <div id="progressBar" class="bg-cyan-500 h-2.5 rounded-full transition-all duration-300 ease-in-out" style="width: ${progressWidth}%;"></div>
+                    </div>
+
+                    <div>
+                        <h2 class="text-2xl font-semibold mb-6 text-cyan-400">${question.question}</h2>
+                        <div class="space-y-4">
+                            ${questionOptionsHtml}
+                        </div>
+                        ${actionButtonHtml}
+                    </div>
+                </div>
+            `;
+            appRoot.innerHTML = htmlContent;
+
+            // --- Configurar Event Listeners dinámicamente ---
+            document.querySelectorAll('input[name="question-option"]').forEach(radio => {
+                radio.addEventListener('change', handleMultipleChoiceChange);
+            });
+
+            const nextQuestionBtn = document.getElementById('nextQuestionBtn');
+            if (nextQuestionBtn) {
+                nextQuestionBtn.addEventListener('click', handleNextQuestion);
+            }
+
+            // Mostrar feedback si showFeedbackModal es verdadero
+            if (showFeedbackModal) {
+                renderFeedbackModal(question);
+            }
+        }
+
+        /**
+         * Renderiza la pantalla de resultados finales del quiz.
+         * Muestra el número de preguntas respondidas y el total de respuestas correctas.
+         */
+        function renderResultsPage() {
+            // Calcula el número de respuestas correctas
+            const correctCount = Object.keys(userAnswers).filter(idx => {
+                const q = filteredQuizData[parseInt(idx)]; // Usar filteredQuizData
+                return userAnswers[idx] === q.correctAnswer;
+            }).length;
+
+            const totalQuestions = filteredQuizData.length;
+            
+            // Cálculo de la nota
+            let finalGrade = 1.0; // Nota mínima (1.0)
+            const passingScorePercent = 0.60; // 60% para el 4.0
+            const correctAnswersFor4_0 = Math.ceil(passingScorePercent * totalQuestions);
+
+            if (correctCount >= correctAnswersFor4_0) {
+                // Escala de 4.0 a 7.0
+                const gradeRange = 7.0 - 4.0; // 3.0 puntos de nota
+                const scoreRange = totalQuestions - correctAnswersFor4_0; // Cantidad de preguntas para ese rango
+                if (scoreRange > 0) {
+                    finalGrade = 4.0 + ((correctCount - correctAnswersFor4_0) / scoreRange) * gradeRange;
+                } else { 
+                    // Si correctAnswersFor4_0 es igual a totalQuestions, significa que el 100% de aciertos es 4.0
+                    // pero si se llega al 100% de aciertos y es un sistema 1-7, lo justo es 7.0
+                    finalGrade = 7.0; 
+                }
+            } else {
+                // Escala de 1.0 a 3.9 (menos del 60%)
+                if (correctAnswersFor4_0 > 0) { // Evitar división por cero si correctAnswersFor4_0 es 0
+                    finalGrade = 1.0 + (correctCount / correctAnswersFor4_0) * (4.0 - 1.0);
+                } else {
+                    finalGrade = 1.0; // Si no hay preguntas para el 4.0, la nota es 1.0
+                }
+            }
+
+            // Redondear la nota a dos decimales
+            finalGrade = finalGrade.toFixed(2);
+
+
+            const htmlContent = `
+                <div class="bg-zinc-900 p-10 rounded-3xl shadow-xl max-w-3xl w-full text-center border-b-8 border-cyan-500 transform transition-all duration-500 scale-100 hover:scale-105">
+                    <h1 class="text-5xl font-extrabold text-cyan-400 mb-6 tracking-tight leading-tight">
+                        ¡Test Completado!
+                    </h1>
+                    <p class="text-2xl text-white mb-4">
+                        Has respondido ${totalQuestions} preguntas.
+                    </p>
+                    <p class="text-3xl font-bold text-green-500 mb-4">
+                        Puntaje Obtenido: ${correctCount} / ${totalQuestions}
+                    </p>
+                    <p class="text-4xl font-extrabold text-cyan-400 mb-8">
+                        Nota Final: ${finalGrade}
+                    </p>
+                    <button id="retryButton" class="px-10 py-4 bg-gradient-to-r from-cyan-600 to-sky-700 text-white font-extrabold text-xl rounded-full shadow-lg hover:from-cyan-700 hover:to-sky-800 transform hover:scale-105 transition-all duration-300 ease-in-out border-b-4 border-cyan-800 active:border-b-0 active:translate-y-1">
+                        Volver a Intentar
+                    </button>
+                </div>
+            `;
+            appRoot.innerHTML = htmlContent;
+            // Asigna el evento click al botón de reintento para resetear el estado
+            document.getElementById('retryButton').addEventListener('click', () => {
+                // Resetear todas las variables de estado para iniciar un nuevo quiz
+                currentPage = 'home';
+                currentQuestionIndex = 0;
+                selectedOption = null;
+                userAnswers = {};
+                showFeedbackModal = false;
+                isAnswerCorrect = false;
+                isQuestionAnswered = false;
+                renderApp(); // Volver a la página de inicio
+            });
+        }
+
+        /**
+         * Manejador de eventos para el cambio de opción en preguntas de selección múltiple.
+         * Almacena la opción seleccionada y llama a la función para procesar la respuesta.
+         * @param {Event} event - El evento de cambio (change event).
+         */
+        function handleMultipleChoiceChange(event) {
+            selectedOption = event.target.value;
+            handleSubmitAnswer(event.target.value);
+        }
+
+        /**
+         * Lógica central para procesar la respuesta del usuario.
+         * Determina si la respuesta es correcta, guarda la respuesta y activa el modal de feedback.
+         * @param {string} optionValue - La opción seleccionada para preguntas de opción múltiple.
+         */
+        function handleSubmitAnswer(optionValue) {
+            const question = filteredQuizData[currentQuestionIndex];
+            
+            isAnswerCorrect = (optionValue === question.correctAnswer);
+            userAnswers[currentQuestionIndex] = optionValue; // Guarda la respuesta del usuario
+
+            isQuestionAnswered = true; // Marca la pregunta actual como respondida
+            showFeedbackModal = true; // Habilita la visualización del modal de feedback
+            renderApp(); // Vuelve a renderizar la aplicación para actualizar la UI (deshabilitar opciones, mostrar botón Siguiente)
+        }
+
+        /**
+         * Manejador de eventos para pasar a la siguiente pregunta con animación.
+         * Resetea el estado y dispara la animación de salida antes de renderizar la siguiente pregunta.
+         */
+        async function handleNextQuestion() {
+            const quizContentWrapper = document.getElementById('quiz-content-wrapper');
+            if (quizContentWrapper) {
+                // Aplicar animación de salida
+                quizContentWrapper.classList.remove('animate-fadeInRight');
+                quizContentWrapper.classList.add('animate-fadeOutLeft');
+
+                // Esperar a que la animación de salida termine (0.5 segundos)
+                await new Promise(resolve => setTimeout(resolve, 500)); 
+            }
+
+            // Resetear estado para la siguiente pregunta
+            selectedOption = null; 
+            isQuestionAnswered = false; 
+            showFeedbackModal = false; 
+
+            // Avanzar a la siguiente pregunta o a los resultados
+            if (currentQuestionIndex < filteredQuizData.length - 1) {
+                currentQuestionIndex++;
+                renderApp(); // Esto renderizará la nueva pregunta con la animación de entrada
+            } else {
+                currentPage = 'results';
+                renderApp(); // Ir a la página de resultados
+            }
+        }
+
+        /**
+         * Renderiza el modal de feedback que aparece después de que el usuario responde una pregunta.
+         * Muestra si la respuesta fue correcta o incorrecta, la respuesta correcta y una explicación.
+         * @param {Object} question - El objeto de la pregunta actual para obtener la respuesta correcta y explicación.
+         */
+        function renderFeedbackModal(question) {
+            const feedbackHtml = `
+                <div id="feedbackModalOverlay" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+                    <div class="bg-black p-8 rounded-3xl shadow-2xl text-center flex flex-col items-center justify-center w-full max-w-md relative overflow-hidden transform transition-transform duration-300 ${isAnswerCorrect ? 'scale-105' : 'scale-95'}">
+                        ${isAnswerCorrect ? `
+                            <svg class="w-24 h-24 text-green-500 mb-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        ` : `
+                            <svg class="w-24 h-24 text-red-500 mb-4 animate-shake" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        `}
+                        <h3 class="text-4xl font-extrabold mb-2 ${isAnswerCorrect ? 'text-green-600' : 'text-red-600'}">
+                            ${isAnswerCorrect ? '¡Correcto!' : '¡Incorrecto!'}
+                        </h3>
+                        <div class="text-lg text-white mt-4 text-left w-full">
+                            <p class="font-semibold text-cyan-400">Respuesta Correcta:</p>
+                            <p class="mb-2 italic text-white">${question.correctAnswer}</p>
+                            <p class="font-semibold text-cyan-400">Explicación:</p>
+                            <p class="text-sm text-white">${question.explanation}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            // Agrega el modal directamente al cuerpo para asegurar que esté sobre todo
+            document.body.insertAdjacentHTML('beforeend', feedbackHtml);
+            
+            // Listener para cerrar el modal al hacer clic en cualquier parte del overlay
+            // Elimina el modal del DOM para limpiar la memoria y el DOM
+            document.getElementById('feedbackModalOverlay').addEventListener('click', (event) => {
+                // Asegura que el clic sea en el overlay y no en el contenido del modal
+                if (event.target.id === 'feedbackModalOverlay') {
+                    const modal = document.getElementById('feedbackModalOverlay');
+                    if (modal) {
+                        modal.remove(); // Elimina el elemento del DOM
+                        showFeedbackModal = false; // Ocultar el feedback
+                    }
+                }
+            });
+        }
+
+        // --- Inicio de la Aplicación ---
+        // Se ejecuta cuando el DOM está completamente cargado
+        document.addEventListener('DOMContentLoaded', () => {
+            initThreeJSBackground(); // Inicializa el fondo 3D al cargar el DOM
+            renderApp(); // Luego renderiza el contenido de la aplicación
+        });
+
+    </script>
+</body>
+</html>

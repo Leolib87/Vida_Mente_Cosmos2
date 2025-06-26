@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tipos de Gráficos en d3.js</title>
+  <style>
+    /* Estilo para los gráficos */
+    .chart {
+      width: 400px;
+      height: 300px;
+      margin: 0 auto 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .tooltip {
+      position: absolute;
+      background-color: white;
+      border: 1px solid #ccc;
+      padding: 5px;
+      font-size: 12px;
+      pointer-events: none;
+    }
+
+    /* Estilo para centrar los gráficos */
+    .chart-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      margin-bottom: 40px;
+    }
+
+    /* Estilo tecnológico */
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+
+    h1, h2 {
+      margin: 20px 0;
+      font-size: 24px;
+    }
+
+    p {
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    footer {
+      margin-top: 20px;
+      font-size: 12px;
+    }
+
+    .chart-container {
+      background-color: #222;
+      padding: 20px;
+      margin: 20px;
+    }
+
+    .chart-container h2 {
+      color: #fff;
+    }
+
+    .chart-container p {
+      color: #ccc;
+    }
+
+    .chart-container footer {
+      color: #ccc;
+    }
+
+    svg {
+      display: block;
+    }
+
+    /* Imágenes tecnológicas */
+    #barChart {
+      background-image: url('https://webneel.com/wallpaper/sites/default/files/images/08-2014/2-black-wallpaper-pattern.1280.jpg');
+      background-size: cover;
+    }
+
+    #lineChart {
+      background-image: url('https://webneel.com/wallpaper/sites/default/files/images/08-2014/2-black-wallpaper-pattern.1280.jpg');
+      background-size: cover;
+    }
+
+    #pieChart {
+      background-image: url('https://webneel.com/wallpaper/sites/default/files/images/08-2014/2-black-wallpaper-pattern.1280.jpg');
+      background-size: cover;
+    }
+
+    #areaChart {
+      background-image: url('https://webneel.com/wallpaper/sites/default/files/images/08-2014/2-black-wallpaper-pattern.1280.jpg');
+      background-size: cover;
+    }
+
+    #treemapChart {
+      background-image: url('https://webneel.com/wallpaper/sites/default/files/images/08-2014/2-black-wallpaper-pattern.1280.jpg');
+      background-size: cover;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center;">Tipos de Gráficos en d3.js</h1>
+  
+  <!-- Gráfico de Barras -->
+  <div id="barChart" class="chart-container">
+    <h2 style="text-align: center;">Gráfico de Barras</h2>
+    <p style="text-align: justify;">El gráfico de barras es utilizado para representar la distribución de valores en diferentes categorías. Es ideal para comparar magnitudes entre categorías.</p>
+    <svg class="chart"></svg>
+    <footer style="text-align: center;">
+      <p>Pie de gráfico: Información adicional sobre el gráfico de barras.</p>
+    </footer>
+  </div>
+
+  <!-- Gráfico de Líneas -->
+  <div id="lineChart" class="chart-container">
+    <h2 style="text-align: center;">Gráfico de Líneas</h2>
+    <p style="text-align: justify;">El gráfico de líneas muestra la tendencia o cambio en los datos a lo largo del tiempo. Es útil para visualizar la evolución de una variable a lo largo de un período.</p>
+    <svg class="chart"></svg>
+    <footer style="text-align: center;">
+      <p>Pie de gráfico: Información adicional sobre el gráfico de líneas.</p>
+    </footer>
+  </div>
+
+  <!-- Gráfico de Pastel -->
+  <div id="pieChart" class="chart-container">
+    <h2 style="text-align: center;">Gráfico de Pastel</h2>
+    <p style="text-align: justify;">El gráfico de pastel representa la proporción de diferentes categorías en un conjunto de datos. Se utiliza para visualizar la distribución relativa de los datos y destacar las partes en relación con el todo.</p>
+    <svg class="chart"></svg>
+    <footer style="text-align: center;">
+      <p>Pie de gráfico: Información adicional sobre el gráfico de pastel.</p>
+    </footer>
+  </div>
+
+  <!-- Gráfico de Área -->
+  <div id="areaChart" class="chart-container">
+    <h2 style="text-align: center;">Gráfico de Área</h2>
+    <p style="text-align: justify;">El gráfico de área muestra la distribución y cambio en los valores a lo largo del tiempo. Es útil para visualizar patrones de comportamiento y comparar tendencias entre diferentes categorías.</p>
+    <svg class="chart"></svg>
+    <footer style="text-align: center;">
+      <p>Pie de gráfico: Información adicional sobre el gráfico de área.</p>
+    </footer>
+  </div>
+
+  <!-- Gráfico de Treemap -->
+  <div id="treemapChart" class="chart-container">
+    <h2 style="text-align: center;">Gráfico de Treemap</h2>
+    <p style="text-align: justify;">El gráfico de Treemap muestra la distribución jerárquica de datos utilizando rectángulos anidados. Es útil para representar categorías y subcategorías con sus respectivos tamaños proporcionales.</p>
+    <svg class="chart"></svg>
+    <footer style="text-align: center;">
+      <p>Pie de gráfico: Información adicional sobre el gráfico de Treemap.</p>
+    </footer>
+  </div>
+
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  <script>
+    // Datos simulados para cada gráfico
+    const barChartData = [
+      { category: "A", values: [10, 15, 20, 25, 30], color: "#ff8c00" },
+      { category: "B", values: [5, 10, 15, 20, 25], color: "#ff6384" },
+      { category: "C", values: [15, 20, 25, 30, 35], color: "#36a2eb" },
+      { category: "D", values: [20, 25, 30, 35, 40], color: "#cc65fe" },
+      { category: "E", values: [25, 30, 35, 40, 45], color: "#ffce56" }
+    ];
+
+    const lineChartData = [30, 40, 20, 10, 50];
+    const pieChartData = [25, 15, 10, 20, 30];
+    const areaChartData = [40, 10, 25, 30, 20];
+
+    // Configuración de los colores
+    const colors = ['#ff8c00', '#ff6384', '#36a2eb', '#cc65fe', '#ffce56'];
+
+    // Función para formatear los números con unidades simuladas
+    const formatNumber = d3.format(".2s");
+    const formatPercentage = d3.format(".2%");
+
+    // Gráfico de Barras
+    const barChart = d3.select("#barChart")
+      .select("svg")
+      .attr("width", 400)
+      .attr("height", 300);
+
+    const bars = barChart.selectAll("rect")
+      .data(barChartData)
+      .enter()
+      .append("rect")
+      .attr("x", (d, i) => i * 60)
+      .attr("y", d => 300 - d3.mean(d.values) * 5)
+      .attr("width", 40)
+      .attr("height", d => d3.mean(d.values) * 5)
+      .attr("fill", d => d.color)
+      .on("mouseover", handleBarMouseOver)
+      .on("mouseout", handleBarMouseOut);
+
+    // Agregar promedio y desviación estándar en un recuadro al pasar el cursor sobre las barras
+    function handleBarMouseOver(event, d) {
+      const mean = d3.mean(d.values);
+      const deviation = d3.deviation(d.values);
+      const tooltip = barChart.append("g")
+        .attr("class", "tooltip")
+        .style("display", "none");
+
+      tooltip.append("rect")
+        .attr("width", 80)
+        .attr("height", 40)
+        .attr("fill", "#fff")
+        .attr("stroke", "#ccc");
+
+      tooltip.append("text")
+        .attr("x", 40)
+        .attr("y", 20)
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle")
+        .attr("font-size", "10px")
+        .text(`Promedio: ${formatNumber(mean)}`);
+
+      tooltip.append("text")
+        .attr("x", 40)
+        .attr("y", 35)
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle")
+        .attr("font-size", "10px")
+        .text(`Desviación: ${formatNumber(deviation)}`);
+
+      tooltip.attr("transform", `translate(${event.offsetX + 10}, ${event.offsetY - 50})`)
+        .style("display", "block");
+    }
+
+    function handleBarMouseOut() {
+      barChart.select(".tooltip").remove();
+    }
+
+    // Ejes x e y
+    const xScaleBar = d3.scaleBand()
+      .domain(barChartData.map(d => d.category))
+      .range([0, 400])
+      .padding(0.1);
+
+    const yScaleBar = d3.scaleLinear()
+      .domain([0, d3.max(barChartData, d => d3.mean(d.values))])
+      .range([300, 0]);
+
+    const xAxisBar = d3.axisBottom(xScaleBar);
+    const yAxisBar = d3.axisLeft(yScaleBar).tickFormat(formatNumber);
+
+    barChart.append("g")
+      .attr("transform", "translate(0, 300)")
+      .call(xAxisBar)
+      .selectAll("text")
+      .style("text-anchor", "end")
+      .attr("transform", "rotate(-45)");
+
+    barChart.append("g")
+      .call(yAxisBar)
+      .append("text")
+      .attr("x", -50)
+      .attr("y", -30)
+      .attr("fill", "black")
+      .attr("text-anchor", "end")
+      .attr("transform", "rotate(-90)")
+      .text("Valores (unidad)");
+
+    // Gráfico de Líneas
+    const lineChart = d3.select("#lineChart")
+      .select("svg")
+      .attr("width", 400)
+      .attr("height", 300);
+
+    const line = d3.line()
+      .x((d, i) => i * 80 + 40)
+      .y(d => 300 - d * 2);
+
+    lineChart.append("path")
+      .datum(lineChartData)
+      .attr("fill", "none")
+      .attr("stroke", colors[0])
+      .attr("stroke-width", 2)
+      .attr("d", line);
+
+    // Agregar datos numéricos en el gráfico de líneas
+    lineChart.selectAll("text.label")
+      .data(lineChartData)
+      .enter()
+      .append("text")
+      .attr("class", "label")
+      .attr("x", (d, i) => i * 80 + 40)
+      .attr("y", d => 300 - d * 2 - 5)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "10px")
+      .text(d => formatNumber(d));
+
+    // Ejes x e y
+    const xScaleLine = d3.scaleLinear()
+      .domain([0, lineChartData.length - 1])
+      .range([0, 400]);
+
+    const yScaleLine = d3.scaleLinear()
+      .domain([0, d3.max(lineChartData)])
+      .range([300, 0]);
+
+    const xAxisLine = d3.axisBottom(xScaleLine)
+      .tickFormat((d, i) => `Tiempo ${i + 1}`);
+
+    const yAxisLine = d3.axisLeft(yScaleLine)
+      .tickFormat(formatNumber);
+
+    lineChart.append("g")
+      .attr("transform", "translate(0, 300)")
+      .call(xAxisLine)
+      .append("text")
+      .attr("x", 400)
+      .attr("y", 30)
+      .attr("fill", "black")
+      .attr("text-anchor", "end")
+      .text("Tiempo (unidad)");
+
+    lineChart.append("g")
+      .call(yAxisLine)
+      .append("text")
+      .attr("x", -50)
+      .attr("y", -30)
+      .attr("fill", "black")
+      .attr("text-anchor", "end")
+      .attr("transform", "rotate(-90)")
+      .text("Valores (unidad)");
+
+    // Gráfico de Pastel
+    const pieChart = d3.select("#pieChart")
+      .select("svg")
+      .attr("width", 400)
+      .attr("height", 300);
+
+    const pie = d3.pie()
+      .value(d => d);
+
+    const pieData = pie(pieChartData);
+
+    const arc = d3.arc()
+      .innerRadius(0)
+      .outerRadius(150);
+
+    const pieG = pieChart.append("g")
+      .attr("transform", "translate(200, 150)");
+
+    pieG.selectAll("path")
+      .data(pieData)
+      .enter()
+      .append("path")
+      .attr("d", arc)
+      .attr("fill", (d, i) => colors[i]);
+
+    // Agregar datos numéricos en el gráfico de pastel
+    pieG.selectAll("text.label")
+      .data(pieData)
+      .enter()
+      .append("text")
+      .attr("class", "label")
+      .attr("transform", d => `translate(${arc.centroid(d)})`)
+      .attr("text-anchor", "middle")
+      .attr("dy", "0.35em")
+      .text(d => `${formatPercentage(d.data / d3.sum(pieChartData))} (${formatNumber(d.data)})`)
+      .attr("fill", "black")
+      .attr("font-size", "12px");
+
+    // Gráfico de Área
+    const areaChart = d3.select("#areaChart")
+      .select("svg")
+      .attr("width", 400)
+      .attr("height", 300);
+
+    const area = d3.area()
+      .x((d, i) => i * 80 + 40)
+      .y0(300)
+      .y1(d => 300 - d * 2);
+
+    areaChart.append("path")
+      .datum(areaChartData)
+      .attr("fill", colors[0])
+      .attr("d", area);
+
+    // Agregar datos numéricos en el gráfico de área
+    areaChart.selectAll("text.label")
+      .data(areaChartData)
+      .enter()
+      .append("text")
+      .attr("class", "label")
+      .attr("x", (d, i) => i * 80 + 40)
+      .attr("y", d => 300 - d * 2 - 5)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "10px")
+      .text(d => formatNumber(d));
+
+    // Ejes x e y
+    const xScaleArea = d3.scaleLinear()
+      .domain([0, areaChartData.length - 1])
+      .range([0, 400]);
+
+    const yScaleArea = d3.scaleLinear()
+      .domain([0, d3.max(areaChartData)])
+      .range([300, 0]);
+
+    const xAxisArea = d3.axisBottom(xScaleArea)
+      .tickFormat((d, i) => `Tiempo ${i + 1}`);
+
+    const yAxisArea = d3.axisLeft(yScaleArea)
+      .tickFormat(formatNumber);
+
+    areaChart.append("g")
+      .attr("transform", "translate(0, 300)")
+      .call(xAxisArea)
+      .append("text")
+      .attr("x", 400)
+      .attr("y", 30)
+      .attr("fill", "black")
+      .attr("text-anchor", "end")
+      .text("Tiempo (unidad)");
+
+    areaChart.append("g")
+      .call(yAxisArea)
+      .append("text")
+      .attr("x", -50)
+      .attr("y", -30)
+      .attr("fill", "black")
+      .attr("text-anchor", "end")
+      .attr("transform", "rotate(-90)")
+      .text("Valores (unidad)");
+
+    // Gráfico de Treemap
+    const treemapChart = d3.select("#treemapChart")
+      .select("svg")
+      .attr("width", 400)
+      .attr("height", 300);
+
+    const treemap = d3.treemap()
+      .size([400, 300])
+      .padding(1);
+
+    const treemapData = {
+      name: "Root",
+      children: [
+        { name: "Category 1", value: 10 },
+        { name: "Category 2", value: 20 },
+        { name: "Category 3", value: 10 },
+        { name: "Category 4", value: 5 },
+        { name: "Category 5", value: 5 },
+        { name: "Category 6", value: 10 },
+        { name: "Category 7", value: 10 },
+        { name: "Category 8", value: 10 },
+        { name: "Category 9", value: 10 },
+        { name: "Category 10", value: 10 },
+      ]
+    };
+
+    const root = d3.hierarchy(treemapData)
+      .sum(d => d.value);
+
+    treemap(root);
+
+    const nodes = treemapChart.selectAll("g")
+      .data(root.leaves())
+      .enter()
+      .append("g")
+      .attr("transform", d => `translate(${d.x0},${d.y0})`);
+
+    nodes.append("rect")
+      .attr("width", d => d.x1 - d.x0)
+      .attr("height", d => d.y1 - d.y0)
+      .attr("fill", (d, i) => colors[i % colors.length]);
+
+    // Agregar porcentaje al pasar el cursor sobre el rectángulo del treemap
+    function handleTreemapMouseOver(event, d) {
+      const percentage = formatPercentage(d.data.value / root.value);
+      const tooltip = treemapChart.append("g")
+        .attr("class", "tooltip")
+        .style("display", "none");
+
+      tooltip.append("rect")
+        .attr("width", 80)
+        .attr("height", 40)
+        .attr("fill", "#fff")
+        .attr("stroke", "#ccc");
+
+      tooltip.append("text")
+        .attr("x", 40)
+        .attr("y", 20)
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle")
+        .attr("font-size", "10px")
+        .text(`Valor: ${formatNumber(d.data.value)}`);
+
+      tooltip.append("text")
+        .attr("x", 40)
+        .attr("y", 35)
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle")
+        .attr("font-size", "10px")
+        .text(`Porcentaje: ${percentage}`);
+
+      tooltip.attr("transform", `translate(${event.offsetX + 10}, ${event.offsetY - 50})`)
+        .style("display", "block");
+    }
+
+    function handleTreemapMouseOut() {
+      treemapChart.select(".tooltip").remove();
+    }
+
+    nodes.append("text")
+      .attr("x", d => (d.x1 - d.x0) / 2)
+      .attr("y", d => (d.y1 - d.y0) / 2)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr("font-size", "10px")
+      .text(d => d.data.name);
+
+    nodes.on("mouseover", handleTreemapMouseOver)
+      .on("mouseout", handleTreemapMouseOut);
+  </script>
+</body>
+</html>
+
+

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagrama de Relaciones Cognitivas 3D - Perfeccionado</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #0A0E1F; /* Fondo aún más oscuro para un efecto cósmico */
+      font-family: 'Arial', sans-serif;
+    }
+
+    /* Estilo para el recuadro de leyenda en la esquina inferior derecha */
+    #legend {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(20, 30, 50, 0.95); /* Fondo futurista semi-transparente */
+      border: 2px solid #00FFEA; /* Borde cian neón */
+      border-radius: 10px;
+      padding: 15px;
+      color: #00FFEA; /* Texto cian neón */
+      font-size: 16px; /* Tamaño más grande para legibilidad */
+      box-shadow: 0 0 15px rgba(0, 255, 234, 0.5); /* Sombra con brillo cian */
+      z-index: 100;
+      transition: transform 0.3s ease, box-shadow 0.3s ease; /* Animación suave */
+    }
+
+    #legend:hover {
+      transform: scale(1.05); /* Efecto de escala al pasar el ratón */
+      box-shadow: 0 0 25px rgba(0, 255, 234, 0.8); /* Brillo más intenso */
+    }
+
+    #legend div {
+      display: flex;
+      align-items: center;
+      margin: 8px 0;
+    }
+
+    #legend .color-box {
+      width: 24px;
+      height: 24px;
+      margin-right: 12px;
+      border: 2px solid #FFFFFF; /* Borde blanco para los cuadros de color */
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); /* Sombra suave */
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Canvas para la escena 3D -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- Leyenda en la esquina inferior derecha -->
+  <div id="legend">
+    <div><span class="color-box" style="background: #1E90FF;"></span> Cognitivismo (Esfera Interna)</div>
+    <div><span class="color-box" style="background: #FF69B4;"></span> Emergentismo (Esfera Intermedia)</div>
+    <div><span class="color-box" style="background: #32CD32;"></span> Enacción (Esfera Externa)</div>
+  </div>
+
+  <script>
+    // Configuración básica de la escena 3D con Three.js
+    const scene = new THREE.Scene(); // Crea la escena 3D donde se colocarán todos los objetos
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); // Cámara con perspectiva
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); // Renderizador con anti-aliasing y soporte para transparencia
+    renderer.setSize(window.innerWidth, window.innerHeight); // Ajusta el tamaño del render al viewport
+    renderer.setClearColor(0x0A0E1F, 1); // Fondo oscuro para consistencia
+    document.body.appendChild(renderer.domElement); // Agrega el canvas al cuerpo del HTML
+
+    // Controles de órbita para permitir rotación y zoom
+    const controls = new THREE.OrbitControls(camera, renderer.domElement); // Permite interactuar con la escena girándola
+    controls.enableDamping = true; // Suaviza el movimiento
+    controls.dampingFactor = 0.05; // Factor de amortiguación para el movimiento
+    controls.minDistance = 200; // Distancia mínima de zoom
+    controls.maxDistance = 1000; // Distancia máxima de zoom
+
+    // Define el radio base de la esfera principal
+    const radius = 300; // Radio en unidades 3D para las esferas concéntricas
+
+    // Añadir iluminación para profundidad y realismo
+    const ambientLight = new THREE.AmbientLight(0xFFFFFF, 0.3); // Luz ambiental suave
+    scene.add(ambientLight);
+
+    const pointLight = new THREE.PointLight(0xFFFFFF, 1, 1000); // Luz puntual para destacar los elementos
+    pointLight.position.set(500, 500, 500); // Posición dinámica
+    scene.add(pointLight);
+
+    // Sistema de partículas para un fondo dinámico
+    const particleCount = 500; // Número de partículas
+    const particles = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    const colors = new Float32Array(particleCount * 3);
+
+    for (let i = 0; i < particleCount * 3; i += 3) {
+      positions[i] = (Math.random() - 0.5) * 2000; // Posición aleatoria en X
+      positions[i + 1] = (Math.random() - 0.5) * 2000; // Posición aleatoria en Y
+      positions[i + 2] = (Math.random() - 0.5) * 2000; // Posición aleatoria en Z
+
+      colors[i] = Math.random(); // R
+      colors[i + 1] = Math.random(); // G
+      colors[i + 2] = 1; // B (más azul para el tema cósmico)
+    }
+
+    particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    particles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const particleMaterial = new THREE.PointsMaterial({
+      size: 2,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.6
+    });
+
+    const particleSystem = new THREE.Points(particles, particleMaterial);
+    scene.add(particleSystem);
+
+    // Animación de partículas
+    function animateParticles() {
+      const positions = particleSystem.geometry.attributes.position.array;
+      for (let i = 0; i < particleCount * 3; i += 3) {
+        positions[i + 1] -= 0.5; // Movimiento hacia abajo
+        if (positions[i + 1] < -1000) positions[i + 1] = 1000; // Reinicia al llegar al fondo
+      }
+      particleSystem.geometry.attributes.position.needsUpdate = true;
+    }
+
+    // Lista de puntos (autores) con sus posiciones esféricas, enlaces y categorías
+    const points = [
+      // Inteligencia Artificial (esfera interna, factor 0.25)
+      { phi: 0, theta: 0.5, text: "McCarthy", link: "https://es.wikipedia.org/wiki/John_McCarthy_(inform%C3%A1tico)", category: "Inteligencia Artificial" },
+      { phi: Math.PI / 5, theta: 0.6, text: "Brooks", link: "https://es.wikipedia.org/wiki/Rodney_Brooks", category: "Inteligencia Artificial" },
+      { phi: -Math.PI / 5, theta: 0.6, text: "Winograd", link: "https://es.wikipedia.org/wiki/Terry_Winograd", category: "Inteligencia Artificial" },
+      { phi: Math.PI / 4, theta: 0.4, text: "Newell", link: "https://es.wikipedia.org/wiki/Allen_Newell", category: "Inteligencia Artificial" },
+      { phi: -Math.PI / 4, theta: 0.4, text: "Feldman", link: "https://es.wikipedia.org/wiki/Jerome_Feldman", category: "Inteligencia Artificial" },
+
+      // Neurociencia (esfera intermedia, factor 0.5)
+      { phi: Math.PI / 4, theta: -0.2, text: "Llinás", link: "https://es.wikipedia.org/wiki/Rodolfo_Llin%C3%A1s", category: "Neurociencia" },
+      { phi: Math.PI / 3, theta: -0.1, text: "Marr", link: "https://es.wikipedia.org/wiki/David_Marr_(neurocient%C3%ADfico)", category: "Neurociencia" },
+      { phi: 0, theta: -0.75, text: "Varela", link: "https://es.wikipedia.org/wiki/Francisco_Varela", category: "Neurociencia" },
+
+      // Lingüística (esfera intermedia, factor 0.5)
+      { phi: -Math.PI / 4, theta: 0.2, text: "Chomsky", link: "https://es.wikipedia.org/wiki/Noam_Chomsky", category: "Lingüística" },
+      { phi: -Math.PI / 3, theta: 0.1, text: "Lakoff", link: "https://es.wikipedia.org/wiki/George_Lakoff", category: "Lingüística" },
+
+      // Ciencias Cognitivas (esfera externa, factor 0.75)
+      { phi: Math.PI / 6, theta: -0.3, text: "Neisser", link: "https://es.wikipedia.org/wiki/Ulric_Neisser", category: "Ciencias Cognitivas" },
+      { phi: -Math.PI / 6, theta: 0.3, text: "Dennett", link: "https://es.wikipedia.org/wiki/Daniel_Dennett", category: "Ciencias Cognitivas" },
+      { phi: Math.PI / 2, theta: 0, text: "Rumelhart", link: "https://es.wikipedia.org/wiki/David_Rumelhart", category: "Ciencias Cognitivas" },
+
+      // Filosofía (esfera externa, factor 0.75)
+      { phi: -Math.PI / 2, theta: -0.1, text: "Searle", link: "https://es.wikipedia.org/wiki/John_Searle", category: "Filosofía" },
+      { phi: -Math.PI / 3, theta: 0.4, text: "Hofstadter", link: "https://es.wikipedia.org/wiki/Douglas_Hofstadter", category: "Filosofía" },
+      { phi: Math.PI / 8, theta: -0.6, text: "Maturana", link: "https://es.wikipedia.org/wiki/Humberto_Maturana", category: "Filosofía" },
+      { phi: -Math.PI / 8, theta: 0.6, text: "Dreyfus", link: "https://es.wikipedia.org/wiki/Hubert_Dreyfus", category: "Filosofía" },
+      { phi: 0, theta: -0.7, text: "Rorty", link: "https://es.wikipedia.org/wiki/Richard_Rorty", category: "Filosofía" }
+    ];
+
+    // Etiquetas de categorías con coordenadas cartesianas (x, y, z) para distribución en todas las direcciones 3D
+    const categoryLabels = [
+      { x: 0, y: radius * 0.95, z: 0, text: "Inteligencia Artificial", associatedPoints: ["McCarthy", "Brooks", "Winograd", "Newell", "Feldman"] },
+      { x: -radius * 0.95, y: 0, z: 0, text: "Neurociencia", associatedPoints: ["Llinás", "Marr", "Varela"] },
+      { x: 0, y: 0, z: radius * 0.95, text: "Lingüística", associatedPoints: ["Chomsky", "Lakoff"] },
+      { x: radius * 0.95, y: 0, z: 0, text: "Ciencias Cognitivas", associatedPoints: ["Neisser", "Dennett", "Rumelhart"] },
+      { x: 0, y: -radius * 0.95, z: 0, text: "Filosofía", associatedPoints: ["Searle", "Hofstadter", "Maturana", "Dreyfus", "Rorty"] }
+    ];
+
+    // Esferas concéntricas con colores distintivos y efectos avanzados
+    const sphereColors = [
+      { factor: 0.25, color: 0x1E90FF }, // Azul cielo vibrante para Cognitivismo
+      { factor: 0.5, color: 0xFF69B4 },  // Rosa fuerte para Emergentismo
+      { factor: 0.75, color: 0x32CD32 }  // Verde lima para Enacción
+    ];
+
+    const spheres = sphereColors.map(sphere => {
+      const geometry = new THREE.SphereGeometry(radius * sphere.factor, 32, 32); // Geometría de la esfera
+      const material = new THREE.MeshBasicMaterial({
+        color: sphere.color,
+        wireframe: true,
+        opacity: 0.6,
+        transparent: true
+      });
+      const mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
+      return mesh;
+    });
+
+    // Animación de las esferas (pulsación suave)
+    function animateSpheres() {
+      spheres.forEach((sphere, index) => {
+        const scale = 1 + Math.sin(Date.now() * 0.001 + index) * 0.02; // Pulsación suave
+        sphere.scale.set(scale, scale, scale);
+      });
+    }
+
+    // Función para crear sprites de texto con efectos avanzados
+    function createTextSprite(text, color = 0xFFFFFF, isCategoryLabel = false) {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      canvas.width = 512;
+      canvas.height = 128;
+      ctx.font = isCategoryLabel ? "Bold 48px Arial" : "Bold 32px Arial"; // Tamaños más grandes para impacto
+      ctx.fillStyle = `#${color.toString(16).padStart(6, "0")}`;
+      ctx.strokeStyle = '#000000'; // Contorno negro para legibilidad
+      ctx.lineWidth = 2; // Grosor del contorno
+      ctx.textAlign = "center";
+      ctx.strokeText(text, canvas.width / 2, 80); // Contorno
+      ctx.fillText(text, canvas.width / 2, 80); // Relleno
+      const texture = new THREE.Texture(canvas);
+      texture.needsUpdate = true;
+      const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
+      const sprite = new THREE.Sprite(spriteMaterial);
+      sprite.scale.set(isCategoryLabel ? 150 : 100, isCategoryLabel ? 75 : 50, 1); // Escala mayor para mejor visibilidad
+      return sprite;
+    }
+
+    // Añadir líneas muy gruesas con efecto de brillo
+    const radioMaterial = new THREE.LineBasicMaterial({ color: 0x00CED1, linewidth: 100 }); // Líneas ultra gruesas
+    const categoryLines = [];
+    const categorySprites = [];
+    categoryLabels.forEach(label => {
+      const start = new THREE.Vector3(0, 0, 0);
+      const end = new THREE.Vector3(label.x, label.y, label.z);
+
+      const geometry = new THREE.BufferGeometry().setFromPoints([start, end]);
+      const line = new THREE.Line(geometry, radioMaterial);
+      line.userData = { associatedPoints: label.associatedPoints }; // Almacena los puntos asociados para interacción
+      scene.add(line);
+      categoryLines.push(line);
+
+      // Añadir el texto como sprite en el extremo del radio
+      const sprite = createTextSprite(label.text, 0xFF00FF, true); // Magenta neón
+      sprite.position.copy(end);
+      sprite.userData = { associatedPoints: label.associatedPoints };
+      scene.add(sprite);
+      categorySprites.push(sprite);
+    });
+
+    // Añadir puntos (autores) como esferas con efecto de brillo
+    const pointMeshes = [];
+    const pointSprites = [];
+    points.forEach(point => {
+      let radiusFactor;
+      switch (point.category) {
+        case "Inteligencia Artificial":
+          radiusFactor = 0.25; // Cognitivismo
+          break;
+        case "Neurociencia":
+        case "Lingüística":
+          radiusFactor = 0.5; // Emergentismo
+          break;
+        case "Ciencias Cognitivas":
+        case "Filosofía":
+          radiusFactor = 0.75; // Enacción
+          break;
+        default:
+          radiusFactor = 0.5;
+      }
+
+      const pos = sphericalToCartesian(point.phi, point.theta, radius * radiusFactor);
+      const geometry = new THREE.SphereGeometry(6, 16, 16);
+      const material = new THREE.MeshBasicMaterial({ color: 0x4169E1 });
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.copy(pos);
+      mesh.userData = { text: point.text, link: point.link, category: point.category };
+      scene.add(mesh);
+      pointMeshes.push(mesh);
+
+      // Añadir el nombre del autor como sprite más cerca del punto
+      const textSprite = createTextSprite(point.text, 0xFFFF00, false); // Amarillo neón
+      textSprite.position.copy(pos).add(new THREE.Vector3(10, 10, 0)); // Muy cerca del punto
+      textSprite.userData = { point: mesh };
+      scene.add(textSprite);
+      pointSprites.push(textSprite);
+    });
+
+    // Función para convertir coordenadas esféricas a cartesianas (x, y, z)
+    function sphericalToCartesian(phi, theta, r) {
+      const x = r * Math.sin(theta) * Math.cos(phi);
+      const y = r * Math.cos(theta);
+      const z = r * Math.sin(theta) * Math.sin(phi);
+      return new THREE.Vector3(x, y, z);
+    }
+
+    // Posición inicial de la cámara para una vista épica
+    camera.position.set(700, 700, 700);
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+    // Raycaster para interacciones avanzadas
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    let hoveredPoint = null;
+    let hoveredCategory = null;
+
+    // Maneja el movimiento del ratón para interacciones avanzadas
+    function onMouseMove(event) {
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+
+      // Interacción con puntos (autores)
+      const pointIntersects = raycaster.intersectObjects(pointMeshes);
+      if (hoveredPoint && (!pointIntersects.length || pointIntersects[0].object !== hoveredPoint)) {
+        hoveredPoint.material.color.set(0x4169E1);
+        hoveredPoint = null;
+      }
+      if (pointIntersects.length > 0) {
+        hoveredPoint = pointIntersects[0].object;
+        hoveredPoint.material.color.set(0xFFFF00);
+      }
+
+      // Interacción con categorías (radios)
+      const categoryIntersects = raycaster.intersectObjects(categorySprites);
+      if (hoveredCategory && (!categoryIntersects.length || categoryIntersects[0].object !== hoveredCategory)) {
+        const associatedLine = categoryLines[categorySprites.indexOf(hoveredCategory)];
+        associatedLine.material.color.set(0x00CED1);
+        pointMeshes.forEach(point => {
+          if (associatedLine.userData.associatedPoints.includes(point.userData.text)) {
+            point.material.color.set(0x4169E1);
+          }
+        });
+        hoveredCategory = null;
+      }
+      if (categoryIntersects.length > 0) {
+        hoveredCategory = categoryIntersects[0].object;
+        const associatedLine = categoryLines[categorySprites.indexOf(hoveredCategory)];
+        associatedLine.material.color.set(0xFF00FF); // Resalta el radio en magenta neón
+        pointMeshes.forEach(point => {
+          if (associatedLine.userData.associatedPoints.includes(point.userData.text)) {
+            point.material.color.set(0xFFFF00); // Resalta los puntos asociados
+          }
+        });
+      }
+    }
+
+    // Maneja clics para abrir enlaces de los puntos
+    function onClick() {
+      if (hoveredPoint) {
+        window.open(hoveredPoint.userData.link, "_blank");
+      }
+    }
+
+    // Añade eventos de ratón al documento
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("click", onClick);
+
+    // Animación principal
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      animateParticles();
+      animateSpheres();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Ajusta el tamaño del render al redimensionar la ventana
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+
+</html>

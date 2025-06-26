@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red Interactiva de IAs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #000000;
+            color: #00FF00;
+            font-family: 'Orbitron', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 2px solid #00FFFF;
+            box-shadow: 0 0 15px #00FFFF;
+        }
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        nav ul li {
+            position: relative;
+            margin: 0 20px;
+        }
+        nav ul li a {
+            color: #00FF00;
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        .mega-menu {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF;
+            width: 800px;
+            max-width: 90vw;
+            padding: 20px;
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        nav ul li:nth-child(2) .mega-menu {
+            left: 0;
+            right: 0;
+            transform: none;
+            margin-left: auto;
+            margin-right: auto;
+            width: 600px;
+            max-width: 85vw;
+        }
+        nav ul li:nth-child(6) .mega-menu {
+            left: 50%;
+            transform: translateX(-50%);
+            width: clamp(300px, 80vw, 600px);
+            max-width: 90vw;
+            margin: 0 auto;
+            right: auto;
+        }
+        nav ul li:hover .mega-menu {
+            display: grid;
+            opacity: 1;
+        }
+        .mega-menu h3 {
+            color: #00FFFF;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px #00FFFF;
+        }
+        .mega-menu ul {
+            display: block;
+            padding: 0;
+        }
+        .mega-menu ul li {
+            margin: 5px 0;
+        }
+        .mega-menu a {
+            font-size: 0.9em;
+            color: #00FF00;
+        }
+        .mega-menu a:hover {
+            color: #FFFFFF;
+        }
+        .main-container {
+            max-width: 1400px;
+            margin: 80px auto 0;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 20px;
+        }
+        .content {
+            grid-column: 1 / 2;
+        }
+        .sidebar {
+            grid-column: 2 / 3;
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            background: rgba(0, 255, 255, 0.1);
+            padding: 20px;
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF;
+        }
+        .section {
+            margin: 50px 0;
+            padding: 30px;
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF;
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 30px #00FFFF;
+        }
+        h2 {
+            color: #00FF00;
+            text-shadow: 0 0 8px #00FF00;
+            border-bottom: 1px solid #00FFFF;
+            padding-bottom: 10px;
+        }
+        .filters {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        select {
+            background: #000000;
+            border: 2px solid #00FFFF;
+            color: #00FF00;
+            padding: 8px;
+            font-family: 'Orbitron', sans-serif;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        select:hover, select:focus {
+            background: #00FFFF;
+            color: #000000;
+            outline: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #00FFFF;
+            text-align: left;
+        }
+        th {
+            background: rgba(0, 255, 255, 0.1);
+            color: #00FFFF;
+        }
+        tr:nth-child(even) {
+            background: rgba(0, 255, 255, 0.03);
+        }
+        tr:hover {
+            background: rgba(0, 255, 255, 0.2);
+        }
+        a {
+            color: #00FFFF;
+            text-decoration: none;
+        }
+        a:hover {
+            text-shadow: 0 0 5px #00FFFF;
+        }
+        #network-graph {
+            width: 500%;
+            height: 800px;
+            margin: 30px 0;
+        }
+        .node circle {
+            stroke: #00FFFF;
+            stroke-width: 2px;
+            fill: #00FF00;
+            transition: all 0.3s ease;
+        }
+        .node.category circle {
+            fill: #ff00c8;
+        }
+        .node:hover circle {
+            fill: #0408ff;
+            stroke: #00FFFF;
+            r: 100;
+        }
+        .node text {
+            fill: #00FFFF;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 10px #73ff00;
+            font-size: 8px;
+            pointer-events: none;
+            opacity: 1.0;
+            transition: opacity 0.9s ease;
+        }
+        .node.category text {
+            fill: #fffb00;
+            text-shadow: #ff04ff;
+        }
+        .node:hover text {
+            opacity: 1;
+        }
+        .link {
+            stroke: #00FF00;
+            stroke-opacity: 0.6;
+            stroke-width: 1.5px;
+        }
+        .sidebar a {
+            color: #00FF00;
+            text-decoration: none;
+            display: block;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+        .sidebar a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+        @media (max-width: 900px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                margin-top: 120px;
+            }
+            .sidebar {
+                position: static;
+                max-height: none;
+            }
+            #network-graph {
+                height: 600px;
+            }
+        }
+        @media (max-width: 600px) {
+            .section {
+                padding: 20px;
+                margin: 30px 0;
+            }
+            #network-graph {
+                height: 500px;
+            }
+            .node text {
+                font-size: 9px;
+            }
+            .filters {
+                flex-direction: column;
+                align-items: center;
+            }
+            select {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
+        @media (max-width: 400px) {
+            #network-graph {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li>
+                <a href="#">Exploración de IAs</a>
+                <div class="mega-menu">
+                    <div>
+                        <h3>Categorías de IA</h3>
+                        <ul>
+                            <li><a href="#creacion">Creación, Edición y Ventas</a></li>
+                            <li><a href="#asistentes">Asistentes Virtuales</a></li>
+                            <li><a href="#investigacion">Investigación y Ciencia</a></li>
+                            <li><a href="#educacion">Educación y Aprendizaje</a></li>
+                            <li><a href="#desarrollo">Desarrollo de Software</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li><a href="#contacto">Acerca de / Contacto</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-container" id="inicio">
+        <div class="content">
+            <div class="section">
+                <h2>Red Interactiva de IAs por Categoría</h2>
+                <div id="network-graph"></div>
+            </div>
+            <div class="section">
+                <h2>Catálogo de IAs</h2>
+                <div class="filters">
+                    <select id="categoryFilter">
+                        <option value="">Todas las Categorías</option>
+                    </select>
+                </div>
+                <table id="iaTable">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Enlace</th>
+                            <th>Categoría</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <h2>Categorías</h2>
+            <ul id="category-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        const data = {
+            "Creación, Edición y Ventas": [
+                { "name": "Whisk", "url": "https://labs.google/fx/tools/whisk" },
+                { "name": "ImageFX", "url": "https://labs.google/fx/es/tools/image-fx" },
+                { "name": "VideoFX", "url": "https://labs.google/fx/tools/video-fx?isTvMode=true" },
+                { "name": "MusicFX", "url": "https://labs.google/fx/es/tools/music-fx" },
+                { "name": "GenType", "url": "https://labs.google/gentype" },
+                { "name": "The Infinite Drum Machine", "url": "https://experiments.withgoogle.com/drum-machine" },
+                { "name": "Conversational AI on YouTube", "url": "https://youtu.be/WPHtKet27ic" },
+                { "name": "Illuminate", "url": "https://illuminate.google.com/" },
+                { "name": "Help Me Script", "url": "https://home.google.com/automations/create" }
+            ],
+            "Asistentes Virtuales": [
+                { "name": "NotebookLM", "url": "https://notebooklm.google/" },
+                { "name": "Jules", "url": "https://labs.google.com/jules/waitlist/success" },
+                { "name": "AI Overviews in Search", "url": "https://labs.google.com/search?source=smp.23q2USLabs.29" },
+                { "name": "Gen AI in Chrome", "url": "https://blog.google/products/chrome/google-chrome-generative-ai-features-january-2024/" }
+            ],
+            "Investigación y Ciencia": [
+                { "name": "Gemini in Colab", "url": "https://labs.google/fx/tools/geminiincolab" },
+                { "name": "Project Mariner", "url": "https://deepmind.google/technologies/project-mariner/" },
+                { "name": "Project Astra", "url": "https://deepmind.google/technologies/project-astra/" }
+            ],
+            "Educación y Aprendizaje": [
+                { "name": "Food Mood", "url": "https://artsandculture.google.com/experiment/food-mood/HwHnGalZ3up0EA?hl=en" },
+                { "name": "Learn About", "url": "https://learning.google.com/experiments/learn-about/signup" },
+                { "name": "Say What You See", "url": "https://artsandculture.google.com/experiment/say-what-you-see/jwG3m7wQShZngw?hl=en" },
+                { "name": "Gen Chess", "url": "https://labs.google/genchess" },
+                { "name": "GenDino", "url": "https://labs.google/gendino/" },
+                { "name": "Semantris", "url": "https://experiments.withgoogle.com/semantris" },
+                { "name": "Rock-Paper-Scissors Machine", "url": "https://experiments.withgoogle.com/rock-paper-scissors" }
+            ],
+            "Desarrollo de Software": [
+                { "name": "IDX", "url": "https://idx.dev/" },
+                { "name": "/Code", "url": "https://labs.google.com/code/" }
+            ]
+        };
+
+        // Preparar datos para la tabla
+        const ias = Object.entries(data).flatMap(([category, apps]) =>
+            apps.map(app => ({
+                name: app.name,
+                url: app.url,
+                category: category
+            }))
+        );
+        const categories = Object.keys(data).sort();
+
+        // Red D3.js (exactamente como en el código original)
+        const width = 900, height = 800;
+        const svg = d3.select("#network-graph")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        const nodes = [];
+        const links = [];
+        const neonColors = d3.scaleOrdinal(["#FF00FF", "#00CCFF", "#FFFF00", "#FF6600", "#FF33CC"]);
+
+        Object.entries(data).forEach(([category, apps], index) => {
+            nodes.push({ id: category, group: "category", size: 62 + apps.length * 1.5, color: neonColors(index) });
+            apps.forEach(app => {
+                nodes.push({ id: app.name, group: "app", size: 9, url: app.url });
+                links.push({ source: category, target: app.name });
+            });
+        });
+
+        const categoryNodes = nodes.filter(node => node.group === "category");
+        for (let i = 0; i < categoryNodes.length; i++) {
+            for (let j = i + 1; j < categoryNodes.length; j++) {
+                links.push({ source: categoryNodes[i].id, target: categoryNodes[j].id, distance: -50 });
+            }
+        }
+
+        const simulation = d3.forceSimulation(nodes)
+            .force("link", d3.forceLink(links).id(d => d.id).distance(d => d.group === "category" ? 250 : 180))
+            .force("charge", d3.forceManyBody().strength(d => d.group === "app" ? -40 : -500))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collision", d3.forceCollide().radius(d => d.size + 24))
+            .force("x", d3.forceX().strength(0.05))
+            .force("y", d3.forceY().strength(0.15));
+
+        const link = svg.append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(links)
+            .enter().append("line")
+            .attr("class", "link");
+
+        const node = svg.append("g")
+            .attr("class", "nodes")
+            .selectAll("g")
+            .data(nodes)
+            .enter().append("g")
+            .attr("class", d => d.group === "category" ? "node category" : "node")
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        node.append("circle")
+            .attr("r", d => d.size)
+            .attr("fill", d => d.group === "category" ? d.color : "#00FF00")
+            .on("click", (event, d) => {
+                if (d.url) window.open(d.url, "_blank");
+            });
+
+        const label = node.append("text")
+            .attr("text-anchor", "middle")
+            .attr("dy", d => d.group === "category" ? "0.35em" : d.size + 10)
+            .attr("font-size", d => d.group === "category" ? `${Math.min(d.size / 2, 16)}px` : "11px")
+            .text(d => d.id)
+            .each(function(d) {
+                d.labelOffset = d.group === "category" ? 0 : d.size + 10;
+            });
+
+        simulation.on("tick", () => {
+            node.attr("transform", d => {
+                d.x = Math.max(d.size, Math.min(width - d.size, d.x));
+                d.y = Math.max(d.size, Math.min(height - d.size, d.y));
+                return `translate(${d.x},${d.y})`;
+            });
+
+            label.each(function(d) {
+                const thisNode = d3.select(this);
+                let dx = 0, dy = d.labelOffset;
+                nodes.forEach(other => {
+                    if (other !== d) {
+                        const distX = other.x - d.x;
+                        const distY = other.y - d.y;
+                        const distance = Math.sqrt(distX * distX + distY * distY);
+                        const minDist = d.size + other.size + 20;
+                        if (distance < minDist && distance > 0) {
+                            const angle = Math.atan2(distY, distX);
+                            dx = Math.cos(angle) * (minDist - distance);
+                            dy = Math.sin(angle) * (minDist - distance);
+                            if (d.group === "app") {
+                                dy = Math.abs(dy) + d.size + 10;
+                            }
+                        }
+                    }
+                });
+                thisNode.attr("dx", dx).attr("dy", dy);
+            });
+
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+        });
+
+        function dragstarted(event) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        }
+
+        function dragged(event) {
+            event.subject.fx = Math.max(0, Math.min(width, event.x));
+            event.subject.fy = Math.max(0, Math.min(height, event.y));
+        }
+
+        function dragended(event) {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
+        }
+
+        // Filtros y tabla
+        const categoryFilter = document.getElementById('categoryFilter');
+        categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category;
+            option.textContent = category;
+            categoryFilter.appendChild(option);
+        });
+
+        function renderTable() {
+            const selectedCategory = categoryFilter.value;
+            const filteredIAs = selectedCategory ? ias.filter(ia => ia.category === selectedCategory) : ias;
+
+            const tbody = document.querySelector('#iaTable tbody');
+            tbody.innerHTML = '';
+
+            filteredIAs.forEach(ia => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${ia.name}</td>
+                    <td><a href="${ia.url}" target="_blank">Enlace</a></td>
+                    <td>${ia.category}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        categoryFilter.addEventListener('change', renderTable);
+        renderTable();
+
+        // Sidebar
+        const categoryList = document.getElementById('category-list');
+        Object.entries(data).forEach(([category, apps]) => {
+            const categoryLi = document.createElement('li');
+            const categoryTitle = `<a style="color: #FF00CC;" onclick="highlightCategory('${category}')">${category}</a>`;
+            categoryLi.innerHTML = categoryTitle;
+            const appList = document.createElement('ul');
+            appList.style.paddingLeft = "15px";
+            apps.forEach(app => {
+                const appLi = document.createElement('li');
+                appLi.innerHTML = `<a href="${app.url}" target="_blank">${app.name}</a>`;
+                appList.appendChild(appLi);
+            });
+            categoryLi.appendChild(appList);
+            categoryList.appendChild(categoryLi);
+        });
+
+        function highlightCategory(category) {
+            node.selectAll("circle")
+                .style("stroke", "#00FFFF")
+                .style("stroke-width", "2px");
+
+            node.selectAll("circle")
+                .filter(d => d.id === category)
+                .style("stroke", "#FFFFFF")
+                .style("stroke-width", "4px");
+
+            categoryFilter.value = category;
+            categoryFilter.dispatchEvent(new Event('change'));
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gráfico de Líneas y Treemap con D3.js</title>
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  <style>
+    /* Estilos generales */
+    body {
+      font-family: Arial, sans-serif;
+    }
+    
+    #chart-container, #treemap-container {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    h1 {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    
+    p {
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    
+    .chart {
+      margin-bottom: 20px;
+    }
+    
+    .footer {
+      font-size: 12px;
+      font-style: italic;
+    }
+    
+    .tooltip {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: #fff;
+      font-size: 12px;
+      padding: 6px;
+      border-radius: 4px;
+    }
+    
+    .cell {
+      stroke: #fff;
+    }
+
+    .label {
+      font-size: 7px;
+      fill: #fff;
+      text-anchor: small;
+      pointer-events: none;
+    }
+
+    /* Estilos adicionales en color negro y gris */
+    body {
+      background-color: black;
+      color: gray;
+    }
+
+    .label {
+      color: gray;
+      font-size: 7px;
+      font-weight: ;
+      pointer-events: none;
+    }
+
+    /* Estilos para la unidad de medida en el eje Y */
+    .y-axis-label {
+      font-size: 12px;
+      font-weight: bold;
+      fill: gray;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div id="chart-container">
+    <h1>Gráfico de Líneas</h1>
+    <p>Este es un gráfico de líneas que muestra las mediciones promedio por condición.</p>
+    <svg id="chart" class="chart"></svg>
+    <p class="footer">Fuente: Datos de ejemplo</p>
+  </div>
+
+  <div id="tooltip-line" class="tooltip"></div>
+
+  <div id="treemap-container">
+    <h1>Treemap</h1>
+    <p>Este es un treemap que muestra categorías con sus respectivos datos y porcentajes.</p>
+    <svg id="treemap" class="chart"></svg>
+    <p class="footer">Fuente: Datos de ejemplo</p>
+  </div>
+
+  <div id="tooltip-treemap" class="tooltip"></div>
+
+  <script>
+
+ // Código para agregar la unidad de medida en el eje Y
+ d3.select("#chart")
+      .append("text")
+      .attr("class", "y-axis-label")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -150)
+      .attr("y", 10)
+      .text("(μm)");
+
+    // Datos de ejemplo
+    const mediciones  = [
+      { condicion: 'Condición 1', mediciones: [3, 3, 3, 3, 3] },
+      { condicion: 'Condición 2', mediciones: [4, 11, 14, 13, 15] },
+      { condicion: 'Condición 3', mediciones: [4, 11, 10, 12, 13] },
+      { condicion: 'Condición 4', mediciones: [4, 9, 7, 10, 8] },
+      { condicion: 'Condición 5', mediciones: [5, 12, 10, 13, 11] }
+    ];
+
+    // Datos para la segunda línea
+    const mediciones2 = [
+      { condicion: 'Condición 1', mediciones: [4, 4, 4, 4, 4] },
+      { condicion: 'Condición 2', mediciones: [5, 15, 13, 12, 14] },
+      { condicion: 'Condición 3', mediciones: [5, 9, 8, 10, 11] },
+      { condicion: 'Condición 4', mediciones: [5, 8, 6, 9, 7] },
+      { condicion: 'Condición 5', mediciones: [5, 11, 9, 12, 10] }
+    ];
+
+    // Datos para la tercera línea
+    const mediciones3 = [
+      { condicion: 'Condición 1', mediciones: [5, 5, 5, 5, 5] },
+      { condicion: 'Condición 2', mediciones: [3, 14, 12, 11, 13] },
+      { condicion: 'Condición 3', mediciones: [3, 8, 7, 9, 10] },
+      { condicion: 'Condición 4', mediciones: [3, 7, 5, 8, 6] },
+      { condicion: 'Condición 5', mediciones: [3, 10, 8, 11, 9] }
+    ];
+
+    // Datos para la cuarta línea
+    const mediciones4 = [
+      { condicion: 'Condición 1', mediciones: [6, 6, 6, 6, 6] },
+      { condicion: 'Condición 2', mediciones: [2, 13, 11, 10, 12] },
+      { condicion: 'Condición 3', mediciones: [2, 7, 6, 8, 9] },
+      { condicion: 'Condición 4', mediciones: [2, 6, 4, 7, 5] },
+      { condicion: 'Condición 5', mediciones: [2, 9, 7, 10, 8] }
+    ];
+
+    // Promedio y desviación estándar de las mediciones por condición
+    const promediosDesviaciones = mediciones.map((d, i) => ({
+      condicion: d.condicion,
+      promedio: d3.mean(d.mediciones),
+      desviacion: d3.deviation(d.mediciones),
+      promedio2: d3.mean(mediciones2[i].mediciones),
+      desviacion2: d3.deviation(mediciones2[i].mediciones),
+      promedio3: d3.mean(mediciones3[i].mediciones),
+      desviacion3: d3.deviation(mediciones3[i].mediciones),
+      promedio4: d3.mean(mediciones4[i].mediciones),
+      desviacion4: d3.deviation(mediciones4[i].mediciones)
+    }));
+
+    // Datos de ejemplo para el treemap
+    const categorias = [
+      { categoria: 'Categoría 1', dato: 100 },
+      { categoria: 'Categoría 2', dato: 150 },
+      { categoria: 'Categoría 3', dato: 120 },
+      { categoria: 'Categoría 4', dato: 80 },
+      { categoria: 'Categoría 5', dato: 110 },
+      { categoria: 'Categoría 6', dato: 130 },
+      { categoria: 'Categoría 7', dato: 90 },
+      { categoria: 'Categoría 8', dato: 140 },
+      { categoria: 'Categoría 9', dato: 160 },
+      { categoria: 'Categoría 10', dato: 105 },
+      { categoria: 'Categoría 11', dato: 125 },
+      { categoria: 'Categoría 12', dato: 95 },
+      { categoria: 'Categoría 13', dato: 135 },
+      { categoria: 'Categoría 14', dato: 115 },
+      { categoria: 'Categoría 15', dato: 145 }
+    ];
+
+    // Dimensiones del gráfico
+    const width = 400;
+    const height = 300;
+    const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+
+    // Escalas
+    const xScale = d3.scaleBand()
+      .domain(mediciones.map(d => d.condicion))
+      .range([margin.left, width - margin.right])
+      .padding(0.1);
+
+    const yScale = d3.scaleLinear()
+      .domain([0, d3.max(promediosDesviaciones, d => Math.max(d.promedio + d.desviacion, d.promedio2 + d.desviacion2, d.promedio3 + d.desviacion3, d.promedio4 + d.desviacion4))])
+      .range([height - margin.bottom, margin.top]);
+
+    // Creación del gráfico
+    const svg = d3.select('#chart')
+      .attr('width', width)
+      .attr('height', height);
+
+    const line = d3.line()
+      .x(d => xScale(d.condicion) + xScale.bandwidth() / 2)
+      .y(d => yScale(d.promedio));
+
+    svg.append('path')
+      .datum(promediosDesviaciones)
+      .attr('fill', 'none')
+      .attr('stroke', 'steelblue')
+      .attr('stroke-width', 2)
+      .attr('d', line);
+
+    const line2 = d3.line()
+      .x(d => xScale(d.condicion) + xScale.bandwidth() / 2)
+      .y(d => yScale(d.promedio2));
+
+    svg.append('path')
+      .datum(promediosDesviaciones)
+      .attr('fill', 'none')
+      .attr('stroke', 'red')
+      .attr('stroke-width', 2)
+      .attr('d', line2);
+
+    const line3 = d3.line()
+      .x(d => xScale(d.condicion) + xScale.bandwidth() / 2)
+      .y(d => yScale(d.promedio3));
+
+    svg.append('path')
+      .datum(promediosDesviaciones)
+      .attr('fill', 'none')
+      .attr('stroke', 'green')
+      .attr('stroke-width', 2)
+      .attr('d', line3);
+
+    const line4 = d3.line()
+      .x(d => xScale(d.condicion) + xScale.bandwidth() / 2)
+      .y(d => yScale(d.promedio4));
+
+    svg.append('path')
+      .datum(promediosDesviaciones)
+      .attr('fill', 'none')
+      .attr('stroke', 'purple')
+      .attr('stroke-width', 2)
+      .attr('d', line4);
+
+    // Puntos promedio
+    svg.selectAll('.point')
+      .data(promediosDesviaciones)
+      .enter()
+      .append('circle')
+      .attr('class', 'point')
+      .attr('cx', d => xScale(d.condicion) + xScale.bandwidth() / 2)
+      .attr('cy', d => yScale(d.promedio))
+      .attr('r', 4)
+      .attr('fill', 'steelblue')
+      .on('mouseover', (event, d) => {
+        const tooltip = d3.select('#tooltip-line');
+        tooltip.transition().duration(200).style('opacity', 1);
+        tooltip
+          .html(`<strong>Promedio:</strong> ${d.promedio.toFixed(2)}<br><strong>Desviación estándar:</strong> ${d.desviacion.toFixed(2)}`)
+          .style('left', event.pageX + 'px')
+          .style('top', event.pageY + 'px');
+      })
+      .on('mouseout', () => {
+        const tooltip = d3.select('#tooltip');
+        tooltip.transition().duration(200).style('opacity', 0);
+      });
+
+    svg.selectAll('.point2')
+      .data(promediosDesviaciones)
+      .enter()
+      .append('circle')
+      .attr('class', 'point2')
+      .attr('cx', d => xScale(d.condicion) + xScale.bandwidth() / 2)
+      .attr('cy', d => yScale(d.promedio2))
+      .attr('r', 4)
+      .attr('fill', 'red')
+      .on('mouseover', (event, d) => {
+        const tooltip = d3.select('#tooltip-line');
+        tooltip.transition().duration(200).style('opacity', 1);
+        tooltip
+          .html(`<strong>Promedio:</strong> ${d.promedio2.toFixed(2)}<br><strong>Desviación estándar:</strong> ${d.desviacion2.toFixed(2)}`)
+          .style('left', event.pageX + 'px')
+          .style('top', event.pageY + 'px');
+      })
+      .on('mouseout', () => {
+        const tooltip = d3.select('#tooltip');
+        tooltip.transition().duration(200).style('opacity', 0);
+      });
+
+    svg.selectAll('.point3')
+      .data(promediosDesviaciones)
+      .enter()
+      .append('circle')
+      .attr('class', 'point3')
+      .attr('cx', d => xScale(d.condicion) + xScale.bandwidth() / 2)
+      .attr('cy', d => yScale(d.promedio3))
+      .attr('r', 4)
+      .attr('fill', 'green')
+      .on('mouseover', (event, d) => {
+        const tooltip = d3.select('#tooltip-line');
+        tooltip.transition().duration(200).style('opacity', 1);
+        tooltip
+          .html(`<strong>Promedio:</strong> ${d.promedio3.toFixed(2)}<br><strong>Desviación estándar:</strong> ${d.desviacion3.toFixed(2)}`)
+          .style('left', event.pageX + 'px')
+          .style('top', event.pageY + 'px');
+      })
+      .on('mouseout', () => {
+        const tooltip = d3.select('#tooltip');
+        tooltip.transition().duration(200).style('opacity', 0);
+      });
+
+    svg.selectAll('.point4')
+      .data(promediosDesviaciones)
+      .enter()
+      .append('circle')
+      .attr('class', 'point4')
+      .attr('cx', d => xScale(d.condicion) + xScale.bandwidth() / 2)
+      .attr('cy', d => yScale(d.promedio4))
+      .attr('r', 4)
+      .attr('fill', 'purple')
+      .on('mouseover', (event, d) => {
+        const tooltip = d3.select('#tooltip-line');
+        tooltip.transition().duration(200).style('opacity', 1);
+        tooltip
+          .html(`<strong>Promedio:</strong> ${d.promedio4.toFixed(2)}<br><strong>Desviación estándar:</strong> ${d.desviacion4.toFixed(2)}`)
+          .style('left', event.pageX + 'px')
+          .style('top', event.pageY + 'px');
+      })
+      .on('mouseout', () => {
+        const tooltip = d3.select('#tooltip');
+        tooltip.transition().duration(200).style('opacity', 0);
+      });
+
+    
+    // Ejes
+    const xAxis = d3.axisBottom(xScale);
+    const yAxis = d3.axisLeft(yScale);
+
+    svg.append('g')
+      .attr('transform', `translate(0, ${height - margin.bottom})`)
+      .call(xAxis);
+
+    svg.append('g')
+      .attr('transform', `translate(${margin.left}, 0)`)
+      .call(yAxis);
+
+
+      // Dimensiones del treemap
+    const treemapWidth = 400;
+    const treemapHeight = 300;
+
+    // Creación del treemap
+    const svgTreemap = d3.select('#treemap')
+      .attr('width', treemapWidth)
+      .attr('height', treemapHeight);
+
+    const treemap = d3.treemap()
+      .size([treemapWidth, treemapHeight])
+      .padding(1);
+
+    const root = d3.hierarchy({ children: categorias })
+      .sum(d => d.dato)
+      .sort((a, b) => b.dato - a.dato);
+
+    treemap(root);
+
+    const colorScale = d3.scaleOrdinal()
+      .domain(root.descendants().map(d => d.data.categoria))
+      .range(d3.schemeCategory10);
+
+    svgTreemap.selectAll('rect')
+      .data(root.descendants())
+      .enter()
+      .append('rect')
+      .attr('class', 'cell')
+      .attr('x', d => d.x0)
+      .attr('y', d => d.y0)
+      .attr('width', d => d.x1 - d.x0)
+      .attr('height', d => d.y1 - d.y0)
+      .attr('fill', d => colorScale(d.data.categoria))
+      .on('mouseover', (event, d) => {
+        const tooltip = d3.select('#tooltip-treemap');
+        tooltip.transition().duration(200).style('opacity', 1);
+        tooltip
+          .html(`<strong>Categoría:</strong> ${d.data.categoria}<br><strong>Dato:</strong> ${d.data.dato}<br><strong>Porcentaje:</strong> ${(d.data.dato / root.value * 100).toFixed(2)}%`)
+          .style('left', event.pageX + 'px')
+          .style('top', event.pageY + 'px');
+  
+          svgTreemap.selectAll('text')
+  .data(root.descendants())
+  .enter()
+  .append('text')
+  .attr('class', 'label')
+  .attr('text-anchor', 'middle') // Alinea el texto en el centro de cada celda
+  .attr('x', d => (d.x0 + d.x1) / 2) // Posición x en el centro de cada celda
+  .attr('y', d => (d.y0 + d.y1) / 2) // Posición y en el centro de cada celda
+  .text(d => d.data.categoria)
+  .attr('fill', 'white')
+  .attr('pointer-events', 'none'); // Evita que las etiquetas de texto afecten los eventos del mouse en el treemap
+
+      })
+      .on('mouseout', () => {
+        const tooltip = d3.select('#tooltip-treemap');
+        tooltip.transition().duration(200).style('opacity', 0);
+      });
+  </script>
+</body>
+</html>

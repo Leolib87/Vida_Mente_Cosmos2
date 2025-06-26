@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Origen, Mente y Cosmos</title>
+
+    <!-- External Dependencies -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet">
+    
+    <style>
+        /* Root Variables */
+        :root {
+            --primary-color: #00FF41; /* Primary text and accent color */
+            --secondary-color: #00E5FF; /* Border and shadow color */
+            --dark-bg: #0A0A0F; /* Background color */
+            --chat--window--width: 400px; /* n8n chat window width */
+            --chat--window--height: 500px; /* n8n chat window height */
+        }
+
+        /* Global Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--dark-bg) url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') no-repeat center/cover fixed;
+            color  color: var(--primary-color);
+            font-family: 'Orbitron', sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        nav {
+            backdrop-filter: blur(8px);
+            background: rgba(10, 10, 15, 0.95);
+            border-bottom: 1px solid var(--secondary-color);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        nav ul {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
+            list-style: none;
+        }
+
+        nav a {
+            border-radius: 20px;
+            color: var(--primary-color);
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            transition: background 0.3s ease;
+        }
+
+        nav a:hover {
+            background: rgba(0, 229, 255, 0.2);
+            color: #fff;
+        }
+
+        /* Chat Container */
+        #n8n-chat {
+            cursor: move;
+            height: var(--chat--window--height);
+            position: fixed;
+            width: var(--chat--window--width);
+            z-index: 999;
+        }
+
+        #n8n-chat .chat-header {
+            background: var(--dark-bg);
+            color: var(--primary-color);
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            padding: 0.8rem;
+            text-align: center;
+            user-select: none;
+        }
+
+        #n8n-chat .chat-body {
+            background: var(--dark-bg);
+            color: var(--primary-color);
+            display: flex;
+            flex: 1;
+            flex-direction: column-reverse; /* Top-down messages */
+            overflow-y: auto;
+            padding: 1rem 0;
+        }
+
+        #n8n-chat .chat-message {
+            background: rgba(0, 255, 65, 0.2);
+            border: none;
+            border-radius: 5px;
+            color: var(--primary-color);
+            font-size: clamp(0.85rem, 2.5vw, 1rem);
+            margin: 0.5rem 0;
+            padding: 0.8rem;
+        }
+
+        #n8n-chat .chat-input {
+            background: var(--dark-bg);
+            border: 1px solid var(--secondary-color);
+            border-radius: 5px;
+            color: var(--primary-color);
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            padding: 0.8rem;
+            width: 100%;
+        }
+
+        #n8n-chat .chat-input:focus {
+            box-shadow: 0 0 8px var(--secondary-color);
+            outline: none;
+        }
+
+        /* Color Picker */
+        .color-picker {
+            background-color: var(--primary-color);
+            border: 1px solid var(--secondary-color);
+            cursor: pointer;
+            height: 20px;
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            width: 20px;
+        }
+
+        .color-input {
+            height: 0;
+            opacity: 0;
+            position: absolute;
+            width: 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            nav ul {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            #n8n-chat {
+                height: clamp(250px, 60vh, 400px);
+                width: 95vw;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation Section -->
+    <nav>
+        <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#exploracion">Exploración</a></li>
+            <li><a href="#contacto">Contacto</a></li>
+        </ul>
+    </nav>
+
+    <!-- Chat Container -->
+    <div id="n8n-chat">
+        <div class="color-picker"></div>
+        <input type="color" class="color-input" id="colorPicker">
+    </div>
+
+    <!-- Chat Initialization Script -->
+    <script type="module">
+        import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+
+        /**
+         * Main initialization function
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeChat();
+            setupDraggableChat();
+            setupColorPicker();
+        });
+
+        /**
+         * Initialize n8n Chat with custom configuration
+         */
+        function initializeChat() {
+            createChat({
+                webhookUrl: 'https://leolib1987.app.n8n.cloud/webhook/4c920a6e-4bb8-4273-9536-b85a322c81fb/chat',
+                webhookConfig: {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                },
+                target: '#n8n-chat',
+                mode: 'window',
+                chatInputKey: 'chatInput',
+                chatSessionKey: 'sessionId',
+                showWelcomeScreen: false,
+                defaultLanguage: 'es',
+                initialMessages: [
+                    '¡Hola, explorador! 🌌',
+                    '¿Cómo puedo guiarte en este viaje cósmico?'
+                ],
+                i18n: {
+                    es: {
+                        title: 'Cosmos Chat',
+                        subtitle: 'Explora el saber',
+                        inputPlaceholder: 'Escribe aquí...'
+                    }
+                }
+            });
+        }
+
+        /**
+         * Setup draggable functionality for chat window
+         */
+        function setupDraggableChat() {
+            const chatContainer = document.getElementById('n8n-chat');
+            let isDragging = false;
+            let currentX;
+            let currentY;
+            let initialX;
+            let initialY;
+
+            // Center chat initially
+            const width = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--chat--window--width'));
+            const height = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--chat--window--height'));
+            currentX = (window.innerWidth - width) / 2;
+            currentY = (window.innerHeight - height) / 2;
+            chatContainer.style.left = `${currentX}px`;
+            chatContainer.style.top = `${currentY}px`;
+
+            chatContainer.addEventListener('mousedown', (e) => {
+                if (e.target.className === 'chat-header') {
+                    initialX = e.clientX - currentX;
+                    initialY = e.clientY - currentY;
+                    isDragging = true;
+                }
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    e.preventDefault();
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+                    chatContainer.style.left = `${currentX}px`;
+                    chatContainer.style.top = `${currentY}px`;
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+        }
+
+        /**
+         * Setup color picker functionality
+         */
+        function setupColorPicker() {
+            const colorPickerSquare = document.querySelector('.color-picker');
+            const colorInput = document.getElementById('colorPicker');
+
+            colorPickerSquare.addEventListener('click', () => {
+                colorInput.click();
+            });
+
+            colorInput.addEventListener('change', (e) => {
+                const newColor = e.target.value;
+                document.documentElement.style.setProperty('--primary-color', newColor);
+                colorPickerSquare.style.backgroundColor = newColor;
+
+                const rgb = hexToRgb(newColor);
+                document.querySelectorAll('.chat-message').forEach(msg => {
+                    msg.style.background = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2)`;
+                });
+            });
+        }
+
+        /**
+         * Convert hex color to RGB
+         * @param {string} hex - Hex color code
+         * @returns {Object} RGB values
+         */
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProtGPT2 - Investigación en Diseño de Proteínas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            color: #ffffff;
+            background: linear-gradient(135deg, #1e3a8a, #0f172a);
+            overflow-x: hidden;
+        }
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        #network {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            opacity: 0.7;
+        }
+        header {
+            background: rgba(30, 58, 138, 0.95);
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+        header p {
+            margin: 0.5rem 0;
+            font-size: 1.1rem;
+            color: #e2e8f0;
+        }
+        nav {
+            background: rgba(59, 130, 246, 0.95);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        nav a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: color 0.3s, transform 0.3s;
+        }
+        nav a:hover {
+            color: #93c5fd;
+            transform: translateY(-2px);
+        }
+        .section-container {
+            max-width: 1000px;
+            margin: 3rem auto;
+            padding: 0 1rem;
+            position: relative;
+            z-index: 10;
+        }
+        .accordion {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        .accordion-header {
+            padding: 1rem;
+            cursor: pointer;
+            background: rgba(59, 130, 246, 0.9);
+            color: #ffffff;
+            font-size: 1.3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s;
+        }
+        .accordion-header:hover {
+            background: rgba(59, 130, 246, 1);
+        }
+        .accordion-header span {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+        .accordion-header.active span {
+            transform: rotate(360deg);
+            content: '○'; /* Esto no funciona en CSS, se maneja en JS */
+        }
+        .accordion-content {
+            padding: 0;
+            max-height: 0;
+            overflow-y: auto;
+            color: #ffffff;
+            background: rgba(0, 0, 0, 0.5);
+            transition: max-height 0.5s ease, padding 0.5s ease;
+        }
+        .accordion-content.active {
+            padding: 1rem;
+            max-height: 300px; /* Altura máxima para scroll */
+        }
+        .accordion-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .accordion-content::-webkit-scrollbar-thumb {
+            background: #93c5fd;
+            border-radius: 4px;
+        }
+        .accordion-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            background: rgba(30, 58, 138, 0.95);
+            color: #ffffff;
+            position: relative;
+            z-index: 10;
+        }
+        footer a {
+            color: #93c5fd;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Media Queries para Responsividad */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+            header p {
+                font-size: 0.9rem;
+            }
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            nav a {
+                font-size: 0.9rem;
+                padding: 0.4rem;
+            }
+            .accordion-header {
+                font-size: 1.1rem;
+                padding: 0.8rem;
+            }
+            .accordion-content.active {
+                max-height: 250px;
+            }
+            .section-container {
+                margin: 2rem auto;
+                padding: 0 0.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+            header p {
+                font-size: 0.8rem;
+            }
+            nav a {
+                font-size: 0.8rem;
+                padding: 0.3rem;
+            }
+            .accordion-header {
+                font-size: 1rem;
+                padding: 0.6rem;
+            }
+            .accordion-content.active {
+                max-height: 200px;
+            }
+            footer {
+                font-size: 0.8rem;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg"></canvas>
+    <svg id="network"></svg>
+
+    <header>
+        <h1>ProtGPT2: Un Modelo de Lenguaje Profundo No Supervisado para el Diseño de Proteínas</h1>
+        <p>Autores: Noelia Ferruz, Steffen Schmidt, Birte Höcker</p>
+        <p>Publicado: 27 de julio de 2022 | Nature Communications | DOI: 10.1038/s41467-022-32007-7</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a data-target="resumen">Resumen</a></li>
+            <li><a data-target="introduccion">Introducción</a></li>
+            <li><a data-target="resultados">Resultados</a></li>
+            <li><a data-target="discusion">Discusión</a></li>
+            <li><a data-target="metodos">Métodos</a></li>
+            <li><a data-target="data-availability">Disponibilidad de Datos</a></li>
+            <li><a data-target="code-availability">Disponibilidad de Código</a></li>
+            <li><a data-target="references">Referencias</a></li>
+            <li><a data-target="acknowledgements">Agradecimientos</a></li>
+        </ul>
+    </nav>
+
+    <div class="section-container">
+        <div class="accordion">
+            <div class="accordion-header" data-target="resumen">
+                Resumen <span>*</span>
+            </div>
+            <div class="accordion-content" id="resumen">
+                <p>El diseño de proteínas busca crear proteínas nuevas y personalizadas para fines específicos, con el potencial de abordar problemas ambientales y biomédicos. Aquí describimos ProtGPT2, un modelo de lenguaje entrenado en el espacio proteico que genera secuencias de proteínas de novo siguiendo los principios de las naturales.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" data-target="introduccion">
+                Introducción <span>*</span>
+            </div>
+            <div class="accordion-content" id="introduccion">
+                <p>Los avances en el procesamiento del lenguaje natural (NLP) han transformado el campo, inspirando ProtGPT2. Las analogías entre secuencias de proteínas y lenguajes humanos nos permiten aplicar modelos basados en Transformer para generar secuencias de proteínas con capacidades casi humanas.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" data-target="resultados">
+                Resultados <span>*</span>
+            </div>
+            <div class="accordion-content" id="resultados">
+                <h3>Aprendiendo el lenguaje de las proteínas</h3>
+                <p>ProtGPT2, con 738M de parámetros, fue entrenado en 50M de secuencias UniRef50, aprendiendo a generar proteínas con propensiones de aminoácidos naturales.</p>
+                <h3>Muestreo estadístico de propensiones de aminoácidos naturales</h3>
+                <p>Usando muestreo aleatorio con k=950, ProtGPT2 coincide efectivamente con las distribuciones de aminoácidos naturales.</p>
+                <h3>Las secuencias de ProtGPT2 codifican proteínas globulares</h3>
+                <p>El 88% de las secuencias generadas son globulares, con contenido de estructura secundaria similar al de proteínas naturales.</p>
+                <h3>Las secuencias de ProtGPT2 son similares pero distantes a las naturales</h3>
+                <p>HHblits muestra que las secuencias de ProtGPT2 están relacionadas de forma distante con las naturales, evitando la memorización.</p>
+                <h3>ProtGPT2 genera estructuras ordenadas</h3>
+                <p>AlphaFold predice pliegues estables, con simulaciones de Rosetta y MD confirmando propiedades similares a las naturales.</p>
+                <h3>ProtGPT2 trasciende los límites del espacio proteico actual</h3>
+                <p>Las redes de similitud revelan que ProtGPT2 explora el espacio proteico "oscuro", conectando superfamilias naturales.</p>
+                <h3>Puntos calientes funcionales preservados</h3>
+                <p>ProtGPT2 conserva residuos de unión a ligandos, potenciando su uso en ingeniería.</p>
+                <p>Texto adicional para probar el scroll: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" data-target="discusion">
+                Discusión <span>*</span>
+            </div>
+            <div class="accordion-content" id="discusion">
+                <p>ProtGPT2 avanza en el diseño de proteínas de novo, generando secuencias complejas y funcionales rápidamente. Muestrea regiones inexploradas y preserva determinantes funcionales, prometiendo soluciones para desafíos biomédicos y ambientales.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" data-target="metodos">
+                Métodos <span>*</span>
+            </div>
+            <div class="accordion-content" id="metodos">
+                <h3>Codificación de vocabulario</h3>
+                <p>Se usó tokenización BPE para crear un vocabulario de 50,256 tokens desde Swiss-Prot.</p>
+                <h3>Preparación del conjunto de datos</h3>
+                <p>UniRef50 (2021_04) se dividió en 44.9M de entrenamiento y 4.9M de validación.</p>
+                <h3>Preentrenamiento del modelo</h3>
+                <p>Un Transformer de 36 capas con 738M de parámetros fue entrenado en 128 GPUs NVIDIA A100.</p>
+                <h3>Inferencia del modelo</h3>
+                <p>Las secuencias se muestrearon con top_k=950 y una penalización de repetición de 1.2.</p>
+                <h3>Generación de conjunto de datos de secuencias</h3>
+                <p>Se crearon tres conjuntos de 10,000 secuencias (ProtGPT2, naturales, aleatorias) para comparación.</p>
+                <h3>Detección de homología</h3>
+                <p>HHblits buscó secuencias contra Uniclust30 y PDB70.</p>
+                <h3>Predicción de desorden</h3>
+                <p>IUPred3 evaluó globularidad y desorden en las secuencias.</p>
+                <h3>Predicción de estructuras con AlphaFold2</h3>
+                <p>Se predijeron cinco estructuras por secuencia usando ColabFold.</p>
+                <h3>Construcción de redes</h3>
+                <p>HHsearch y FoldSeek construyeron redes de similitud.</p>
+                <h3>Simulaciones de dinámica molecular</h3>
+                <p>Se ejecutaron 108 trayectorias MD (10.8µs) con HTMD y Amber 19SB.</p>
+                <h3>Cálculos con Rosetta</h3>
+                <p>Rosetta Relax evaluó la estabilidad de 30,000 secuencias.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" data-target="data-availability">
+                Disponibilidad de Datos <span>*</span>
+            </div>
+            <div class="accordion-content" id="data-availability">
+                <p>Los pesos del modelo y los conjuntos de datos están disponibles en repositorios de HuggingFace y Zenodo.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" data-target="code-availability">
+                Disponibilidad de Código <span>*</span>
+            </div>
+            <div class="accordion-content" id="code-availability">
+                <p>El código de entrenamiento está disponible en la documentación de HuggingFace transformers v4.14.1.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" data-target="references">
+                Referencias <span>*</span>
+            </div>
+            <div class="accordion-content" id="references">
+                <p>Lista completa de 75 referencias disponible en el artículo original.</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header" data-target="acknowledgements">
+                Agradecimientos <span>*</span>
+            </div>
+            <div class="accordion-content" id="acknowledgements">
+                <p>Gracias a NHR@FAU, DFG y AGAUR por su apoyo y recursos.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2022 Los Autores. Acceso Abierto bajo Licencia Creative Commons Attribution 4.0 Internacional.</p>
+        <p>Datos y modelo disponibles en <a href="https://huggingface.co/nferruz/ProtGPT2">HuggingFace</a></p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        // Three.js Background - Particle System
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg'), alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        const geometry = new THREE.SphereGeometry(0.1, 32, 32);
+        const material = new THREE.MeshBasicMaterial({ color: 0x93c5fd });
+        const particles = [];
+        for (let i = 0; i < 100; i++) {
+            const particle = new THREE.Mesh(geometry, material);
+            particle.position.set(
+                Math.random() * 100 - 50,
+                Math.random() * 100 - 50,
+                Math.random() * 100 - 50
+            );
+            scene.add(particle);
+            particles.push(particle);
+        }
+        camera.position.z = 50;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            particles.forEach(p => {
+                p.position.x += Math.sin(Date.now() * 0.001 + p.position.y) * 0.02;
+                p.position.y += Math.cos(Date.now() * 0.001 + p.position.z) * 0.02;
+            });
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+
+        // D3.js Network - Giant Full-Screen with Strong Repulsion
+        const svg = d3.select("#network")
+            .attr("width", window.innerWidth)
+            .attr("height", window.innerHeight);
+
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        const nodes = d3.range(100).map(() => ({
+            x: Math.random() * width,
+            y: Math.random() * height
+        }));
+
+        const links = [];
+        for (let i = 0; i < nodes.length; i++) {
+            for (let j = i + 1; j < nodes.length; j++) {
+                if (Math.random() > 0.9) {
+                    links.push({ source: i, target: j });
+                }
+            }
+        }
+
+        const simulation = d3.forceSimulation(nodes)
+            .force("link", d3.forceLink(links).distance(200))
+            .force("charge", d3.forceManyBody().strength(-200))
+            .force("center", d3.forceCenter(width / 2, height / 2).strength(0.05))
+            .force("x", d3.forceX(width / 2).strength(0.05))
+            .force("y", d3.forceY(height / 2).strength(0.05));
+
+        const link = svg.append("g")
+            .selectAll("line")
+            .data(links)
+            .enter().append("line")
+            .attr("stroke", "#bfdbfe")
+            .attr("stroke-width", 1.5);
+
+        const node = svg.append("g")
+            .selectAll("circle")
+            .data(nodes)
+            .enter().append("circle")
+            .attr("r", 8)
+            .attr("fill", "#93c5fd")
+            .attr("stroke", "#dbeafe")
+            .attr("stroke-width", 1);
+
+        simulation.on("tick", () => {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+            node
+                .attr("cx", d => Math.max(8, Math.min(width - 8, d.x)))
+                .attr("cy", d => Math.max(8, Math.min(height - 8, d.y)));
+        });
+
+        window.addEventListener('resize', () => {
+            const newWidth = window.innerWidth;
+            const newHeight = window.innerHeight;
+            svg.attr("width", newWidth).attr("height", newHeight);
+            simulation.force("center", d3.forceCenter(newWidth / 2, newHeight / 2).strength(0.05))
+                    .force("x", d3.forceX(newWidth / 2).strength(0.05))
+                    .force("y", d3.forceY(newHeight / 2).strength(0.05));
+            simulation.alpha(1).restart();
+        });
+
+        // Accordion Functionality
+        function toggleAccordion(header) {
+            const content = header.nextElementSibling;
+            const isActive = content.classList.contains('active');
+
+            // Cerrar todos los acordeones excepto el actual si está activo
+            document.querySelectorAll('.accordion-content').forEach(c => {
+                if (c !== content) {
+                    c.classList.remove('active');
+                    c.previousElementSibling.classList.remove('active');
+                    c.previousElementSibling.querySelector('span').textContent = '*';
+                }
+            });
+
+            // Alternar el acordeón seleccionado
+            if (isActive) {
+                content.classList.remove('active');
+                header.classList.remove('active');
+                header.querySelector('span').textContent = '*';
+            } else {
+                content.classList.add('active');
+                header.classList.add('active');
+                header.querySelector('span').textContent = '○';
+                scrollToElement(header);
+            }
+        }
+
+        // Navigation Click to Open Accordion
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('data-target');
+                const targetHeader = document.querySelector(`.accordion-header[data-target="${targetId}"]`);
+                const targetContent = targetHeader.nextElementSibling;
+
+                // Cerrar todos los acordeones
+                document.querySelectorAll('.accordion-content').forEach(c => {
+                    if (c !== targetContent) {
+                        c.classList.remove('active');
+                        c.previousElementSibling.classList.remove('active');
+                        c.previousElementSibling.querySelector('span').textContent = '*';
+                    }
+                });
+
+                // Abrir el acordeón objetivo
+                if (!targetContent.classList.contains('active')) {
+                    targetContent.classList.add('active');
+                    targetHeader.classList.add('active');
+                    targetHeader.querySelector('span').textContent = '○';
+                    scrollToElement(targetHeader);
+                }
+            });
+        });
+
+        // Función para desplazar al elemento con ajuste responsivo
+        function scrollToElement(element) {
+            const navHeight = document.querySelector('nav').offsetHeight;
+            const offset = window.innerWidth <= 768 ? navHeight + 10 : navHeight + 20;
+            const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+            window.scrollTo({
+                top: elementPosition - offset,
+                behavior: 'smooth'
+            });
+        }
+
+        // Evento click en los encabezados de acordeones
+        document.querySelectorAll('.accordion-header').forEach(header => {
+            header.addEventListener('click', () => toggleAccordion(header));
+        });
+
+        // Asegurar que todos los acordeones estén colapsados al cargar
+        window.addEventListener('load', () => {
+            document.querySelectorAll('.accordion-content').forEach(content => {
+                content.classList.remove('active');
+                content.previousElementSibling.classList.remove('active');
+                content.previousElementSibling.querySelector('span').textContent = '*';
+            });
+        });
+
+        // D3.js Animation on Load
+        d3.selectAll('.accordion')
+            .style('opacity', 0)
+            .transition()
+            .duration(1000)
+            .delay((d, i) => i * 200)
+            .style('opacity', 1);
+    </script>
+</body>
+</html>

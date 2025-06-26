@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Francisco Varela: Other Publications - 2025</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-green: #00FF00;
+            --neon-cyan: #00FFFF;
+            --black-bg: #000000;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: var(--black-bg);
+            color: var(--neon-green);
+            font-family: 'Orbitron', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        nav ul li {
+            margin: 0 20px;
+        }
+        nav ul li a {
+            color: var(--neon-green);
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        .main-container {
+            max-width: 100%;
+            margin: 0;
+            padding: 60px 10px 0 10px;
+            text-align: center;
+            flex: 1;
+            width: 100%;
+        }
+        .intro {
+            margin-bottom: 40px;
+        }
+        .intro h1 {
+            color: var(--neon-cyan);
+            font-size: 2.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 20px;
+        }
+        .intro p {
+            font-size: 1.1em;
+            max-width: 1000px;
+            margin: 0 auto 15px;
+        }
+        .highlight {
+            color: var(--neon-cyan);
+            font-weight: bold;
+        }
+        .filter-container {
+            margin-bottom: 20px;
+        }
+        .filter-container input {
+            padding: 10px;
+            font-size: 1em;
+            font-family: 'Orbitron', sans-serif;
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--neon-green);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+            border-radius: 5px;
+            outline: none;
+            width: 300px;
+            transition: box-shadow 0.3s ease;
+        }
+        .filter-container input:focus {
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 40px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--neon-cyan);
+        }
+        th {
+            background: rgba(0, 0, 0, 0.9);
+            color: var(--neon-cyan);
+            text-shadow: 0 0 5px var(--neon-cyan);
+            position: sticky;
+            top: 0;
+        }
+        tr:hover {
+            background: rgba(0, 255, 255, 0.1);
+        }
+        .paper-container {
+            margin: 40px 0;
+        }
+        .paper-container h3 {
+            color: var(--neon-cyan);
+            font-size: 1.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 15px;
+        }
+        .paper-iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            border-radius: 5px;
+            display: none;
+        }
+        h2 {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 20px;
+        }
+        @media (max-width: 900px) {
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                padding: 10px 0;
+            }
+            nav ul li {
+                margin: 10px 0;
+            }
+            .intro h1 {
+                font-size: 2em;
+            }
+            .intro p {
+                font-size: 1em;
+                padding: 0 15px;
+            }
+            .filter-container input {
+                width: 100%;
+            }
+            .paper-iframe {
+                height: 500px;
+            }
+        }
+        @media (max-width: 600px) {
+            nav {
+                position: static;
+            }
+            .main-container {
+                padding-top: 10px;
+            }
+            .intro h1 {
+                font-size: 1.5em;
+            }
+            .intro p {
+                font-size: 0.9em;
+            }
+            th, td {
+                font-size: 0.85em;
+                padding: 8px;
+            }
+            .paper-iframe {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navegación -->
+    <nav>
+        <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#abstracts">Abstracts</a></li>
+            <li><a href="#reviews">Reviews</a></li>
+            <li><a href="#extension">Extension Articles</a></li>
+            <li><a href="#contacto">Acerca de</a></li>
+        </ul>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="main-container" id="inicio">
+        <!-- Introducción -->
+        <div class="intro">
+            <h1>Francisco Varela: Other Publications</h1>
+            <p>Explora las publicaciones adicionales de <span class="highlight">Francisco Varela</span>, organizadas en <span class="highlight">Abstracts</span>, <span class="highlight">Reviews</span>, y <span class="highlight">Extension Articles</span>. Esta colección incluye resúmenes científicos, reseñas de libros y artículos de divulgación que abarcan su contribución a la neurobiología, la cognición y la biología teórica.</p>
+        </div>
+
+        <!-- Filtro -->
+        <div class="filter-container">
+            <input type="text" id="search" placeholder="Filter by title or author..." onkeyup="filterTables()">
+        </div>
+
+        <!-- Tabla 1: Abstracts -->
+        <div class="table-container" id="abstracts">
+            <h2>Abstracts</h2>
+            <table id="table-abstracts">
+                <thead>
+                    <tr>
+                        <th>Authors</th>
+                        <th>Year</th>
+                        <th>Title</th>
+                        <th>Publication Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Moran, D. and F. Varela</td><td>1970</td><td>Microtubules and sensory transduction</td><td>J. Cell Biol. 27:145a</td></tr>
+                    <tr><td>Moran, D., J. Rowley, and F. Varela</td><td>1975</td><td>Are sensory cilia motile?</td><td>J. Cell Biol. 67:293a</td></tr>
+                    <tr><td>Moran, D. and F. Varela</td><td>1976</td><td>Evolutionary patterns in sensory cilia</td><td>J. Cell Biol. 70:351a</td></tr>
+                    <tr><td>Zill, S., F. Varela, and D. Moran</td><td>1977</td><td>Modulation of locomotory activity by campaniform sensilla</td><td>Neuroscien. Abst. 3:391</td></tr>
+                    <tr><td>Varela, F.</td><td>1977</td><td>Circulus fructuosus</td><td>in: Proc. XXXIst Annual Meeting, Soc. Gen. Systems Res., Denver, CO, pp. 116-118</td></tr>
+                    <tr><td>Glanville, R. and F. Varela</td><td>1980</td><td>The inside is out</td><td>Proc. III World Congress of Cybernetics, Acapulco, Mexico, pp. 322-324</td></tr>
+                    <tr><td>Varela, F.</td><td>1983</td><td>La adaptación como un invariante</td><td>Arch. Biol. Med. Exp. 16:345-347a</td></tr>
+                    <tr><td>Budnik, V. y F. Varela</td><td>1983</td><td>La inducción cromática como fenómeno universal</td><td>Arch. Biol. Med. Exp. 16:567a</td></tr>
+                    <tr><td>Dupuy, J-P and F. Varela</td><td>1984</td><td>Le conflit autorganisation/intelligence artificielle</td><td>Proc. IX Congrès AFCET, Paris</td></tr>
+                    <tr><td>Varela, F.</td><td>1987</td><td>Cognition without representations</td><td>Proc. Osaka 1986 Workshop, Biology Forum 80:241-242</td></tr>
+                    <tr><td>Palacios, A. and F. Varela</td><td>1988</td><td>Color mixture in the pigeon</td><td>Annual Meeting Physiol. Society, J. Physiol. 23P</td></tr>
+                    <tr><td>Luisi, L. and F. Varela</td><td>1988</td><td>Micellar growth as a model for self-replication and chemical autopoiesis</td><td>IV Intl. Kyoto Conf. New Aspects of Organic Chemistry</td></tr>
+                    <tr><td>Varela, F. and A. Palacios</td><td>1988</td><td>Dimensionality of the pigeon's chromatic space</td><td>European Neuroscien. Assoc. Annual Meeting, Zürich</td></tr>
+                    <tr><td>Bonnardel, V. and F. Varela</td><td>1989</td><td>Response of the human color vision system to sinusoidal power distributions</td><td>Neuroscience Abstracts (USA). 15(1):625</td></tr>
+                    <tr><td>Neunschwander, S. and F. Varela</td><td>1990</td><td>Stimulus triggered oscillations in the avian tectum</td><td>Neuroscience Abstracts (USA) 16:(1) 109</td></tr>
+                    <tr><td>Bonnardel, V. and F. Varela</td><td>1991</td><td>Chromaticity loci of sensitivity thresholds of a deuteranope observer to regular spectral power distributions</td><td>ECVP 91</td></tr>
+                    <tr><td>Neuenschwander, S. and F. Varela</td><td>1992</td><td>Synchronization of oscillatory responses in the avian optic tectum</td><td>Neuroscience Abstracts (USA) 18:(1) 213</td></tr>
+                    <tr><td>V. Bonnardel and F. Varela</td><td>1992</td><td>Elliptical representation of chromaticity of sensitivity thresholds to regular spectral power distributions</td><td>15th ECVP, Pisa, 1992</td></tr>
+                    <tr><td>Pezard, L., J. Martinerie, J-L Nadrino, J. Müller, F. Varela, and B. Renault</td><td>1995</td><td>Non-linear forecasting measurements of brain electrical map dynamics</td><td>Human Brain Mapp., Suppl. 1:93</td></tr>
+                    <tr><td>F. Varela, J. Martinerie, J. Müller, Pezard, L., C. Adam and B. Renault</td><td>1995</td><td>Frequency coherence in multi-site cranial recordings in humans during cognitive tasks</td><td>Human Brain Mapp, Suppl. 1:207</td></tr>
+                    <tr><td>Pezard, L., J.-Ph. Lachaux, J-L Nadrino, C. Adam, L. Garnero, B. Renault, F. Varela, and J. Martinerie</td><td>1995</td><td>Local and global entropy quantification in neuronal systems</td><td>Proceedings of the NDCCS'95 Conference, Acta Physica Polonica</td></tr>
+                    <tr><td>Adam, C., J. Martinerie, M. Le Van Quyen, B. Renault, M. Baulac and F. Varela</td><td>1997</td><td>Anticipation of Seizure Onset with Non-linear Analysis of Intracerebral EEG</td><td>Epilepsia 38: 217, Supplement 3</td></tr>
+                    <tr><td>M. Le van Quyen, J. Martinerie, and F. Varela</td><td>1998</td><td>Clinical applications for neural noise?</td><td>Science Letters 279:1287-88</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tabla 2: Reviews -->
+        <div class="table-container" id="reviews">
+            <h2>Reviews</h2>
+            <table id="table-reviews">
+                <thead>
+                    <tr>
+                        <th>Authors</th>
+                        <th>Year</th>
+                        <th>Title</th>
+                        <th>Publication Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Varela, F.</td><td>1972</td><td>A review of J. Piaget's Biologie et Connaissance</td><td>Orbita (Chile) 3:27-39</td></tr>
+                    <tr><td>Varela, F.</td><td>1975</td><td>A review of S. Beer's Platform for Change</td><td>Int. J. Gen. Syst. 2:121-122</td></tr>
+                    <tr><td>Varela, F.</td><td>1979</td><td>A review of J. L. LeMoigne's Theorie du Systeme</td><td>Int. J. Gen. Syst. 5:76-78</td></tr>
+                    <tr><td>Varela, F.</td><td>1982</td><td>Evolución de la evolución: Una crítica de Le Jeu des Possibles por F. Jacob</td><td>Arch. Biol. Med. Exp. 15:9-10</td></tr>
+                    <tr><td>Varela, F.</td><td>1986</td><td>A review of Complex Systems-Operational Approaches by H. Haken (Ed.)</td><td>Physics Today 40:74-76</td></tr>
+                    <tr><td>Varela, F.</td><td>1993</td><td>A review of D. Dennett's Consciousness Explained</td><td>Am. J. Psychol. 106:126-129</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tabla 3: Extension Articles -->
+        <div class="table-container" id="extension">
+            <h2>Extension Articles</h2>
+            <table id="table-extension">
+                <thead>
+                    <tr>
+                        <th>Authors</th>
+                        <th>Year</th>
+                        <th>Title</th>
+                        <th>Publication Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Maturana, H. y F. Varela</td><td>1982</td><td>Como conocer el conocer</td><td>Creces (Chile), 3:29-34</td></tr>
+                    <tr><td>Varela, F.</td><td>1983</td><td>La biología de la libertad</td><td>Mutantia (Argentina), No. 15, Abril, pp. 29-34</td></tr>
+                    <tr><td>Varela, F.</td><td>1983</td><td>Darwin, cien años después</td><td>Mensaje (Chile), Septiembre 1983, No. 322, pp. 510-515</td></tr>
+                    <tr><td>Varela, F.</td><td>1984</td><td>La frontera circular: Las bases biológicas del conocer</td><td>Hombre y Universo: Revista Universitaria de la Univ. Católica, Santiago, Marzo, pp. 24-29</td></tr>
+                    <tr><td>Varela, F.</td><td>1984</td><td>Biologie der Vernunft</td><td>Steirische Berichte, No. 6</td></tr>
+                    <tr><td>Varela, F.</td><td>1985</td><td>El trabajo de red</td><td>Mutantia, No. 15, pp. 14-15</td></tr>
+                    <tr><td>Thompson, W. and F. Varela</td><td>1987</td><td>Transparency: A trialogue with Nishitani-sensei</td><td>Annals of the Earth Winter Issue</td></tr>
+                    <tr><td>Varela, F.</td><td>1989</td><td>La rete immunitaria</td><td>Sfera 9 (Roma), pp. 34-36</td></tr>
+                    <tr><td>Varela, F.</td><td>1990</td><td>Autonomie biologique et connaissance</td><td>in: Nature de la Pensée, Bibliothèque Municipale de Lyon</td></tr>
+                    <tr><td>Abraham, R. and F. Varela</td><td>1990</td><td>Myths within science</td><td>Dynamics Newsletter 3:4-5, IS Newsletter 1:10-11</td></tr>
+                    <tr><td>Varela, F.</td><td>1995</td><td>Connaissances et représentations</td><td>BIC (Paris), No. 27, 1995, pp. 79-89</td></tr>
+                    <tr><td>Rodriguez, E. y F. Varela</td><td>1999</td><td>Percepción consciente: Sincronía de grupos neuronales</td><td>Investigación y Ciencia, Nov. 1999, pp. 38-39</td></tr>
+                    <tr><td>Varela, F.</td><td>1999</td><td>L’autorganisation</td><td>dans: Sciences et Conscience, Albin Michel, pp. 105-109</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Contenedor para las Publicaciones en Iframes -->
+        <div class="paper-container" id="paper-container">
+            <h3>View Selected Publication</h3>
+            <!-- Abstracts -->
+            <iframe class="paper-iframe" id="abs-1970-moran" src="[URL-Abs-1970-Moran]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1975-moran" src="[URL-Abs-1975-Moran]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1976-moran" src="[URL-Abs-1976-Moran]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1977-zill" src="[URL-Abs-1977-Zill]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1977-varela" src="[URL-Abs-1977-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1980-glanville" src="[URL-Abs-1980-Glanville]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1983-varela" src="[URL-Abs-1983-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1983-budnik" src="[URL-Abs-1983-Budnik]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1984-dupuy" src="[URL-Abs-1984-Dupuy]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1987-varela" src="[URL-Abs-1987-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1988-palacios" src="[URL-Abs-1988-Palacios]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1988-luisi" src="[URL-Abs-1988-Luisi]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1988-varela" src="[URL-Abs-1988-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1989-bonnardel" src="[URL-Abs-1989-Bonnardel]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1990-neunschwander" src="[URL-Abs-1990-Neunschwander]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1991-bonnardel" src="[URL-Abs-1991-Bonnardel]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1992-neuenschwander" src="[URL-Abs-1992-Neuenschwander]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1992-bonnardel" src="[URL-Abs-1992-Bonnardel]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1995-pezard1" src="[URL-Abs-1995-Pezard1]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1995-varela" src="[URL-Abs-1995-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1995-pezard2" src="[URL-Abs-1995-Pezard2]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1997-adam" src="[URL-Abs-1997-Adam]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="abs-1998-levan" src="[URL-Abs-1998-Levan]" frameborder="0"></iframe>
+            <!-- Reviews -->
+            <iframe class="paper-iframe" id="rev-1972-varela" src="[URL-Rev-1972-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="rev-1975-varela" src="[URL-Rev-1975-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="rev-1979-varela" src="[URL-Rev-1979-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="rev-1982-varela" src="[URL-Rev-1982-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="rev-1986-varela" src="[URL-Rev-1986-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="rev-1993-varela" src="[URL-Rev-1993-Varela]" frameborder="0"></iframe>
+            <!-- Extension Articles -->
+            <iframe class="paper-iframe" id="ext-1982-maturana" src="[URL-Ext-1982-Maturana]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="ext-1983-varela1" src="[URL-Ext-1983-Varela1]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="ext-1983-varela2" src="[URL-Ext-1983-Varela2]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="ext-1984-varela1" src="[URL-Ext-1984-Varela1]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="ext-1984-varela2" src="[URL-Ext-1984-Varela2]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="ext-1985-varela" src="[URL-Ext-1985-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="ext-1987-thompson" src="[URL-Ext-1987-Thompson]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="ext-1989-varela" src="[URL-Ext-1989-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="ext-1990-varela" src="[URL-Ext-1990-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="ext-1990-abraham" src="[URL-Ext-1990-Abraham]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="ext-1995-varela" src="[URL-Ext-1995-Varela]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="ext-1999-rodriguez" src="[URL-Ext-1999-Rodriguez]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="ext-1999-varela" src="[URL-Ext-1999-Varela]" frameborder="0"></iframe>
+        </div>
+
+        <!-- Sección Acerca de -->
+        <div class="about-container" id="contacto">
+            <h3>Acerca de</h3>
+            <p>Curated by Grok 3, built by xAI. Data compiled as of March 19, 2025.</p>
+        </div>
+    </div>
+
+    <!-- Script para filtrar las tablas y mostrar iframes -->
+    <script>
+        function filterTables() {
+            const input = document.getElementById('search').value.toLowerCase();
+            const tables = [
+                document.getElementById('table-abstracts'),
+                document.getElementById('table-reviews'),
+                document.getElementById('table-extension')
+            ];
+            const paperContainer = document.getElementById('paper-container');
+            const iframes = document.getElementsByClassName('paper-iframe');
+            let selectedPub = null;
+
+            // Filtrar todas las tablas
+            tables.forEach(table => {
+                const rows = table.getElementsByTagName('tr');
+                for (let i = 1; i < rows.length; i++) {
+                    const cells = rows[i].getElementsByTagName('td');
+                    let match = false;
+                    const authors = cells[0].textContent.toLowerCase().split(',')[0].replace(/[^\w\s]/g, '').trim();
+                    const year = cells[1].textContent.toLowerCase();
+                    const prefix = table.id === 'table-abstracts' ? 'abs' : table.id === 'table-reviews' ? 'rev' : 'ext';
+
+                    for (let j = 0; j < cells.length; j++) {
+                        const cellText = cells[j].textContent.toLowerCase();
+                        if (cellText.includes(input)) {
+                            match = true;
+                            if (!selectedPub && j === 0) {
+                                selectedPub = `${prefix}-${year}-${authors.split(' ')[0]}`.toLowerCase();
+                            }
+                            break;
+                        }
+                    }
+                    rows[i].style.display = match ? '' : 'none';
+                }
+            });
+
+            // Ocultar todos los iframes
+            for (let iframe of iframes) {
+                iframe.style.display = 'none';
+            }
+
+            // Mostrar el iframe correspondiente a la publicación filtrada
+            if (selectedPub) {
+                const selectedIframe = document.getElementById(selectedPub);
+                if (selectedIframe) {
+                    selectedIframe.style.display = 'block';
+                    paperContainer.style.display = 'block';
+                } else {
+                    paperContainer.style.display = 'none';
+                }
+            } else {
+                paperContainer.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

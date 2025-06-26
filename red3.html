@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico de Redes de Temas de Tesis</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <style>
+        /* Estilos CSS para los nodos */
+        .node {
+            cursor: pointer;
+        }
+
+        .node circle {
+            stroke: #000;
+            stroke-width: 2px;
+        }
+
+        .node text {
+            font-size: 12px;
+            fill: #000;
+            text-anchor: middle;
+            alignment-baseline: middle;
+        }
+
+        /* Estilos CSS para los enlaces (links) */
+        .link {
+            fill: none;
+            stroke: #000;
+            stroke-width: 2px;
+        }
+    </style>
+</head>
+<body>
+    <svg width="800" height="600"></svg>
+
+    <div id="thesis-list" style="position: absolute; top: 20px; left: 10px; background-color: rgba(255, 255, 255, 0.7); border: 1px solid #ccc; padding: 10px; display: none;"></div>
+
+    <script>
+        // Datos de tesis y sus conexiones
+        const data = [
+            { name: "Metodologías de enseñanza", tesis: 45, thesisTitles: ["Uso del modelo teórico TPACK en la elaboración de material didáctico para el módulo Bienestar y salud de la asignatura de Ciencias para la ciudadanía ", "Propuesta metodológica (PROMELAB) para la utilizacijón de módulos, mediante técnicas espectroscópicas para lograr aprendizajes significativos en los alumnos de enseñanza media", "Propuesta metodológica basada en la Webquest, para la promoción de aprendizaje significativo en el contenido Transformaciones de la Materia del subsector Ciencias Naturales, para alumnos de sexto de Educación General Básica", /* Agrega títulos de tesis aquí */] },
+            { name: "Evaluación del aprendizaje", tesis: 9, thesisTitles: ["Propuesta de evaluación auténtica para potenciar el aprendizaje de alimentación saludable en tercer año de enseñanza básica", "Elaboración y validación de instrumentos para medir las habilidades del pensamiento científico (HDPC) en estudiantes de primero de enseñanza media en el sector de biología.", /* Agrega títulos de tesis aquí */] },
+            { name: "Competencias y habilidades", tesis: 15, thesisTitles: ["Competencias genéricas de la inteligencia racional: Gestión de la Información, Resolución de Problemas y toma de Decisiones en Profesores de Ciencias ", "Propuesta de mejoramiento en el proceso de Enseñanza y Aprendizaje: desarrollo de la competencia razonar matemáticamente PROMEPEA", /* Agrega títulos de tesis aquí */] },
+            { name: "Uso de tecnologías", tesis: 11, thesisTitles: ["Uso de robótica para mejorar aprendizaje en fotosíntesis: propuesta para mejorar los aprendizajes en ciencias, a través de actividad de laboratorio de fotosíntesis asistido por robótica", "2.	Neurociencia y educación, estudio etnográfico en una escuela pública de Chile", /* Agrega títulos de tesis aquí */] },
+            { name: "Errores y preconceptos", tesis: 6, thesisTitles: ["Diseño de implementación de una metodología de enseñanza basada en el uso del recurso historia de la ciencia para incidir positivamente en el rendimiento y aprendizaje de la evolución humana", "Estudio de los preconceptos de la estructura atómica en alumnos de educación general básica, educación media y educación superior", /* Agrega títulos de tesis aquí */] },
+            { name: "Otros", tesis: 12, thesisTitles: ["Representación social de la física en estudiantes de I° y II° de enseñanza media.", "Aprendizaje significativo de los conceptos de impulso y momentum mediante el uso de una Webquest", /* Agrega títulos de tesis aquí */] }
+        ];
+
+        const links = [
+            { source: "Metodologías de enseñanza", target: "Evaluación del aprendizaje" },
+            { source: "Metodologías de enseñanza", target: "Competencias y habilidades" },
+            { source: "Metodologías de enseñanza", target: "Uso de tecnologías" },
+            { source: "Metodologías de enseñanza", target: "Errores y preconceptos" },
+            { source: "Metodologías de enseñanza", target: "Otros" }
+        ];
+
+        // Crear el contenedor SVG
+        const svg = d3.select("svg");
+
+        // Crear una fuerza de simulación para posicionar los nodos
+        const simulation = d3.forceSimulation(data)
+            .force("link", d3.forceLink(links).id(d => d.name).distance(100))
+            .force("charge", d3.forceManyBody().strength(-200))
+            .force("center", d3.forceCenter(400, 300));
+
+        // Escalar el tamaño de los nodos proporcionalmente al número de tesis
+        const maxTesis = d3.max(data, d => d.tesis);
+        const nodeScale = d3.scaleLinear()
+            .domain([0, maxTesis])
+            .range([10, 50]);
+
+        // Crear los enlaces (links)
+        const link = svg.selectAll(".link")
+            .data(links)
+            .enter().append("line")
+            .attr("class", "link");
+
+        // Crear los nodos (círculos) con texto
+        const node = svg.selectAll(".node")
+            .data(data)
+            .enter().append("g")
+            .attr("class", "node")
+            .on("mouseover", handleNodeMouseOver)
+            .on("mouseout", handleNodeMouseOut)
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        // Agregar los círculos a los nodos
+        node.append("circle")
+            .attr("r", d => nodeScale(d.tesis))
+            .attr("fill", (d, i) => d3.schemeCategory10[i]);
+
+        // Agregar el texto a los nodos
+        node.append("text")
+            .text(d => d.name)
+            .attr("dy", d => -nodeScale(d.tesis) - 5)
+            .style("font-size", "10px")
+            .style("text-anchor", "middle");
+
+        // Funciones de arrastre de nodos
+        function dragstarted(d) {
+            if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(d) {
+            d.fx = d3.event.x;
+            d.fy = d3.event.y;
+        }
+
+        function dragended(d) {
+            if (!d3.event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        // Función para actualizar la posición de los nodos y enlaces en cada paso de la simulación
+        function ticked() {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            node
+                .attr("transform", d => `translate(${d.x},${d.y})`);
+        }
+
+        // Manejar evento de mouse sobre el nodo
+        function handleNodeMouseOver(d) {
+            const thesisList = d3.select("#thesis-list");
+            thesisList.selectAll("p").remove();
+
+            const titles = d.thesisTitles;
+            if (titles && titles.length > 0) {
+                titles.forEach(title => {
+                    thesisList.append("p")
+                        .text(title);
+                });
+                thesisList.style("display", "block");
+            }
+        }
+
+        // Manejar evento de mouse fuera del nodo
+        function handleNodeMouseOut() {
+            const thesisList = d3.select("#thesis-list");
+            thesisList.style("display", "none");
+        }
+
+        // Actualizar la posición de los nodos y enlaces en cada paso de la simulación
+        simulation
+            .nodes(data)
+            .on("tick", ticked);
+
+        simulation.force("link")
+            .links(links);
+    </script>
+</body>
+</html>

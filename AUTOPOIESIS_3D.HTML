@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modelo de Autopoiesis: Sistemas Autoorganizados</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        body {
+            background-color: #000000;
+            color: #00FF00;
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        .main-container {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+        .content { grid-column: 1 / 2; }
+        .sidebar {
+            grid-column: 2 / 3;
+            position: sticky;
+            top: 20px;
+            align-self: start;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        .header {
+            grid-column: 1 / 3;
+            position: relative;
+            height: 60vh;
+            background: url('https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center/cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #00FFFF;
+            text-shadow: 0 0 15px #00FF00;
+            animation: fadeIn 2s ease-in;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1;
+        }
+        .header h1, .header p {
+            position: relative;
+            z-index: 2;
+        }
+        .header h1 {
+            font-size: clamp(2em, 4vw, 4em);
+            animation: glow 2s infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 5px #00FF00; }
+            to { text-shadow: 0 0 20px #00FFFF; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .section {
+            margin: 40px 0;
+            padding: 25px;
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF;
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        .sidebar .section {
+            margin: 0;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.1);
+        }
+        #visualization-section { margin-top: 20px; }
+        h2 {
+            color: #00FF00;
+            text-shadow: 0 0 8px #00FF00;
+            border-bottom: 1px solid #00FFFF;
+            padding-bottom: 10px;
+            margin: 0 0 15px 0;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        h3 {
+            color: #00FFFF;
+            margin: 20px 0 10px 0;
+            font-size: 1.2em;
+        }
+        p {
+            color: #00FF00;
+            font-size: 1.1em;
+            margin: 0 0 10px 0;
+        }
+        .highlight { color: #00FFFF; font-weight: bold; text-decoration: none; transition: text-shadow 0.3s ease; }
+        .highlight:hover { text-shadow: 0 0 10px #00FFFF; }
+        .substrate { color: #00FF00; font-weight: bold; }
+        .catalyst { color: #FF00FF; font-weight: bold; }
+        .link { color: #00FFFF; font-weight: bold; }
+        button {
+            background: none;
+            border: 2px solid #00FFFF;
+            color: #00FF00;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #00FFFF;
+            color: #000000;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        input[type="range"] {
+            width: 100%;
+            accent-color: #00FFFF;
+        }
+        #visualization {
+            width: 100%;
+            height: 600px;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+        .footer {
+            grid-column: 1 / 3;
+            text-align: center;
+            padding: 30px;
+            color: #00FFFF;
+            border-top: 2px solid #00FF00;
+            margin-top: 40px;
+        }
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                padding: 10px;
+                gap: 10px;
+            }
+            .content, .sidebar, .footer, .header {
+                grid-column: 1 / 2;
+            }
+            .header {
+                height: 40vh;
+            }
+            .header h1 {
+                font-size: clamp(1.5em, 3vw, 2.5em);
+            }
+            .header p {
+                font-size: 0.9em;
+            }
+            .sidebar {
+                position: static;
+                max-height: none;
+            }
+            .section {
+                margin: 20px 0;
+                padding: 15px;
+            }
+            .sidebar .section {
+                padding: 15px;
+            }
+            #visualization {
+                height: 400px;
+            }
+            h2 { font-size: 1.2em; }
+            h3 { font-size: 1em; }
+            p { font-size: 0.95em; }
+            button { padding: 8px 16px; font-size: 0.9em; }
+        }
+        @media (max-width: 480px) {
+            .header {
+                height: 30vh;
+            }
+            .header h1 {
+                font-size: clamp(1.2em, 2.5vw, 2em);
+            }
+            .header p {
+                font-size: 0.8em;
+            }
+            #visualization {
+                height: 300px;
+            }
+            .section {
+                margin: 15px 0;
+                padding: 10px;
+            }
+            .sidebar .section {
+                padding: 10px;
+            }
+            h2 { font-size: 1em; }
+            h3 { font-size: 0.9em; }
+            p { font-size: 0.85em; }
+            button { padding: 6px 12px; font-size: 0.8em; }
+            input[type="range"] {
+                width: 90%;
+                margin: 0 auto;
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1>Modelo de Autopoiesis</h1>
+            <p>Simulando la Esencia de los Sistemas Vivos</p>
+        </div>
+
+        <div class="content">
+            <div class="section" id="visualization-section">
+                <h2>Simulación 3D</h2>
+                <div id="visualization"></div>
+            </div>
+
+            <div class="section" id="intro">
+                <h2>Introducción a la Autopoiesis</h2>
+                <p>Imagina un sistema que se construye desde dentro, una entidad viva que desafía el caos tejiendo su propia existencia. La <span class="highlight">autopoiesis</span>, un concepto revolucionario de los biólogos Humberto Maturana y Francisco Varela, captura esta esencia de la vida. Describe sistemas que se automantienen al producir y regenerar sus propios componentes mediante una red cerrada de procesos. Visualiza una célula: su danza química sostiene su forma frente a la entropía. En esta simulación, los <span class="substrate">sustratos</span> (verde) se desplazan sin rumbo, los <span class="catalyst">enzimas</span> (magenta) desencadenan la creación de <span class="link">enlaces</span> (cian), y estos enlaces se descomponen de nuevo en sustratos: un eco digital del equilibrio dinámico de la vida.</p>
+            </div>
+
+            <div class="section" id="concepts">
+                <h2>Síntesis de "Autopoiesis: La Organización de los Sistemas Vivos" (Varela y Maturana, 1974)</h2>
+                <h3>1. Introducción</h3>
+                <p>Este trabajo seminal redefine la vida, alejándose de la reproducción y la evolución como rasgos definitorios. En su lugar, centra la atención en la <span class="highlight">unidad</span> de los sistemas vivos y su organización intrínseca.</p>
+                <h3>2. Organización</h3>
+                <p>Todo sistema puede verse como una <span class="highlight">unidad</span> singular o como una red compleja de componentes. Su <span class="highlight">organización</span>—la trama relacional que une estas partes—lo convierte en un todo funcional.</p>
+                <h3>3. Organización Autopoiética</h3>
+                <p>Un sistema autopoiético se caracteriza por:</p>
+                <ul>
+                    <li>Una <span class="highlight">red de producción</span> donde los componentes se generan recursivamente a sí mismos.</li>
+                    <li>Una unidad que se sostiene gracias a esta red.</li>
+                </ul>
+                <p><strong>Ejemplo:</strong> Una célula, con sus reacciones químicas renovando constantemente su estructura, encarna la autopoiesis.</p>
+                <h3>4. Autopoiesis vs. Alopoiesis</h3>
+                <p>Los <span class="highlight">sistemas autopoiéticos</span> crean sus propios componentes, preservando su identidad. Los <span class="highlight">sistemas alopoiéticos</span>, como un ribosoma, producen algo externo a sí mismos.</p>
+                <h3>5. La Autopoiesis como Núcleo de la Vida</h3>
+                <p>Los seres vivos son inherentemente autopoiéticos. La reproducción y la evolución son secundarias; el corazón de la vida reside en esta unidad autoconstruida.</p>
+                <h3>6. Modelo de Simulación</h3>
+                <p>La simulación tridimensional que aquí presentamos incluye:</p>
+                <ul>
+                    <li><span class="substrate">Sustratos (O)</span>: Materias primas que se mueven en el espacio 3D.</li>
+                    <li><span class="catalyst">Catalizadores (*)</span>: Agentes que forman <span class="link">enlaces</span> entre sustratos, creando estructuras dinámicas.</li>
+                    <li><strong>Autoreparación:</strong> Los catalizadores facilitan la generación de nuevos elementos, manteniendo la dinámica autopoiética.</li>
+                </ul>
+                <h3>7. Implicaciones y Aplicaciones</h3>
+                <p>La autopoiesis depende de dinámicas relacionales, no de materiales específicos. Esto abre caminos hacia:</p>
+                <ul>
+                    <li><span class="highlight">Origen de la Vida:</span> Ejemplo: liposomas con reacciones internas.</li>
+                    <li><span class="highlight">Vida Artificial:</span> Desafíos para sintetizar sistemas autopoiéticos.</li>
+                </ul>
+                <h3>8. Conclusión</h3>
+                <p>Un sistema autopoiético:</p>
+                <ol>
+                    <li>Tiene <span class="highlight">límites</span> definidos.</li>
+                    <li>Contiene <span class="highlight">componentes</span> internos.</li>
+                    <li>Opera mecánicamente con interacciones precisas.</li>
+                    <li>Genera sus propios <span class="highlight">límites</span> mediante interacciones.</li>
+                    <li>Produce todos sus <span class="highlight">componentes</span> internamente.</li>
+                    <li>Mantiene su <span class="highlight">organización</span> mientras sus procesos internos permanezcan activos.</li>
+                </ol>
+                <p>Este marco afina nuestra comprensión de lo vivo, conectando biología, inteligencia artificial y filosofía de la mente.</p>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="section" id="controls">
+                <h2>Controles</h2>
+                <p>Catalizadores Iniciales: <span id="enzymeCountValue">5</span></p>
+                <input type="range" id="enzymeCount" min="1" max="10" value="5">
+                <p>Velocidad de Sustrato (μm/s): <span id="substrateSpeedValue">5</span></p>
+                <input type="range" id="substrateSpeed" min="1" max="10" value="5">
+                <p>Tasa de Desintegración (s⁻¹): <span id="decayRateValue">0.005</span></p>
+                <input type="range" id="decayRate" min="0" max="0.01" step="0.0001" value="0.005">
+                <p>Estado: <span id="status">Sustratos: 0, Enlaces: 0, Catalizadores: 0</span></p>
+                <button onclick="resetSimulation()">Reiniciar</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Explorando la Autopoiesis | Febrero 2025</p>
+        </div>
+    </div>
+
+    <script>
+        const vizContainer = document.getElementById('visualization');
+        let scene, camera, renderer, controls, gridSize = 20;
+        let substrates = [], catalysts = [], links = [], bondedLinks = [];
+        let catalystCount = 5, substrateSpeed = 5, decayRate = 0.005;
+
+        function initThreeJS() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, vizContainer.clientWidth / 600, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(vizContainer.clientWidth, 600);
+            vizContainer.appendChild(renderer.domElement);
+
+            scene.background = new THREE.Color(0x000000);
+
+            const gridMaterial = new THREE.LineBasicMaterial({ color: 0x00FFFF, transparent: true, opacity: 0.2 });
+            const gridGeometry = new THREE.BufferGeometry();
+            const vertices = [];
+            for (let i = 0; i <= gridSize; i++) {
+                for (let j = 0; j <= gridSize; j++) {
+                    vertices.push(i - gridSize / 2, j - gridSize / 2, -gridSize / 2);
+                    vertices.push(i - gridSize / 2, j - gridSize / 2, gridSize / 2);
+                    vertices.push(i - gridSize / 2, -gridSize / 2, j - gridSize / 2);
+                    vertices.push(i - gridSize / 2, gridSize / 2, j - gridSize / 2);
+                    vertices.push(-gridSize / 2, i - gridSize / 2, j - gridSize / 2);
+                    vertices.push(gridSize / 2, i - gridSize / 2, j - gridSize / 2);
+                }
+            }
+            gridGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            const grid = new THREE.LineSegments(gridGeometry, gridMaterial);
+            scene.add(grid);
+
+            camera.position.set(gridSize, gridSize, gridSize * 1.5);
+            camera.lookAt(0, 0, 0);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.screenSpacePanning = false;
+            controls.minDistance = 5;
+            controls.maxDistance = 50;
+            controls.enablePan = false;
+
+            window.addEventListener('resize', resize);
+        }
+
+        const catalystSlider = document.getElementById("enzymeCount");
+        catalystSlider.oninput = function() {
+            catalystCount = +this.value;
+            document.getElementById("enzymeCountValue").textContent = catalystCount;
+        };
+        const speedSlider = document.getElementById("substrateSpeed");
+        speedSlider.oninput = function() {
+            substrateSpeed = +this.value;
+            document.getElementById("substrateSpeedValue").textContent = substrateSpeed;
+        };
+        const decaySlider = document.getElementById("decayRate");
+        decaySlider.oninput = function() {
+            decayRate = +this.value;
+            document.getElementById("decayRateValue").textContent = decayRate.toFixed(4);
+        };
+
+        function resetSimulation() {
+            substrates.forEach(s => scene.remove(s.mesh));
+            catalysts.forEach(k => scene.remove(k.mesh));
+            links.forEach(l => scene.remove(l.mesh));
+            bondedLinks.forEach(bl => scene.remove(bl.mesh));
+            substrates = [];
+            catalysts = [];
+            links = [];
+            bondedLinks = [];
+
+            const substrateMaterial = new THREE.MeshBasicMaterial({ color: 0x00FF00 });
+            const catalystMaterial = new THREE.MeshBasicMaterial({ color: 0xFF00FF });
+            const linkMaterial = new THREE.MeshBasicMaterial({ color: 0x00FFFF });
+            const bondedLinkMaterial = new THREE.MeshBasicMaterial({ color: 0x00FFFF, opacity: 0.8, transparent: true });
+            const geometry = new THREE.SphereGeometry(0.3, 16, 16);
+
+            const substrateCount = gridSize * gridSize * gridSize * 0.1;
+            for (let i = 0; i < substrateCount; i++) {
+                const mesh = new THREE.Mesh(geometry, substrateMaterial);
+                mesh.position.set(
+                    Math.floor(Math.random() * gridSize) - gridSize / 2,
+                    Math.floor(Math.random() * gridSize) - gridSize / 2,
+                    Math.floor(Math.random() * gridSize) - gridSize / 2
+                );
+                substrates.push({ mesh, x: mesh.position.x, y: mesh.position.y, z: mesh.position.z });
+                scene.add(mesh);
+            }
+
+            for (let i = 0; i < catalystCount; i++) {
+                const mesh = new THREE.Mesh(geometry, catalystMaterial);
+                mesh.position.set(
+                    Math.floor(Math.random() * gridSize) - gridSize / 2,
+                    Math.floor(Math.random() * gridSize) - gridSize / 2,
+                    Math.floor(Math.random() * gridSize) - gridSize / 2
+                );
+                catalysts.push({ mesh, x: mesh.position.x, y: mesh.position.y, z: mesh.position.z });
+                scene.add(mesh);
+            }
+        }
+
+        function moveSubstrates() {
+            substrates.forEach(s => {
+                if (Math.random() < substrateSpeed / 10) {
+                    const dir = Math.floor(Math.random() * 6);
+                    const moves = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
+                    const [dx, dy, dz] = moves[dir];
+                    const newX = s.x + dx;
+                    const newY = s.y + dy;
+                    const newZ = s.z + dz;
+                    if (Math.abs(newX) <= gridSize / 2 && Math.abs(newY) <= gridSize / 2 && Math.abs(newZ) <= gridSize / 2) {
+                        const occupied = catalysts.some(k => k.x === newX && k.y === newY && k.z === newZ) ||
+                                        bondedLinks.some(bl => bl.x === newX && bl.y === newY && bl.z === newZ) ||
+                                        links.some(l => l.x === newX && l.y === newY && l.z === newZ);
+                        if (!occupied) {
+                            s.x = newX;
+                            s.y = newY;
+                            s.z = newZ;
+                            s.mesh.position.set(newX, newY, newZ);
+                        }
+                    }
+                }
+            });
+        }
+
+        // Eliminamos moveLinks() porque los enlaces ahora son fijos
+        function moveLinks() {
+            // No hace nada, enlaces y enlaces enlazados son fijos
+        }
+
+        // Eliminamos moveCatalysts() porque los catalizadores son fijos
+        function moveCatalysts() {
+            // No hace nada, catalizadores son fijos tras la inicialización
+        }
+
+        function produceLinks() {
+            catalysts.forEach(k => {
+                const nearby = substrates.filter(s => {
+                    const dist = Math.sqrt((s.x - k.x) ** 2 + (s.y - k.y) ** 2 + (s.z - k.z) ** 2);
+                    return dist <= 1.5; // Adyacencia en 3D
+                });
+                if (nearby.length >= 2) {
+                    const s1 = nearby[0];
+                    const s2 = nearby[1];
+                    const options = [
+                        { x: k.x + 1, y: k.y, z: k.z },
+                        { x: k.x - 1, y: k.y, z: k.z },
+                        { x: k.x, y: k.y + 1, z: k.z },
+                        { x: k.x, y: k.y - 1, z: k.z },
+                        { x: k.x, y: k.y, z: k.z + 1 },
+                        { x: k.x, y: k.y, z: k.z - 1 }
+                    ].filter(pos => 
+                        Math.abs(pos.x) <= gridSize / 2 && 
+                        Math.abs(pos.y) <= gridSize / 2 && 
+                        Math.abs(pos.z) <= gridSize / 2 &&
+                        !links.some(l => l.x === pos.x && l.y === pos.y && l.z === pos.z) &&
+                        !bondedLinks.some(bl => bl.x === pos.x && bl.y === pos.y && bl.z === pos.z)
+                    );
+                    if (options.length > 0) {
+                        const chosen = options[Math.floor(Math.random() * options.length)];
+                        scene.remove(s1.mesh);
+                        scene.remove(s2.mesh);
+                        substrates = substrates.filter(s => s !== s1 && s !== s2);
+                        const linkMesh = new THREE.Mesh(
+                            new THREE.SphereGeometry(0.3, 16, 16),
+                            new THREE.MeshBasicMaterial({ color: 0x00FFFF })
+                        );
+                        linkMesh.position.set(chosen.x, chosen.y, chosen.z);
+                        links.push({ mesh: linkMesh, x: chosen.x, y: chosen.y, z: chosen.z });
+                        scene.add(linkMesh);
+                    }
+                }
+            });
+        }
+
+        function bondLinks() {
+            links = links.filter(l => {
+                const nearbyLinks = links.filter(other => other !== l && Math.sqrt((l.x - other.x) ** 2 + (l.y - other.y) ** 2 + (l.z - other.z) ** 2) <= 1.5);
+                if (nearbyLinks.length > 0) {
+                    const other = nearbyLinks[0];
+                    const dx = other.x - l.x;
+                    const dy = other.y - l.y;
+                    const dz = other.z - l.z;
+                    const angle = Math.acos((dx * dx + dy * dy + dz * dz) / (Math.sqrt(dx * dx + dy * dy + dz * dz) * Math.sqrt(dx * dx + dy * dy + dz * dz)));
+                    if (angle > Math.PI / 2) {
+                        scene.remove(l.mesh);
+                        const bondedLinkMesh = new THREE.Mesh(
+                            new THREE.SphereGeometry(0.3, 16, 16),
+                            new THREE.MeshBasicMaterial({ color: 0x00FFFF, opacity: 0.8, transparent: true })
+                        );
+                        bondedLinkMesh.position.set(l.x, l.y, l.z);
+                        bondedLinks.push({ mesh: bondedLinkMesh, x: l.x, y: l.y, z: l.z });
+                        scene.add(bondedLinkMesh);
+                        return false;
+                    }
+                }
+                return true;
+            });
+        }
+
+        function disintegrateLinks() {
+            links = links.filter(l => {
+                if (Math.random() < decayRate) {
+                    scene.remove(l.mesh);
+                    const substrateMesh = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.3, 16, 16),
+                        new THREE.MeshBasicMaterial({ color: 0x00FF00 })
+                    );
+                    substrateMesh.position.set(l.x, l.y, l.z);
+                    substrates.push({ mesh: substrateMesh, x: l.x, y: l.y, z: l.z });
+                    scene.add(substrateMesh);
+                    return false;
+                }
+                return true;
+            });
+
+            bondedLinks = bondedLinks.filter(bl => {
+                const structureSize = bondedLinks.length;
+                if (Math.random() < decayRate * structureSize * 0.1) {
+                    scene.remove(bl.mesh);
+                    const nearbyCatalysts = catalysts.filter(k => Math.sqrt((k.x - bl.x) ** 2 + (k.y - bl.y) ** 2 + (k.z - bl.z) ** 2) < 2);
+                    if (nearbyCatalysts.length > 0 && substrates.length > 0) {
+                        const s = substrates.shift();
+                        scene.remove(s.mesh);
+                        const newBondedLinkMesh = new THREE.Mesh(
+                            new THREE.SphereGeometry(0.3, 16, 16),
+                            new THREE.MeshBasicMaterial({ color: 0x00FFFF, opacity: 0.8, transparent: true })
+                        );
+                        newBondedLinkMesh.position.set(bl.x, bl.y, bl.z);
+                        bondedLinks.push({ mesh: newBondedLinkMesh, x: bl.x, y: bl.y, z: bl.z });
+                        scene.add(newBondedLinkMesh);
+                        return false;
+                    } else {
+                        const substrateMesh = new THREE.Mesh(
+                            new THREE.SphereGeometry(0.3, 16, 16),
+                            new THREE.MeshBasicMaterial({ color: 0x00FF00 })
+                        );
+                        substrateMesh.position.set(bl.x, bl.y, bl.z);
+                        substrates.push({ mesh: substrateMesh, x: bl.x, y: bl.y, z: bl.z });
+                        scene.add(substrateMesh);
+                        return false;
+                    }
+                }
+                return true;
+            });
+        }
+
+        function updateStatus() {
+            document.getElementById("status").textContent = 
+                `Sustratos: ${substrates.length}, Enlaces: ${links.length + bondedLinks.length}, Catalizadores: ${catalysts.length}`;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            moveSubstrates();     // Solo los sustratos se mueven
+            moveLinks();          // No hace nada, enlaces fijos
+            moveCatalysts();      // No hace nada, catalizadores fijos
+            produceLinks();       // Producción de enlaces fijos cerca de catalizadores
+            bondLinks();          // Enlace de enlaces libres
+            disintegrateLinks();  // Desintegración y reparación
+            updateStatus();
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function resize() {
+            const width = vizContainer.clientWidth;
+            const height = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 600;
+            renderer.setSize(width, height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        }
+
+        initThreeJS();
+        resetSimulation();
+        animate();
+    </script>
+</body>
+</html>

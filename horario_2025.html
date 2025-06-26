@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horario Académico - Universidad de Playa Ancha</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-green: #00FF00;
+            --neon-cyan: #00FFFF;
+            --black-bg: #000000;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: var(--black-bg);
+            color: var(--neon-green);
+            font-family: 'Orbitron', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        nav ul li {
+            margin: 0 20px;
+        }
+        nav ul li a {
+            color: var(--neon-green);
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        .main-container {
+            max-width: 100%;
+            margin: 0;
+            padding: 60px 10px 0 10px;
+            text-align: center;
+            flex: 1;
+            width: 100%;
+        }
+        .intro {
+            margin-bottom: 40px;
+        }
+        .intro h1 {
+            color: var(--neon-cyan);
+            font-size: 2.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 20px;
+        }
+        .intro p {
+            font-size: 1.1em;
+            max-width: 1000px;
+            margin: 0 auto 15px;
+        }
+        .highlight {
+            color: var(--neon-cyan);
+            font-weight: bold;
+        }
+        /* Clase para destacar Fundamentos en celeste neón */
+        .fundamentos-highlight {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 5px var(--neon-cyan);
+            font-weight: bold;
+        }
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 40px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 2px solid var(--neon-cyan); /* Borde completo en celeste neón */
+        }
+        th:last-child, td:last-child {
+            border-right: none; /* Elimina la línea en la última columna */
+        }
+        /* Eliminar borde inferior en la última fila para evitar duplicación */
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        th {
+            background: rgba(0, 0, 0, 0.9);
+            color: var(--neon-cyan);
+            text-shadow: 0 0 5px var(--neon-cyan);
+            position: sticky;
+            top: 0;
+        }
+        tr:hover {
+            background: rgba(0, 255, 255, 0.1);
+        }
+        a {
+            color: var(--neon-green);
+            text-decoration: none;
+        }
+        a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        td a {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        @media (max-width: 900px) {
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                padding: 10px 0;
+            }
+            nav ul li {
+                margin: 10px 0;
+            }
+            .intro h1 {
+                font-size: 2em;
+            }
+            .intro p {
+                font-size: 1em;
+                padding: 0 15px;
+            }
+            th, td {
+                font-size: 0.9em;
+                padding: 8px;
+            }
+        }
+        @media (max-width: 600px) {
+            nav {
+                position: static;
+            }
+            .main-container {
+                padding-top: 10px;
+            }
+            .intro h1 {
+                font-size: 1.5em;
+            }
+            .intro p {
+                font-size: 0.9em;
+            }
+            th, td {
+                font-size: 0.85em;
+                padding: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navegación -->
+    <nav>
+        <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#horario">Horario</a></li>
+            <li><a href="#contacto">Contacto</a></li>
+        </ul>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="main-container" id="inicio">
+        <!-- Introducción -->
+        <div class="intro">
+            <h1>Horario Académico 2025 - Universidad de Playa Ancha</h1>
+            <p>Este horario corresponde a un docente que imparte asignaturas clave en las carreras de <span class="highlight">Pedagogía en Biología</span> y <span class="highlight">Fonoaudiología</span>. Con una carga horaria de <span class="highlight">44 horas planta</span>, incluye cursos como <span class="highlight">Biología Celular (CPB 1533)</span>, que profundiza en la estructura y procesos celulares, y <span class="highlight">Bases de las Ciencias Biológicas en Salud (UFO 1410)</span>, orientado a los fundamentos biológicos aplicados a la comunicación humana. Este horario refleja el compromiso con la formación integral de futuros profesionales en ciencias biológicas y de la salud.</p>
+        </div>
+
+        <!-- Tabla del Horario -->
+        <div class="table-container" id="horario">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Hora</th>
+                        <th>Lunes</th>
+                        <th>Martes</th>
+                        <th>Miércoles</th>
+                        <th>Jueves</th>
+                        <th>Viernes</th>
+                        <th>Sábado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>08:00 - 09:15</td>
+                        <td></td>
+                        <td></td>
+                        <td><a href="fundamentos.html" class="fundamentos-highlight">*FUNDAMENTOS CAT1 BIOL 1012</a></td>
+                        <td></td>
+                        <td><a href="ufo1410-01.html">UFO 1410-01 BASES DE LAS CS. BIOLÓGICAS EN SALUD</a></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>09:30 - 10:45</td>
+                        <td></td>
+                        <td></td>
+                        <td><a href="fundamentos.html" class="fundamentos-highlight">*FUNDAMENTOS CAT1 BIOL 1012</a></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>11:00 - 12:15</td>
+                        <td></td>
+                        <td><a href="cpb1533.html">CPB 1533 Biología Celular</a></td>
+                        <td></td>
+                        <td><a href="fundamentos.html" class="fundamentos-highlight">*FUNDAMENTOS CAT1 BIOL 1012</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>12:30 - 13:45</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td><a href="fundamentos.html" class="fundamentos-highlight">*FUNDAMENTOS CAT1 BIOL 1012</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>14:00 - 15:15</td>
+                        <td></td>
+                        <td><a href="ufo1410-02.html">B506 UFO 1410-02 BASES DE LAS CS. BIOLÓGICAS EN SALUD</a></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>15:30 - 16:45</td>
+                        <td><a href="fundamentos.html" class="fundamentos-highlight">*14:50-15:50 FUNDAMENTOS CAT1 BIOL 1012</a></td>
+                        <td><a href="ufo1410-02.html">B506 UFO 1410-02 BASES DE LAS CS. BIOLÓGICAS EN SALUD</a></td>
+                        <td></td>
+                        <td><a href="ufo1410-01.html">B506 UFO 1410-01 BASES DE LAS CS. BIOLÓGICAS EN SALUD</a></td>
+                        <td><a href="cpb1533.html">CPB 1533 Biología Celular</a></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>17:00 - 18:15</td>
+                        <td></td>
+                        <td><a href="ufo1410-02.html">B506 UFO 1410-02 BASES DE LAS CS. BIOLÓGICAS EN SALUD</a></td>
+                        <td></td>
+                        <td><a href="ufo1410-01.html">B506 UFO 1410-01 BASES DE LAS CS. BIOLÓGICAS EN SALUD</a></td>
+                        <td><a href="cpb1533.html">CPB 1533 Biología Celular</a></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>18:30 - 19:45</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Sección de Contacto -->
+        <div class="about-container" id="contacto">
+            <h3>Contacto</h3>
+            <p>Universidad de Playa Ancha<br>
+               Horas Planta: 44h<br>
+               Correo: [Pendiente de agregar]</p>
+        </div>
+    </div>
+</body>
+</html>

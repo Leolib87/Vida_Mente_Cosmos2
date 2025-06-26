@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Origen, Mente y Cosmos - Estilo Avanzado con Three.js</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha512-dLxUelApnYxpLt6KDR-nMvZ7SEKFRGUQqmnNKaHrdzKASRKdNhFSnYIeRxfPOVZltAftFrZNMYKWNXchDBZzEVQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <style>
+        /* --- Variables CSS - Estilo Moderno (Ajustes para Three.js) --- */
+        :root {
+            --color-background: #0f101c;
+            /* Slightly more transparent section/nav to see background */
+            --color-background-section: rgba(26, 28, 45, 0.85); /* Alpha 0.85 */
+            --color-background-nav: rgba(15, 16, 28, 0.7);  /* Alpha 0.7 */
+            --color-text: #e1e1f0;
+            --color-text-muted: #8a8ca0;
+            --color-accent: #007BFF;
+            --color-accent-hover: #3395ff;
+            --color-accent-glow: rgba(0, 123, 255, 0.4);
+            --color-light: #FFFFFF;
+            --color-shadow: rgba(0, 0, 0, 0.5); /* Darker shadow for contrast */
+            --color-shadow-glow: rgba(0, 123, 255, 0.2);
+
+            --font-heading: 'Orbitron', sans-serif;
+            --font-body: 'Inter', system-ui, sans-serif;
+
+            --base-font-size: 16px;
+            --spacing-unit: 1rem;
+            --nav-height: 60px;
+            --border-radius: 10px;
+            --transition-speed: 0.25s;
+        }
+
+        /* --- Reset Básico y Estilos Globales --- */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: var(--base-font-size); scroll-behavior: smooth; }
+        body {
+            background-color: var(--color-background); /* Fallback */
+            /* Gradient removed, Three.js will handle background */
+            color: var(--color-text);
+            font-family: var(--font-body);
+            line-height: 1.7;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            /* Ensure content is above the canvas */
+            position: relative;
+            z-index: 1;
+        }
+
+        /* --- Canvas for Three.js Background --- */
+        #webgl-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Behind all HTML content */
+            outline: none;
+            display: block; /* Prevent extra space */
+        }
+
+        /* --- Typography (same as previous) --- */
+        h1, h2 { font-family: var(--font-heading); font-weight: 700; color: var(--color-light); }
+        h3, h4, h5, h6 { font-family: var(--font-heading); font-weight: 500; color: var(--color-accent); margin-bottom: calc(var(--spacing-unit) * 0.75); }
+        h1 { font-size: clamp(2.2rem, 6vw, 3.5rem); line-height: 1.1; }
+        h2 { font-size: clamp(1.7rem, 4.5vw, 2.2rem); padding-bottom: calc(var(--spacing-unit) * 0.6); margin-bottom: calc(var(--spacing-unit)*1.5); position: relative; }
+        h2::after { content: ''; position: absolute; bottom: 0; left: 0; width: 50px; height: 3px; background-color: var(--color-accent); border-radius: 1px; }
+        h3 { font-size: clamp(1.2rem, 3.5vw, 1.6rem); margin-top: calc(var(--spacing-unit) * 1.8); }
+        p { font-size: 1rem; margin-bottom: var(--spacing-unit); text-shadow: 0 0 5px var(--color-background); /* Slight shadow for readability over background */ }
+        a { color: var(--color-accent); text-decoration: none; transition: color var(--transition-speed) ease; font-weight: 500; }
+        a:hover, a:focus-visible { color: var(--color-accent-hover); outline: none; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px;}
+        ul { list-style: none; }
+        img, svg, iframe { max-width: 100%; display: block; border-radius: calc(var(--border-radius) / 2); }
+        .highlight { color: var(--color-accent); font-weight: 700; background-color: rgba(0, 123, 255, 0.15); padding: 0.1em 0.3em; border-radius: 4px;}
+
+        /* --- Layout (same as previous) --- */
+        .main-container {
+            max-width: 1600px; margin: calc(var(--nav-height) + var(--spacing-unit)) auto 0;
+            padding: calc(var(--spacing-unit) * 1.5); display: grid;
+            grid-template-columns: 1fr; gap: calc(var(--spacing-unit) * 2.5);
+            position: relative; /* Ensure content stays above background */
+            z-index: 2;
+        }
+        .content { animation: slideUpFadeIn 0.6s ease-out forwards; }
+        .sidebar { animation: slideUpFadeIn 0.6s ease-out 0.2s forwards; opacity: 0; }
+        @keyframes slideUpFadeIn { /* (same as previous) */ from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- Navigation (Adjusted Background Alpha) --- */
+        .main-nav {
+            position: fixed; top: 0; left: 0; width: 100%;
+            background: var(--color-background-nav); /* Uses new transparent variable */
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            z-index: 1000; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 1px 5px var(--color-shadow); padding: 0 calc(var(--spacing-unit) * 1.5);
+            height: var(--nav-height); display: flex; align-items: center; justify-content: space-between;
+        }
+        /* Other nav styles (.nav-logo, .nav-list, .nav-link, .nav-toggle) remain the same */
+        .nav-logo { font-family: var(--font-heading); font-size: 1.7rem; font-weight: 700; color: var(--color-light); }
+        .nav-logo span { color: var(--color-accent); }
+        .nav-list { display: flex; align-items: center; gap: calc(var(--spacing-unit) * 1.5); }
+        .nav-item { position: relative; }
+        .nav-link { color: var(--color-text); font-size: 0.9rem; padding: calc(var(--spacing-unit) * 0.5) 0; display: block; font-weight: 500; letter-spacing: 0.3px; position: relative; transition: color var(--transition-speed) ease; }
+        .nav-link::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px; background-color: var(--color-accent); border-radius: 1px; transform: scaleX(0); transform-origin: center; transition: transform var(--transition-speed) cubic-bezier(0.19, 1, 0.22, 1); }
+        .nav-link:hover, .nav-link:focus-visible, .nav-item.active > .nav-link { color: var(--color-light); }
+        .nav-link:hover::after, .nav-link:focus-visible::after, .nav-item.active > .nav-link::after { transform: scaleX(1); }
+        .nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: calc(var(--spacing-unit) * 0.5); z-index: 1002; position: relative; }
+        .nav-toggle span { display: block; width: 26px; height: 2px; background-color: var(--color-light); margin: 6px 0; transition: all var(--transition-speed) ease; border-radius: 1px; }
+        .nav-toggle.is-active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+        .nav-toggle.is-active span:nth-child(2) { opacity: 0; }
+        .nav-toggle.is-active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+        /* --- Mega Menu (Adjusted Background Alpha) --- */
+        .mega-menu {
+            /* ... (positioning, transition, grid etc. same as previous) ... */
+            position: absolute; top: calc(100% + 8px); left: 50%; transform: translate(-50%, 15px); transform-origin: top center;
+            background: var(--color-background-section); /* Use variable, slightly transparent */
+            border: 1px solid rgba(255, 255, 255, 0.15); /* Slightly stronger border */
+            box-shadow: 0 15px 40px var(--color-shadow); border-radius: var(--border-radius);
+            width: max-content; max-width: 90vw; min-width: 300px; padding: calc(var(--spacing-unit) * 1.8);
+            display: grid; gap: calc(var(--spacing-unit) * 2); z-index: 1001; opacity: 0; visibility: hidden;
+            transition: opacity var(--transition-speed) ease, visibility var(--transition-speed) ease, transform var(--transition-speed) cubic-bezier(0.23, 1, 0.32, 1);
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+        .nav-item:hover > .mega-menu, .nav-item:focus-within > .mega-menu { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+        /* Other mega menu styles (.mega-menu h3, ul, a) remain the same */
+        .mega-menu h3 { font-size: 1.05rem; color: var(--color-light); margin-bottom: calc(var(--spacing-unit) * 0.8); margin-top: 0; border-bottom: 1px solid var(--color-accent); padding-bottom: 8px; letter-spacing: 0.5px;}
+        .mega-menu ul { display: block; padding: 0; }
+        .mega-menu ul li { margin: calc(var(--spacing-unit) * 0.5) 0; }
+        .mega-menu a { font-size: 0.9rem; color: var(--color-text); display: block; padding: 4px 0; font-weight: 400; }
+        .mega-menu a:hover, .mega-menu a:focus-visible { color: var(--color-accent-hover); background-color: rgba(0, 123, 255, 0.08); text-decoration: none; }
+
+
+        /* --- Hero Section (Same as previous) --- */
+        .hero {
+            min-height: 80vh; background: none; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; color: var(--color-light); position: relative; padding: calc(var(--spacing-unit) * 2);
+            border-radius: var(--border-radius); overflow: hidden; margin-bottom: calc(var(--spacing-unit) * 3);
+            background-image: linear-gradient(145deg, hsl(235, 30%, 18%) 0%, hsl(260, 25%, 12%) 100%);
+            background-size: 150% 150%; animation: heroBgAnimate 20s ease-in-out infinite alternate;
+        }
+        @keyframes heroBgAnimate { from { background-position: 0% 0%; } to { background-position: 100% 100%; } }
+        .hero::before { display: none; }
+        .hero h1, .hero p { position: relative; z-index: 2; animation: fadeIn 1s ease-out 0.2s backwards; }
+        .hero h1 { font-family: var(--font-heading); font-size: clamp(2.8rem, 8vw, 5rem); font-weight: 700; background: linear-gradient(90deg, var(--color-light) 0%, var(--color-accent-hover) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent; margin-bottom: calc(var(--spacing-unit) * 1.2); line-height: 1; }
+        .hero p { animation-delay: 0.4s; font-size: clamp(1rem, 2.5vw, 1.4rem); color: var(--color-text); max-width: 750px; font-weight: 400; text-shadow: 0 0 8px var(--color-background); }
+        .scroll-indicator { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 24px; height: 40px; border: 2px solid rgba(255, 255, 255, 0.4); border-radius: 12px; opacity: 0.6; animation: fadeIn 1s ease-out 0.8s backwards; }
+        .scroll-indicator::before { content: ''; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 4px; height: 8px; background: rgba(255, 255, 255, 0.4); border-radius: 2px; animation: scrollAnim 1.5s ease-in-out infinite; }
+        @keyframes scrollAnim { 0% { transform: translate(-50%, 0); opacity: 1; } 50% { transform: translate(-50%, 10px); opacity: 0.5; } 100% { transform: translate(-50%, 0); opacity: 1; } }
+
+
+        /* --- Sections (Adjusted Background Alpha) --- */
+        .section {
+            padding: calc(var(--spacing-unit) * 2);
+            background: var(--color-background-section); /* Use variable, slightly transparent */
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 30px var(--color-shadow);
+            transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease, border-color var(--transition-speed) ease;
+            margin-bottom: calc(var(--spacing-unit) * 2.5);
+            border: 1px solid transparent;
+            position: relative; /* Needed for potential pseudo-elements */
+            overflow: hidden; /* Contain potential effects */
+        }
+        .section:hover, .section:focus-within {
+            transform: translateY(-6px) scale(1.01);
+            box-shadow: 0 12px 40px var(--color-shadow-glow);
+            border-color: rgba(0, 123, 255, 0.3); /* Slightly stronger border */
+        }
+        .sidebar .section { box-shadow: 0 5px 20px var(--color-shadow); }
+
+        /* --- Visualizations & iFrame (Same as previous) --- */
+        .visualization-container { width: 100%; aspect-ratio: 16 / 9; margin: calc(var(--spacing-unit) * 2) 0; background-color: rgba(0, 0, 0, 0.3); border-radius: var(--border-radius); overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.6); }
+        #visualization, #network-graph { width: 100%; height: 100%; display: block; }
+        /* D3 Node/Link Styles */
+        .node circle { stroke: var(--color-accent-hover); stroke-width: 1.5px; fill: var(--color-accent); transition: all var(--transition-speed) ease; cursor: pointer; filter: drop-shadow(0 0 5px var(--color-accent-glow)); }
+        .node:hover circle, .node:focus circle { fill: var(--color-light); stroke: var(--color-light); r: 13; filter: drop-shadow(0 0 8px var(--color-light)); }
+        .node text { fill: var(--color-text); font-family: var(--font-body); font-weight: 500; font-size: 0.75rem; pointer-events: none; paint-order: stroke; stroke: var(--color-background-section); stroke-width: 3px; stroke-linecap: butt; stroke-linejoin: miter; } /* Adjusted stroke color */
+        .link { stroke: var(--color-text-muted); stroke-opacity: 0.4; stroke-width: 1.5px; }
+        iframe { height: 550px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: none; }
+
+        /* --- Footer (Same as previous) --- */
+        .footer { text-align: center; padding: calc(var(--spacing-unit) * 2.5); color: var(--color-text-muted); border-top: 1px solid rgba(255, 255, 255, 0.1); margin-top: calc(var(--spacing-unit) * 3); font-size: 0.9rem; }
+
+        /* --- Media Queries (Layout structure same, styles inherited) --- */
+        /* Medium screens (Tablets) */
+        @media (min-width: 768px) { /* ... (same layout rules as previous) ... */
+             .main-container { grid-template-columns: 2.5fr 1fr; padding: calc(var(--spacing-unit) * 2); }
+             .content { grid-column: 1 / 2; }
+             .sidebar { grid-column: 2 / 3; position: sticky; top: calc(var(--nav-height) + var(--spacing-unit) * 1.5); max-height: calc(100vh - var(--nav-height) - var(--spacing-unit) * 3); overflow-y: auto; padding-right: 10px; }
+             .sidebar::-webkit-scrollbar { width: 5px; } .sidebar::-webkit-scrollbar-thumb { background-color: rgba(0, 123, 255, 0.4); border-radius: 3px; }
+             .hero { grid-column: 1 / 3; } .footer { grid-column: 1 / 3; } iframe { height: 650px; }
+        }
+        /* Large screens (Desktops) */
+        @media (min-width: 992px) { /* ... (same layout rules as previous) ... */
+             html { font-size: calc(var(--base-font-size) + 0.5px); }
+             .main-nav { padding: 0 calc(var(--spacing-unit) * 2.5); }
+             .nav-toggle { display: none; }
+             .nav-list { position: static; flex-direction: row; width: auto; height: auto; background: none; transform: none; visibility: visible; opacity: 1; padding: 0; border: none; overflow: visible; }
+             .nav-item { margin: 0; text-align: left; border-bottom: none; width: auto; }
+             .nav-link { padding: calc(var(--spacing-unit) * 0.5) calc(var(--spacing-unit)); }
+             .mega-menu { position: absolute; top: calc(100% + 8px); left: 50%; transform: translate(-50%, 15px); width: max-content; max-width: 90vw; min-width: 300px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); max-height: none; overflow: visible; }
+             .nav-item:hover > .mega-menu, .nav-item:focus-within > .mega-menu { transform: translate(-50%, 0); }
+             .nav-item.has-megamenu > .nav-link::after { display: none; }
+        }
+        /* Extra Large screens */
+        @media (min-width: 1200px) { /* ... (same layout rules as previous) ... */
+             html { font-size: calc(var(--base-font-size) + 1px); }
+             .main-container { grid-template-columns: 3fr 1fr; gap: calc(var(--spacing-unit) * 3); }
+             .nav-list { gap: calc(var(--spacing-unit) * 2); }
+        }
+
+        /* --- Mobile Navigation Specific Styles (Slide-in) --- */
+        @media (max-width: 991.98px) { /* ... (same layout rules as previous, styles inherited/adjusted) ... */
+            .nav-toggle { display: block; }
+            .nav-list { position: fixed; top: 0; right: 0; width: min(85vw, 320px); height: 100%; background: var(--color-background); box-shadow: -10px 0 30px var(--color-shadow); flex-direction: column; align-items: stretch; padding: calc(var(--nav-height) + var(--spacing-unit)*1.5) 0 var(--spacing-unit); visibility: hidden; opacity: 1; transform: translateX(100%); transition: transform var(--transition-speed) ease-in-out, visibility var(--transition-speed) ease-in-out; overflow-y: auto; z-index: 999; /* Ensure it's below toggle */ }
+            .nav-list.is-active { visibility: visible; transform: translateX(0); }
+            .nav-item { width: 100%; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+            .nav-item:last-child { border-bottom: none; }
+            .nav-link { width: 100%; padding: calc(var(--spacing-unit) * 1) calc(var(--spacing-unit) * 1.5); font-weight: 500; }
+            .nav-link::after { display: none; }
+            .mega-menu { position: static; transform: none; width: 100%; max-width: 100%; border: none; box-shadow: none; border-radius: 0; background: rgba(0, 0, 0, 0.2); padding: 0; margin-top: 0; display: block; max-height: 0; overflow: hidden; opacity: 1; visibility: visible; transition: max-height 0.4s ease-out; }
+            .mega-menu > div { padding: var(--spacing-unit) calc(var(--spacing-unit)*1.5) var(--spacing-unit) calc(var(--spacing-unit) * 2.5); }
+            .mega-menu h3 { font-size: 0.95rem; } .mega-menu a { font-size: 0.85rem; }
+            .nav-item.has-megamenu > .nav-link { display: flex; justify-content: space-between; align-items: center; }
+            .nav-item.has-megamenu > .nav-link::after { content: '+'; display: inline-block; margin-left: 10px; font-size: 1.6rem; line-height: 1; transition: transform var(--transition-speed) ease; color: var(--color-accent); }
+            .nav-item.has-megamenu.submenu-active > .nav-link::after { transform: rotate(45deg); }
+            .nav-item.has-megamenu.submenu-active > .mega-menu { max-height: 1500px; }
+            .nav-item:hover > .mega-menu, .nav-item:focus-within > .mega-menu { opacity: 1; visibility: visible; transform: none; }
+            .node text { font-size: 0.7rem; } /* Slightly larger D3 text */
+        }
+
+    </style>
+</head>
+<body>
+    <canvas id="webgl-background"></canvas>
+
+    <nav class="main-nav" aria-label="Navegación principal">
+         <a href="#inicio" class="nav-logo">O<span>M</span>C</a>
+         <button class="nav-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="navList"> <span></span><span></span><span></span> </button>
+         <ul class="nav-list" id="navList">
+             <li class="nav-item"><a href="#inicio" class="nav-link">Inicio</a></li>
+             <li class="nav-item has-megamenu"> <a href="#" class="nav-link">Exploración Conceptual</a> <div class="mega-menu"> <div> <h3>Ideas y Preguntas</h3> <ul> <li><a href="#trazado-vida">Origen y Fin de la Vida</a></li> <li><a href="#biologia">Determinismo vs. Libertad</a></li> <li><a href="#filosofia-mente">Conducta y Creatividad</a></li> </ul> </div> <div> <h3>Fundamentos Teóricos</h3> <ul> <li><a href="#biologia">Filosofía de la Biología</a></li> <li><a href="#ciencias-cognitivas">Filosofía CC. Cognitivas</a></li> <li><a href="#filosofia-mente">Mente y Lenguaje</a></li> <li><a href="Explorando la Visualización Filosófica.HTML">Visualización Filosófica</a></li> <li><a href="MAPEO_FILO_MENTE_CHILE.HTML">Mapeo Filo. Mente Chile</a></li> </ul> </div> </div> </li>
+             <li class="nav-item has-megamenu"> <a href="#" class="nav-link">Perspectivas Disciplinarias</a> <div class="mega-menu"> <div> <h3>Biología y CC.NN</h3> <ul> <li><a href="#biologia">Histología y Biol. Celular</a></li> <li><a href="HISTOLOGIA.html">Histología</a></li> <li><a href="https://leolib87.github.io/herbario/">Herbario</a></li> <li><a href="cuerpo humano completo plantilla Lt.html">Cuerpo Humano</a></li> </ul> </div> <div> <h3>Economía y Política</h3> <ul> <li><a href="#economia-politica">Teorías Colect./Liberales</a></li> <li><a href="#economia-politica">Análisis Ideológico</a></li> <li><a href="RED POLITICOS.html">Red Políticos FA</a></li> </ul> </div> <div> <h3>Educación y Filosofía</h3> <ul> <li><a href="red 2.html">Filosofía Educación</a></li> <li><a href="#trazado-vida">Autoconocimiento</a></li> <li><a href="red3.html">Red Tesis Magíster</a></li> <li><a href="Feno_style.html">Fenomenología</a></li> </ul> </div> </div> </li>
+             <li class="nav-item has-megamenu"> <a href="#" class="nav-link">Metodología y Datos</a> <div class="mega-menu"> <div> <h3>Recolección y Proceso</h3> <ul> <li><a href="#redes-palabras">Visualización Datos</a></li> <li><a href="#voyant-tools">Herramientas Digitales</a></li> <li><a href="varios graficos.html">Varios Gráficos</a></li> <li><a href="GRAFICO DE LINEAS Y TREEMAP.html">Líneas y Treemap</a></li> </ul> </div> </div> </li>
+             <li class="nav-item has-megamenu"> <a href="#" class="nav-link">Proyectos & Mapas</a> <div class="mega-menu"> <div> <h3>Mapas de Conocimiento</h3> <ul> <li><a href="#elementos-comunes">Filo. Mente</a></li> <li><a href="MAPA_MENTAL_TRABAJO.HTML">Mapa Mental Trabajo</a></li> <li><a href="#economia-politica">Política Chilena</a></li> <li><a href="VARELA_CARTOGRAFIA.HTML">Cartografía Varela 3D</a></li> <li><a href="cartografia_varela_01.html">Cartografía Varela 2D</a></li> <li><a href="AUTOPOIESIS.HTML">Sim. Autopoiesis</a></li> <li><a href="AUTOPOIESIS_3D.HTML">Sim. 3D Autopoiesis</a></li> <li><a href="Autopoiesis_Fractal00.html">Sim. 3D Autopoiesis Fractal</a></li> </ul> </div> <div> <h3>Simulaciones y Datos</h3> <ul> <li><a href="Paper_Varela_1974.html">PAPER VARELA 1974</a></li> <li><a href="GAME_OF_LIFE.HTML">Juego de la Vida</a></li> <li><a href="GAME_OF_LIFE3D.HTML">Juego de la Vida 3D</a></li> <li><a href="Pedagogia-Biologia.html">Ped. Biología Chile</a></li> <li><a href="QF.HTML">Química y Farmacia Chile</a></li> <li><a href="Pedagogia-Biologia.html">Invest. Fac. Ciencias</a></li> <li><a href="FONDECYT.HTML">Fondecyt Chile</a></li> </ul> </div> <div> <h3>IA y Empleos</h3> <ul> <li><a href="IAs.html">Red de IAs</a></li> <li><a href="IAS_BUSQUEDA.HTML">IAs Búsquedas</a></li> <li><a href="googleias.html">IAs de Google</a></li> <li><a href="treemap_ias.html">Treemap IAs</a></li> <li><a href="Empleos_IES.html">Empleos Ed. Superior</a></li> <li><a href="CURSO_BIOLOGIA_CELULAR.HTML">Curso Biol. Celular</a></li> </ul> </div> </div> </li>
+             <li class="nav-item has-megamenu mega-menu-narrow"> <a href="#" class="nav-link">Recursos</a> <div class="mega-menu"> <div> <h3>Lecturas y Bibliografía</h3> <ul> <li><a href="MI_BIBLIOTECA.HTML">Biblio Humanidades</a></li> <li><a href="BIBLIOTECA_CIENCIAS.HTML">Biblio Ciencias</a></li> <li><a href="BIBLIOECAS_DIGITALES_SOMBRA.HTML">Bibliotecas Sombra</a></li> <li><a href="peliculas.html">Cine</a></li> <li><a href="CITAS.HTML">Fragmentos de Mentes</a></li> <li><a href="MUSICA.HTML">Letras Canciones</a></li> <li><a href="PAPERS_VARELA.HTML">Pub. F. Varela</a></li> <li><a href="FUENTES_FINANCIAMIENTO.HTML">Fuentes Financiamiento</a></li> <li><a href="FONDOS.HTML">DEEP Financiamiento</a></li> <li><a href="Paper_web.html">Paper Web template</a></li> </ul> </div> <div> <h3>Enlaces Varios</h3> <ul> <li><a href="LEOLIB NEWS BLACK.HTML">Leolib News</a></li> <li><a href="https://leolib87.github.io/herbario/">Herbario</a></li> <li><a href="horario_2025.html">Horario</a></li> <li><a href="HORARIOS_LAB.HTML">Horarios Lab</a></li> <li><a href="PROBANDO.HTML">PROBANDO</a></li> <li><a href="CHAT_LEO.HTML">CHAT_LEO</a></li> <li><a href="totem.html">totem</a></li> </ul> </div> </div> </li>
+             <li class="nav-item"><a href="#contacto" class="nav-link">Acerca de / Contacto</a></li>
+        </ul>
+    </nav>
+
+    <main class="main-container" id="inicio">
+        <header class="hero">
+            <h1>Origen, Mente y Cosmos</h1>
+            <p>Un viaje transdisciplinario a través de la vida, la conciencia y las redes del saber</p>
+            <div class="scroll-indicator" aria-hidden="true"></div>
+        </header>
+
+        <div class="content">
+            <section class="section" id="trazado-vida"> <h2>Trazado de Vida y Preguntas</h2> <h3>El Origen de la Curiosidad</h3> <p>Mi viaje comenzó con la <span class="highlight">biología</span>, fascinado por el origen de la existencia biológica y humana. La <span class="highlight">vida</span> y la <span class="highlight">muerte</span> no son solo eventos, sino los límites que dan sentido a todo.</p> <h3>El Giro Transformador</h3> <p>Tras años de preguntas difusas, una experiencia <span class="highlight">[...]</span> cristalizó mi visión, tejiendo este camino entre lo personal y lo investigativo.</p> </section>
+             <section class="section" id="biologia"> <h2>Biología: De las Células al Determinismo</h2> <h3>Histología y Mecanismos Celulares</h3> <p>Mi interés radica en la estructura (<span class="highlight">histología</span>) y los <span class="highlight">mecanismos celulares</span>. ¿Por qué a nivel molecular asumimos conductas unívocas?</p> <h3>Determinismo vs. Libertad</h3> <p>La <span class="highlight">biología celular</span> me llevó a cuestionar el <span class="highlight">determinismo</span> frente a la <span class="highlight">libertad</span> emergente en organismos completos.</p> <h3>Maturana y Varela</h3> <p><span class="highlight">Humberto Maturana</span> y <span class="highlight">Francisco Varela</span> introdujeron el <span class="highlight">determinismo estructural</span>, un puente hacia lo filosófico.</p> </section>
+             <section class="section" id="ciencias-cognitivas"> <h2>Ciencias Cognitivas: La Mente Encarnada</h2> <h3>Embodied Cognition</h3> <p><span class="highlight">Francisco Varela</span> y su <span class="highlight">embodied cognition</span> unieron las ciencias cognitivas con la <span class="highlight">fenomenología</span>.</p> <h3>Legado de Varela</h3> <p><span class="highlight">Evan Thompson</span> y <span class="highlight">Tom Froese</span> exploran la mente como un proceso vivo.</p> </section>
+             <section class="section" id="filosofia-mente"> <h2>Filosofía de la Mente y el Lenguaje</h2> <h3>Wittgenstein y el Lenguaje</h3> <p><span class="highlight">Ludwig Wittgenstein</span> redefine la <span class="highlight">mente</span> a través del <span class="highlight">lenguaje</span>.</p> <h3>Conciencia y Libertad</h3> <p><span class="highlight">David Chalmers</span> y <span class="highlight">Andy Clark</span> abordan la conciencia y el <span class="highlight">determinismo</span>.</p> </section>
+              <section class="section" id="economia-politica"> <h2>Economía y Política: Libertad vs. Control</h2> <h3>Colectivismo y Liberalismo</h3> <p><span class="highlight">Karl Marx</span> vs. <span class="highlight">Hayek</span>: <span class="highlight">control</span> frente a <span class="highlight">libertad</span>.</p> <h3>Chile (Abril 2025)</h3> <p>En Chile, estas tensiones siguen siendo un tema relevante de análisis con autores como <span class="highlight">Carlos Peña</span> y nuevos actores emergentes.</p> </section>
+             <section class="section" id="epistemologia"> <h2>Epistemología: El Conocimiento en Juego</h2> <p><span class="highlight">Maturana</span> ve el conocimiento como un proceso biológico y relacional.</p> </section>
+              <section class="section" id="redes-palabras"> <h2>Redes de Palabras: Lenguaje y Visualización</h2> <p>Exploro cómo el <span class="highlight">lenguaje</span> estructura el pensamiento mediante gráficos.</p> <div class="visualization-container"> <svg id="network-graph"></svg> </div> </section>
+              <section class="section" id="elementos-comunes"> <h2>Elementos Comunes: Un Mapa del Saber</h2> <h3>Visualización de Conceptos</h3> <p>Un mapa dinámico de mis ideas:</p> <div class="visualization-container"> <svg id="visualization"></svg> </div> <h3>Fundamentaciones Filosóficas</h3> <ul> <li><span class="highlight">Biología</span>: Determinismo vs. indeterminación.</li> <li><span class="highlight">Ciencias Cognitivas</span>: Cognición encarnada.</li> <li><span class="highlight">Política</span>: Poder y libertad.</li> </ul> </section>
+              <section class="section" id="voyant-tools"> <h2>Voyant Tools: Análisis de Textos</h2> <iframe title="Análisis de Texto con Voyant Tools" src="https://voyant-tools.org/tool/CollocatesGraph/?query=a&query=the&query=powerpuff&mode=corpus&corpus=9e0ea2351023ab13cbc0979214742c17"></iframe> </section>
+        </div>
+        <aside class="sidebar">
+            <section class="section"> <h2>Más Temas</h2> <nav aria-label="Temas relacionados"> <a href="Explorando la Visualización Filosófica.HTML">Visualización Filosófica</a> <a href="MAPEO_FILO_MENTE_CHILE.HTML">Mapeo Filosofía Mente Chile</a> <a href="CITAS.HTML">Fragmentos de Mentes</a> <a href="AUTOPOIESIS.HTML">Sim. Autopoiesis</a> <a href="MI_BIBLIOTECA.HTML">Biblio Humanidades</a> </nav> </section>
+             <section class="section"> <h2>Enlaces Relevantes</h2> <nav aria-label="Enlaces relevantes"> <a href="varios graficos.html">Varios Gráficos</a> <a href="GRAFICO DE LINEAS Y TREEMAP.html">Gráfico Líneas/Treemap</a> <a href="RED POLITICOS.html">Red Políticos FA</a> <a href="https://leolib87.github.io/herbario/">Herbario</a> <a href="cuerpo humano completo plantilla Lt.html">Cuerpo Humano</a> <a href="HISTOLOGIA.html">Histología</a> <a href="red 2.html">Red Tesis Magíster Cs.</a> <a href="red3.html">Red Tesis Magíster Ej.</a> <a href="LEOLIB NEWS BLACK.HTML">Leolib News</a> <a href="VARELA_CARTOGRAFIA.HTML">Cartografía Varela</a> </nav> </section>
+        </aside>
+
+        <footer class="footer" id="contacto">
+            <p>La vida es terriblemente bella cuando los jugadores juegan. | Abril 2025</p>
+            <p style="font-size: 0.8rem; margin-top: 8px;">Estilo Avanzado v4 (Three.js)</p>
+        </footer>
+    </main>
+
+    <script>
+        /* --- Mobile Menu Toggle & Submenu Logic (Same JS as previous) --- */
+        const navToggle = document.querySelector('.nav-toggle');
+        const navList = document.querySelector('#navList');
+        const navItemsWithMegaMenu = document.querySelectorAll('.nav-item.has-megamenu');
+        if (navToggle && navList) { /* ... same JS logic ... */
+             navToggle.addEventListener('click', () => { const isActive = navList.classList.toggle('is-active'); navToggle.classList.toggle('is-active'); navToggle.setAttribute('aria-expanded', isActive); navToggle.setAttribute('aria-label', isActive ? 'Cerrar menú' : 'Abrir menú'); document.body.style.overflow = isActive ? 'hidden' : ''; if (!isActive) { navItemsWithMegaMenu.forEach(item => { item.classList.remove('submenu-active'); const megaMenu = item.querySelector('.mega-menu'); if (megaMenu) megaMenu.style.maxHeight = null; }); } });
+        }
+        navItemsWithMegaMenu.forEach(item => { /* ... same JS logic ... */
+             const link = item.querySelector('.nav-link'); const megaMenu = item.querySelector('.mega-menu'); if (link && megaMenu) { link.addEventListener('click', (e) => { if (window.getComputedStyle(navToggle).display !== 'none') { e.preventDefault(); const isSubmenuActive = item.classList.toggle('submenu-active'); megaMenu.style.maxHeight = isSubmenuActive ? megaMenu.scrollHeight + "px" : null; navItemsWithMegaMenu.forEach(other => { if (other !== item && other.classList.contains('submenu-active')) { other.classList.remove('submenu-active'); other.querySelector('.mega-menu').style.maxHeight = null; } }); } }); }
+        });
+
+        /* --- Responsive D3.js Graphs (Same JS logic as previous) --- */
+        function debounce(func, wait, immediate) { /* ... same debounce ... */
+             var timeout; return function() { var context = this, args = arguments; var later = function() { timeout = null; if (!immediate) func.apply(context, args); }; var callNow = immediate && !timeout; clearTimeout(timeout); timeout = setTimeout(later, wait); if (callNow) func.apply(context, args); };
+         }
+        const vizNodesData = [ /* ... D3 data ... */ { id: "Origen", link: "#trazado-vida" }, { id: "Biología", link: "#biologia" }, { id: "Histología", link: "#biologia" }, { id: "Determinismo", link: "#biologia" }, { id: "Libertad", link: "#filosofia-mente" }, { id: "Ciencias Cognitivas", link: "#ciencias-cognitivas" }, { id: "Mente", link: "#filosofia-mente" }, { id: "Filosofía", link: "#filosofia-mente" }, { id: "Lenguaje", link: "#filosofia-mente" }, { id: "Epistemología", link: "#epistemologia" }, { id: "Economía", link: "#economia-politica" }, { id: "Política", link: "#economia-politica" }, { id: "Subjetividad", link: "#economia-politica" }, { id: "Varela", link: "#ciencias-cognitivas" }, { id: "Maturana", link: "#biologia" } ];
+        const vizLinksData = [ /* ... D3 data ... */ { source: "Origen", target: "Biología" }, { source: "Biología", target: "Histología" }, { source: "Biología", target: "Determinismo" }, { source: "Biología", target: "Maturana" }, { source: "Determinismo", target: "Libertad" }, { source: "Libertad", target: "Filosofía" }, { source: "Filosofía", target: "Ciencias Cognitivas" }, { source: "Ciencias Cognitivas", target: "Mente" }, { source: "Ciencias Cognitivas", target: "Varela" }, { source: "Mente", target: "Lenguaje" }, { source: "Filosofía", target: "Epistemología" }, { source: "Libertad", target: "Economía" }, { source: "Economía", target: "Política" }, { source: "Política", target: "Subjetividad" } ];
+        const netNodesData = [ /* ... D3 data ... */ { id: "Palabras", link: "#redes-palabras" }, { id: "Lenguaje", link: "#filosofia-mente" }, { id: "Visualización", link: "#elementos-comunes" }, { id: "Voyant", link: "#voyant-tools" }, { id: "Histología", link: "#biologia" }, { id: "Herbario", link: "https://leolib87.github.io/herbario/" } ];
+        const netLinksData = [ /* ... D3 data ... */ { source: "Palabras", target: "Lenguaje" }, { source: "Palabras", target: "Visualización" }, { source: "Visualización", target: "Voyant" }, { source: "Visualización", target: "Histología" }, { source: "Histología", target: "Herbario" } ];
+        let vizSimulation; let netSimulation;
+        function drag(simulation) { /* ... same drag ... */
+            function dragstarted(event, d) { if (!event.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; } function dragged(event, d) { d.fx = event.x; d.fy = event.y; } function dragended(event, d) { if (!event.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; } return d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended);
+         }
+        function drawVisualization() { /* ... same D3 drawing logic including tooltips ... */
+            const container = document.querySelector('#visualization').parentNode; if (!container) return; const width = container.clientWidth; const height = container.clientHeight; d3.select("#visualization").selectAll("*").remove(); const svg = d3.select("#visualization").attr("viewBox", `0 0 ${width} ${height}`).attr("preserveAspectRatio", "xMidYMid meet"); if (!vizSimulation) { vizSimulation = d3.forceSimulation(vizNodesData).force("link", d3.forceLink(vizLinksData).id(d => d.id).distance(width < 768 ? 80 : 120).strength(0.7)).force("charge", d3.forceManyBody().strength(width < 768 ? -150 : -250)).force("center", d3.forceCenter(width / 2, height / 2)); } else { vizSimulation.force("center", d3.forceCenter(width/2, height/2)).force("link").distance(width < 768 ? 80:120); vizSimulation.force("charge").strength(width<768?-150:-250); vizSimulation.alpha(0.3).restart(); } const link = svg.append("g").selectAll(".link").data(vizLinksData).join("line").attr("class", "link"); const node = svg.append("g").selectAll(".node").data(vizNodesData).join("g").attr("class", "node").call(drag(vizSimulation)).on("click", (event, d) => { if (d.link && d.link.startsWith("#")) { document.querySelector(d.link)?.scrollIntoView({ behavior: 'smooth' }); } else if (d.link) { window.location.href = d.link; } }); node.append("circle").attr("r", 11); node.append("text").attr("dy", "-1.2em").attr("text-anchor", "middle").text(d => d.id); node.append("title").text(d => `Concepto: ${d.id}${d.link ? `\n(Ir a ${d.link})` : ''}`); vizSimulation.on("tick", () => { link.attr("x1", d=>d.source.x).attr("y1", d=>d.source.y).attr("x2", d=>d.target.x).attr("y2", d=>d.target.y); node.attr("transform", d => `translate(${d.x},${d.y})`); });
+         }
+        function drawNetworkGraph() { /* ... same D3 drawing logic including tooltips ... */
+             const container = document.querySelector('#network-graph').parentNode; if (!container) return; const width = container.clientWidth; const height = container.clientHeight; d3.select("#network-graph").selectAll("*").remove(); const svg = d3.select("#network-graph").attr("viewBox", `0 0 ${width} ${height}`).attr("preserveAspectRatio", "xMidYMid meet"); if (!netSimulation) { netSimulation = d3.forceSimulation(netNodesData).force("link", d3.forceLink(netLinksData).id(d => d.id).distance(width < 768 ? 90 : 130).strength(0.7)).force("charge", d3.forceManyBody().strength(width < 768 ? -180 : -300)).force("center", d3.forceCenter(width / 2, height / 2)); } else { netSimulation.force("center", d3.forceCenter(width/2, height/2)).force("link").distance(width < 768 ? 90:130); netSimulation.force("charge").strength(width<768?-180:-300); netSimulation.alpha(0.3).restart(); } const link = svg.append("g").selectAll(".link").data(netLinksData).join("line").attr("class", "link"); const node = svg.append("g").selectAll(".node").data(netNodesData).join("g").attr("class", "node").call(drag(netSimulation)).on("click", (event, d) => { if (d.link && d.link.startsWith("#")) { document.querySelector(d.link)?.scrollIntoView({ behavior: 'smooth' }); } else if (d.link) { window.location.href = d.link; } }); node.append("circle").attr("r", 11); node.append("text").attr("dy", "-1.2em").attr("text-anchor", "middle").text(d => d.id); node.append("title").text(d => `Elemento: ${d.id}${d.link ? `\n(Ir a ${d.link})` : ''}`); netSimulation.on("tick", () => { link.attr("x1", d=>d.source.x).attr("y1", d=>d.source.y).attr("x2", d=>d.target.x).attr("y2", d=>d.target.y); node.attr("transform", d => `translate(${d.x},${d.y})`); });
+         }
+        document.addEventListener('DOMContentLoaded', () => { drawVisualization(); drawNetworkGraph(); window.addEventListener('resize', debounce(() => { drawVisualization(); drawNetworkGraph(); }, 250)); });
+
+
+        /* --- START: Three.js Background --- */
+        const threeBackgroundScript = () => {
+            const canvas = document.getElementById('webgl-background');
+            if (!canvas) return;
+
+            let scene, camera, renderer, particles, material;
+            let mouseX = 0, mouseY = 0;
+            let windowHalfX = window.innerWidth / 2;
+            let windowHalfY = window.innerHeight / 2;
+            const particleCount = 1500; // Adjust particle count
+
+            function init() {
+                try {
+                    scene = new THREE.Scene();
+                    // Fog for depth
+                    scene.fog = new THREE.FogExp2(0x0f101c, 0.0015); // Match background color
+
+                    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 3000);
+                    camera.position.z = 1000;
+
+                    renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Optimize pixel ratio
+
+                    // Particles
+                    const vertices = [];
+                    for (let i = 0; i < particleCount; i++) {
+                        const x = Math.random() * 2000 - 1000;
+                        const y = Math.random() * 2000 - 1000;
+                        const z = Math.random() * 2000 - 1000;
+                        vertices.push(x, y, z);
+                    }
+
+                    const geometry = new THREE.BufferGeometry();
+                    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+
+                    material = new THREE.PointsMaterial({
+                        color: 0x8a8ca0, // Muted text color for most particles
+                        size: 2.5,
+                        transparent: true,
+                        blending: THREE.AdditiveBlending, // Nice glow effect
+                        sizeAttenuation: true,
+                         opacity: 0.6
+                    });
+
+                     // Add some accent colored particles (optional)
+                     const accentMaterial = new THREE.PointsMaterial({
+                         color: 0x007BFF, // Accent Color
+                         size: 3,
+                         transparent: true,
+                         blending: THREE.AdditiveBlending,
+                         sizeAttenuation: true,
+                          opacity: 0.8
+                     });
+
+                     // Simple way to mix: render two particle systems
+                     particles = new THREE.Points(geometry, material);
+                     scene.add(particles);
+
+                     // Optional: Smaller set of accent particles
+                     const accentGeometry = new THREE.BufferGeometry();
+                     const accentVertices = vertices.slice(0, Math.floor(particleCount / 5) * 3); // Use fewer vertices
+                     accentGeometry.setAttribute('position', new THREE.Float32BufferAttribute(accentVertices, 3));
+                     const accentParticles = new THREE.Points(accentGeometry, accentMaterial);
+                     scene.add(accentParticles);
+
+
+                    // Event Listeners
+                    document.addEventListener('mousemove', onDocumentMouseMove, false);
+                    window.addEventListener('resize', onWindowResize, false);
+
+                } catch (error) {
+                    console.error("Error initializing Three.js:", error);
+                    canvas.style.display = 'none'; // Hide canvas if error
+                }
+            }
+
+            function onWindowResize() {
+                windowHalfX = window.innerWidth / 2;
+                windowHalfY = window.innerHeight / 2;
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            }
+
+            function onDocumentMouseMove(event) {
+                mouseX = (event.clientX - windowHalfX) / 2; // Reduce influence
+                mouseY = (event.clientY - windowHalfY) / 2;
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                render();
+            }
+
+            function render() {
+                const time = Date.now() * 0.00005; // Slow down animation
+
+                 // Subtle camera movement based on mouse
+                 camera.position.x += (mouseX - camera.position.x) * 0.01;
+                 camera.position.y += (-mouseY - camera.position.y) * 0.01;
+                 camera.lookAt(scene.position);
+
+                // Animate particles subtly (e.g., slight rotation)
+                if (particles) {
+                    particles.rotation.x = time * 0.2;
+                    particles.rotation.y = time * 0.15;
+                     // Optional: Animate accent particles differently
+                     const accentParticles = scene.children.find(child => child.material === accentMaterial);
+                     if (accentParticles) {
+                        accentParticles.rotation.x = time * -0.1;
+                        accentParticles.rotation.y = time * -0.25;
+                    }
+                }
+
+                 if (renderer && scene && camera) {
+                    renderer.render(scene, camera);
+                }
+            }
+
+            // Check for WebGL support before initializing
+            if (window.WebGLRenderingContext) {
+                init();
+                animate();
+            } else {
+                 console.warn("WebGL not supported, skipping Three.js background.");
+                 canvas.style.display = 'none';
+            }
+        };
+
+        // Run the Three.js script after the DOM is loaded
+        document.addEventListener('DOMContentLoaded', threeBackgroundScript);
+        /* --- END: Three.js Background --- */
+
+    </script>
+
+</body>
+</html>

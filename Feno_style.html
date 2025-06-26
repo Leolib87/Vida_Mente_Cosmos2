@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Added for mobile responsiveness -->
+  <title>Fenomenología Moderna - Experiencia Interactiva</title>
+  <style>
+    body { 
+      margin: 0; 
+      padding: 0;
+      overflow-x: hidden; 
+      background: #050510; 
+      font-family: 'Arial', sans-serif;
+      color: #fff;
+      height: 100%;
+      width: 100%;
+    }
+    #canvas { 
+      width: 100vw; 
+      height: 100vh; 
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+    #content {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: #fff;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+      pointer-events: none;
+      z-index: 1;
+      transition: opacity 0.5s;
+      max-width: 600px;
+      padding: 10px; /* Added for better spacing on mobile */
+    }
+    h1 { 
+      font-size: 3em; 
+      margin: 0; 
+      background: linear-gradient(45deg, #00ffff, #ff00ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: none;
+    }
+    p { 
+      font-size: 1.2em; 
+      max-width: 500px;
+      line-height: 1.6;
+    }
+    #nav {
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      z-index: 10;
+      flex-wrap: wrap; /* Added for mobile */
+      padding: 10px; /* Added for spacing */
+    }
+    .nav-item {
+      margin: 5px; /* Adjusted for mobile */
+      padding: 8px 15px; /* Slightly smaller for mobile */
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid #00ffff;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 20px;
+      transition: all 0.3s;
+      user-select: none;
+      font-size: 0.9em; /* Slightly smaller for mobile */
+    }
+    .nav-item:hover {
+      background: rgba(0, 255, 255, 0.3);
+    }
+    #sections {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 5;
+    }
+    .section {
+      position: absolute;
+      width: 90%; /* Adjusted for mobile */
+      max-width: 800px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 10px;
+      padding: 20px; /* Adjusted for mobile */
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.5s;
+      pointer-events: none;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 255, 255, 0.3);
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .section.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .section h2 {
+      color: #00ffff;
+      margin-top: 0;
+    }
+    .philosophers {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      margin-top: 20px;
+    }
+    .philosopher {
+      width: 200px;
+      margin: 10px;
+      text-align: center;
+    }
+    .philosopher img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #00ffff;
+    }
+    .quote {
+      font-style: italic;
+      margin: 20px 0;
+      padding: 10px;
+      border-left: 3px solid #00ffff;
+    }
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      color: #00ffff;
+      font-size: 1.5em;
+      cursor: pointer;
+    }
+    .concept {
+      background: rgba(0, 255, 255, 0.1);
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+    }
+    #timeline {
+      position: relative;
+      margin-top: 30px;
+      padding-left: 20px;
+      border-left: 2px solid #00ffff;
+    }
+    .timeline-item {
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -25px;
+      top: 5px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #00ffff;
+    }
+    .timeline-year {
+      font-weight: bold;
+      color: #00ffff;
+    }
+    .progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #00ffff, #ff00ff);
+      z-index: 100;
+      width: 0;
+      transition: width 0.3s;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(0, 255, 255, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0); }
+    }
+    .nav-item.active {
+      animation: pulse 1.5s infinite;
+      background: rgba(0, 255, 255, 0.2);
+    }
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 255, 255, 0.5);
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 255, 255, 0.8);
+    }
+    #mainContainer {
+      position: relative;
+      min-height: 100vh;
+    }
+    #interaction-instructions {
+      position: fixed;
+      bottom: 70px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.9em;
+      z-index: 10;
+      padding: 0 10px; /* Added for mobile */
+    }
+
+    /* Media Queries for Smartphone Responsiveness */
+    @media (max-width: 768px) {
+      #content {
+        top: 10px;
+        left: 10px;
+        max-width: 90%;
+      }
+      h1 {
+        font-size: 2em; /* Smaller heading on mobile */
+      }
+      p {
+        font-size: 1em; /* Smaller text on mobile */
+        max-width: 100%;
+      }
+      #nav {
+        bottom: 10px;
+        flex-direction: column; /* Stack nav items vertically */
+        align-items: center;
+      }
+      .nav-item {
+        width: 80%; /* Wider buttons for easier tapping */
+        text-align: center;
+        margin: 5px 0;
+        padding: 10px;
+      }
+      .section {
+        width: 95%; /* Nearly full width on mobile */
+        padding: 15px;
+        max-height: 85vh; /* More screen space on mobile */
+      }
+      .philosophers {
+        flex-direction: column; /* Stack philosophers vertically */
+        align-items: center;
+      }
+      .philosopher {
+        width: 100%;
+        max-width: 250px; /* Limit width for readability */
+      }
+      .philosopher img {
+        width: 80px; /* Smaller images on mobile */
+        height: 80px;
+      }
+      #interaction-instructions {
+        bottom: 60px;
+        font-size: 0.8em;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.5em; /* Even smaller for very small screens */
+      }
+      p {
+        font-size: 0.9em;
+      }
+      .section h2 {
+        font-size: 1.2em; /* Smaller section headings */
+      }
+      .close-btn {
+        font-size: 1.2em; /* Slightly smaller close button */
+      }
+      .concept h3, .timeline-year {
+        font-size: 1em; /* Smaller subheadings */
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="mainContainer">
+    <div class="progress-bar" id="progressBar"></div>
+    <canvas id="canvas"></canvas>
+    <div id="content">
+      <h1>Fenomenología</h1>
+      <p>La experiencia pura como esencia del ser. Una corriente filosófica que explora la estructura de la consciencia y la experiencia, rechazando las presuposiciones sobre el mundo externo para enfocarse en cómo los fenómenos aparecen ante nosotros.</p>
+      <p>Interactúa con el entorno para descubrir las dimensiones de la consciencia y la percepción.</p>
+    </div>
+    
+    <div id="interaction-instructions">
+      Mueve el ratón o toca la pantalla para cambiar la perspectiva • Presiona ESPACIO o doble toque para cambiar la visualización
+    </div>
+    
+    <div id="nav">
+      <div class="nav-item" data-section="intro">Introducción</div>
+      <div class="nav-item" data-section="philosophers">Filósofos</div>
+      <div class="nav-item" data-section="concepts">Conceptos Clave</div>
+      <div class="nav-item" data-section="timeline">Línea Temporal</div>
+    </div>
+    
+    <div id="sections">
+      <div class="section" id="intro">
+        <button class="close-btn">×</button>
+        <h2>La Fenomenología como Movimiento Filosófico</h2>
+        <p>La fenomenología es una corriente filosófica del siglo XX que estudia los fenómenos tal como se presentan en la experiencia consciente. Fundada por Edmund Husserl, busca comprender cómo el mundo se manifiesta ante la consciencia, poniendo entre paréntesis (epojé) los presupuestos metafísicos y científicos.</p>
+        <div class="quote">
+          "¡A las cosas mismas!" — Edmund Husserl, lema de la fenomenología
+        </div>
+        <p>Este movimiento filosófico ha influido profundamente en la filosofía continental, la psicología, la psiquiatría, la sociología y las artes, ofreciendo un método riguroso para analizar la experiencia vivida y las estructuras de la consciencia.</p>
+        <p>Al rechazar tanto el subjetivismo idealista como el objetivismo científico, la fenomenología pretende describir fielmente cómo experimentamos el mundo, sin reducirlo a meros datos físicos ni a construcciones mentales arbitrarias.</p>
+      </div>
+      
+      <div class="section" id="philosophers">
+        <button class="close-btn">×</button>
+        <h2>Principales Representantes</h2>
+        <div class="philosophers">
+          <div class="philosopher">
+            <img src="/api/placeholder/100/100" alt="Edmund Husserl">
+            <h3>Edmund Husserl</h3>
+            <p>Fundador (1859-1938)</p>
+            <p>Desarrolló el método fenomenológico y los conceptos de intencionalidad y epojé.</p>
+          </div>
+          <div class="philosopher">
+            <img src="/api/placeholder/100/100" alt="Martin Heidegger">
+            <h3>Martin Heidegger</h3>
+            <p>Discípulo (1889-1976)</p>
+            <p>Transformó la fenomenología en una ontología fundamental con su análisis del Dasein.</p>
+          </div>
+          <div class="philosopher">
+            <img src="/api/placeholder/100/100" alt="Maurice Merleau-Ponty">
+            <h3>Maurice Merleau-Ponty</h3>
+            <p>Fenomenólogo francés (1908-1961)</p>
+            <p>Centrado en la percepción y la corporalidad como base de la experiencia.</p>
+          </div>
+          <div class="philosopher">
+            <img src="/api/placeholder/100/100" alt="Jean-Paul Sartre">
+            <h3>Jean-Paul Sartre</h3>
+            <p>Existencialista (1905-1980)</p>
+            <p>Combinó la fenomenología con el existencialismo, explorando la libertad radical.</p>
+          </div>
+        </div>
+        <div class="quote">
+          "El hombre está condenado a ser libre; porque una vez arrojado al mundo, es responsable de todo lo que hace." — Jean-Paul Sartre
+        </div>
+        <p>Estos pensadores, aunque unidos por su interés en la experiencia vivida, desarrollaron interpretaciones muy distintas de la fenomenología, desde la rigurosidad científica de Husserl hasta la ontología existencial de Heidegger.</p>
+      </div>
+      
+      <div class="section" id="concepts">
+        <button class="close-btn">×</button>
+        <h2>Conceptos Fundamentales</h2>
+        
+        <div class="concept">
+          <h3>Intencionalidad</h3>
+          <p>La consciencia siempre es consciencia <em>de algo</em>. No existe una consciencia vacía, sino que está siempre dirigida hacia objetos, sean reales o imaginarios.</p>
+        </div>
+        
+        <div class="concept">
+          <h3>Epojé (Reducción Fenomenológica)</h3>
+          <p>La "puesta entre paréntesis" o suspensión de juicios sobre la existencia del mundo exterior para examinar la experiencia tal como aparece a la consciencia.</p>
+        </div>
+        
+        <div class="concept">
+          <h3>Lebenswelt (Mundo de la Vida)</h3>
+          <p>El mundo pre-reflexivo de la experiencia cotidiana que precede y fundamenta toda teorización científica o filosófica.</p>
+        </div>
+        
+        <div class="concept">
+          <h3>Dasein</h3>
+          <p>Término heideggeriano que refiere al ser humano como "ser-ahí" o "ser-en-el-mundo", enfatizando su existencia situada y temporal.</p>
+        </div>
+        
+        <div class="concept">
+          <h3>Corporalidad</h3>
+          <p>Para Merleau-Ponty, el cuerpo vivido como sujeto de percepción y acción, no como mero objeto físico.</p>
+        </div>
+        
+        <div class="quote">
+          "El cuerpo es nuestro medio general de tener un mundo." — Maurice Merleau-Ponty
+        </div>
+      </div>
+      
+      <div class="section" id="timeline">
+        <button class="close-btn">×</button>
+        <h2>Desarrollo Histórico de la Fenomenología</h2>
+        
+        <div id="timeline">
+          <div class="timeline-item">
+            <div class="timeline-year">1900-1901</div>
+            <div class="timeline-content">
+              <strong>Investigaciones Lógicas</strong> - Edmund Husserl publica esta obra en dos volúmenes, considerada el punto de partida de la fenomenología.
+            </div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-year">1913</div>
+            <div class="timeline-content">
+              <strong>Ideas relativas a una fenomenología pura</strong> - Husserl desarrolla su método de reducción fenomenológica.
+            </div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-year">1927</div>
+            <div class="timeline-content">
+              <strong>Ser y Tiempo</strong> - Martin Heidegger publica su obra maestra, transformando la fenomenología en una ontología fundamental.
+            </div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-year">1943</div>
+            <div class="timeline-content">
+              <strong>El Ser y la Nada</strong> - Jean-Paul Sartre combina fenomenología y existencialismo.
+            </div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-year">1945</div>
+            <div class="timeline-content">
+              <strong>Fenomenología de la Percepción</strong> - Maurice Merleau-Ponty centra la fenomenología en la corporalidad.
+            </div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-year">1950-1960</div>
+            <div class="timeline-content">
+              <strong>Giro Hermenéutico</strong> - Hans-Georg Gadamer y Paul Ricoeur vinculan la fenomenología con la hermenéutica.
+            </div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-year">1990-Presente</div>
+            <div class="timeline-content">
+              <strong>Neurofenomenología</strong> - Francisco Varela y otros integran la fenomenología con las ciencias cognitivas.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js';
+    
+    // Scene setup
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x050510, 0.025);
+    
+    // Camera setup
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 20;
+    
+    // Renderer setup
+    const renderer = new THREE.WebGLRenderer({ 
+      canvas: document.getElementById('canvas'), 
+      antialias: true 
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0x333333);
+    scene.add(ambientLight);
+    
+    const light1 = new THREE.PointLight(0x00ffff, 1, 100);
+    light1.position.set(10, 10, 10);
+    scene.add(light1);
+    
+    const light2 = new THREE.PointLight(0xff00ff, 1, 100);
+    light2.position.set(-10, -10, 10);
+    scene.add(light2);
+    
+    // Main torus knot
+    const torusKnotGeometry = new THREE.TorusKnotGeometry(5, 1.5, 200, 32);
+    const torusKnotMaterial = new THREE.MeshPhongMaterial({ 
+      color: 0xffffff,
+      wireframe: true,
+      emissive: 0x00ffff,
+      emissiveIntensity: 0.2,
+      transparent: true,
+      opacity: 0.8
+    });
+    const torusKnot = new THREE.Mesh(torusKnotGeometry, torusKnotMaterial);
+    scene.add(torusKnot);
+    
+    // Outer sphere
+    const sphereGeometry = new THREE.SphereGeometry(15, 32, 32);
+    const sphereMaterial = new THREE.MeshPhongMaterial({
+      color: 0xffffff,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.3
+    });
+    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    scene.add(sphere);
+    
+    // Particles
+    const particlesGeometry = new THREE.BufferGeometry();
+    const particlesCount = 2000;
+    
+    const posArray = new Float32Array(particlesCount * 3);
+    for(let i = 0; i < particlesCount * 3; i++) {
+      posArray[i] = (Math.random() - 0.5) * 50;
+    }
+    
+    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+    
+    const particlesMaterial = new THREE.PointsMaterial({
+      size: 0.05,
+      color: 0xffffff,
+      transparent: true
+    });
+    
+    const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+    scene.add(particlesMesh);
+    
+    // Mouse movement tracking
+    let mouseX = 0;
+    let mouseY = 0;
+    
+    document.addEventListener('mousemove', (event) => {
+      mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+      mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+    });
+    
+    // Animation loop
+    let time = 0;
+    function animate() {
+      requestAnimationFrame(animate);
+      time += 0.01;
+      
+      // Rotate main torus knot
+      torusKnot.rotation.x += 0.005;
+      torusKnot.rotation.y += 0.005;
+      
+      // Pulse effect
+      torusKnot.scale.x = 1 + Math.sin(time) * 0.1;
+      torusKnot.scale.y = 1 + Math.sin(time) * 0.1;
+      torusKnot.scale.z = 1 + Math.sin(time) * 0.1;
+      
+      // Rotate sphere in opposite direction
+      sphere.rotation.x -= 0.002;
+      sphere.rotation.y -= 0.002;
+      
+      // Make camera respond to mouse position
+      camera.position.x += (mouseX * 2 - camera.position.x) * 0.05;
+      camera.position.y += (mouseY * 2 - camera.position.y) * 0.05;
+      camera.lookAt(scene.position);
+      
+      // Move particles
+      particlesMesh.rotation.y += 0.001;
+      
+      // Pulse lights
+      light1.intensity = 1 + Math.sin(time) * 0.5;
+      light2.intensity = 1 + Math.cos(time) * 0.5;
+      
+      renderer.render(scene, camera);
+    }
+    
+    // Start animation
+    animate();
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+    
+    // Navigation functionality
+    document.addEventListener('DOMContentLoaded', () => {
+      setupNavigation();
+    });
+    
+    // Make sure navigation works even if DOMContentLoaded has already fired
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      setupNavigation();
+    }
+    
+    function setupNavigation() {
+      // Handle section navigation
+      const navItems = document.querySelectorAll('.nav-item');
+      const sections = document.querySelectorAll('.section');
+      const closeBtns = document.querySelectorAll('.close-btn');
+      
+      // Add click handlers to navigation items
+      navItems.forEach(item => {
+        item.addEventListener('click', () => {
+          const sectionId = item.getAttribute('data-section');
+          
+          // Reset all sections and nav items
+          sections.forEach(section => {
+            section.classList.remove('active');
+          });
+          
+          navItems.forEach(navItem => {
+            navItem.classList.remove('active');
+          });
+          
+          // Activate current section and nav item
+          document.getElementById(sectionId).classList.add('active');
+          item.classList.add('active');
+        });
+      });
+      
+      // Add click handlers to close buttons
+      closeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const section = btn.closest('.section');
+          section.classList.remove('active');
+          
+          // Also deactivate the corresponding nav item
+          const sectionId = section.id;
+          const navItem = document.querySelector(`.nav-item[data-section="${sectionId}"]`);
+          if (navItem) {
+            navItem.classList.remove('active');
+          }
+        });
+      });
+    }
+    
+    // Scroll progress - for mobile/overflow content
+    const updateScrollProgress = () => {
+      const activeSection = document.querySelector('.section.active');
+      if (activeSection) {
+        const scrollTop = activeSection.scrollTop;
+        const scrollHeight = activeSection.scrollHeight - activeSection.clientHeight;
+        const scrollPercent = (scrollTop / scrollHeight) * 100;
+        
+        document.getElementById('progressBar').style.width = scrollPercent + '%';
+      }
+    };
+    
+    // Update progress bar when sections are scrolled
+    document.querySelectorAll('.section').forEach(section => {
+      section.addEventListener('scroll', updateScrollProgress);
+    });
+    
+    // Toggle wireframe mode with spacebar
+    document.addEventListener('keydown', (event) => {
+      if (event.code === 'Space') {
+        event.preventDefault(); // Prevent page scrolling
+        torusKnot.material.wireframe = !torusKnot.material.wireframe;
+        sphere.material.wireframe = !sphere.material.wireframe;
+      }
+    });
+    
+    // Mobile touch handling
+    let touchStartX, touchStartY;
+    
+    document.addEventListener('touchstart', (event) => {
+      touchStartX = event.touches[0].clientX;
+      touchStartY = event.touches[0].clientY;
+    });
+    
+    document.addEventListener('touchmove', (event) => {
+      if (!touchStartX || !touchStartY) return;
+      
+      const touchX = event.touches[0].clientX;
+      const touchY = event.touches[0].clientY;
+      
+      mouseX = (touchX / window.innerWidth) * 2 - 1;
+      mouseY = -(touchY / window.innerHeight) * 2 + 1;
+      
+      // Prevent default only on canvas to allow scrolling in sections
+      if (event.target.id === 'canvas') {
+        event.preventDefault();
+      }
+    }, { passive: false });
+    
+    // Double tap to toggle wireframe on mobile
+    let lastTap = 0;
+    document.addEventListener('touchend', (event) => {
+      const currentTime = new Date().getTime();
+      const tapLength = currentTime - lastTap;
+      
+      if (tapLength < 300 && tapLength > 0 && event.target.id === 'canvas') {
+        torusKnot.material.wireframe = !torusKnot.material.wireframe;
+        sphere.material.wireframe = !sphere.material.wireframe;
+        event.preventDefault();
+      }
+      
+      lastTap = currentTime;
+    });
+  </script>
+</body>
+</html>

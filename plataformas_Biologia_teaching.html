@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataformas Digitales para la Enseñanza de la Biología</title>
+    <!-- Chosen Palette: Dark Teal & Warm Grays -->
+    <!-- Application Structure Plan: Se diseñó una aplicación de panel de control (dashboard) de una sola página. La estructura presenta primero visualizaciones de datos clave para un resumen inmediato, seguido de una sección de "Explorar por Tema" con botones clicables para una clasificación rápida. Luego, un panel de control con filtros interactivos (búsqueda, subcampo, costo, tipo e idioma). Debajo, una cuadrícula adaptable muestra cada plataforma como una "tarjeta" individual. Esta arquitectura fue elegida porque facilita tanto una visión general rápida (a través de los gráficos) como una exploración detallada y dirigida (a través de los filtros, la búsqueda y la agrupación temática), permitiendo a los usuarios encontrar recursos relevantes de manera eficiente e intuitiva, mejorando la discoverability de los temas. -->
+    <!-- Visualization & Content Choices:
+        - Resumen Cuantitativo -> Gráfico de Barras Horizontales (Chart.js): Para comparar la cantidad de plataformas por subcampo. Este formato es ideal para etiquetas de categoría largas y mejora la legibilidad en pantallas grandes.
+        - Distribución de Modelos de Negocio -> Gráfico de Donut (Chart.js): Para mostrar la proporción de plataformas según su modelo de costo (Gratuito, Freemium, Pago). Es una forma clara y visual de ver la composición del mercado en un vistazo.
+        - Panorama Tecnológico -> Gráfico de Área Polar (Chart.js): Para visualizar la distribución de los tipos de herramientas (RV, RA, simulación, etc.). Ofrece una comparación atractiva de múltiples categorías y es ideal para mostrar proporciones sin los ejes cartesianos.
+        - Explorar por Tema -> Botones Clicables (HTML/CSS y JavaScript): Cada botón representa un subcampo principal, actuando como un atajo para filtrar las plataformas por ese tema, mejorando la navegación temática.
+        - Detalle de Plataforma -> Tarjetas Interactivas (HTML/CSS y JavaScript Modal): Cada tarjeta presenta la información clave de forma concisa. Al hacer clic, se abre un modal con todos los detalles de la plataforma, manteniendo al usuario en la página y ofreciendo una inmersión profunda en el recurso seleccionado. Las etiquetas (tags) y el botón de acción facilitan la identificación rápida y el acceso al recurso, proporcionando un punto de interacción directo.
+        Justificación: Esta combinación equilibra la presentación de datos agregados para el análisis de tendencias con el acceso a información detallada y procesable, todo dentro de una interfaz unificada y reactiva, optimizada para la exploración del usuario y la clasificación temática.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a; /* Fondo muy oscuro */
+            color: #e5e7eb; /* Texto claro por defecto */
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 40vh; /* Altura base para responsive */
+            width: 100%;
+            max-width: 500px;
+            max-height: 400px;
+        }
+        @media (min-width: 1024px) { /* Adjust for larger screens */
+            .chart-container.large-chart {
+                height: 60vh;
+                max-height: 600px;
+            }
+        }
+        .card {
+            background-color: #2a2a2a; /* Fondo de tarjeta oscuro */
+            border-radius: 0.75rem;
+            border: 1px solid #3a3a3a; /* Borde sutil */
+            transition: all 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            box-shadow: none; /* Eliminar sombra predeterminada de Tailwind si no combina */
+            cursor: pointer; /* Indicar que es clickeable */
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada en hover */
+        }
+        .card-content {
+            flex-grow: 1;
+        }
+        .tag {
+            display: inline-block;
+            background-color: #3b3b3b; /* Fondo de etiqueta oscuro */
+            color: #81c784; /* Texto de etiqueta verde claro */
+            border-radius: 9999px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin: 0.25rem;
+        }
+        input, select {
+            background-color: #3a3a3a; /* Fondo de inputs/selects oscuro */
+            color: #e5e7eb; /* Texto de inputs/selects claro */
+            border-color: #4a4a4a; /* Borde de inputs/selects más oscuro */
+        }
+        input::placeholder {
+            color: #9ca3af; /* Color del placeholder */
+        }
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .modal-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: #2a2a2a;
+            color: #e5e7eb;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            position: relative;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease-in-out;
+        }
+        .modal-overlay.open .modal-content {
+            transform: translateY(0);
+        }
+        .modal-close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #e5e7eb;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .modal-close-button:hover {
+            color: #f87171;
+        }
+        .scroll-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: #2dd4bf; /* Brighter teal */
+            color: #1a1a1a;
+            padding: 0.75rem 1rem;
+            border-radius: 9999px;
+            font-weight: bold;
+            display: none; /* Hidden by default */
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease-in-out, transform 0.2s;
+            z-index: 999;
+        }
+        .scroll-to-top:hover {
+            background-color: #0d9990; /* Darker teal on hover */
+            transform: translateY(-2px);
+        }
+        .link-unavailable {
+            background-color: #4a4a4a;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .link-unavailable:hover {
+            background-color: #4a4a4a !important; /* Override hover for disabled */
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        .theme-button {
+            background-color: #3b3b3b;
+            color: #e5e7eb;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+            cursor: pointer;
+            border: 1px solid #4a4a4a;
+        }
+        .theme-button:hover {
+            background-color: #4a4a4a;
+        }
+        .theme-button.active {
+            background-color: #2dd4bf;
+            color: #1a1a1a;
+            border-color: #2dd4bf;
+        }
+    </style>
+</head>
+<body class="text-gray-200">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-teal-400 mb-2">Explorador de Plataformas para Biología</h1>
+            <p class="text-lg text-gray-400">Un catálogo interactivo de herramientas digitales para la enseñanza y el aprendizaje.</p>
+        </header>
+
+        <!-- Visualizations Section -->
+        <section class="mb-12">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-teal-400">Panorama General</h2>
+                <p class="text-gray-400 mt-1">Estos gráficos resumen la distribución de los recursos disponibles en la base de datos. Se actualizan dinámicamente a medida que aplicas filtros, permitiéndote analizar subconjuntos específicos de la información.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+                <div class="lg:col-span-2 bg-neutral-800 p-6 rounded-xl shadow-lg border border-neutral-700">
+                    <h3 class="text-lg font-semibold text-center mb-4 text-gray-200">Plataformas por Subcampo</h3>
+                    <div class="chart-container large-chart">
+                        <canvas id="subcampoChart"></canvas>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-8">
+                    <div class="bg-neutral-800 p-6 rounded-xl shadow-lg border border-neutral-700">
+                        <h3 class="text-lg font-semibold text-center mb-4 text-gray-200">Distribución por Costo</h3>
+                        <div class="chart-container">
+                            <canvas id="costoChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-neutral-800 p-6 rounded-xl shadow-lg border border-neutral-700">
+                        <h3 class="text-lg font-semibold text-center mb-4 text-gray-200">Distribución por Tipo</h3>
+                        <div class="chart-container">
+                            <canvas id="tipoChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Explore by Theme Section -->
+        <section class="mb-8 p-6 bg-neutral-800 rounded-xl shadow-lg border border-neutral-700">
+            <div class="text-center mb-4">
+                 <h2 class="text-2xl font-bold text-teal-400">Explorar por Tema</h2>
+                 <p class="text-gray-400 mt-1">Haz clic en un tema para filtrar las plataformas relacionadas. Puedes restablecer los filtros para ver todos los temas.</p>
+            </div>
+            <div id="themeButtonsContainer" class="flex flex-wrap justify-center gap-2 mb-4">
+                <!-- Theme buttons will be populated here -->
+            </div>
+            <div class="text-center">
+                <button id="resetFiltersBtn" class="theme-button bg-gray-600 hover:bg-gray-700 text-white border-gray-700">
+                    Restablecer Filtros
+                </button>
+            </div>
+        </section>
+
+        <!-- Filters Section -->
+        <section class="mb-8 p-6 bg-neutral-800 rounded-xl shadow-lg border border-neutral-700 sticky top-0 z-10">
+            <div class="text-center mb-4">
+                 <h2 class="text-2xl font-bold text-teal-400">Filtrar Recursos Adicionales</h2>
+                 <p class="text-gray-400 mt-1">Ajusta los filtros de búsqueda, costo, tipo e idioma para refinar aún más tu exploración.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <input type="text" id="searchInput" placeholder="Buscar por nombre o descripción..." class="lg:col-span-2 w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition">
+                <select id="subcampoFilter" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition"></select>
+                <select id="costoFilter" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition"></select>
+                <select id="tipoFilter" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition"></select>
+                <select id="idiomaFilter" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition"></select>
+            </div>
+        </section>
+        
+        <!-- Results Count -->
+        <div id="resultsCount" class="mb-4 text-center text-gray-400 font-medium"></div>
+
+        <!-- Platforms Grid -->
+        <main id="platforms-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <!-- Platform cards will be inserted here by JavaScript -->
+        </main>
+
+    </div>
+
+    <!-- Modal for Platform Details -->
+    <div id="platformDetailModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-button" onclick="closeModal()">&times;</button>
+            <h3 id="modalTitle" class="text-3xl font-bold text-teal-300 mb-4"></h3>
+            <div class="mb-4">
+                <p class="text-gray-300 mb-2"><strong>Subcampo(s):</strong> <span id="modalSubcampos"></span></p>
+                <p class="text-gray-300 mb-2"><strong>Idiomas:</strong> <span id="modalIdiomas"></span></p>
+                <p class="text-gray-300 mb-2"><strong>Tipo:</strong> <span id="modalTipo"></span></p>
+                <p class="text-gray-300 mb-2"><strong>Costo:</strong> <span id="modalCosto"></span></p>
+                <p class="text-gray-300 mb-4"><strong>Descripción:</strong> <span id="modalDescripcion"></span></p>
+            </div>
+            <a id="modalEnlace" href="#" target="_blank" rel="noopener noreferrer" class="block w-full text-center bg-teal-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-teal-700 transition-colors">
+                Visitar Sitio
+            </a>
+        </div>
+    </div>
+
+    <!-- Scroll to Top Button -->
+    <button id="scrollToTopBtn" class="scroll-to-top">
+        ↑ Arriba
+    </button>
+
+    <script>
+        const platformsData = [
+            { "Subcampo(s)": "Multidisciplinar (Laboratorios Virtuales)", "Nombre": "PraxiLabs", "Enlace": "https://praxilabs.com/", "Idiomas": "Inglés, Árabe", "Tipo": "Simulación 3D, Laboratorio virtual", "Costo": "Pago (suscripción, demo gratis), Freemium", "Descripción": "Ofrece +150 simulaciones 3D inmersivas en biología, química y física. Permite practicar experimentos repetidamente con retroalimentación inmediata, útil cuando el laboratorio físico es inaccesible." },
+            { "Subcampo(s)": "Multidisciplinar (Laboratorios Virtuales)", "Nombre": "Labster", "Enlace": "https://www.labster.com/", "Idiomas": "Inglés, Español (+70 sims), Francés, Alemán, Portugués, Japonés", "Tipo": "Simulaciones interactivas en PC/VR, Laboratorios virtuales 3D", "Costo": "Pago (suscripción institucional), Freemium/Pago", "Descripción": "Biblioteca de +300 laboratorios virtuales 3D de alto nivel en STEM. Reproduce entornos reales con narrativa gamificada, mejorando la comprensión y motivación estudiantil." },
+            { "Subcampo(s)": "Multidisciplinar (Aprendizaje activo)", "Nombre": "SimBiO (SimUText)", "Enlace": "https://simbio.com/", "Idiomas": "Inglés", "Tipo": "Simulaciones interactivas (HTML5)", "Costo": "Pago (licencia académica)", "Descripción": "Plataforma de aprendizaje activo en biología universitaria. Ofrece módulos interactivos (ecología, genética, evolución, celular) con laboratorios virtuales basados en modelos matemáticos." },
+            { "Subcampo(s)": "Biología general", "Nombre": "BioMan Biology", "Enlace": "https://biomanbio.com/", "Idiomas": "Inglés", "Tipo": "Juegos y actividades web, laboratorios virtuales, quizzes, animaciones", "Costo": "Gratuito (opcional suscripción sin anuncios)", "Descripción": "Portal educativo con juegos, cuestionarios y laboratorios virtuales sencillos sobre conceptos básicos (células, fisiología, genética, ecología). Gamifica el aprendizaje con gráficos animados." },
+            { "Subcampo(s)": "Multidisciplinar", "Nombre": "HHMI BioInteractive", "Enlace": "https://www.biointeractive.org/", "Idiomas": "Inglés, Español (sitio bilingüe)", "Tipo": "Animaciones, simulaciones web", "Costo": "Gratuito", "Descripción": "Recurso multimedia del Howard Hughes Medical Institute. Contiene animaciones, simulaciones (“Click & Learn”), estudios de caso y videos. Fomenta el pensamiento científico con datos reales." },
+            { "Subcampo(s)": "Multidisciplinar", "Nombre": "PhET (Colorado Boulder)", "Enlace": "https://phet.colorado.edu/", "Idiomas": "Multilenguaje (+120 idiomas)", "Tipo": "Simulaciones interactivas (HTML5)", "Costo": "Gratuito", "Descripción": "Colección de simulaciones STEM gratuitas. Incluye biología básica (genética, moléculas, poblaciones). Permite manipular variables en tiempo real para visualizar fenómenos complejos." },
+            { "Subcampo(s)": "Anatomía humana (AR)", "Nombre": "Merge Cube + Merge EDU", "Enlace": "https://mergeedu.com/cube/es", "Idiomas": "Español, Inglés, otros 7+", "Tipo": "Realidad aumentada (AR 3D)", "Costo": "Gratis (apps básicas), Contenido pago", "Descripción": "Dispositivo y plataforma de AR para educación. Permite explorar moléculas de ADN, modelos virtuales de organismos o disecciones simuladas en 3D. Favorece el aprendizaje multisensorial." },
+            { "Subcampo(s)": "Multidisciplinar (Laboratorios Virtuales)", "Nombre": "VRLab Academy", "Enlace": "https://www.vrlabacademy.com/en", "Idiomas": "Inglés, Español, Turco, Búlgaro", "Tipo": "Laboratorios virtuales en PC/VR, Web/VR", "Costo": "Pago (licencias escolares)", "Descripción": "Plataforma global de +240 experimentos interactivos en biología, física, química, alineados a currículos. Usa IA para personalizar la experiencia. Accesible en computadora o RV." },
+            { "Subcampo(s)": "Multidisciplinar (Laboratorios Virtuales)", "Nombre": "LabXchange (Harvard/MIT)", "Enlace": "https://www.labxchange.org/", "Idiomas": "Inglés, Español (sitio bilingüe)", "Tipo": "Videos interactivos, simulaciones web", "Costo": "Gratuito", "Descripción": "Plataforma gratuita de ciencia abierta. Repositorio de recursos educativos y simulaciones de laboratorio virtuales. Ofrece feedback instantáneo y facilita el aprendizaje activo previo al laboratorio real." },
+            { "Subcampo(s)": "Biotecnología / Biología Molecular", "Nombre": "Simuladores BioIngeniería (Amino Labs)", "Enlace": "https://amino.bio/pages/vbioengineer", "Idiomas": "Inglés (algunos en francés)", "Tipo": "Simuladores web en 2D/3D", "Costo": "Gratuito", "Descripción": "Conjunto de simuladores educativos gratuitos centrados en biotecnología. Permiten experimentar virtualmente con procedimientos de laboratorio como estructura del ADN o electroforesis." },
+            { "Subcampo(s)": "Ecología / Biología Evolutiva / Celular", "Nombre": "Virtual Biology Lab (Dr. T.C. Jones)", "Enlace": "https://virtualbiologylab.org/", "Idiomas": "Inglés", "Tipo": "Modelado matemático interactivo, Simulaciones estocásticas, modelos HTML5", "Costo": "Gratuito", "Descripción": "Plataforma de simulaciones educativas basada en modelos científicos. Simula fenómenos ecológicos, evolutivos y celulares. Promueve aprendizaje inductivo y diseño de experimentos." },
+            { "Subcampo(s)": "Ecología", "Nombre": "Tyto Ecology", "Enlace": "https://www.tytoonline.com/tyto_ecology", "Idiomas": "Inglés", "Tipo": "Videojuego / simulador (PC, iOS)", "Costo": "Gratuito (expansiones de pago)", "Descripción": "Juego educativo de simulación ecológica. El alumno crea y gestiona su propio bioma. Enseña principios de ecología (ciclos biogeoquímicos, cadenas alimentarias) jugando." },
+            { "Subcampo(s)": "Inmunología", "Nombre": "ImmuneQuest", "Enlace": "http://immunequest.com/", "Idiomas": "Inglés", "Tipo": "Juego 3D educativo (PC/Mac), Simulador del sistema inmune", "Costo": "Gratuito, Pago (3 niveles gratuitos)", "Descripción": "Videojuego educativo de inmunología. El jugador construye y controla un sistema inmunitario virtual para defender un organismo de infecciones, simulando acciones inmunes." },
+            { "Subcampo(s)": "Anatomía comparada", "Nombre": "Froguts", "Enlace": "http://www.froguts.com/", "Idiomas": "Inglés", "Tipo": "Simulación 3D Flash (videojuego de disección)", "Costo": "Gratuito", "Descripción": "Herramienta virtual de disección de animales. Permite 'diseccionar' en pantalla ranas, cerdos fetales, ojos de vaca, etc., con cuestionarios. Útil para anatomía comparada sin sacrificar animales." },
+            { "Subcampo(s)": "Anatomía y Fisiología humana", "Nombre": "Visible Body Suite", "Enlace": "https://visiblebody.com", "Idiomas": "EN, ES, PT, FR, DE, CN, JP", "Tipo": "Web/móvil/AR/VR (atlas 3D), Modelos 3D interactivos, animaciones, simulaciones, RA", "Costo": "Pago, De pago (suscripciones, prueba gratuita)", "Descripción": "Base de datos 3D de anatomía humana y fisiología con funciones avanzadas (disecciones virtuales, AR, VR, flashcards, quizzes). Usada por +70,000 instituciones." },
+            { "Subcampo(s)": "Anatomía y Fisiología humana", "Nombre": "BioDigital Human", "Enlace": "https://www.biodigital.com", "Idiomas": "EN (posibles traducciones), Múltiples idiomas", "Tipo": "Web/móvil/AR/VR (modelo 3D interactivo), Software interactivo 3D, RA, RV", "Costo": "Freemium (10 visualizaciones gratuitas/mes)", "Descripción": "Plataforma 3D interactiva para visualizar anatomía humana, fisiología, enfermedades y tratamientos. Usada por +5 millones para entender procesos biológicos." },
+            { "Subcampo(s)": "Anatomía humana (AR/VR/MR)", "Nombre": "Human Anatomy 4D (Irusu)", "Enlace": "https://play.google.com/store/apps/details?id=com.irusu.humananatomy4d", "Idiomas": "EN (app móvil)", "Tipo": "Móvil AR/VR/MR", "Costo": "Gratuito", "Descripción": "App móvil (iOS/Android) de anatomía humana en AR/VR/MR. Permite explorar sistemas corporales en 3D con efectos de rayos X y capas translúcidas." },
+            { "Subcampo(s)": "Zoología / Biología general (AR)", "Nombre": "Animal 4D+", "Enlace": "https://play.google.com/store/apps/details?id=com.OctagonStudio.Animal4DPlus", "Idiomas": "EN, PT, ES (multilenguaje)", "Tipo": "Móvil AR", "Costo": "Gratuito", "Descripción": "Aplicación AR gratuita: al escanear tarjetas impresas de animales, despliega modelos 3D animados de fauna con información interactiva. Uso lúdico para primaria/secundaria." },
+            { "Subcampo(s)": "Botánica / Ecología (AR)", "Nombre": "Arlant (SM, app Apprender)", "Enlace": "https://apps.apple.com/cl/app/sm-aprendizaje/id1496175658", "Idiomas": "ES", "Tipo": "Móvil AR (imágenes impresas)", "Costo": "Gratis", "Descripción": "App educativa (Android/iOS) sobre biología de plantas, parte de la plataforma 'SM Aprendizaje'. Incluye simulador 3D y módulos interactivos con RA." },
+            { "Subcampo(s)": "Biología general (AR)", "Nombre": "Biología RA (Lion Studios)", "Enlace": "https://play.google.com/store/apps/details?id=br.com.lionstudios.biologiara", "Idiomas": "PT (Portugués)", "Tipo": "Móvil AR", "Costo": "Gratuito", "Descripción": "Aplicación AR (Brasil) con 16 escenas educativas: procesos celulares, sistemas del cuerpo humano y reproducción. Requiere marcadores físicos." },
+            { "Subcampo(s)": "Herramientas Didácticas", "Nombre": "Microscopio (Ciberdroid)", "Enlace": "https://play.google.com/store/apps/details?id=com.ciberdroid.microscope", "Idiomas": "ES", "Tipo": "Móvil (simulador)", "Costo": "Gratuito", "Descripción": "App móvil que convierte la cámara del teléfono en un microscopio simulado. Permite ajustar lente, enfoque y LED. Facilita observar objetos pequeños sin microscopio físico." },
+            { "Subcampo(s)": "Bioquímica / Biología estructural", "Nombre": "Foldit", "Enlace": "https://fold.it", "Idiomas": "EN (interfaz/WebGL)", "Tipo": "Web (juego serio interactivo)", "Costo": "Gratuito", "Descripción": "Juego de plegamiento de proteínas colaborativo. Los estudiantes resuelven puzzles 3D de bioquímica desarrollando intuición estructural." },
+            { "Subcampo(s)": "Histología", "Nombre": "Histology Guide", "Enlace": "https://histologyguide.com/", "Idiomas": "Inglés", "Tipo": "Laboratorio de microscopía virtual", "Costo": "Gratuita", "Descripción": "Recrea la experiencia de un microscopio real en una interfaz basada en navegador. Utiliza imágenes de alta resolución de diapositivas completas para explorar estructuras microscópicas." },
+            { "Subcampo(s)": "Biología Molecular / Genética", "Nombre": "Biomodel Cibertorio", "Enlace": "https://biomodel.uah.es/lab/inicio.htm", "Idiomas": "Español", "Tipo": "Laboratorio virtual de biología molecular", "Costo": "Gratuita", "Descripción": "Ofrece simulaciones de electroforesis de proteínas, análisis forense de ADN, diagnóstico genético. Incluye guiones de trabajo detallados con preguntas." },
+            { "Subcampo(s)": "Genética / Biología celular / Evolución", "Nombre": "Learn.Genetics (University of Utah)", "Enlace": "https://learn.genetics.utah.edu/", "Idiomas": "Inglés", "Tipo": "Lecciones en línea, laboratorios interactivos", "Costo": "Gratuita", "Descripción": "Ofrece lecciones en línea en genética, biología celular, evolución, salud humana. Proporciona laboratorios interactivos de genética y animaciones atractivas." },
+            { "Subcampo(s)": "Genética", "Nombre": "StarGenetics (MIT)", "Enlace": "https://www.stargenetics.org/", "Idiomas": "Inglés", "Tipo": "Simulador de cruces genéticos", "Costo": "Gratuita", "Descripción": "Permite simular experimentos de apareamiento entre organismos genéticamente diferentes (como la mosca de la fruta) para analizar rasgos." },
+            { "Subcampo(s)": "Biología Celular y Molecular", "Nombre": "Filadd Biología Celular y Molecular (LatAm)", "Enlace": "https://filadd.cl/courses/biologia-celular-y-molecular-academia-filadd", "Idiomas": "Español", "Tipo": "Plataforma de cursos en línea, clases en vivo grabadas, asistente de IA (GenIA), material descargable", "Costo": "De pago (planes y pago único por 6 meses)", "Descripción": "Curso diseñado para estudiantes universitarios que buscan aprender y profundizar en biología celular y molecular. Ofrece clases, pruebas, guías y consultas ilimitadas." },
+            { "Subcampo(s)": "Multidisciplinar (Laboratorios Virtuales)", "Nombre": "Virtual Labs de la UNED", "Enlace": "https://virtual.labfon.uned.es/", "Idiomas": "Español", "Tipo": "Laboratorios virtuales, simulaciones", "Costo": "No especificado (probablemente gratuita/incluida en matrícula)", "Descripción": "Iniciativa que ofrece simulaciones y laboratorios virtuales para la docencia y investigación a distancia en fonética, con herramientas para tareas de laboratorio." },
+            { "Subcampo(s)": "Multidisciplinar (Laboratorios Virtuales)", "Nombre": "ChemCollective Virtual Labs", "Enlace": "https://chemcollective.org/vlabs", "Idiomas": "Español", "Tipo": "Laboratorios virtuales", "Costo": "Gratuita", "Descripción": "Colección de laboratorios virtuales gratuitos para la enseñanza de la química. Permite simular experimentos y cálculos químicos." },
+            { "Subcampo(s)": "Multidisciplinar (Laboratorios Virtuales)", "Nombre": "Pearson Interactive Labs (Mastering Biology)", "Enlace": "https://www.pearson.com/en-us/higher-education/products-services/mastering/biology.html", "Idiomas": "Inglés", "Tipo": "Laboratorios virtuales, simulaciones, animaciones 3D, IA", "Costo": "De pago", "Descripción": "Experiencia integral de laboratorio virtual con escenarios del mundo real y retroalimentación guiada. Incluye herramientas de estudio impulsadas por IA." },
+            { "Subcampo(s)": "Microbiología", "Nombre": "Pearson Interactive Labs for Microbiology", "Enlace": "https://www.pearson.com/en-us/higher-education/products-services/pearson-interactive-labs/microbiology.html", "Idiomas": "Inglés", "Tipo": "Laboratorios virtuales, simulaciones", "Costo": "De pago (parte de Pearson)", "Descripción": "Suite de simulaciones de laboratorio de microbiología en línea. Presenta escenarios clínicos del mundo real para dominar técnicas de laboratorio como la tinción de Gram." },
+            { "Subcampo(s)": "Microbiología", "Nombre": "PraxiLabs (Microbiology simulations)", "Enlace": "https://praxilabs.com/en/blog/2025/02/19/microbiology-lab-simulations/", "Idiomas": "Inglés y Árabe", "Tipo": "Laboratorios virtuales 3D inmersivos, simulaciones", "Costo": "De pago (con prueba gratuita)", "Descripción": "Ofrece simulaciones de laboratorio de microbiología para enriquecer el conocimiento a través de experimentos virtuales inmersivos. Permite explorar experimentos complejos de forma segura." },
+            { "Subcampo(s)": "Biología general", "Nombre": "Biology Simulations", "Enlace": "https://www.biologysimulations.com/", "Idiomas": "Inglés", "Tipo": "Simulaciones interactivas", "Costo": "No especificado", "Descripción": "Ofrece simulaciones para ayudar a los estudiantes a aprender sobre biología y practicar habilidades de análisis de datos. Permiten experimentar con conceptos complejos." },
+            { "Subcampo(s)": "Anatomía humana", "Nombre": "Anatomage Table", "Enlace": "https://anatomage.com/table/", "Idiomas": "No especificado (contenido visual)", "Tipo": "Mesa de disección virtual 3D, contenido cadavérico real digitalizado", "Costo": "De pago (equipo físico y avanzado)", "Descripción": "Sistema avanzado de anatomía y educación médica que utiliza contenido cadavérico humano real digitalizado para una experiencia realista. Reduce costos y riesgos." },
+            { "Subcampo(s)": "Anatomía", "Nombre": "Virtual Dissection Database (VDD)", "Enlace": "https://www.anatomy.org/ANATOMY/ANATOMY/Resources/Virtual-Dissection-Database.aspx", "Idiomas": "Inglés", "Tipo": "Biblioteca digital de videos de disección e imágenes cadavéricas", "Costo": "Gratuita", "Descripción": "Lanzada en 2021, es una biblioteca digital gratuita de videos de disección e imágenes cadavéricas, junto con recursos de anatomía de superficie y clínicos." },
+            { "Subcampo(s)": "Histología", "Nombre": "Atlas Digital de Histología (Facultad de Medicina UNAM)", "Enlace": "http://www.facmed.unam.mx/deptos/biocetis/atlas2013A/", "Idiomas": "Español", "Tipo": "Atlas digital, imágenes microscópicas (fotónicas y electrónicas) en 3D", "Costo": "No especificado (probablemente gratuita/uso interno)", "Descripción": "Un atlas digital que presenta cortes de tejidos teñidos y células en división, incluyendo imágenes 3D de células de cáncer. Proporciona una herramienta visual para el estudio." },
+            { "Subcampo(s)": "Microbiología", "Nombre": "ComicBacterias (Juegos de Microbiología)", "Enlace": "https://www.comicbacterias.com/juegos/", "Idiomas": "Español", "Tipo": "Juegos de cartas, juegos de mesa, crucigramas, sopas de letras, ilustraciones", "Costo": "Gratuita (se infiere)", "Descripción": "Ofrece juegos para aprender sobre bacterias y virus de forma divertida. Incluye juegos de cartas como 'Micro-Match' y 'Virus-Match' con datos reales y caricaturas." },
+            { "Subcampo(s)": "Microbiología / Biología general", "Nombre": "Educaplay (Test de Microbiología)", "Enlace": "https://es.educaplay.com/recursos-educativos/6381883-microbiologia_general.html", "Idiomas": "Español", "Tipo": "Juegos interactivos, quizzes, integración con LMS", "Costo": "Gratuita (planes de pago para LMS)", "Descripción": "Plataforma que ofrece un test interactivo de microbiología general (virus, bacterias). Permite la integración con Google Classroom y Microsoft Teams." },
+            { "Subcampo(s)": "Inmunología", "Nombre": "Labster (Introducción a la Inmunología)", "Enlace": "https://theory.labster.com/es/welcome_igx/", "Idiomas": "Español", "Tipo": "Simulación interactiva", "Costo": "Parte de la oferta de Labster (de pago)", "Descripción": "Simulación que introduce los órganos y células principales del sistema linfático. Permite participar en un experimento serológico y aprender sobre conceptos inmunológicos centrales." },
+            { "Subcampo(s)": "Inmunología / Salud pública", "Nombre": "British Society for Immunology (Actividades)", "Enlace": "https://www.immunology.org/public-information/vaccine-resources/childhood-vaccines/activity-packs/hands-activities", "Idiomas": "Inglés", "Tipo": "Actividades prácticas, juegos de rol, modelado con plastilina, juegos de cartas, animaciones", "Costo": "Gratuita (recursos descargables)", "Descripción": "Ofrece actividades interactivas y descargables sobre la inmunología de la vacunación y la inmunidad de rebaño. Incluye juegos para demostrar cómo los anticuerpos combaten patógenos." },
+            { "Subcampo(s)": "Botánica", "Nombre": "NAMOO / PlantNet / Plants by Tinybop", "Enlace": "NAMOO: https://apps.apple.com/us/app/namoo/id1097011778", "Idiomas": "Múltiples idiomas (Plants by Tinybop)", "Tipo": "Aplicaciones móviles, enciclopedias interactivas, simulaciones 3D", "Costo": "No especificado", "Descripción": "Aplicaciones para descubrir y estudiar plantas. NAMOO explora la vida de las plantas con simulaciones 3D. PlantNet ayuda a identificar plantas." },
+            { "Subcampo(s)": "Zoología", "Nombre": "Sketchfab (Modelos 3D de Zoología)", "Enlace": "https://sketchfab.com/tags/zoologia", "Idiomas": "Inglés", "Tipo": "Plataforma de modelos 3D", "Costo": "Freemium (modelos gratuitos y de pago)", "Descripción": "Repositorio de modelos 3D de zoología. Permite la visualización interactiva de estructuras anatómicas animales, útil para el estudio comparado y la diversidad morfológica." },
+            { "Subcampo(s)": "Ecología / Sostenibilidad", "Nombre": "Juegos de Simulación de Ecología (Eco, Beyond Blue, Civilization, etc.)", "Enlace": "https://www.expoknews.com/10-videojuegos-que-te-ensenan-a-cuidar-el-planeta/", "Idiomas": "Inglés (se infiere)", "Tipo": "Videojuegos de simulación", "Costo": "Freemium (algunos gratuitos, otros de pago)", "Descripción": "Videojuegos que fomentan la conciencia ambiental de manera divertida. Permiten comprender y utilizar los recursos del entorno para detener la destrucción del planeta." },
+            { "Subcampo(s)": "Ecología / Sostenibilidad", "Nombre": "Juegos de Mesa de Ecología", "Enlace": "https://www.naturalizaeducacion.org/blog/juegos-de-mesa-para-aprender-sobre-la-naturaleza", "Idiomas": "Español", "Tipo": "Juegos de mesa (físicos y/o web)", "Costo": "Gratuita (algunos DIY/web)", "Descripción": "Juegos de mesa que buscan enseñar sobre la naturaleza y el medio ambiente, incluyendo acciones sostenibles, consecuencias de la acción humana y el equilibrio del ecosistema." },
+            { "Subcampo(s)": "Biología Evolutiva", "Nombre": "Ancient Earth", "Enlace": "https://www.ancient-earth.com/", "Idiomas": "Inglés", "Tipo": "Simulación online interactiva", "Costo": "No especificado", "Descripción": "Simulación online interactiva para observar la evolución de la Tierra y los continentes desde hace 600 millones de años hasta la actualidad." },
+            { "Subcampo(s)": "Biología Evolutiva", "Nombre": "Educaplay (Evolución Biológica)", "Enlace": "https://www.educaplay.com/learning-resources/7647591-evolucion_biologica.html", "Idiomas": "Español", "Tipo": "Quiz interactivo, integración con LMS", "Costo": "Gratuita (planes de pago para LMS)", "Descripción": "Ofrece un quiz interactivo sobre evolución biológica, incluyendo preguntas sobre Darwin y pruebas de evolución. Permite a los estudiantes evaluar su conocimiento." },
+            { "Subcampo(s)": "Embriología humana", "Nombre": "Eduteiment Embriología Humana Interactiva", "Enlace": "https://www.eduteimentpr.com/product-page/embriolog%C3%ADa-humana-interactiva", "Idiomas": "Español", "Tipo": "Software con modelos 3D anatómicamente correctos", "Costo": "De pago ($297.00 USD)", "Descripción": "Permite explorar con gran detalle e interacción las diferentes etapas del desarrollo del embrión hasta el nacimiento. Visualiza el tamaño real del embrión en cada etapa." },
+            { "Subcampo(s)": "Embriología humana", "Nombre": "HuDeCA (Modelos 3D de Embriología)", "Enlace": "https://hudeca.com/?page_id=1909", "Idiomas": "Inglés", "Tipo": "Modelos 3D interactivos (reconstrucciones 3D)", "Costo": "Gratuita (se infiere)", "Descripción": "Ofrece reconstrucciones 3D interactivas de embriones humanos. Permite la manipulación de los modelos (rotación, traslación) y visualización de descripciones." },
+            { "Subcampo(s)": "Multidisciplinar (Salud)", "Nombre": "BioAtlas (Embriología)", "Enlace": "https://delec.com.ar/es/simulacion_medica/bioatlas/", "Idiomas": "Portugués, Inglés, Español", "Tipo": "Contenido virtual interactivo 3D, modelos 3D, realidad virtual", "Costo": "Comercial (se infiere)", "Descripción": "Permite explorar el cuerpo humano en detalle a través de modelos virtuales interactivos en 3D. El módulo de Embriología sigue el desarrollo embrionario y fetal." },
+            { "Subcampo(s)": "Neurociencia", "Nombre": "NINDS Brain Education Resources", "Enlace": "https://www.ninds.nih.gov/health-information/public-education/brain-education-resources", "Idiomas": "Inglés y Español", "Tipo": "Actividades prácticas, videos, quizzes interactivos", "Costo": "Gratuita", "Descripción": "Ofrece recursos para educar a niños y jóvenes sobre el cerebro y el sistema nervioso. Incluye actividades prácticas y videos-quizzes sobre funciones cerebrales." },
+            { "Subcampo(s)": "Neurociencia / Biología Celular / Inmunología", "Nombre": "Allen Institute Education Materials Library", "Enlace": "https://alleninstitute.org/materials-library/", "Idiomas": "Inglés", "Tipo": "Lecciones, recursos de datos abiertos, herramientas interactivas, estudios de caso", "Costo": "Gratuita (recursos de educación abierta)", "Descripción": "Biblioteca de materiales educativos que explora lecciones y recursos para neurociencia, biología celular e inmunología. Ofrece datos abiertos y currículo desarrollado por científicos." },
+            { "Subcampo(s)": "Neurociencia clínica", "Nombre": "Clinical Pattern Recognition Neuroscience Education", "Enlace": "https://clinicalpattern.com/neuroscience/", "Idiomas": "Inglés", "Tipo": "Videos interactivos, modelos 3D, aplicaciones", "Costo": "Freemium (prueba gratuita)", "Descripción": "Proporciona un paquete de neurociencia con videos interactivos y herramientas para transformar el aprendizaje clínico. Incluye modelos 3D del cerebro y estudios de caso." },
+            { "Subcampo(s)": "Neurociencia / Neurofisiología", "Nombre": "ADInstruments Lt Neuroscience Collection", "Enlace": "https://www.adinstruments.com/lt/neuroscience", "Idiomas": "Inglés", "Tipo": "Plataforma de aprendizaje en línea, laboratorios interactivos, adquisición de datos", "Costo": "De pago (requiere demo/cotización)", "Descripción": "Plataforma para cursos de neurociencia. Permite prepararse para clases y laboratorios, realizar experimentos interactivos y adquirir datos biológicos reales." },
+            { "Subcampo(s)": "Biotecnología", "Nombre": "Labster (Biotechnology collection)", "Enlace": "https://www.labster.com/collections/biotechnology", "Idiomas": "Inglés", "Tipo": "Laboratorios virtuales, simulaciones", "Costo": "De pago (parte de Labster)", "Descripción": "Colección de simulaciones de laboratorio virtual centradas en biotecnología. Cubre temas como síntesis de proteínas, clonación molecular, cinética enzimática." },
+            { "Subcampo(s)": "Biotecnología / Biología Sintética", "Nombre": "Scintia Bio (LatAm)", "Enlace": "https://www.scintia.com/", "Idiomas": "Español", "Tipo": "Plataforma digital educativa, videos teóricos, explicaciones visuales, evaluaciones automatizadas", "Costo": "De pago (membresía educativa)", "Descripción": "Ofrece un programa educativo STEAM de biotecnología basado en experiencias. Incluye 10 módulos con videos teóricos, explicaciones de prácticas y evaluaciones automatizadas." },
+            { "Subcampo(s)": "Biotecnología", "Nombre": "Plataforma Biotech (Europa)", "Enlace": "https://plataformabiotech.com/", "Idiomas": "Español", "Tipo": "Plataforma web, directorio de entidades, eventos", "Costo": "Gratuita (participación libre)", "Descripción": "Conecta a entidades y profesionales del sector biotecnológico en España. Ofrece información sobre áreas de aplicación de la biotecnología y servicios técnicos." },
+            { "Subcampo(s)": "Bioinformática", "Nombre": "Dr. Omics Education (Recursos de Bioinformática)", "Enlace": "https://dromicsedu.com/blog-details/the-best-online-resources-for-learning-bioinformatics", "Idiomas": "Inglés", "Tipo": "Plataforma de recursos educativos en línea", "Costo": "No especificado (lista recursos gratuitos y de pago)", "Descripción": "Recopila los mejores recursos en línea para aprender bioinformática. Incluye cursos de Coursera, edX, Udemy y herramientas gratuitas (EMBL-EBI, NCBI, Galaxy)." },
+            { "Subcampo(s)": "Bioinformática / Biología Molecular", "Nombre": "NCBI Education Tools", "Enlace": "https://www.ncbi.nlm.nih.gov/tools/", "Idiomas": "Inglés", "Tipo": "Herramientas y recursos en línea", "Costo": "Gratuita", "Descripción": "Proporciona herramientas y recursos para la enseñanza de la biología molecular y la genética. Ofrece tutoriales de bioinformática, incluyendo guías para BLAST." },
+            { "Subcampo(s)": "Bioinformática", "Nombre": "Galaxy Training Network", "Enlace": "https://training.galaxyproject.org/", "Idiomas": "Inglés", "Tipo": "Plataforma de flujo de trabajo basada en web", "Costo": "Gratuita", "Descripción": "Plataforma fácil de usar para el análisis de datos NGS. Proporciona tutoriales paso a paso y flujos de trabajo para diversas aplicaciones, haciendo el aprendizaje de la bioinformática más accesible." },
+            { "Subcampo(s)": "Bioinformática", "Nombre": "Rosalind", "Enlace": "http://rosalind.info/", "Idiomas": "Inglés", "Tipo": "Plataforma gamificada", "Costo": "Gratuita (se infiere)", "Descripción": "Plataforma gamificada para dominar algoritmos de bioinformática y programación en Python, haciendo el aprendizaje atractivo y práctico." },
+            { "Subcampo(s)": "Bioinformática", "Nombre": "H3ABioNet", "Enlace": "https://www.h3abionet.org/tools-and-services/bioinformatics-tools", "Idiomas": "Inglés", "Tipo": "Herramientas y servicios de bioinformática en línea", "Costo": "No especificado (ofrece herramientas de acceso libre)", "Descripción": "Proporciona una suite de herramientas de bioinformática, flujos de trabajo y directrices técnicas. Incluye herramientas para el análisis de diversidad y acceso a bases de datos." },
+            { "Subcampo(s)": "Bioinformática", "Nombre": "MATLAB Bioinformatics Toolbox", "Enlace": "https://es.mathworks.com/products/bioinfo.html", "Idiomas": "Español", "Tipo": "Toolbox de software, algoritmos, aplicaciones", "Costo": "De pago (ofrece prueba gratuita)", "Descripción": "Ofrece algoritmos y aplicaciones para crear cadenas de tareas bioinformáticas, secuenciación de nueva generación (NGS), análisis de microarrays." },
+            { "Subcampo(s)": "Bioinformática", "Nombre": "University of Arkansas at Little Rock Bioinformatics Classroom Resources", "Enlace": "https://ualr.edu/bioinformatics/bioinformatics-classroom-resources/", "Idiomas": "Inglés", "Tipo": "Herramientas en línea, lecciones, videos", "Costo": "No especificado", "Descripción": "Proporciona recursos para ayudar a los profesores a integrar la bioinformática y la formación en biodatos. Incluye herramientas como CyVerse y DNA Subway." },
+            { "Subcampo(s)": "Bioinformática", "Nombre": "NCSU Bioinformatics in Motion", "Enlace": "https://brcwebportal.cos.ncsu.edu/slse/animations/teachingresources.html", "Idiomas": "Inglés", "Tipo": "Colección de enlaces, animaciones, videos, imágenes", "Costo": "No especificado", "Descripción": "Colección de recursos de enseñanza para bioinformática y ciencias de la vida. Incluye enlaces generales, sitios de animación y bibliotecas de imágenes/videos." },
+            { "Subcampo(s)": "Multidisciplinar (IA/RV)", "Nombre": "VictoryXR HOLOTUTOR", "Enlace": "https://www.victoryxr.com/ai/", "Idiomas": "No especificado (permite elegir idioma)", "Tipo": "IA, Realidad Virtual (RV), 3D espacial", "Costo": "Freemium (gratis para empezar, actualizaciones de pago)", "Descripción": "Sistema de tutoría impulsado por IA basado en navegador que combina inteligencia artificial con aprendizaje espacial 3D. Ofrece tutoría 24/7." },
+            { "Subcampo(s)": "Biología (RA)", "Nombre": "Step Into Biology", "Enlace": "https://apps.apple.com/us/app/step-into-biology/id1630448015", "Idiomas": "Inglés", "Tipo": "Realidad Aumentada (RA)", "Costo": "Freemium (descarga gratuita, compras in-app)", "Descripción": "Crea 'excursiones de campo de RA atractivas' para la exploración kinestésica de la biología. Permite a los estudiantes explorar estructuras biológicas como células y ADN en 3D." },
+            { "Subcampo(s)": "Biología (RA)", "Nombre": "Biología RA", "Enlace": "https://play.google.com/store/apps/details?id=br.com.lionstudios.biologiara", "Idiomas": "Español (se infiere)", "Tipo": "Realidad Aumentada (RA)", "Costo": "No especificado (parte de un 'combo')", "Descripción": "Aplicación AR para secundaria con 16 escenas en realidad aumentada. Cubre transporte celular, citoplasma, división celular, sistemas humanos y reproducción." },
+            { "Subcampo(s)": "Biología (IA)", "Nombre": "HyperWrite AI Biology Learning Assistant", "Enlace": "https://www.hyperwriteai.com/aitools/ai-biology-learning-assistant", "Idiomas": "Inglés", "Tipo": "IA (modelos avanzados de IA)", "Costo": "Freemium (prueba limitada gratuita, planes Premium/Ultra de pago)", "Descripción": "Asistente de aprendizaje de biología impulsado por IA que proporciona explicaciones detalladas para cualquier término o pregunta. Hace que los conceptos complejos sean más fáciles de entender." },
+            { "Subcampo(s)": "Multidisciplinar (MOOCs)", "Nombre": "Coursera", "Enlace": "https://www.coursera.org/", "Idiomas": "Inglés, Español, Francés, Portugués, Ruso, y otros", "Tipo": "MOOCs, certificaciones, Especializaciones, rutas de aprendizaje", "Costo": "Auditoría gratuita, Certificado de pago, Freemium", "Descripción": "Ofrece una amplia gama de MOOCs de biología de universidades de prestigio. Cubre biología fundamental, evolución, ecología, biología molecular y aplicada." },
+            { "Subcampo(s)": "Multidisciplinar (MOOCs)", "Nombre": "edX", "Enlace": "https://www.edx.org/", "Idiomas": "Español, Inglés, Francés, Alemán", "Tipo": "Plataforma de aprendizaje interactiva", "Costo": "Auditoría gratuita, Certificado de pago, Freemium", "Descripción": "Otra plataforma líder de MOOCs con oferta diversa en biología. Cubre biología molecular, selección natural, fotosíntesis, división celular." },
+            { "Subcampo(s)": "Multidisciplinar (MOOCs)", "Nombre": "My-Mooc.com (Francés)", "Enlace": "https://www.my-mooc.com/fr/categorie/biologie", "Idiomas": "Francés", "Tipo": "Plataforma MOOCs", "Costo": "Mayormente gratuito", "Descripción": "Lista 266 MOOCs de biología (biología celular, ecosistemas marinos, cristalografía, bioinformática)." },
+            { "Subcampo(s)": "Multidisciplinar (MOOCs)", "Nombre": "Edukatico.org (Alemán)", "Enlace": "https://www.edukatico.org/en/online-courses/biology", "Idiomas": "Alemán, Inglés", "Tipo": "Directorio de cursos en línea", "Costo": "Gratuito, Pago (certificado)", "Descripción": "Presenta más de 100 cursos de biología en línea, incluyendo 19 cursos en alemán. Los temas incluyen biotecnología, evolución y genética." },
+            { "Subcampo(s)": "Multidisciplinar (Cursos online)", "Nombre": "Emagister (Portugués)", "Enlace": "https://www.emagister.pt/cursos-biologia-online-tonline-319.htm", "Idiomas": "Portugués", "Tipo": "Cursos online y a distancia", "Costo": "Pago (cursos y grados)", "Descripción": "Ofrece 36 cursos de biología en línea y a distancia, incluyendo maestrías en Biología Molecular, Biología Marina y Biotecnología." },
+            { "Subcampo(s)": "Multidisciplinar (Cursos online)", "Nombre": "Udemy (Japonés)", "Enlace": "https://www.udemy.com/ja/topic/biology/", "Idiomas": "Japonés, Inglés, otros", "Tipo": "Cursos de biología online", "Costo": "Pago (curso individual)", "Descripción": "Proporciona cursos de biología en línea. Amplia variedad de temas y aprendizaje basado en habilidades." },
+            { "Subcampo(s)": "Multidisciplinar (Cursos online)", "Nombre": "Asuka Academy (Japonés)", "Enlace": "https://www.asuka-academy.com/yale/evol_01.html", "Idiomas": "Japonés (traducción de cursos de Yale)", "Tipo": "Cursos online", "Costo": "Gratuito", "Descripción": "Ofrece traducciones gratuitas al japonés de cursos de la Universidad de Yale, como 'Biology Evolution and Environment Part 1'." },
+            { "Subcampo(s)": "Multidisciplinar (Grados online)", "Nombre": "Bircham International University (Japonés)", "Enlace": "https://www.bircham.asia/bachelor-s-degree-biology-life-science.html", "Idiomas": "Japonés, Inglés, otros", "Tipo": "Grados a distancia", "Costo": "Pago (grado completo)", "Descripción": "Ofrece una Licenciatura en Biología y Ciencias de la Vida en línea, cubriendo diversidad de plantas, organismos marinos, genética." },
+            { "Subcampo(s)": "Multidisciplinar (Educación Superior)", "Nombre": "Plataforma Nacional de Educación Superior Inteligente (Chino)", "Enlace": "https://higher.smartedu.cn/subject?classInfo=%E7%90%86%E5%AD%A6&subject=%E7%94%9F%E7%89%A9%E7%A7%91%E5%AD%A6%E7%B1%BB", "Idiomas": "Chino", "Tipo": "Plataforma de cursos online", "Costo": "Gratuito (algunos cursos de primera clase)", "Descripción": "Enumera más de 400 cursos relacionados con la biología ('Biología Celular' de Sichuan, 'Biología Molecular' de Wuhan)." },
+            { "Subcampo(s)": "Multidisciplinar (Juegos/Simulaciones)", "Nombre": "Ask A Biologist (Arizona State University)", "Enlace": "https://askabiologist.asu.edu/games", "Idiomas": "Inglés, Español, Finlandés", "Tipo": "Juegos y simulaciones interactivas", "Costo": "Gratuito", "Descripción": "Proporciona una variedad de juegos y simulaciones interactivas para aprender biología (seguridad térmica, entrenamiento de abejas, disección de escarabajos)." },
+            { "Subcampo(s)": "Fisiología / Biología Molecular / Histología", "Nombre": "Lt (ADInstruments)", "Enlace": "https://www.adinstruments.com/lt/biology", "Idiomas": "Inglés", "Tipo": "Manual de laboratorio interactivo, adquisición de datos en vivo, informes integrados", "Costo": "Suscripción", "Descripción": "Manual de laboratorio interactivo y plataforma de aprendizaje para biología. Ofrece contenido prefabricado, adquisición de datos en vivo y andamiajes para informes." },
+            { "Subcampo(s)": "Biología (avanzada)", "Nombre": "PASCO", "Enlace": "https://www.pasco.com/resources/lab-experiments/collection/33", "Idiomas": "Inglés", "Tipo": "Actividades de laboratorio, uso de sensores y equipos", "Costo": "Compra de materiales/licencia", "Descripción": "Ofrece actividades de laboratorio 'Advanced Biology Through Inquiry' para cursos avanzados de secundaria y universitarios. Cubre temas como la actividad enzimática, la fotosíntesis." },
+            { "Subcampo(s)": "Biología (avanzada)", "Nombre": "Vernier", "Enlace": "https://www.vernier.com/product/advanced-biology-with-vernier/", "Idiomas": "Inglés", "Tipo": "Libros de laboratorio con experimentos listos para usar", "Costo": "Compra de libros/licencia", "Descripción": "Proporciona libros de laboratorio 'Advanced Biology with Vernier' con 17 experimentos listos para usar para biología avanzada. Incluye difusión, ósmosis, respiración celular." },
+            { "Subcampo(s)": "Bioquímica / Biología Molecular", "Nombre": "ASBMB (Sociedad Americana de Bioquímica y Biología Molecular)", "Enlace": "https://www.asbmb.org/education/online-teaching/online-lab-work", "Idiomas": "Inglés", "Tipo": "Recursos de trabajo de laboratorio en línea", "Costo": "No especificado", "Descripción": "Recomienda varios recursos de trabajo de laboratorio en línea, incluyendo LabXchange y Merlot, para simulaciones de bioquímica y biología molecular." },
+            { "Subcampo(s)": "Anatomía humana (3D)", "Nombre": "Atomedge", "Enlace": "https://www.atomedge.com/", "Idiomas": "Inglés", "Tipo": "Modelos 3D hiperrealistas, escaneos de cadáveres, compatible con RV/RA", "Costo": "Licencia de pago", "Descripción": "Proporciona modelos de anatomía 3D médicamente precisos y creados éticamente, basados en escaneos 3D de cadáveres. Cubren más de 5900 estructuras individuales." },
+            { "Subcampo(s)": "Anatomía humana (RV/AR)", "Nombre": "Medicalholodeck (Alemán)", "Enlace": "https://www.medicalholodeck.com/de/human-anatomy-atlas-anatomy-master-2/", "Idiomas": "Alemán", "Tipo": "Anatomía humana 3D en RV, modelos basados en datos de pacientes (TC/RM), anotaciones", "Costo": "Suscripción", "Descripción": "Ofrece anatomía humana 3D de alta calidad en RV, ideal para la enseñanza en aulas virtuales inmersivas. Admite aprendizaje colaborativo y grabación de lecciones." },
+            { "Subcampo(s)": "Anatomía humana (3D)", "Nombre": "Anatomy Learning - 3D Anatomy", "Enlace": "https://apps.apple.com/us/app/anatomy-learning-3d-anatomy/id1593953398", "Idiomas": "12 idiomas", "Tipo": "Atlas 3D", "Costo": "Gratuito con compras dentro de la aplicación", "Descripción": "Una de las aplicaciones de anatomía 3D más descargadas. Ofrece rotación, zoom, disección y cuestionarios para varios sistemas corporales." },
+            { "Subcampo(s)": "Anatomía humana (3D)", "Nombre": "Primal Pictures", "Enlace": "https://primalpictures.com/", "Idiomas": "Inglés (se infiere)", "Tipo": "Reconstrucción 3D, aplicaciones móviles y software web", "Costo": "No especificado", "Descripción": "Ofrece la reconstrucción 3D más detallada, precisa y basada en evidencia de la anatomía humana, con aplicaciones móviles y software web." },
+            { "Subcampo(s)": "Zoología", "Nombre": "Merlin Bird ID (Cornell Lab)", "Enlace": "https://www.birds.cornell.edu/home/", "Idiomas": "Inglés", "Tipo": "Identificación de aves por sonido y foto", "Costo": "Gratuito", "Descripción": "Aplicación útil para la identificación de aves. Herramienta definitiva para identificación de 6,000+ especies globalmente por foto y sonido." },
+            { "Subcampo(s)": "Genómica / Proteómica", "Nombre": "UniProt", "Enlace": "https://www.uniprot.org/", "Idiomas": "Inglés", "Tipo": "Base de datos de secuencias de proteínas y anotación funcional, herramientas de búsqueda", "Costo": "Libre acceso", "Descripción": "Recurso completo, de alta calidad y de libre acceso de información funcional y de secuencias de proteínas. Integra y estandariza datos de la literatura." },
+            { "Subcampo(s)": "Proteómica / Genómica", "Nombre": "Protein Data Bank (PDB)", "Enlace": "https://www.rcsb.org/", "Idiomas": "Inglés", "Tipo": "Base de datos de estructuras 3D de proteínas y ácidos nucleicos, herramientas de visualización", "Costo": "Libre acceso", "Descripción": "Base de datos de proteínas y ácidos nucleicos. PDB-101 es su plataforma educativa con artículos, planes de estudio y tutoriales." },
+            { "Subcampo(s)": "Proteómica", "Nombre": "INIBIC (Español)", "Enlace": "https://www.inibic.es/portfolio-items/plataforma-de-proteomica/", "Idiomas": "Español", "Tipo": "Plataforma de Proteómica", "Costo": "No especificado", "Descripción": "La 'Plataforma de Proteómica' tiene como objetivo proporcionar recursos técnicos como apoyo a la investigación y realizar tareas de formación." },
+            { "Subcampo(s)": "Multidisciplinar (Bases de Datos)", "Nombre": "RPTU Universitätsbibliothek (Alemán)", "Enlace": "https://ub.rptu.de/recherche/recherchetipps/fachportale/fachportal-biologie", "Idiomas": "Alemán", "Tipo": "Directorio de bases de datos y repositorios de investigación", "Costo": "No especificado", "Descripción": "Recomienda PubMed y LIVIVO como principales bases de datos de biología. Menciona repositorios específicos como PUBLISSO, BioRxiv y MedRxiv." },
+            { "Subcampo(s)": "Genómica / Proteómica", "Nombre": "SciELO (Portugués)", "Enlace": "https://www.scielo.br/j/bjb/a/NHsqmLtfnFt74WzcpTMxhLx/abstract/?lang=pt", "Idiomas": "Portugués, Inglés, Español", "Tipo": "Publicaciones científicas, datos genómicos/proteómicos curados", "Costo": "No especificado", "Descripción": "Un artículo discute 'bases de datos de referencia esbozadas para taxonomía basada en genoma y genómica comparativa' para hacer que los datos curados sean más accesibles." },
+            { "Subcampo(s)": "Genómica / Proteómica", "Nombre": "MasterIN.it (Italiano)", "Enlace": "https://www.masterin.it/start/7212-dalla-genomica-alla-proteomica-una-guía-completa-alle-diverse-tipologie-di-dati-omici/", "Idiomas": "Italiano", "Tipo": "Cursos online", "Costo": "No especificado", "Descripción": "Discute la genómica y la proteómica, destacando las oportunidades de capacitación en bioinformática, genética clínica y ciencias computacionales." },
+            { "Subcampo(s)": "Biología Molecular / Genética", "Nombre": "NCBI Books", "Enlace": "https://www.ncbi.nlm.nih.gov/books/NBK21054/", "Idiomas": "Inglés", "Tipo": "Textos clásicos en profundidad", "Costo": "Gratuito", "Descripción": "Aloja textos clásicos en profundidad como 'Molecular Biology of the Cell', proporcionando un marco coherente para lectores no expertos." },
+            { "Subcampo(s)": "Multidisciplinar (Libros digitales)", "Nombre": "Springer Nature (Alemán)", "Enlace": "https://www.lehrbuch-biologie.springernature.com/", "Idiomas": "Alemán", "Tipo": "Libros de texto digitales, material complementario, preguntas/respuestas", "Costo": "Compra", "Descripción": "Ofrece libros de texto digitales para varios campos de la biología, incluyendo Genética, Ecología, Biología Humana, Bioquímica Vegetal." },
+            { "Subcampo(s)": "Biología general (Libros digitales)", "Nombre": "Mondadori Education (Italiano)", "Enlace": "https://www.mondadorieducation.it/catalogo/biologia-indagine-sulla-vida-linea-blu-0068427/", "Idiomas": "Italiano", "Tipo": "Libro de texto digital, tablas anatómicas explorables, lecciones interactivas", "Costo": "Compra", "Descripción": "Publica 'Biologia - Indagine sulla vita - Linea Blu', diseñado para la enseñanza digital integrada. Incluye tablas anatómicas explorables y lecciones interactivas." },
+            { "Subcampo(s)": "Biología / Anatomía / Fisiología", "Nombre": "Chenelière Éducation (Francés)", "Enlace": "https://www.cheneliere.ca/fr/collegial-et-universitaire/sciences/biologie.html", "Idiomas": "Francés", "Tipo": "Versiones digitales de libros de texto", "Costo": "Compra", "Descripción": "Ofrece versiones digitales de libros de texto de biología para colegios y universidades, como 'Anatomie et physiologie' y 'Biología humana'." },
+            { "Subcampo(s)": "Biología / Microbiología", "Nombre": "ERPI (Francés)", "Enlace": "https://www.erpi.com/fr/collegial-et-universitaire/sciences/biologie.html", "Idiomas": "Francés", "Tipo": "Libros de texto digitales, materiales interactivos en línea", "Costo": "Compra", "Descripción": "Proporciona libros de texto digitales de biología como 'Biologie (Campbell)' e 'Introduction à la microbiología', con acceso digital multianual y materiales interactivos." },
+            { "Subcampo(s)": "Biología general (Libros digitales)", "Nombre": "数研出版 (Chart Shuppan, Japonés)", "Enlace": "https://www.chart.co.jp/store/software/product/o4481149d11.php", "Idiomas": "Japonés", "Tipo": "Libro de texto/material didáctico digital, funciones básicas, vista de diapositivas", "Costo": "Compra (licencia)", "Descripción": "Ofrece '学習者用デジタル教科書・教材 生物' (Libro de texto/material didáctico digital de biología para estudiantes), un libro de texto digital con funciones básicas." },
+            { "Subcampo(s)": "Anatomía / Fisiología / Biología", "Nombre": "Nankodo (Visible Body)", "Enlace": "https://www.nankodo.co.jp/foreign/VisibleBody/index.html", "Idiomas": "Japonés, Inglés, otros", "Tipo": "Modelos 3D de alta calidad, interactividad, compatibilidad con múltiples dispositivos", "Costo": "Compra, Suscripción", "Descripción": "Distribuye Visible Body, que funciona como una herramienta de aprendizaje digital para anatomía, fisiología y biología utilizando modelos 3D de alta calidad." },
+            { "Subcampo(s)": "Multidisciplinar (Libros digitales)", "Nombre": "Libreria Universitaria (Italiano)", "Enlace": "https://www.libreriauniversitaria.it/libri-biologia/biologia.htm", "Idiomas": "Italiano", "Tipo": "Libros de texto digitales con acceso a 'e-book' o 'Contenuto digitale'", "Costo": "Compra", "Descripción": "Enumera numerosos libros de texto de biología, algunos con acceso a 'e-book' o 'Contenuto digitale', que cubren genética, bioquímica, biología molecular." },
+            { "Subcampo(s)": "Multidisciplinar (Libros digitales)", "Nombre": "Openstax (Portugués)", "Enlace": "https://query.libretexts.org/Idioma_Portugues/Livro%3A_Conceitos_em_Biologia_%28OpenStax%29", "Idiomas": "Portugués, Inglés", "Tipo": "Libros de texto de nivel universitario gratuitos, contenido estándar, aplicaciones", "Costo": "Gratuito", "Descripción": "Mencionada como fuente de libros de texto de biología de nivel universitario gratuitos, incluyendo 'Concepts of Biology', diseñado para cursos introductorios." },
+            { "Subcampo(s)": "Bioquímica (Libro digital IA)", "Nombre": "FAFU (Science Press) - Bioquímica", "Enlace": "https://jwc.fafu.edu.cn/dd/9b/c2046a384411/page.htm", "Idiomas": "Chino", "Tipo": "Animaciones 3D, modelos 3D, mapas mentales, videos de microcursos, laboratorios virtuales, escáner de IA", "Costo": "Compra", "Descripción": "Libro de texto digital de 'Bioquímica' con animaciones 3D, modelos, mapas mentales, laboratorios virtuales, ejercicios interactivos y un escáner de IA." },
+            { "Subcampo(s)": "Multidisciplinar (Videos)", "Nombre": "TED-Ed", "Enlace": "https://www.ted.com/topics/biology", "Idiomas": "Inglés", "Tipo": "Videos educativos, explicaciones visualmente ricas, conexión con el mundo real", "Costo": "Gratuito", "Descripción": "Ofrece una variedad de videos educativos sobre biología (relaciones animales, fisiología humana, CRISPR). Valorados por sus 'explicaciones expertamente elaboradas y visualmente ricas'." },
+            { "Subcampo(s)": "Biología general (Videos)", "Nombre": "Crash Course", "Enlace": "https://www.youtube.com/user/crashcourse/videos", "Idiomas": "Inglés", "Tipo": "Serie de biología", "Costo": "Gratuito", "Descripción": "Conocido por su atractiva e informativa serie de biología. De ritmo rápido, bueno para estudiantes con una base sólida. Desglosa conceptos básicos." },
+            { "Subcampo(s)": "Multidisciplinar (Documentales)", "Nombre": "ARTE (Francés/Alemán)", "Enlace": "https://www.arte.tv/de/videos/wissenschaft/", "Idiomas": "Francés, Alemán", "Tipo": "Documentales científicos, audio/subtítulos multilingües", "Costo": "Gratuito", "Descripción": "Ofrece documentales científicos en francés y alemán, cubriendo temas como microbios, parásitos, bosques y salud humana." },
+            { "Subcampo(s)": "Multidisciplinar (Documentales)", "Nombre": "Netflix", "Enlace": "https://www.netflix.com/browse/genre/100067", "Idiomas": "Multilingüe", "Tipo": "Documentales de alta producción, narración atractiva", "Costo": "Suscripción", "Descripción": "Ofrece documentales educativos como 'Un planeta absurdo', 'Our Planet' y 'David Attenborough: A Life on Our Planet'." },
+            { "Subcampo(s)": "Multidisciplinar (Documentales)", "Nombre": "Rai Scuola (Italiano)", "Enlace": "https://www.raiscuola.rai.it/scienze", "Idiomas": "Italiano", "Tipo": "Serie animada clásica, videos educativos", "Costo": "Gratuito", "Descripción": "Proporciona videos científicos sobre el cuerpo humano (corazón, pulmones, cerebro) y otros temas para educación secundaria. 'Siamo fatti así' es una serie animada clásica." },
+            { "Subcampo(s)": "Botánica / Biología general (Documentales)", "Nombre": "RTP (Portugués)", "Enlace": "https://www.rtp.pt/programa/tv/p47421", "Idiomas": "Portugués", "Tipo": "Documentales científicos, enfoque en la naturaleza", "Costo": "Gratuito", "Descripción": "Presenta 'O Incrível Reino das Plantas', que explora las capacidades de las plantas. También 'As 100 Grandes Descobertas: A Biología'." },
+            { "Subcampo(s)": "Evolución humana (Documentales)", "Nombre": "NHK (Japonés)", "Enlace": "https://www.nhk-ep.com/products/detail/h21005AA", "Idiomas": "Japonés", "Tipo": "Documentales de investigación, alta calidad visual", "Costo": "Compra (Blu-ray/DVD)", "Descripción": "Produjo 'NHK Special: Great Leap Forward in Life', una serie documental que explora la evolución humana a través del ADN, utilizando CG de alta definición." },
+            { "Subcampo(s)": "Zoología / Microbiología (Documentales)", "Nombre": "CCTV (Chino)", "Enlace": "http://jishi.cctv.com/doc/list/fl/dw/index.shtml", "Idiomas": "Chino", "Tipo": "Documentales sobre animales y microbiología", "Costo": "Gratuito", "Descripción": "Ofrece una variedad de documentales de animales en su categoría 'Naturaleza', que cubren el comportamiento animal y los ecosistemas. También la serie 'Super Pasteur'." },
+            { "Subcampo(s)": "Biología general (Videos)", "Nombre": "Khan Academy", "Enlace": "https://zh.khanacademy.org/science/biology/intro-to-biology", "Idiomas": "Japonés, Chino, Inglés, Español (+50 idiomas)", "Tipo": "Videos educativos estructurados, ejercicios adaptativos, gamificación", "Costo": "Completamente gratuito", "Descripción": "Proporciona videos educativos de biología. Contenido completo de biología general y AP Biology. Alineado con NGSS, acceso mundial gratuito." },
+            { "Subcampo(s)": "Ciencia general (Podcasts)", "Nombre": "Nature Podcast", "Enlace": "https://www.nature.com/nature-research/podcasts", "Idiomas": "Inglés", "Tipo": "Podcasts científicos", "Costo": "Gratuito (Apple Podcasts, Spotify)", "Descripción": "Ofrece historias del mundo de la ciencia cada semana, cubriendo desde astronomía hasta zoología, destacando la investigación de la revista Nature." },
+            { "Subcampo(s)": "Ciencia general (Podcasts)", "Nombre": "Science Magazine Podcast", "Enlace": "https://podcasts.apple.com/us/podcast/science-magazine-podcast/id120329020", "Idiomas": "Inglés", "Tipo": "Podcasts científicos", "Costo": "Gratuito (Spotify)", "Descripción": "Podcasts semanales de Science Magazine, que cubren investigación científica original, noticias globales y comentarios." },
+            { "Subcampo(s)": "Biología general (Podcasts)", "Nombre": "Spektrum der Wissenschaft (Alemán)", "Enlace": "https://www.spektrum.de/podcast/biologie/", "Idiomas": "Alemán", "Tipo": "Podcasts científicos de biología", "Costo": "Gratuito", "Descripción": "Ofrece podcasts científicos de biología como 'Zikaden' (cigarras) y 'Wie Künstliche Intelligenz in der Biomedizin helfen kann'." },
+            { "Subcampo(s)": "Biología general (Podcasts)", "Nombre": "Player FM (Portugués/Italiano)", "Enlace": "https://pt.player.fm/podcasts/Biologia", "Idiomas": "Portugués, Italiano", "Tipo": "Podcasts científicos", "Costo": "Gratuito", "Descripción": "Aloja varios podcasts científicos de biología. 'Biologia em Meia Hora' (portugués) discute temas curiosos y relevantes semanalmente." },
+            { "Subcampo(s)": "Ciencia general (Podcasts)", "Nombre": "Audible (Italiano)", "Enlace": "https://www.audible.it/ep/podcast-scienza", "Idiomas": "Italiano", "Tipo": "Podcasts científicos", "Costo": "Suscripción", "Descripción": "Ofrece podcasts científicos como 'Astrobio' (astronomía y biografías) y 'La Scienza, que Storia!' (historia de la ciencia)." },
+            { "Subcampo(s)": "Ciencias de la vida (Podcasts)", "Nombre": "Podcastranking.jp (Japonés)", "Enlace": "https://podcastranking.jp/apple/categories/1541", "Idiomas": "Japonés", "Tipo": "Ranking de podcasts educativos de biología", "Costo": "Gratuito (Apple Podcasts)", "Descripción": "Clasifica los podcasts populares de biología en japonés, incluyendo 'サイエンマニア' (Sci-Mania) y '真夜中の脳科学' (Brain Science 'round midnight)." },
+            { "Subcampo(s)": "Ciencia general (Podcasts)", "Nombre": "Miraikan (Japonés)", "Enlace": "https://www.miraikan.jst.go.jp/en/resources/provision/", "Idiomas": "Japonés", "Tipo": "Recursos educativos, incluyendo podcasts sobre diversos temas científicos", "Costo": "No especificado", "Descripción": "Ofrece recursos educativos del Museo Nacional de Ciencias e Innovación de Japón, que cubren diversos temas científicos." },
+            { "Subcampo(s)": "Ciencias de la vida (Podcasts)", "Nombre": "Apple Podcasts (Chino)", "Enlace": "https://podcasts.apple.com/us/genre/1541?l=zh-Hans-CN", "Idiomas": "Chino", "Tipo": "Podcasts populares en 'Ciencias de la Vida'", "Costo": "Gratuito", "Descripción": "Enumera podcasts populares en 'Ciencias de la Vida', incluyendo 'Short Wave', 'Unexplainable' y 'Speaking of Psychology'." },
+            { "Subcampo(s)": "Bioseguridad / Bioprotección (Webinars)", "Nombre": "ABSA International", "Enlace": "https://absa.org/recordings/", "Idiomas": "Inglés", "Tipo": "Grabaciones de webinars y conferencias", "Costo": "Pago (compra)", "Descripción": "Ofrece grabaciones de webinars y conferencias anteriores sobre bioseguridad y bioprotección, disponibles para su compra." },
+            { "Subcampo(s)": "Biología (Webinars)", "Nombre": "VBIO (Alemán)", "Enlace": "https://www.vbio.de/ueber-den-vbio/vbio-veranstaltungstermine", "Idiomas": "Alemán", "Tipo": "Series de webinars online", "Costo": "Gratuito (webinars)", "Descripción": "Ofrece series de webinars en línea 'Faszination Biología' sobre temas como la biología del ARN y la ecología del comportamiento." },
+            { "Subcampo(s)": "Multidisciplinar (General)", "Nombre": "CK-12 Foundation", "Enlace": "https://www.ck12.org/", "Idiomas": "Inglés, Español (parcial)", "Tipo": "Libros digitales interactivos, simulaciones", "Costo": "Gratuito", "Descripción": "Plataforma con 'FlexBooks' adaptativos y simulaciones interactivas. Cubre biología completa para K-12. Contenido personalizable y recursos alineados." },
+            { "Subcampo(s)": "Multidisciplinar (MOOCs)", "Nombre": "FutureLearn", "Enlace": "https://www.futurelearn.com/subjects/science-engineering-and-maths-courses/biology-and-biotechnology", "Idiomas": "Inglés, algunos en español", "Tipo": "Aprendizaje social, discusiones colaborativas", "Costo": "Freemium", "Descripción": "Plataforma con enfoque en aprendizaje social y colaborativo. Cubre biotecnología, microbiología, genética." },
+            { "Subcampo(s)": "Biología celular y molecular", "Nombre": "VCell (Virtual Cell) - Universidad de Connecticut", "Enlace": "https://vcell.org/", "Idiomas": "Inglés", "Tipo": "Simulaciones matemáticas computacionales, Web/Desktop", "Costo": "Gratuito", "Descripción": "Plataforma integral para modelado de sistemas celulares con simulaciones determinísticas/estocásticas y modelado espacial avanzado. Indispensable para cursos avanzados." },
+            { "Subcampo(s)": "RV/AR", "Nombre": "ClassVR", "Enlace": "https://www.classvr.com/", "Idiomas": "Inglés, español, francés", "Tipo": "Headsets VR standalone, controles de profesor", "Costo": "Compra de equipos + suscripción de contenido", "Descripción": "VR educativa todo-en-uno. Miles de experiencias VR educativas, incluye biología. Sustituto de Google Expeditions, con control total del profesor." },
+            { "Subcampo(s)": "RV/AR", "Nombre": "Nearpod VR", "Enlace": "https://nearpod.com/", "Idiomas": "Inglés, español", "Tipo": "Realidad virtual, objetos 3D, tours virtuales", "Costo": "Freemium, suscripciones desde $120/año", "Descripción": "Excursiones virtuales con más de 400 tours y objetos 3D biológicos. Integración perfecta con lecciones, funciona en cualquier dispositivo." },
+            { "Subcampo(s)": "RV", "Nombre": "Google Expeditions (Descontinuado) / Arts & Culture", "Enlace": "https://artsandculture.google.com/", "Idiomas": "Múltiples idiomas", "Tipo": "Realidad virtual con Google Cardboard", "Costo": "Gratuito", "Descripción": "Ofrecía viajes virtuales educativos. Ahora integrado en Google Arts & Culture, que permite explorar arte y cultura con tours virtuales." },
+            { "Subcampo(s)": "Microscopía (IA)", "Nombre": "Aivia (Leica Microsystems)", "Enlace": "https://www.aivia-software.com/", "Idiomas": "Inglés", "Tipo": "Machine learning para análisis de imágenes", "Costo": "Licencia comercial", "Descripción": "Utiliza machine learning para análisis de imágenes de microscopía. Clasificación automática de objetos biológicos." },
+            { "Subcampo(s)": "Microbiología", "Nombre": "Virtual Labs India", "Enlace": "https://www.vlab.co.in/", "Idiomas": "Inglés", "Tipo": "Laboratorios virtuales", "Costo": "Gratuito", "Descripción": "Ofrece laboratorios virtuales especializados en microbiología, entre otras ciencias." },
+            { "Subcampo(s)": "Microbiología", "Nombre": "University of Wyoming Microbiology", "Enlace": "https://www.uwyo.edu/virtual_edge/", "Idiomas": "Inglés (se infiere)", "Tipo": "Laboratorios virtuales especializados", "Costo": "No especificado", "Descripción": "Proporciona laboratorios virtuales especializados en microbiología a través de 'The Virtual Edge'." },
+            { "Subcampo(s)": "Biología general", "Nombre": "Biology Notes Online", "Enlace": "https://biologynotesonline.com/", "Idiomas": "Inglés", "Tipo": "Notas de biología, recursos online", "Costo": "Gratuito", "Descripción": "Ofrece notas de biología online y recursos complementarios." },
+            { "Subcampo(s)": "Botánica / Zoología", "Nombre": "eduMedia", "Enlace": "https://www.edumedia-sciences.com/en/node/350-botany-and-zoology", "Idiomas": "Múltiples idiomas", "Tipo": "Simulaciones interactivas", "Costo": "Suscripción", "Descripción": "Ofrece simulaciones interactivas en botánica y zoología, permitiendo explorar procesos y ciclos de vida." },
+            { "Subcampo(s)": "Ecología", "Nombre": "Population Biology Simulations (Universidad de Connecticut)", "Enlace": "https://virtualbiologylab.org/", "Idiomas": "No especificado", "Tipo": "Simulaciones", "Costo": "No especificado", "Descripción": "Se menciona como fuente de simulaciones de ecología de poblaciones. (Parte de Virtual Biology Lab)." },
+            { "Subcampo(s)": "Ecología", "Nombre": "Ecology Simulations (biologysimulations.com)", "Enlace": "https://www.biologysimulations.com/ecology", "Idiomas": "Inglés", "Tipo": "Simulaciones", "Costo": "Gratuito", "Descripción": "Ofrece simulaciones específicas de ecología que permiten a los estudiantes experimentar con la dinámica de poblaciones y ecosistemas." },
+            { "Subcampo(s)": "Genética / Genómica", "Nombre": "Genomics Education Partnership", "Enlace": "https://thegep.org/", "Idiomas": "Inglés", "Tipo": "Recursos educativos", "Costo": "Gratuito", "Descripción": "Ofrece recursos educativos para genética y genómica, enfocados en investigación y análisis de genomas." },
+            { "Subcampo(s)": "Genética", "Nombre": "Mendelian Genetics Simulator", "Enlace": "https://cgslab.com/", "Idiomas": "No especificado", "Tipo": "Simulador web", "Costo": "No especificado", "Descripción": "Simulador web de genética mendeliana, permite a los estudiantes aplicar lecciones a escenarios reales." },
+            { "Subcampo(s)": "Neurobiología", "Nombre": "MDCUNE", "Enlace": "http://mdcune.psych.ucla.edu/", "Idiomas": "No especificado", "Tipo": "Módulos digitales", "Costo": "No especificado", "Descripción": "Ofrece módulos digitales de neurociencia para el estudio del sistema nervioso desde la UCLA." },
+            { "Subcampo(s)": "Neurobiología", "Nombre": "Neuroscience Online", "Enlace": "https://www.neuroscienceonline.com/", "Idiomas": "No especificado", "Tipo": "Recursos abiertos", "Costo": "No especificado", "Descripción": "Proporciona recursos abiertos para neurociencia, incluyendo un libro de texto completo en línea." },
+            { "Subcampo(s)": "Bioinformática", "Nombre": "de.NBI/ELIXIR-DE", "Enlace": "https://www.denbi.de/", "Idiomas": "Alemán/Inglés", "Tipo": "Recursos de bioinformática", "Costo": "Gratuito", "Descripción": "Ofrece recursos de bioinformática para investigación y educación." },
+            { "Subcampo(s)": "Bioinformática", "Nombre": "Bioinformatics.org", "Enlace": "https://www.bioinformatics.org/", "Idiomas": "Inglés", "Tipo": "Recursos globales", "Costo": "No especificado", "Descripción": "Proporciona recursos globales para bioinformática, una comunidad y un centro de información." },
+            { "Subcampo(s)": "Genética médica", "Nombre": "Marseille Medical Genetics", "Enlace": "https://www.marseille-medical-genetics.org/", "Idiomas": "Francés", "Tipo": "Recursos online", "Costo": "No especificado", "Descripción": "Ofrece recursos en genética médica, incluyendo investigación y publicaciones." },
+            { "Subcampo(s)": "Fisiología", "Nombre": "PhysioEx 10.0", "Enlace": "https://www.pearson.com/en-us/search.html?aq=physioex%2010%200%20laboratory%20simulations%20in%20physiology", "Idiomas": "Inglés, español", "Tipo": "Simulaciones de laboratorio fisiológico", "Costo": "Licencia académica, integrado con Mastering A&P", "Descripción": "Estándar en simulaciones de laboratorio de fisiología con 12 ejercicios y 63 actividades. Reemplaza laboratorios costosos." },
+            { "Subcampo(s)": "Biología celular cuantitativa", "Nombre": "Cell Biology by the Numbers", "Enlace": "https://book.bionumbers.org/", "Idiomas": "Inglés (se infiere)", "Tipo": "Enfoque cuantitativo", "Costo": "No especificado", "Descripción": "Redefine la enseñanza de biología celular mediante enfoque cuantitativo único, proporcionando datos numéricos específicos sobre procesos celulares." },
+            { "Subcampo(s)": "Bioquímica", "Nombre": "KEGG Pathway Database", "Enlace": "https://www.genome.jp/kegg/", "Idiomas": "Inglés (se infiere)", "Tipo": "Base de datos de reacciones bioquímicas", "Costo": "No especificado", "Descripción": "Referencia mundial en bioquímica con +11,289 reacciones bioquímicas curadas manualmente. Alcanza calidad académica excepcional." },
+            { "Subcampo(s)": "Bioquímica", "Nombre": "MetaCyc", "Enlace": "https://metacyc.org/", "Idiomas": "Inglés (se infiere)", "Tipo": "Base de datos de rutas metabólicas", "Costo": "No especificado", "Descripción": "Ofrece 7 veces más rutas metabólicas que KEGG con curación experimental superior. Alcanza calidad académica excepcional." },
+            { "Subcampo(s)": "Microbiología profesional", "Nombre": "ASM Educational Resources", "Enlace": "https://asm.org/browse-by-topic/education/teaching-microbiology", "Idiomas": "Inglés (se infiere)", "Tipo": "Recursos educativos profesionales", "Costo": "Gratuito y premium", "Descripción": "Define el estándar profesional con respaldo de 32,000+ miembros. Ofrece contenido que conecta directamente educación con práctica clínica." },
+            { "Subcampo(s)": "Biología avanzada / Investigación", "Nombre": "Cold Spring Harbor Laboratory", "Enlace": "https://www.cshl.edu/", "Idiomas": "Inglés (se infiere)", "Tipo": "Acceso a investigación de vanguardia", "Costo": "No especificado", "Descripción": "Ofrece acceso privilegiado a investigación de vanguardia con 60+ reuniones anuales y presentaciones que definen las fronteras del conocimiento biológico." },
+            { "Subcampo(s)": "Educación superior / Posgrado", "Nombre": "Harvard Extension School", "Enlace": "https://extension.harvard.edu/academics/programs/biology-graduate-program/", "Idiomas": "Inglés (se infiere)", "Tipo": "Programas de maestría completos", "Costo": "Pago (costo significativo por curso)", "Descripción": "Proporciona programas de maestría completos con rigor académico equivalente a programas residenciales, ofreciendo flexibilidad para profesionales en ejercicio." },
+            { "Subcampo(s)": "Multidisciplinar (MOOCs)", "Nombre": "MIT OpenCourseWare", "Enlace": "https://ocw.mit.edu/courses/biology/", "Idiomas": "Inglés (se infiere)", "Tipo": "Cursos universitarios completos", "Costo": "Gratuito", "Descripción": "Referencia mundial en educación superior gratuita con series completas que incluyen videos, apuntes, exámenes y soluciones." },
+            { "Subcampo(s)": "Biología Molecular / Bioquímica", "Nombre": "UCSF ChimeraX", "Enlace": "https://www.cgl.ucsf.edu/chimerax/", "Idiomas": "Inglés", "Tipo": "Programa de visualización molecular 3D", "Costo": "Gratuito (uso no comercial)", "Descripción": "Programa de visualización molecular de próxima generación, estándar en investigación estructural. Permite visualizar estructuras 3D de proteínas y macromoléculas." },
+            { "Subcampo(s)": "Biología Molecular / Bioquímica", "Nombre": "PyMOL", "Enlace": "https://www.pymol.org/", "Idiomas": "Inglés", "Tipo": "Sistema de visualización molecular 3D", "Costo": "Versión educacional gratuita, licencia comercial", "Descripción": "Sistema líder de visualización molecular con capacidades de modelado avanzadas. Especialización en visualización de proteínas y análisis de sitios activos." },
+            { "Subcampo(s)": "Biodiversidad / Ecología", "Nombre": "iNaturalist", "Enlace": "https://inaturalist.org", "Idiomas": "Múltiples idiomas", "Tipo": "IA para identificación fotográfica, GPS integrado, funciona offline", "Costo": "Completamente gratuito", "Descripción": "Plataforma de ciencia ciudadana para identificación de biodiversidad. Millones de observaciones validadas por expertos y usadas en investigación científica." },
+            { "Subcampo(s)": "Ecología de Ecosistemas", "Nombre": "Ecopath with Ecosim (EwE)", "Enlace": "https://ecopath.org/", "Idiomas": "Inglés", "Tipo": "Modelado de ecosistemas marinos y acuáticos", "Costo": "Completamente gratuito y open source", "Descripción": "Reconocido por NOAA como uno de los 10 mayores avances científicos. Estándar para modelado de ecosistemas con balance de masa y simulaciones." },
+            { "Subcampo(s)": "Biología Evolutiva / Filogenética", "Nombre": "Interactive Tree of Life (iTOL)", "Enlace": "https://itol.embl.de/", "Idiomas": "Inglés", "Tipo": "Visualización y anotación de árboles filogenéticos", "Costo": "Gratuito básico, suscripciones premium", "Descripción": "Plataforma líder para visualización filogenética con capacidad de manejar árboles de más de 50,000 especies y 19 tipos de datasets." },
+            { "Subcampo(s)": "Biología Evolutiva", "Nombre": "OneZoom", "Enlace": "https://www.onezoom.org", "Idiomas": "Múltiples idiomas", "Tipo": "Navegación del árbol de la vida completo", "Costo": "Completamente gratuito", "Descripción": "Explorador interactivo del árbol completo de la vida con +2.2 millones de especies e +105,000 imágenes. Incluye datos de conservación y tours personalizables." },
+            { "Subcampo(s)": "Genética / Evolución / Ecología", "Nombre": "Niche - A Genetics Survival Game", "Enlace": "https://store.steampowered.com/app/440650/Niche__a_genetics_survival_game/", "Idiomas": "Inglés y otros", "Tipo": "Juego de estrategia", "Costo": "Compra única", "Descripción": "Juego de estrategia que enseña genética profunda con más de 100 genes diferentes y 4 biomas únicos. Permite manipulación genética y cría selectiva." },
+            { "Subcampo(s)": "Inmunología", "Nombre": "Immune Defense", "Enlace": "https://store.steampowered.com/app/2957280/Immunity_Wars/", "Idiomas": "Inglés", "Tipo": "Juego de estrategia en tiempo real", "Costo": "Compra única", "Descripción": "Juego de estrategia en tiempo real para aprender inmunología a nivel molecular (similar a 'Immunity Wars'). Permite el control molecular del sistema inmune." },
+            { "Subcampo(s)": "Evolución / Ecología", "Nombre": "Spore", "Enlace": "https://store.steampowered.com/app/17390/SPORE/", "Idiomas": "Múltiples idiomas", "Tipo": "Juego de evolución", "Costo": "Compra única", "Descripción": "Clásico juego de evolución que permite explorar adaptación biológica a través de 5 etapas evolutivas. Implica la creación de criaturas y la evolución adaptativa." },
+            { "Subcampo(s)": "Evaluación / Gamificación", "Nombre": "Kahoot!", "Enlace": "https://kahoot.com/", "Idiomas": "Múltiples idiomas", "Tipo": "Cuestionarios gamificados", "Costo": "Freemium - básico gratuito, Kahoot!+ desde $3.99/mes", "Descripción": "Plataforma de cuestionarios gamificados con más de mil millones de jugadores y colecciones específicas de biología NGSS. Ofrece competencia en tiempo real." },
+            { "Subcampo(s)": "Evaluación / Gamificación", "Nombre": "Quizizz", "Enlace": "https://quizizz.com/", "Idiomas": "Múltiples idiomas", "Tipo": "Cuestionarios autoevaluados con poder de IA", "Costo": "Freemium con características premium", "Descripción": "Alternativa flexible a Kahoot con características de IA para creación automática de contenido. Incluye memes, power-ups, flashcards y videos interactivos." },
+            { "Subcampo(s)": "Histología / Microscopía", "Nombre": "Kenhub", "Enlace": "https://www.kenhub.com/en/library/anatomy/introduction-to-histology", "Idiomas": "No especificado", "Tipo": "Atlas histológico con audio y cuestionarios", "Costo": "No especificado", "Descripción": "Más de 6 millones de usuarios. Ofrece un atlas histológico con audio y cuestionarios." },
+            { "Subcampo(s)": "Histología", "Nombre": "Atlas de Histología Digital", "Enlace": "http://www.facmed.unam.mx/deptos/biocetis/atlas2013A/", "Idiomas": "Español", "Tipo": "Atlas digital", "Costo": "No especificado", "Descripción": "Contiene más de 700 imágenes de alta resolución en español (Atlas Digital de Histología UNAM)." },
+            { "Subcampo(s)": "Histología", "Nombre": "University of Michigan Histology", "Enlace": "https://histology.medicine.umich.edu/", "Idiomas": "Inglés", "Tipo": "Manual descargable", "Costo": "Gratuito", "Descripción": "Ofrece un manual de 300 páginas descargable gratuitamente y recursos para el estudio de células, tejidos y órganos." },
+            { "Subcampo(s)": "Inmunología", "Nombre": "Laboratorios Virtuales de Inmunología", "Enlace": "No proporcionada directamente", "Idiomas": "Español", "Tipo": "Simulaciones", "Costo": "No especificado", "Descripción": "Proporciona simulaciones de inmunofluorescencia en español. (Información específica no encontrada públicamente)." },
+            { "Subcampo(s)": "Inmunología", "Nombre": "Redes Reguladoras Biomoleculares (UNAM)", "Enlace": "https://www.c3.unam.mx/noticias/noticia107.html", "Idiomas": "Español (se infiere)", "Tipo": "Modelado matemático", "Costo": "No especificado", "Descripción": "Se enfoca en el modelado matemático de sistemas inmunológicos, explorando la diversidad celular y enfermedades." },
+            { "Subcampo(s)": "Microbiología", "Nombre": "Bacterial Identification Virtual Lab (HHMI)", "Enlace": "https://media.hhmi.org/biointeractive/vlabs/bacterial_id2/content/intro.html", "Idiomas": "Inglés", "Tipo": "Laboratorio modular", "Costo": "No especificado", "Descripción": "Laboratorio modular interactivo del HHMI para identificación bacteriana basada en secuencias de ADN." },
+            { "Subcampo(s)": "Virología", "Nombre": "Virus Structure Explorer", "Enlace": "https://media.hhmi.org/biointeractive/click/virus-explorer/", "Idiomas": "Inglés", "Tipo": "Modelos 3D interactivos", "Costo": "No especificado", "Descripción": "Ofrece modelos 3D interactivos de más de 10 virus diferentes, permitiendo explorar su estructura y características." },
+            { "Subcampo(s)": "Genética mendeliana", "Nombre": "CGS (Classical Genetics Simulator)", "Enlace": "https://cgslab.com/", "Idiomas": "No especificado", "Tipo": "Simulador web", "Costo": "No especificado", "Descripción": "Simulador web de genética mendeliana, permite a los estudiantes aplicar lecciones a escenarios reales." },
+            { "Subcampo(s)": "Genética / Bioinformática", "Nombre": "Phylo", "Enlace": "https://scistarter.org/phylo", "Idiomas": "No especificado", "Tipo": "Juego de puzzle", "Costo": "No especificado", "Descripción": "Juego de puzzle que contribuye a investigación de genética real, alineando secuencias de ADN para identificar regiones de similitud." },
+            { "Subcampo(s)": "Biología celular y molecular", "Nombre": "CRISPR-VR Experience (Instituto Genómica Innovadora)", "Enlace": "https://innovativegenomics.org/education/games-activities/vr/", "Idiomas": "Inglés", "Tipo": "VR", "Costo": "Pago", "Descripción": "Experiencia VR inmersiva de enfermedad de células falciformes y terapia CRISPR con visualización precisa a nivel molecular." },
+            { "Subcampo(s)": "Bioquímica", "Nombre": "ProteinVR", "Enlace": "http://durrantlab.com/pvr/", "Idiomas": "Inglés", "Tipo": "Web/VR", "Costo": "Gratuito", "Descripción": "Visualización molecular VR sin plugins, compatibilidad multiplataforma para exploración de estructuras proteicas en 3D." },
+            { "Subcampo(s)": "Anatomía humana", "Nombre": "Complete Anatomy (3D4Medical)", "Enlace": "https://3d4medical.com", "Idiomas": "8 idiomas (ES, EN, FR, DE, ZH, JA, PT, IT)", "Tipo": "Web/Móvil/VR/AR/IA", "Costo": "Freemium", "Descripción": "Plataforma 3D más avanzada del mundo con modelos masculino/femenino personalizables, modo AR y corazón latiendo en tiempo real." },
+            { "Subcampo(s)": "Fisiología", "Nombre": "AIBODY Digital Physiology", "Enlace": "https://www.aibody.io", "Idiomas": "Inglés", "Tipo": "Web/IA/Cloud", "Costo": "Pago", "Descripción": "Simulación de fisiología impulsada por IA desde nivel celular hasta organismo con 132,000+ parámetros. Pionero en integración de IA para educación médica." },
+            { "Subcampo(s)": "Fisiología", "Nombre": "Pulse Physiology Engine", "Enlace": "https://pulse.kitware.com", "Idiomas": "Inglés", "Tipo": "Multiplataforma", "Costo": "Gratuito", "Descripción": "Simulador integral de fisiología humana con modelos validados basados en física para sistemas cardiovascular, respiratorio, renal." },
+            { "Subcampo(s)": "Embriología", "Nombre": "Virtual Human Embryo", "Enlace": "https://virtualhumanembryo.lsuhsc.edu/", "Idiomas": "Inglés", "Tipo": "Web", "Costo": "Pago", "Descripción": "Atlas ilustrado de 14,250 páginas cubriendo las 23 etapas Carnegie del desarrollo embrionario humano, con base en imágenes seccionadas." },
+            { "Subcampo(s)": "Microbiología", "Nombre": "Unity 3D VR Microbiology Lab", "Enlace": "No proporcionada directamente (DOI: 10.1038/s41598-024-63601-y)", "Idiomas": "Inglés", "Tipo": "VR", "Costo": "Prototipo", "Descripción": "Seis experimentos de microbiología en VR: tinción Gram, rayado bacteriano, motilidad, pruebas catalasa y oxidasa. (Es un prototipo descrito en un DOI)." },
+            { "Subcampo(s)": "Botánica", "Nombre": "Pl@ntNet", "Enlace": "https://plantnet.org", "Idiomas": "Múltiples idiomas", "Tipo": "Móvil/Web/IA", "Costo": "Gratuito", "Descripción": "Identificación de plantas impulsada por IA usando fotos. Contribuye al monitoreo global de biodiversidad (+45 floras, +46,050 especies)." },
+            { "Subcampo(s)": "Botánica", "Nombre": "Plantum Plant Identification", "Enlace": "https://play.google.com/store/apps/details?id=plant.identification.flower.tree.leaf.identifier.identify.cat.dog.breed.nature", "Idiomas": "Múltiples idiomas", "Tipo": "Móvil/AR", "Costo": "Gratuito educativo", "Descripción": "Identificación de +33K plantas con 98% precisión, diagnóstico de enfermedades, recomendaciones de cuidado y consultas de expertos." },
+            { "Subcampo(s)": "Zoología", "Nombre": "Switch Zoo", "Enlace": "https://switchzoo.com", "Idiomas": "Inglés", "Tipo": "Web/Móvil", "Costo": "Freemium", "Descripción": "Permite metamorfosis animal, construcción de biomas, juegos de identificación de plumas y colocación geográfica de animales (+142 especies)." },
+            { "Subcampo(s)": "Ecología", "Nombre": "3Worlds", "Enlace": "https://github.com/3worlds/3w", "Idiomas": "Inglés", "Tipo": "Desktop/Java", "Costo": "Gratuito", "Descripción": "Simulación avanzada de ecosistemas usando gráficos dinámicos. Unifica enfoques de modelado basado en agentes y autómatas celulares." },
+            { "Subcampo(s)": "Biología evolutiva", "Nombre": "EvoLaps", "Enlace": "https://evolaps.org", "Idiomas": "Inglés", "Tipo": "Web", "Costo": "Gratuito", "Descripción": "Herramienta avanzada de reconstrucción filogeográfica para visualizar evolución espacial y temporal de patógenos y especies." },
+            { "Subcampo(s)": "Neurobiología", "Nombre": "The Virtual Brain", "Enlace": "https://www.thevirtualbrain.org", "Idiomas": "Inglés", "Tipo": "Web/Desktop", "Costo": "Gratuito", "Descripción": "Simulación de red cerebral completa que genera señales EEG, MEG, BOLD a partir de datos anatómicos individuales." },
+            { "Subcampo(s)": "Neurobiología", "Nombre": "EBRAINS Brain Simulation", "Enlace": "https://ebrains.eu", "Idiomas": "Inglés, múltiples idiomas UE", "Tipo": "Cloud", "Costo": "Gratuito", "Descripción": "Plataforma integral de simulación cerebral del Proyecto Cerebro Humano con capacidades de modelado a nivel celular." },
+            { "Subcampo(s)": "Biotecnología", "Nombre": "Virtual Bioengineer Simulators", "Enlace": "https://amino.bio/virtual-bioengineer", "Idiomas": "Inglés", "Tipo": "Web", "Costo": "Gratuito", "Descripción": "Múltiples simuladores de bioingeniería: extracción de ADN, electroforesis en gel, producción de bioplásticos." },
+            { "Subcampo(s)": "Biotecnología", "Nombre": "Bioreactor VR Training", "Enlace": "https://btec.ncsu.edu/vr-bioreactor", "Idiomas": "Inglés", "Tipo": "VR", "Costo": "Gratuito educativo", "Descripción": "Simulación de biorreactor cGMP 30L para entrenamiento en biomanufactura upstream con procedimientos steam-in-place." },
+            { "Subcampo(s)": "Bioinformática", "Nombre": "KBase", "Enlace": "https://kbase.us", "Idiomas": "Inglés", "Tipo": "Web", "Costo": "Gratuito", "Descripción": "Análisis bioinformáticos sofisticados vía interfaz gráfica. Lecciones modulares en genómica, metagenómica, pangenómica." }
+        ];
+
+        const platformDetailModal = document.getElementById('platformDetailModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalSubcampos = document.getElementById('modalSubcampos');
+        const modalIdiomas = document.getElementById('modalIdiomas');
+        const modalTipo = document.getElementById('modalTipo');
+        const modalCosto = document.getElementById('modalCosto');
+        const modalDescripcion = document.getElementById('modalDescripcion');
+        const modalEnlace = document.getElementById('modalEnlace');
+
+        const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+        const themeButtonsContainer = document.getElementById('themeButtonsContainer');
+        const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+
+
+        function openModal(platform) {
+            modalTitle.textContent = platform.Nombre;
+            modalSubcampos.textContent = platform['Subcampo(s)'];
+            modalIdiomas.textContent = platform.Idiomas;
+            modalTipo.textContent = platform.Tipo;
+            modalCosto.textContent = platform.Costo;
+            modalDescripcion.textContent = platform.Descripción;
+            
+            if (platform.Enlace && platform.Enlace !== "No proporcionada directamente") {
+                modalEnlace.href = platform.Enlace;
+                modalEnlace.classList.remove('link-unavailable');
+                modalEnlace.textContent = 'Visitar Sitio';
+                modalEnlace.setAttribute('tabindex', '0');
+            } else {
+                modalEnlace.href = '#';
+                modalEnlace.classList.add('link-unavailable');
+                modalEnlace.textContent = 'Enlace No Disponible';
+                modalEnlace.setAttribute('tabindex', '-1');
+            }
+
+            platformDetailModal.classList.add('open');
+        }
+
+        function closeModal() {
+            platformDetailModal.classList.remove('open');
+        }
+
+        window.onclick = function(event) {
+            if (event.target == platformDetailModal) {
+                closeModal();
+            }
+        }
+
+        window.onscroll = function() {
+            if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+                scrollToTopBtn.style.display = "block";
+            } else {
+                scrollToTopBtn.style.display = "none";
+            }
+        };
+
+        scrollToTopBtn.onclick = function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+
+        const grid = document.getElementById('platforms-grid');
+        const searchInput = document.getElementById('searchInput');
+        const subcampoFilter = document.getElementById('subcampoFilter');
+        const costoFilter = document.getElementById('costoFilter');
+        const tipoFilter = document.getElementById('tipoFilter');
+        const idiomaFilter = document.getElementById('idiomaFilter');
+        const resultsCount = document.getElementById('resultsCount');
+
+        let subcampoChart, costoChart, tipoChart;
+
+        function getUniqueValues(key) {
+            const allValues = platformsData.flatMap(p => p[key].split(',').map(s => s.trim()));
+            if (key === 'Idiomas') {
+                return [...new Set(allValues.map(lang => lang.split('(')[0].trim()))].sort();
+            }
+            return [...new Set(allValues)].sort();
+        }
+        
+        function getUniqueSubcampos() {
+            const allValues = platformsData.flatMap(p => {
+                const mainField = p['Subcampo(s)'].split(' (')[0];
+                const secondaryFields = mainField.split(' / ');
+                return secondaryFields.map(s => s.trim());
+            });
+            return [...new Set(allValues)].sort();
+        }
+
+        function populateFilters() {
+            const subcampos = getUniqueSubcampos();
+            subcampos.unshift('Todos los Subcampos');
+            subcampoFilter.innerHTML = subcampos.map(s => `<option value="${s}">${s}</option>`).join('');
+
+            const costos = ['Todos los Costos', 'Gratuito', 'Freemium', 'Pago'];
+            costoFilter.innerHTML = costos.map(c => `<option value="${c}">${c}</option>`).join('');
+
+            const tipos = getUniqueValues('Tipo');
+            tipos.unshift('Todos los Tipos');
+            tipoFilter.innerHTML = tipos.map(t => `<option value="${t}">${t}</option>`).join('');
+
+            const idiomas = getUniqueValues('Idiomas');
+            idiomas.unshift('Todos los Idiomas');
+            idiomaFilter.innerHTML = idiomas.map(i => `<option value="${i}">${i}</option>`).join('');
+        }
+
+        function populateThemeButtons() {
+            const themes = getUniqueSubcampos();
+            themeButtonsContainer.innerHTML = '';
+            themes.forEach(theme => {
+                const button = document.createElement('button');
+                button.className = 'theme-button';
+                button.textContent = theme;
+                button.onclick = () => {
+                    subcampoFilter.value = theme;
+                    filterAndRender();
+                    updateActiveThemeButton(theme);
+                };
+                themeButtonsContainer.appendChild(button);
+            });
+        }
+
+        function updateActiveThemeButton(activeTheme) {
+            document.querySelectorAll('.theme-button').forEach(button => {
+                if (button.textContent === activeTheme) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+        }
+
+        function renderPlatforms(platforms) {
+            grid.innerHTML = '';
+            if (platforms.length === 0) {
+                grid.innerHTML = `<p class="md:col-span-2 xl:col-span-3 text-center text-gray-400">No se encontraron plataformas que coincidan con los filtros seleccionados.</p>`;
+            } else {
+                platforms.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = 'card shadow-md p-6';
+                    card.onclick = () => openModal(p);
+                    card.innerHTML = `
+                        <div class="card-content">
+                            <h3 class="text-xl font-bold text-teal-300 mb-2">${p.Nombre}</h3>
+                            <div class="mb-4">
+                                ${p['Subcampo(s)'].split(' / ').map(s => `<span class="tag">${s.trim()}</span>`).join('')}
+                            </div>
+                            <p class="text-gray-400 mb-4 text-sm">${p.Descripción}</p>
+                        </div>
+                        <div class="mt-auto pt-4 border-t border-neutral-700">
+                            <div class="flex justify-between items-center text-xs text-gray-400 mb-4">
+                                <span><strong>Costo:</strong> ${p.Costo.split('(')[0].trim()}</span>
+                                <span><strong>Tipo:</strong> ${p.Tipo.split(',')[0].trim()}</span>
+                            </div>
+                            <a href="${(p.Enlace && p.Enlace !== 'No proporcionada directamente') ? p.Enlace : '#'}"
+                               target="_blank" rel="noopener noreferrer"
+                               class="block w-full text-center bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-teal-700 transition-colors
+                               ${(!p.Enlace || p.Enlace === 'No proporcionada directamente') ? 'link-unavailable' : ''}"
+                               ${(!p.Enlace || p.Enlace === 'No proporcionada directamente') ? 'tabindex="-1"' : ''}
+                            >
+                                ${(p.Enlace && p.Enlace !== 'No proporcionada directamente') ? 'Visitar Sitio' : 'No Disponible'}
+                            </a>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+            resultsCount.textContent = `${platforms.length} resultado(s) encontrado(s).`;
+        }
+
+        function updateCharts(platforms) {
+            updateSubcampoChart(platforms);
+            updateCostoChart(platforms);
+            updateTipoChart(platforms);
+        }
+
+        function setupCharts() {
+            const subcampoCtx = document.getElementById('subcampoChart').getContext('2d');
+            subcampoChart = new Chart(subcampoCtx, {
+                type: 'bar',
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.x !== null) {
+                                        label += context.parsed.x;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: { color: '#a1a1aa' },
+                            grid: { color: '#3f3f46' }
+                        },
+                        y: {
+                            ticks: { color: '#a1a1aa' },
+                            grid: { color: '#3f3f46' }
+                        }
+                    }
+                }
+            });
+
+            const costoCtx = document.getElementById('costoChart').getContext('2d');
+            costoChart = new Chart(costoCtx, {
+                type: 'doughnut',
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#e5e7eb'
+                            }
+                        },
+                         tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const tipoCtx = document.getElementById('tipoChart').getContext('2d');
+            tipoChart = new Chart(tipoCtx, {
+                type: 'polarArea',
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#e5e7eb'
+                            }
+                        },
+                         tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.r !== null) {
+                                        label += context.parsed.r;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            ticks: {
+                                backdropColor: 'transparent',
+                                color: '#a1a1aa'
+                            },
+                            grid: {
+                                color: '#3f3f46'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateSubcampoChart(platforms) {
+            const subcampoCounts = {};
+            platforms.forEach(p => {
+                const mainField = p['Subcampo(s)'].split(' (')[0];
+                const secondaryFields = mainField.split(' / ');
+                secondaryFields.forEach(field => {
+                    const trimmedField = field.trim();
+                    subcampoCounts[trimmedField] = (subcampoCounts[trimmedField] || 0) + 1;
+                });
+            });
+
+            const sortedSubcampos = Object.entries(subcampoCounts).sort(([,a],[,b]) => b-a);
+            const labels = sortedSubcampos.map(item => item[0]);
+            const data = sortedSubcampos.map(item => item[1]);
+
+            subcampoChart.data = {
+                labels: labels,
+                datasets: [{
+                    label: 'Nº de Plataformas',
+                    data: data,
+                    backgroundColor: '#2dd4bf',
+                    borderColor: '#0d9990',
+                    borderWidth: 1
+                }]
+            };
+            subcampoChart.update();
+        }
+
+        function updateCostoChart(platforms) {
+            const costoCounts = { 'Gratuito': 0, 'Freemium': 0, 'Pago': 0 };
+            platforms.forEach(p => {
+                if (p.Costo.toLowerCase().includes('gratuito') || p.Costo.toLowerCase().includes('gratis')) costoCounts['Gratuito']++;
+                if (p.Costo.toLowerCase().includes('freemium')) costoCounts['Freemium']++;
+                if (p.Costo.toLowerCase().includes('pago')) costoCounts['Pago']++;
+            });
+
+            costoChart.data = {
+                labels: Object.keys(costoCounts),
+                datasets: [{
+                    data: Object.values(costoCounts),
+                    backgroundColor: ['#2dd4bf', '#fbbf24', '#f87171'],
+                    hoverOffset: 4
+                }]
+            };
+            costoChart.update();
+        }
+
+        function updateTipoChart(platforms) {
+            const tipoCounts = {};
+            platforms.forEach(p => {
+                p.Tipo.split(',').forEach(tipo => {
+                    const t = tipo.trim();
+                    tipoCounts[t] = (tipoCounts[t] || 0) + 1;
+                });
+            });
+
+            const sortedTipos = Object.entries(tipoCounts).sort(([,a],[,b]) => b-a).slice(0, 10);
+            
+            tipoChart.data = {
+                labels: sortedTipos.map(item => item[0]),
+                datasets: [{
+                    data: sortedTipos.map(item => item[1]),
+                    backgroundColor: [
+                        '#2dd4bf', '#fbbf24', '#f87171', '#60a5fa', '#a78bfa',
+                        '#f472b6', '#a3e635', '#f9a8d4', '#4dd0e1', '#b388ff'
+                    ]
+                }]
+            };
+            tipoChart.update();
+        }
+
+        function filterAndRender() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedSubcampo = subcampoFilter.value;
+            const selectedCosto = costoFilter.value;
+            const selectedTipo = tipoFilter.value;
+            const selectedIdioma = idiomaFilter.value;
+
+            const filtered = platformsData.filter(p => {
+                const nameMatch = p.Nombre.toLowerCase().includes(searchTerm);
+                const descMatch = p.Descripción.toLowerCase().includes(searchTerm);
+                
+                const subcampoMatch = selectedSubcampo === 'Todos los Subcampos' || 
+                                       p['Subcampo(s)'].split(' / ').some(s => {
+                                           const trimmedS = s.split('(')[0].trim();
+                                           return trimmedS === selectedSubcampo;
+                                       });
+                
+                let costoMatch = selectedCosto === 'Todos los Costos';
+                if (!costoMatch) {
+                    if (selectedCosto === 'Gratuito' && (p.Costo.toLowerCase().includes('gratuito') || p.Costo.toLowerCase().includes('gratis'))) costoMatch = true;
+                    if (selectedCosto === 'Freemium' && p.Costo.toLowerCase().includes('freemium')) costoMatch = true;
+                    if (selectedCosto === 'Pago' && p.Costo.toLowerCase().includes('pago')) costoMatch = true;
+                }
+
+                const tipoMatch = selectedTipo === 'Todos los Tipos' || p.Tipo.split(',').some(t => t.trim() === selectedTipo);
+                
+                const idiomaMatch = selectedIdioma === 'Todos los Idiomas' || p.Idiomas.split(',').some(i => {
+                    return i.split('(')[0].trim() === selectedIdioma;
+                });
+
+                return (nameMatch || descMatch) && subcampoMatch && costoMatch && tipoMatch && idiomaMatch;
+            });
+
+            renderPlatforms(filtered);
+            updateCharts(filtered);
+            updateActiveThemeButton(selectedSubcampo); // Update active state of theme buttons
+        }
+        
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', () => {
+            populateFilters();
+            populateThemeButtons(); // Populate the new theme buttons
+            setupCharts();
+            filterAndRender();
+
+            // Event Listeners
+            searchInput.addEventListener('input', filterAndRender);
+            subcampoFilter.addEventListener('change', filterAndRender);
+            costoFilter.addEventListener('change', filterAndRender);
+            tipoFilter.addEventListener('change', filterAndRender);
+            idiomaFilter.addEventListener('change', filterAndRender);
+            
+            resetFiltersBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                subcampoFilter.value = 'Todos los Subcampos';
+                costoFilter.value = 'Todos los Costos';
+                tipoFilter.value = 'Todos los Tipos';
+                idiomaFilter.value = 'Todos los Idiomas';
+                filterAndRender();
+            });
+        });
+    </script>
+</body>
+</html>

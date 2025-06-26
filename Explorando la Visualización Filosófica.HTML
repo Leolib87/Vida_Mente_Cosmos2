@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorando la Visualización Filosófica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            background-color: #000000;
+            color: #00FF00;
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        .main-container {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+        .content { grid-column: 1 / 2; }
+        .sidebar {
+            grid-column: 2 / 3;
+            position: sticky;
+            top: 20px;
+            align-self: start;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        .header {
+            grid-column: 1 / 3;
+            position: relative;
+            height: 100vh;
+            background: url('https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center/cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #00FFFF;
+            text-shadow: 0 0 15px #00FF00;
+            animation: fadeIn 2s ease-in;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1;
+        }
+        .header h1, .header p {
+            position: relative;
+            z-index: 2;
+        }
+        .header h1 {
+            font-size: clamp(2em, 4vw, 4em);
+            animation: glow 2s infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 5px #00FF00; }
+            to { text-shadow: 0 0 20px #00FFFF; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .section {
+            margin: 40px 0;
+            padding: 25px;
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF;
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        .sidebar .section {
+            margin: 0;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.1);
+        }
+        #visualization-section { margin-top: 20px; }
+        h2 {
+            color: #00FF00;
+            text-shadow: 0 0 8px #00FF00;
+            border-bottom: 1px solid #00FFFF;
+            padding-bottom: 10px;
+            margin: 0 0 15px 0;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        h3 {
+            color: #00FFFF;
+            margin: 20px 0 10px 0;
+            font-size: 1.2em;
+        }
+        p {
+            color: #00FF00;
+            font-size: 1.1em;
+            margin: 0 0 10px 0;
+        }
+        .highlight {
+            color: #00FFFF;
+            font-weight: bold;
+            text-decoration: none;
+            transition: text-shadow 0.3s ease;
+        }
+        .highlight:hover { text-shadow: 0 0 10px #00FFFF; }
+        a {
+            color: #00FF00;
+            text-decoration: none;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        ul { list-style: none; padding: 0; margin: 0; }
+        ul li { margin: 10px 0; }
+        #visualization {
+            width: 100%;
+            height: 700px;
+            padding: 10px;
+            box-sizing: border-box;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .nodes .node circle {
+            stroke: #00FFFF;
+            stroke-width: 2px;
+            fill: #00FF00;
+            transition: all 0.3s ease;
+        }
+        .nodes .node:hover circle {
+            fill: #FFFFFF;
+            stroke: #00FFFF;
+            r: 12;
+            filter: drop-shadow(0 0 8px #00FFFF);
+        }
+        .nodes .node text {
+            fill: #00FFFF;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 5px #00FF00;
+            font-size: 12px;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        .nodes .node:hover text {
+            fill: #FFFFFF;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        .links .link {
+            stroke: #00FF00;
+            stroke-opacity: 0.7;
+            stroke-width: 1.5px;
+            transition: stroke-opacity 0.3s ease;
+        }
+        .footer {
+            grid-column: 1 / 3;
+            text-align: center;
+            padding: 30px;
+            color: #00FFFF;
+            border-top: 2px solid #00FF00;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1>Explorando la Visualización Filosófica</h1>
+            <p>Una perspectiva innovadora sobre el pensamiento filosófico</p>
+        </div>
+
+        <div class="content">
+            <div class="section" id="visualization-section">
+                <h2>Mapa de Conexiones Filosóficas</h2>
+                <div id="visualization"></div>
+            </div>
+
+            <div class="section" id="intro">
+                <h2>Explorando la Visualización de Ideas Filosóficas</h2>
+                <p>En el vasto océano del <span class="highlight"><a href="#filosofia">pensamiento filosófico</a></span>, navegar puede ser desafiante. ¿Cómo dar sentido a las complejas interconexiones entre <span class="highlight"><a href="#ideas">ideas</a></span>, <span class="highlight"><a href="#obras">obras</a></span> y <span class="highlight"><a href="#filosofos">figuras filosóficas</a></span>? La respuesta está en la <span class="highlight"><a href="#visualization-section">visualización de datos</a></span>. Aquí exploramos herramientas y proyectos que iluminan este panorama de formas nuevas y fascinantes.</p>
+            </div>
+
+            <div class="section" id="proyectos">
+                <h2>Proyectos de Visualización</h2>
+                <h3><a href="https://densitydesign.org/research/minerva/" class="highlight">Minerva</a></h3>
+                <p>Desarrollado por <span class="highlight">DensityDesign</span>, mapea las interrelaciones entre <span class="highlight"><a href="#ideas">ideas</a></span>, <span class="highlight"><a href="#obras">obras</a></span> y <span class="highlight"><a href="#filosofos">figuras</a></span> en la <span class="highlight"><a href="#historia">historia de la filosofía</a></span>.</p>
+                <h3><a href="https://dailynous.com/2019/03/19/map-philosophical-ideas-works-figures/" class="highlight">Mapa de Ideas, Obras y Figuras</a></h3>
+                <p>Presentado en <span class="highlight">Daily Nous</span>, ofrece una visión panorámica de las conexiones filosóficas.</p>
+                <h3><a href="https://moebio.com/" class="highlight">Moebio</a></h3>
+                <p>Explora la filosofía con herramientas interactivas y accesibles.</p>
+            </div>
+
+            <div class="section" id="filosofos">
+                <h2>Filósofos en la Vanguardia</h2>
+                <ul>
+                    <li><a href="https://kieranhealy.org/" class="highlight">Kieran Healy</a> (<a href="https://kieranhealy.org/blog/archives/2013/06/18/a-co-citation-network-for-philosophy/">Co-Citation Network</a>, <a href="https://github.com/kjhealy/philpub/blob/master/phil-ayt.csv">GitHub</a>)</li>
+                    <li><a href="https://mariandoerk.de/" class="highlight">Marian Dörk</a></li>
+                    <li><a href="https://homepage.univie.ac.at/maximilian.noichl/posts/rmarkdown/" class="highlight">Mark Noichl</a></li>
+                    <li><a href="https://homepage.univie.ac.at/maximilian.noichl/" class="highlight">Max Noichl</a></li>
+                    <li><a href="http://melissajacquart.com/about-me/" class="highlight">Melissa Jacquart</a></li>
+                    <li><a href="https://www.researchgate.net/profile/Valentin-Lageard" class="highlight">Valentin Lageard</a></li>
+                    <li><a href="http://kevinscharp.com/" class="highlight">Kevin Scharp</a> (<a href="https://scholar.google.com/citations?hl=en&user=uU-tTlcAAAAJ">Google Scholar</a>)</li>
+                </ul>
+                <p>Estos <span class="highlight">filósofos</span> lideran la <span class="highlight"><a href="#visualization-section">visualización</a></span> del pensamiento filosófico.</p>
+            </div>
+
+            <div class="section" id="recursos">
+                <h2>Recursos Adicionales</h2>
+                <p><a href="https://www.denizcemonduygu.com/philo/" class="highlight">Historia de la Filosofía</a>: Una visión visual y concisa.</p>
+                <p><a href="https://dailynous.com/tag/visualization/" class="highlight">Daily Nous Visualization Tag</a>.</p>
+            </div>
+
+            <div class="section" id="redes">
+                <h2>Redes</h2>
+                <ul>
+                    <li><a href="https://homepage.univie.ac.at/maximilian.noichl/full/Citations1/index.html" class="highlight">Psychologists Last Decade</a></li>
+                    <li><a href="https://kumu.io/GOliveira/philosophers-web#map-b9Ts7W5r" class="highlight">Philosophers Web</a></li>
+                    <li><a href="http://kevinscharp.com/Sociology%20of%20Philosophy%20(Western)%203.1%20%20(part%201).jpg" class="highlight">Sociology of Philosophy</a></li>
+                    <li><a href="https://homepage.univie.ac.at/maximilian.noichl//full/zoom_final/index.html" class="highlight">Recent Philosophy Structure</a></li>
+                    <li><a href="https://homepage.univie.ac.at/maximilian.noichl/post/structuring-the-stanford-encyclopedia-of-philosophy/" class="highlight">Stanford Encyclopedia</a></li>
+                    <li><a href="https://homepage.univie.ac.at/maximilian.noichl/full/CMP2018/presentation/index.html" class="highlight">Analytic/Continental Divide</a></li>
+                    <li><a href="https://www.denizcemonduygu.com/philo/browse/" class="highlight">Philosophy Timeline</a></li>
+                    <li><a href="http://ontology.buffalo.edu/philosophome.org.html" class="highlight">Philosophome</a></li>
+                    <li><a href="https://homepage.univie.ac.at/maximilian.noichl/full/Gender/index.html" class="highlight">Gender</a></li>
+                    <li><a href="https://homepage.univie.ac.at/maximilian.noichl/full/Spinoza/index.html" class="highlight">Spinoza: Ethica</a></li>
+                    <li><a href="https://homepage.univie.ac.at/maximilian.noichl/full/Wittgenstein/index.html" class="highlight">Wittgenstein: Tractatus</a></li>
+                    <li><a href="https://philosophy-in-figures.tumblr.com/" class="highlight">Philosophy in Figures</a></li>
+                    <li><a href="https://mariandoerk.de/edgemaps/demo/#phils;map;;;" class="highlight">EdgeMaps</a></li>
+                </ul>
+            </div>
+
+            <div class="section" id="notas-redes">
+                <h2>Notas sobre Redes y Mapas</h2>
+                <ul>
+                    <li><a href="https://www.openculture.com/2016/07/the-entire-discipline-of-philosophy-visualized-with-mapping-software-see-all-of-the-complex-networks.html" class="highlight">Entire Discipline</a></li>
+                    <li><a href="https://www.coppelia.io/graphing-the-history-of-philosophy" class="highlight">Graphing History</a></li>
+                    <li><a href="https://dailynous.com/2014/04/21/graphing-the-history-of-philosophical-influences/" class="highlight">Philosophical Influences</a></li>
+                    <li><a href="https://www.openculture.com/2013/07/the-history-of-philosophy-from-600-b-c-e-to-1935-visualized-in-two-massive-44-foot-high-diagrams.html" class="highlight">History 600 BCE - 1935</a></li>
+                    <li><a href="https://www.openculture.com/2018/10/data-visualization-modern-philosophy-1950-2018.html" class="highlight">Modern Philosophy 1950-2018</a></li>
+                    <li><a href="https://dailynous.com/2014/10/28/mathematical-logic-foundations-chart/" class="highlight">Mathematical Logic</a></li>
+                    <li><a href="https://www.openculture.com/2018/10/history-philosophy-visualized-interactive-timeline.html" class="highlight">Interactive Timeline</a></li>
+                    <li><a href="https://dailynous.com/2019/05/30/visualization-gender-distribution-philosophy-research-topics/" class="highlight">Gender Distribution</a></li>
+                    <li><a href="https://dailynous.com/2017/01/11/visualization-influence-history-philosophy/" class="highlight">Influences Visualization</a></li>
+                    <li><a href="https://www.openculture.com/2018/05/the-map-of-philosophy.html" class="highlight">Map of Philosophy</a></li>
+                    <li><a href="https://www.philosophybasics.com/general_map.html" class="highlight">Basic Map</a></li>
+                </ul>
+            </div>
+
+            <div class="section" id="database">
+                <h2>Database</h2>
+                <p><a href="https://github.com/SimonRaper/graphingPhilosophy" class="highlight">GitHub Graphing Philosophy</a>: Recursos para <span class="highlight"><a href="#visualization-section">visualización</a></span> filosófica.</p>
+            </div>
+
+            <div class="section" id="herramientas">
+                <h2>Herramientas y Tutoriales</h2>
+                <ul>
+                    <li><a href="http://www.designandanalytics.com/visual-social-network-analysis-in-R-and-gephi-part-II" class="highlight">R and Gephi Analysis</a></li>
+                    <li><a href="https://jitp.commons.gc.cuny.edu/philosophy-through-the-macroscope-technologies-representations-and-the-history-of-the-profession/" class="highlight">Philosophy Macroscope</a></li>
+                    <li><a href="https://networkx.org" class="highlight">NetworkX</a></li>
+                </ul>
+            </div>
+
+            <div class="section" id="obras">
+                <h2>Obras</h2>
+                <ul>
+                    <li><a href="https://homepage.univie.ac.at/maximilian.noichl/full/Spinoza/index.html" class="highlight">Spinoza: Ethica</a></li>
+                    <li><a href="https://homepage.univie.ac.at/maximilian.noichl/full/Wittgenstein/index.html" class="highlight">Tractatus Logico-Philosophicus</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="section" id="enlaces">
+                <h2>Enlaces Relevantes</h2>
+                <ul>
+                    <li><a href="https://densitydesign.org/research/minerva/" class="highlight">Minerva</a></li>
+                    <li><a href="https://dailynous.com/2019/03/19/map-philosophical-ideas-works-figures/" class="highlight">Mapa Filosófico</a></li>
+                    <li><a href="https://moebio.com/" class="highlight">Moebio</a></li>
+                    <li><a href="https://kieranhealy.org/" class="highlight">Kieran Healy</a></li>
+                    <li><a href="https://mariandoerk.de/" class="highlight">Marian Dörk</a></li>
+                    <li><a href="https://homepage.univie.ac.at/maximilian.noichl/" class="highlight">Max Noichl</a></li>
+                    <li><a href="https://www.denizcemonduygu.com/philo/" class="highlight">Historia Filosofía</a></li>
+                    <li><a href="https://kumu.io/GOliveira/philosophers-web#map-b9Ts7W5r" class="highlight">Philosophers Web</a></li>
+                    <li><a href="https://github.com/SimonRaper/graphingPhilosophy" class="highlight">Graphing Philosophy</a></li>
+                    <li><a href="https://networkx.org" class="highlight">NetworkX</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Explorando el pensamiento filosófico con datos y redes | Febrero 2025</p>
+        </div>
+    </div>
+
+    <script>
+        // Dimensiones iniciales
+        const vizContainer = document.getElementById('visualization');
+        let vizWidth = vizContainer.clientWidth - 20;
+        const vizHeight = 700;
+
+        // Crear SVG
+        const svg = d3.select("#visualization")
+            .append("svg")
+            .attr("width", vizWidth)
+            .attr("height", vizHeight)
+            .attr("viewBox", `0 0 ${vizWidth} ${vizHeight}`)
+            .attr("preserveAspectRatio", "xMidYMid meet");
+
+        // Fondo
+        svg.append("rect")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .attr("fill", "rgba(0, 0, 0, 0.9)")
+            .attr("rx", 5);
+
+        // Datos
+        const nodes = [
+            { id: "Filosofía", link: "#intro", group: 1 },
+            { id: "Visualización", link: "#visualization-section", group: 1 },
+            { id: "Minerva", link: "https://densitydesign.org/research/minerva/", group: 2 },
+            { id: "Mapa Filosófico", link: "https://dailynous.com/2019/03/19/map-philosophical-ideas-works-figures/", group: 2 },
+            { id: "Moebio", link: "https://moebio.com/", group: 2 },
+            { id: "Kieran Healy", link: "https://kieranhealy.org/", group: 3 },
+            { id: "Marian Dörk", link: "https://mariandoerk.de/", group: 3 },
+            { id: "Mark Noichl", link: "https://homepage.univie.ac.at/maximilian.noichl/posts/rmarkdown/", group: 3 },
+            { id: "Max Noichl", link: "https://homepage.univie.ac.at/maximilian.noichl/", group: 3 },
+            { id: "Melissa Jacquart", link: "http://melissajacquart.com/about-me/", group: 3 },
+            { id: "Valentin Lageard", link: "https://www.researchgate.net/profile/Valentin-Lageard", group: 3 },
+            { id: "Kevin Scharp", link: "http://kevinscharp.com/", group: 3 },
+            { id: "Historia Filosofía", link: "https://www.denizcemonduygu.com/philo/", group: 4 },
+            { id: "Philosophers Web", link: "https://kumu.io/GOliveira/philosophers-web#map-b9Ts7W5r", group: 5 },
+            { id: "Sociology Philosophy", link: "http://kevinscharp.com/Sociology%20of%20Philosophy%20(Western)%203.1%20%20(part%201).jpg", group: 5 },
+            { id: "Recent Philosophy", link: "https://homepage.univie.ac.at/maximilian.noichl//full/zoom_final/index.html", group: 5 },
+            { id: "Stanford Encyclopedia", link: "https://homepage.univie.ac.at/maximilian.noichl/post/structuring-the-stanford-encyclopedia-of-philosophy/", group: 5 },
+            { id: "Analytic/Continental", link: "https://homepage.univie.ac.at/maximilian.noichl/full/CMP2018/presentation/index.html", group: 5 },
+            { id: "Philosophy Timeline", link: "https://www.denizcemonduygu.com/philo/browse/", group: 5 },
+            { id: "Philosophome", link: "http://ontology.buffalo.edu/philosophome.org.html", group: 5 },
+            { id: "Gender", link: "https://homepage.univie.ac.at/maximilian.noichl/full/Gender/index.html", group: 5 },
+            { id: "Spinoza", link: "https://homepage.univie.ac.at/maximilian.noichl/full/Spinoza/index.html", group: 6 },
+            { id: "Wittgenstein", link: "https://homepage.univie.ac.at/maximilian.noichl/full/Wittgenstein/index.html", group: 6 },
+            { id: "Philosophy in Figures", link: "https://philosophy-in-figures.tumblr.com/", group: 5 },
+            { id: "EdgeMaps", link: "https://mariandoerk.de/edgemaps/demo/#phils;map;;;", group: 5 },
+            { id: "Graphing Philosophy", link: "https://github.com/SimonRaper/graphingPhilosophy", group: 7 },
+            { id: "NetworkX", link: "https://networkx.org", group: 7 },
+            { id: "R and Gephi", link: "http://www.designandanalytics.com/visual-social-network-analysis-in-R-and-gephi-part-II", group: 7 }
+        ];
+
+        const links = [
+            { source: "Filosofía", target: "Visualización" },
+            { source: "Visualización", target: "Minerva" },
+            { source: "Visualización", target: "Mapa Filosófico" },
+            { source: "Visualización", target: "Moebio" },
+            { source: "Filosofía", target: "Kieran Healy" },
+            { source: "Filosofía", target: "Marian Dörk" },
+            { source: "Filosofía", target: "Mark Noichl" },
+            { source: "Filosofía", target: "Max Noichl" },
+            { source: "Filosofía", target: "Melissa Jacquart" },
+            { source: "Filosofía", target: "Valentin Lageard" },
+            { source: "Filosofía", target: "Kevin Scharp" },
+            { source: "Filosofía", target: "Historia Filosofía" },
+            { source: "Visualización", target: "Philosophers Web" },
+            { source: "Visualización", target: "Sociology Philosophy" },
+            { source: "Visualización", target: "Recent Philosophy" },
+            { source: "Visualización", target: "Stanford Encyclopedia" },
+            { source: "Visualización", target: "Analytic/Continental" },
+            { source: "Visualización", target: "Philosophy Timeline" },
+            { source: "Visualización", target: "Philosophome" },
+            { source: "Visualización", target: "Gender" },
+            { source: "Visualización", target: "Philosophy in Figures" },
+            { source: "Visualización", target: "EdgeMaps" },
+            { source: "Filosofía", target: "Spinoza" },
+            { source: "Filosofía", target: "Wittgenstein" },
+            { source: "Visualización", target: "Graphing Philosophy" },
+            { source: "Visualización", target: "NetworkX" },
+            { source: "Visualización", target: "R and Gephi" }
+        ];
+
+        // Crear simulación con nodos más separados
+        const simulation = d3.forceSimulation(nodes)
+            .force("link", d3.forceLink(links).id(d => d.id).distance(120).strength(0.2)) // Aumentada la distancia
+            .force("charge", d3.forceManyBody().strength(-300)) // Aumentada la repulsión
+            .force("center", d3.forceCenter(vizWidth / 2, vizHeight / 2))
+            .force("collide", d3.forceCollide(30)) // Aumentado el radio de colisión
+            .force("x", d3.forceX(vizWidth / 2).strength(0.05))
+            .force("y", d3.forceY(vizHeight / 2).strength(0.05));
+
+        // Crear enlaces
+        const link = svg.append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(links)
+            .join("line")
+            .attr("class", "link");
+
+        // Crear nodos
+        const node = svg.append("g")
+            .attr("class", "nodes")
+            .selectAll("g")
+            .data(nodes)
+            .join("g")
+            .attr("class", "node");
+
+        node.append("circle")
+            .attr("r", 8)
+            .attr("fill", d => d.group === 1 ? "#00FF00" : d.group === 2 ? "#00FFFF" : d.group === 3 ? "#FFFFFF" : "#00FF80");
+
+        node.append("text")
+            .attr("dy", -10)
+            .attr("text-anchor", "middle")
+            .text(d => d.id);
+
+        // Interactividad
+        node.call(d3.drag()
+            .on("start", dragStarted)
+            .on("drag", dragged)
+            .on("end", dragEnded))
+            .on("click", (event, d) => window.open(d.link, "_blank"))
+            .on("mouseover", function() { d3.select(this).select("circle").transition().duration(200).attr("r", 12); })
+            .on("mouseout", function() { d3.select(this).select("circle").transition().duration(200).attr("r", 8); });
+
+        // Actualizar posiciones
+        simulation.on("tick", () => {
+            link.attr("x1", d => Math.max(20, Math.min(vizWidth - 20, d.source.x)))
+                .attr("y1", d => Math.max(20, Math.min(vizHeight - 20, d.source.y)))
+                .attr("x2", d => Math.max(20, Math.min(vizWidth - 20, d.target.x)))
+                .attr("y2", d => Math.max(20, Math.min(vizHeight - 20, d.target.y)));
+            node.attr("transform", d => `translate(${Math.max(20, Math.min(vizWidth - 20, d.x))},${Math.max(20, Math.min(vizHeight - 20, d.y))})`);
+        });
+
+        // Funciones de arrastre
+        function dragStarted(event) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        }
+        function dragged(event) {
+            event.subject.fx = Math.max(20, Math.min(vizWidth - 20, event.x));
+            event.subject.fy = Math.max(20, Math.min(vizHeight - 20, event.y));
+        }
+        function dragEnded(event) {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
+        }
+
+        // Ajustar al cambiar tamaño de ventana
+        function resize() {
+            vizWidth = vizContainer.clientWidth - 20;
+            svg.attr("width", vizWidth).attr("viewBox", `0 0 ${vizWidth} ${vizHeight}`);
+            simulation.force("center", d3.forceCenter(vizWidth / 2, vizHeight / 2));
+            simulation.alpha(1).restart();
+        }
+        window.addEventListener("resize", resize);
+
+        // Inicio
+        window.addEventListener('load', () => {
+            resize();
+            simulation.alpha(1).restart();
+        });
+    </script>
+</body>
+</html>

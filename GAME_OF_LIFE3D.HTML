@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de la Vida: Autómata Celular en 3D</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        body {
+            background-color: #000000;
+            color: #00FF00;
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        .main-container {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+        .content { grid-column: 1 / 2; }
+        .sidebar {
+            grid-column: 2 / 3;
+            position: sticky;
+            top: 20px;
+            align-self: start;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        .header {
+            grid-column: 1 / 3;
+            position: relative;
+            height: 60vh;
+            background: url('https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center/cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #00FFFF;
+            text-shadow: 0 0 15px #00FF00;
+            animation: fadeIn 2s ease-in;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1;
+        }
+        .header h1, .header p {
+            position: relative;
+            z-index: 2;
+        }
+        .header h1 {
+            font-size: clamp(2em, 4vw, 4em);
+            animation: glow 2s infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 5px #00FF00; }
+            to { text-shadow: 0 0 20px #00FFFF; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .section {
+            margin: 40px 0;
+            padding: 25px;
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF;
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        .sidebar .section {
+            margin: 0;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.1);
+        }
+        #visualization-section { margin-top: 20px; }
+        h2 {
+            color: #00FF00;
+            text-shadow: 0 0 8px #00FF00;
+            border-bottom: 1px solid #00FFFF;
+            padding-bottom: 10px;
+            margin: 0 0 15px 0;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        h3 {
+            color: #00FFFF;
+            margin: 20px 0 10px 0;
+            font-size: 1.2em;
+        }
+        p {
+            color: #00FF00;
+            font-size: 1.1em;
+            margin: 0 0 10px 0;
+        }
+        .highlight { color: #00FFFF; font-weight: bold; text-decoration: none; transition: text-shadow 0.3s ease; }
+        .highlight:hover { text-shadow: 0 0 10px #00FFFF; }
+        .live-cell { color: #00FF00; font-weight: bold; }
+        .dead-cell { color: #FF00FF; font-weight: bold; }
+        button {
+            background: none;
+            border: 2px solid #00FFFF;
+            color: #00FF00;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #00FFFF;
+            color: #000000;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        input[type="range"] {
+            width: 100%;
+            accent-color: #00FFFF;
+        }
+        #visualization {
+            width: 100%;
+            height: 600px;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+        .footer {
+            grid-column: 1 / 3;
+            text-align: center;
+            padding: 30px;
+            color: #00FFFF;
+            border-top: 2px solid #00FF00;
+            margin-top: 40px;
+        }
+        .equation {
+            background: rgba(0, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-style: italic;
+            color: #00FFFF;
+        }
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                padding: 10px;
+                gap: 10px;
+            }
+            .content, .sidebar, .footer, .header {
+                grid-column: 1 / 2;
+            }
+            .header {
+                height: 40vh;
+            }
+            .header h1 {
+                font-size: clamp(1.5em, 3vw, 2.5em);
+            }
+            .header p {
+                font-size: 0.9em;
+            }
+            .sidebar {
+                position: static;
+                max-height: none;
+            }
+            .section {
+                margin: 20px 0;
+                padding: 15px;
+            }
+            .sidebar .section {
+                padding: 15px;
+            }
+            #visualization {
+                height: 400px;
+            }
+            h2 { font-size: 1.2em; }
+            h3 { font-size: 1em; }
+            p { font-size: 0.95em; }
+            button { padding: 8px 16px; font-size: 0.9em; }
+        }
+        @media (max-width: 480px) {
+            .header {
+                height: 30vh;
+            }
+            .header h1 {
+                font-size: clamp(1.2em, 2.5vw, 2em);
+            }
+            .header p {
+                font-size: 0.8em;
+            }
+            #visualization {
+                height: 300px;
+            }
+            .section {
+                margin: 15px 0;
+                padding: 10px;
+            }
+            .sidebar .section {
+                padding: 10px;
+            }
+            h2 { font-size: 1em; }
+            h3 { font-size: 0.9em; }
+            p { font-size: 0.85em; }
+            button { padding: 6px 12px; font-size: 0.8em; }
+            input[type="range"] {
+                width: 90%;
+                margin: 0 auto;
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1>Juego de la Vida</h1>
+            <p>Un Viaje Matemático a la Complejidad Biológica</p>
+        </div>
+
+        <div class="content">
+            <div class="section" id="visualization-section">
+                <h2>Simulación Interactiva en 3D</h2>
+                <div id="visualization"></div>
+            </div>
+
+            <div class="section" id="intro">
+                <h2>Introducción al Juego de la Vida</h2>
+                <p>El <span class="highlight">Juego de la Vida</span>, concebido por el matemático John Conway en 1970, es un <span class="highlight">autómata celular</span> que simula la evolución de <span class="live-cell">células vivas</span> (verde) y <span class="dead-cell">muertas</span> (magenta en texto) en una cuadrícula bidimensional. Este modelo no es un "juego" en el sentido clásico, sino una simulación determinista que revela cómo reglas simples pueden generar comportamientos complejos, emergentes y sorprendentemente similares a los sistemas biológicos.</p>
+                <p>Con una cuadrícula infinita (aquí aproximada como finita), cada celda tiene ocho vecinos y su estado evoluciona en generaciones discretas. Este autómata captura la esencia de la <span class="highlight">emergencia</span>: patrones como planeadores, osciladores o estructuras estables surgen sin intervención externa, reflejando principios de organización en matemáticas y biología.</p>
+            </div>
+
+            <div class="section" id="rules">
+                <h2>Reglas Fundamentales y Matemáticas</h2>
+                <p>El Juego de la Vida se rige por un conjunto de reglas que determinan el estado de cada celda en función de sus <span class="highlight">vecinos vivos</span>. Sea \( S(x, y, t) \) el estado de la celda en la posición \((x, y)\) en el tiempo \(t\), donde \( S = 1 \) si está viva y \( S = 0 \) si está muerta. Definimos \( N(x, y, t) \) como el número de vecinos vivos:</p>
+                <div class="equation">
+                    \( N(x, y, t) = \sum_{i=-1}^{1} \sum_{j=-1}^{1} S(x + i, y + j, t) \cdot [ (i, j) \neq (0, 0) ] \)
+                </div>
+                <p>Las reglas se aplican simultáneamente en cada generación \( t \to t+1 \):</p>
+
+                <h3>1. Supervivencia</h3>
+                <p>Una célula viva sobrevive si tiene exactamente 2 o 3 vecinos vivos:</p>
+                <div class="equation">
+                    \( S(x, y, t+1) = 1 \text{ si } S(x, y, t) = 1 \text{ y } N(x, y, t) \in \{2, 3\} \)
+                </div>
+
+                <h3>2. Muerte</h3>
+                <p>Una célula viva muere por <span class="highlight">soledad</span> (menos de 2 vecinos) o <span class="highlight">sobrepoblación</span> (más de 3 vecinos):</p>
+                <div class="equation">
+                    \( S(x, y, t+1) = 0 \text{ si } S(x, y, t) = 1 \text{ y } N(x, y, t) < 2 \text{ o } N(x, y, t) > 3 \)
+                </div>
+
+                <h3>3. Nacimiento</h3>
+                <p>Una célula muerta nace si tiene exactamente 3 vecinos vivos:</p>
+                <div class="equation">
+                    \( S(x, y, t+1) = 1 \text{ si } S(x, y, t) = 0 \text{ y } N(x, y, t) = 3 \)
+                </div>
+
+                <h3>4. Estabilidad</h3>
+                <p>En cualquier otro caso, una célula muerta permanece muerta:</p>
+                <div class="equation">
+                    \( S(x, y, t+1) = 0 \text{ si } S(x, y, t) = 0 \text{ y } N(x, y, t) \neq 3 \)
+                </div>
+                <p>Estas reglas se implementan en una cuadrícula discreta, iterando en pasos temporales discretos, lo que lo convierte en un sistema dinámico celular.</p>
+            </div>
+
+            <div class="section" id="biology">
+                <h2>Similitudes Biológicas</h2>
+                <p>El Juego de la Vida no simula organismos reales, pero sus dinámicas resuenan con conceptos biológicos fundamentales:</p>
+                <h3>1. Homeostasis y Equilibrio Poblacional</h3>
+                <p>La regla de supervivencia (2-3 vecinos) refleja cómo las poblaciones biológicas requieren un balance: ni demasiada competencia (sobrepoblación) ni aislamiento (soledad). En ecología, esto se asemeja a la <span class="highlight">capacidad de carga</span> de un ecosistema.</p>
+                <h3>2. Reproducción y Crecimiento</h3>
+                <p>El nacimiento con exactamente 3 vecinos evoca la necesidad de una densidad mínima para la reproducción, similar a cómo ciertas especies requieren un umbral de individuos para prosperar (efecto Allee).</p>
+                <h3>3. Emergencia y Autoorganización</h3>
+                <p>Patrones como el <span class="highlight">planeador</span> (una estructura que se mueve) o el <span class="highlight">oscilador</span> (que alterna estados) surgen sin diseño previo, recordando cómo las células biológicas forman tejidos o cómo las colonias bacterianas se organizan espontáneamente.</p>
+                <h3>4. Entropía y Ciclos de Vida</h3>
+                <p>La muerte por sobrepoblación o soledad refleja la lucha contra la entropía en sistemas vivos, donde el equilibrio dinámico es clave para la supervivencia.</p>
+                <p>Ejemplo biológico: una colonia de bacterias en una placa de Petri crece, se estabiliza o colapsa según la densidad y recursos, un eco directo de estas reglas.</p>
+            </div>
+
+            <div class="section" id="math">
+                <h2>Perspectiva Matemática</h2>
+                <p>Matemáticamente, el Juego de la Vida es un <span class="highlight">autómata celular</span> con un espacio de estados finito (\( \{0, 1\} \)) y una función de transición local. Su evolución puede representarse como:</p>
+                <div class="equation">
+                    \( S(t+1) = f(S(t), N(t)) \)
+                </div>
+                <p>Donde \( f \) encapsula las reglas descritas. Algunas propiedades clave:</p>
+                <h3>1. Complejidad Computacional</h3>
+                <p>Conway demostró que el Juego de la Vida es <span class="highlight">Turing completo</span>, capaz de simular cualquier cálculo con las configuraciones adecuadas (ej., máquinas lógicas con planeadores y colisiones).</p>
+                <h3>2. Dinámicas No Lineales</h3>
+                <p>Pequeños cambios en la configuración inicial pueden llevar a resultados drásticamente diferentes, un rasgo de los sistemas caóticos y no lineales.</p>
+                <h3>3. Patrones Periódicos y Estables</h3>
+                <p>Estructuras como el "bloque" (2x2 estable) o el "parpadeador" (oscilador de período 2) son soluciones periódicas o fijas del sistema dinámico.</p>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="section" id="controls">
+                <h2>Controles</h2>
+                <p>Densidad inicial (%): <span id="densityValue">30</span></p>
+                <input type="range" id="density" min="10" max="50" value="30">
+                <p>Velocidad (ms): <span id="speedValue">500</span></p>
+                <input type="range" id="speed" min="100" max="1000" step="100" value="500">
+                <p>Estado: <span id="status">Generación: 0, Células vivas: 0</span></p>
+                <button onclick="resetSimulation()">Reiniciar</button>
+                <button onclick="toggleSimulation()">Pausar/Reanudar</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Juego de la Vida | Marzo 2025</p>
+        </div>
+    </div>
+
+    <script>
+        const vizContainer = document.getElementById('visualization');
+        let scene, camera, renderer, controls;
+        const gridSize = 20; // Tamaño de la cuadrícula 3D (20x20x20)
+        let grid = Array(gridSize).fill().map(() => Array(gridSize).fill().map(() => Array(gridSize).fill(0)));
+        let liveCells = [];
+        let generation = 0;
+        let density = 0.3;
+        let speed = 500;
+        let isRunning = true;
+        let animationId = null;
+
+        function initThreeJS() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, vizContainer.clientWidth / 600, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(vizContainer.clientWidth, 600);
+            vizContainer.appendChild(renderer.domElement);
+
+            scene.background = new THREE.Color(0x000000);
+
+            const gridMaterial = new THREE.LineBasicMaterial({ color: 0x00FFFF, transparent: true, opacity: 0.2 });
+            const gridGeometry = new THREE.BufferGeometry();
+            const vertices = [];
+            for (let i = 0; i <= gridSize; i++) {
+                for (let j = 0; j <= gridSize; j++) {
+                    vertices.push(i - gridSize / 2, j - gridSize / 2, -gridSize / 2);
+                    vertices.push(i - gridSize / 2, j - gridSize / 2, gridSize / 2);
+                    vertices.push(i - gridSize / 2, -gridSize / 2, j - gridSize / 2);
+                    vertices.push(i - gridSize / 2, gridSize / 2, j - gridSize / 2);
+                    vertices.push(-gridSize / 2, i - gridSize / 2, j - gridSize / 2);
+                    vertices.push(gridSize / 2, i - gridSize / 2, j - gridSize / 2);
+                }
+            }
+            gridGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            const grid = new THREE.LineSegments(gridGeometry, gridMaterial);
+            scene.add(grid);
+
+            camera.position.set(gridSize, gridSize, gridSize * 1.5);
+            camera.lookAt(0, 0, 0);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.screenSpacePanning = false;
+            controls.minDistance = 5;
+            controls.maxDistance = 50;
+            controls.enablePan = false;
+
+            window.addEventListener('resize', resize);
+        }
+
+        const densitySlider = document.getElementById("density");
+        densitySlider.oninput = function() {
+            density = +this.value / 100;
+            document.getElementById("densityValue").textContent = this.value;
+        };
+        const speedSlider = document.getElementById("speed");
+        speedSlider.oninput = function() {
+            speed = +this.value;
+            document.getElementById("speedValue").textContent = this.value;
+            if (isRunning) {
+                clearInterval(animationId);
+                animationId = setInterval(step, speed);
+            }
+        };
+
+        function resetSimulation() {
+            liveCells.forEach(cell => scene.remove(cell.mesh));
+            liveCells = [];
+            grid = Array(gridSize).fill().map(() => Array(gridSize).fill().map(() => Array(gridSize).fill(0)));
+            generation = 0;
+
+            const cellMaterial = new THREE.MeshBasicMaterial({ color: 0x00FF00 });
+            const geometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+
+            for (let x = 0; x < gridSize; x++) {
+                for (let y = 0; y < gridSize; y++) {
+                    for (let z = 0; z < gridSize; z++) {
+                        if (Math.random() < density) {
+                            grid[x][y][z] = 1;
+                            const mesh = new THREE.Mesh(geometry, cellMaterial);
+                            mesh.position.set(x - gridSize / 2, y - gridSize / 2, z - gridSize / 2);
+                            liveCells.push({ mesh, x, y, z });
+                            scene.add(mesh);
+                        }
+                    }
+                }
+            }
+
+            updateStatus();
+            if (isRunning) {
+                clearInterval(animationId);
+                animationId = setInterval(step, speed);
+            }
+        }
+
+        function toggleSimulation() {
+            isRunning = !isRunning;
+            if (isRunning) {
+                animationId = setInterval(step, speed);
+            } else {
+                clearInterval(animationId);
+            }
+        }
+
+        function computeNextGeneration() {
+            const newGrid = Array(gridSize).fill().map(() => Array(gridSize).fill().map(() => Array(gridSize).fill(0)));
+            const changes = [];
+
+            for (let x = 0; x < gridSize; x++) {
+                for (let y = 0; y < gridSize; y++) {
+                    for (let z = 0; z < gridSize; z++) {
+                        const neighbors = countNeighbors(x, y, z);
+                        if (grid[x][y][z] === 1) {
+                            newGrid[x][y][z] = (neighbors === 2 || neighbors === 3) ? 1 : 0;
+                            if (newGrid[x][y][z] === 0) {
+                                changes.push({ x, y, z, state: 0 });
+                            }
+                        } else {
+                            newGrid[x][y][z] = (neighbors === 3) ? 1 : 0;
+                            if (newGrid[x][y][z] === 1) {
+                                changes.push({ x, y, z, state: 1 });
+                            }
+                        }
+                    }
+                }
+            }
+
+            return { newGrid, changes };
+        }
+
+        function countNeighbors(x, y, z) {
+            let count = 0;
+            for (let dx = -1; dx <= 1; dx++) {
+                for (let dy = -1; dy <= 1; dy++) {
+                    for (let dz = -1; dz <= 1; dz++) {
+                        if (dx === 0 && dy === 0 && dz === 0) continue;
+                        const nx = x + dx;
+                        const ny = y + dy;
+                        const nz = z + dz;
+                        if (isValid(nx, ny, nz)) count += grid[nx][ny][nz];
+                    }
+                }
+            }
+            return count;
+        }
+
+        function isValid(x, y, z) {
+            return x >= 0 && x < gridSize && y >= 0 && y < gridSize && z >= 0 && z < gridSize;
+        }
+
+        function step() {
+            const { newGrid, changes } = computeNextGeneration();
+            grid = newGrid;
+            generation++;
+
+            const cellMaterial = new THREE.MeshBasicMaterial({ color: 0x00FF00 });
+            const geometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+
+            changes.forEach(change => {
+                if (change.state === 0) {
+                    const index = liveCells.findIndex(cell => cell.x === change.x && cell.y === change.y && cell.z === change.z);
+                    if (index !== -1) {
+                        scene.remove(liveCells[index].mesh);
+                        liveCells.splice(index, 1);
+                    }
+                } else {
+                    const mesh = new THREE.Mesh(geometry, cellMaterial);
+                    mesh.position.set(change.x - gridSize / 2, change.y - gridSize / 2, change.z - gridSize / 2);
+                    liveCells.push({ mesh, x: change.x, y: change.y, z: change.z });
+                    scene.add(mesh);
+                }
+            });
+
+            updateStatus();
+        }
+
+        function updateStatus() {
+            document.getElementById("status").textContent = `Generación: ${generation}, Células vivas: ${liveCells.length}`;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function resize() {
+            const width = vizContainer.clientWidth;
+            const height = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 600;
+            renderer.setSize(width, height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        }
+
+        initThreeJS();
+        resetSimulation();
+        animate();
+    </script>
+</body>
+</html>

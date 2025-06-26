@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red de Canciones Interactiva</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #000000;
+            color: #00FF00;
+            font-family: 'Orbitron', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 2px solid #00FFFF;
+            box-shadow: 0 0 15px #00FFFF;
+        }
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+        }
+        nav ul li {
+            margin: 0 20px;
+        }
+        nav ul li a {
+            color: #00FF00;
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+        .main-container {
+            max-width: 1400px;
+            margin: 80px auto 0;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 20px;
+        }
+        .content {
+            grid-column: 1 / 2;
+        }
+        .sidebar {
+            grid-column: 2 / 3;
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            background: rgba(0, 255, 255, 0.1);
+            padding: 20px;
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF;
+        }
+        .section {
+            margin: 50px 0;
+            padding: 30px;
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF;
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        h2 {
+            color: #00FF00;
+            text-shadow: 0 0 8px #00FF00;
+            border-bottom: 1px solid #00FFFF;
+            padding-bottom: 10px;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .search-bar input {
+            background: #000000;
+            border: 2px solid #00FFFF;
+            color: #00FF00;
+            padding: 10px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1em;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 350px;
+            box-shadow: 0 0 5px #00FFFF;
+        }
+        .filters {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        select {
+            background: #000000;
+            border: 2px solid #00FFFF;
+            color: #00FF00;
+            padding: 8px;
+            font-family: 'Orbitron', sans-serif;
+            border-radius: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #00FFFF;
+            text-align: left;
+        }
+        th {
+            background: rgba(0, 255, 255, 0.1);
+            color: #00FFFF;
+        }
+        tr:nth-child(even) {
+            background: rgba(0, 255, 255, 0.03);
+        }
+        a {
+            color: #00FFFF;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        a:hover {
+            text-shadow: 0 0 5px #00FFFF;
+        }
+        #network-graph {
+            width: 100%;
+            height: 800px;
+            margin: 30px 0;
+        }
+        .node circle {
+            stroke: #00FFFF;
+            stroke-width: 2px;
+            fill: #00FF00;
+        }
+        .node.category circle {
+            fill: #ff00c8;
+        }
+        .node text {
+            fill: #00FFFF;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            text-shadow: 0 0 5px #00FFFF;
+        }
+        .link {
+            stroke: #00FF00;
+            stroke-opacity: 0.6;
+            stroke-width: 1.5px;
+        }
+        .sidebar a {
+            color: #00FF00;
+            text-decoration: none;
+            display: block;
+            margin: 10px 0;
+        }
+        #lyrics-container {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border: 2px solid #00FFFF;
+            background: rgba(0, 0, 0, 0.9);
+            box-shadow: 0 0 15px #00FFFF;
+            border-radius: 10px;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        #lyrics-container h3 {
+            color: #00FFFF;
+            text-shadow: 0 0 5px #00FFFF;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        #lyrics-container pre {
+            color: #00FF00;
+            font-size: 1em;
+            white-space: pre-wrap;
+            line-height: 1.8;
+            padding: 0 20px;
+            flex: 1;
+        }
+        #lyrics-container .highlight {
+            color: #00FFFF; /* Celeste neón */
+            text-shadow: 0 0 5px #00FFFF;
+            font-weight: 700;
+        }
+        #cover-image {
+            display: none; /* Oculta la imagen inicialmente */
+            width: 200px;
+            height: 200px;
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 10px #00FFFF;
+            border-radius: 5px;
+            object-fit: cover;
+        }
+        @media (max-width: 900px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                position: static;
+            }
+            #lyrics-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            #cover-image {
+                width: 150px;
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#canciones">Canciones</a></li>
+            <li><a href="#contacto">Acerca de / Contacto</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-container" id="inicio">
+        <div class="content">
+            <div class="section">
+                <h2>Red Interactiva de Canciones</h2>
+                <div id="network-graph"></div>
+            </div>
+            <div class="section">
+                <h2>Catálogo de Canciones</h2>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Busca por título, categoría o palabras clave...">
+                </div>
+                <div class="filters">
+                    <select id="categoryFilter">
+                        <option value="">Todas las Categorías</option>
+                    </select>
+                </div>
+                <table id="songTable">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Letra</th>
+                            <th>Categoría</th>
+                            <th>Palabras Clave</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div id="lyrics-container">
+                    <div>
+                        <h3 id="lyrics-title"></h3>
+                        <pre id="lyrics-content"></pre>
+                    </div>
+                    <img id="cover-image" src="" alt="Portada del disco">
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <h2>Categorías</h2>
+            <ul id="category-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        // Datos de canciones (estructura escalable para replicar más canciones)
+        const data = {
+            "Rock Alternativo": [
+                {
+                    "title": "Eclipse Total",
+                    "lyrics": `Hey, salúdame,
+hablas en inglés, o en lenguas desde otro planeta
+hey acéptame,
+eres uno más, viviendo sin receta
+transmitiendo desde el mar, olas de telepatía que revientan coloradas
+en la orilla
+si vivir de realidad o vivir de fantasía
+indeciso para siempre dormiría
+suena triste al sol como un eco de espera
+y a la luna voy, de alegría por tener
+una sola ecuación para hacerlos alinear
+me elimina a mí y yo la quiero eliminar
+es un eclipse total UHHH, UHHHH
+(entra baterias , bajo y teclados)
+hey salúdame, hipnotizador y haz con tu piedra un péndulo en señal,
+al brillo del imán , al rayo en el volcán, que triza las pupilas
+transmitiendo desde el mar, olas de telepatías
+que rebotan en pirámides egipcias.
+si vivir de realidad o vivir de fantasía
+indeciso para siempre dormiría
+suena triste al sol como un eco de espera
+y a la luna voy, mi alegría por tener
+una sola ecuación para hacerlos alinear
+me elimina a mí y yo la quiero eliminar
+(es un eclipse total)
+suena triste al sol como un eco de espera
+y a la luna voy, mi alegría por tener
+una sola ecuación para hacerlos alinear
+me elimina a mí y yo la quiero eliminar
+es un eclipse total
+(es un eclipse total)
+(Totaaaal!!)`,
+                    "keywords": ["eclipse", "telepatía", "realidad", "fantasía", "luna", "sol"],
+                    "category": "Rock Alternativo",
+                    "coverImage": "data:image/jpeg;base64,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"
+                },
+                {
+                    "title": "Sombras del Cosmos",
+                    "lyrics": `Luces parpadean en la noche sin fin,
+un susurro del viento trae el eco hasta mí,
+sombras danzan lentas bajo un cielo gris,
+el cosmos me llama, no sé cómo ir.
+Entre nebulosas y un vacío total,
+busco la señal en un pulso sideral,
+las estrellas cantan su antigua verdad,
+un grito silente en la eternidad.
+(estribillo)
+Sombras del cosmos, guíenme al hogar,
+donde el tiempo se pierde y no hay lugar,
+sombras del cosmos, déjenme brillar,
+en la vasta oscuridad voy a vagar.
+El polvo estelar cubre mi piel al pasar,
+un reflejo lejano que no puedo alcanzar,
+la galaxia gira, me pierdo en su faz,
+un viajero eterno sin rumbo jamás.`,
+                    "keywords": ["sombras", "cosmos", "estrellas", "eternidad", "galaxia", "oscuridad"],
+                    "category": "Rock Alternativo",
+                    "coverImage": "https://via.placeholder.com/200x200?text=Sombras+del+Cosmos"
+                },
+                {
+    "title": "Para ti",
+    "lyrics": `Para ti
+Para ti
+Es el día de hoy
+Una figura informe en la mano
+Que obedece a su amo
+Primero
+Para ti
+Las vueltas del reloj
+Que pican en la piel de cualquiera
+Ciudadano que espera
+Segundo
+Libertad
+Te queremos en la vida
+Compañía
+Te queremos en la vida
+Y como nadie sabe nada lo que puede pasar
+Me pasaría todo el día mirándola
+Y miraría para arriba para verla pasar
+Si es arriba donde debe andar
+Y es arriba donde quiero estar
+¡Oh, por supuesto que sí!
+Para ti
+Son las olas del mar
+La tarde que te vende algo nuevo
+Y los fuegos del cielo
+Rosado
+Para ti (para ti)
+Es el día de hoy (hoy)
+Hileras infinitas de estatuas
+Polizontes de plata
+Mañana (ay, ay, ay, ay, ay)
+Libertad
+Te queremos en la vida
+Compañía
+Te queremos en la vida
+Y como nadie sabe nada lo que puede pasar
+Me pasaría todo el día mirándola
+Y miraría para arriba para verla pasar
+Si es arriba donde debe andar
+Y es arriba donde quiero estar
+¡Por supuesto que sí!`,
+    "keywords": ["libertad", "compañía", "arriba", "día", "cielo", "mar"],
+    "category": "Rock Alternativo",
+    "coverImage": "https://via.placeholder.com/200x200?text=Para+ti"
+}
+            ]
+        };
+
+        // Preparación de datos para la aplicación
+        const songs = Object.entries(data).flatMap(([category, songs]) =>
+            songs.map(song => ({
+                title: song.title,
+                lyrics: song.lyrics,
+                category: category,
+                keywords: song.keywords,
+                coverImage: song.coverImage
+            }))
+        );
+        const categories = Object.keys(data).sort();
+
+        // Llenar el filtro de categorías
+        const categoryFilter = document.getElementById('categoryFilter');
+        categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category;
+            option.textContent = category;
+            categoryFilter.appendChild(option);
+        });
+
+        // Renderizar la tabla de canciones
+        function renderTable() {
+            const selectedCategory = categoryFilter.value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            let filteredSongs = songs;
+
+            if (selectedCategory) {
+                filteredSongs = filteredSongs.filter(song => song.category === selectedCategory);
+            }
+
+            if (searchTerm) {
+                filteredSongs = filteredSongs.filter(song => 
+                    song.title.toLowerCase().includes(searchTerm) ||
+                    song.category.toLowerCase().includes(searchTerm) ||
+                    song.keywords.some(keyword => keyword.toLowerCase().includes(searchTerm))
+                );
+            }
+
+            const tbody = document.querySelector('#songTable tbody');
+            tbody.innerHTML = '';
+
+            filteredSongs.forEach(song => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${song.title}</td>
+                    <td><a href="#" onclick="showLyrics('${song.title}', \`${song.lyrics.replace(/`/g, '\\`')}\`, '${song.coverImage}'); return false;">Ver Letra</a></td>
+                    <td>${song.category}</td>
+                    <td>${song.keywords.join(', ')}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Event listeners para búsqueda y filtro
+        categoryFilter.addEventListener('change', renderTable);
+        document.getElementById('searchInput').addEventListener('input', renderTable);
+        renderTable();
+
+        // Configuración de la red D3.js
+        const width = 900, height = 800;
+        const svg = d3.select("#network-graph")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        const nodes = [];
+        const links = [];
+        const neonColors = d3.scaleOrdinal(["#FF00FF", "#00CCFF", "#FFFF00", "#FF6600", "#FF33CC"]);
+
+        Object.entries(data).forEach(([category, songs], index) => {
+            nodes.push({ id: category, group: "category", size: 50 + songs.length * 5, color: neonColors(index) });
+            songs.forEach(song => {
+                nodes.push({ id: song.title, group: "song", size: 20 });
+                links.push({ source: category, target: song.title });
+                song.keywords.forEach(keyword => {
+                    nodes.push({ id: keyword, group: "keyword", size: 10 });
+                    links.push({ source: song.title, target: keyword });
+                });
+            });
+        });
+
+        const simulation = d3.forceSimulation(nodes)
+            .force("link", d3.forceLink(links).id(d => d.id).distance(d => d.group === "keyword" ? 80 : 150))
+            .force("charge", d3.forceManyBody().strength(d => d.group === "category" ? -300 : -50))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collision", d3.forceCollide().radius(d => d.size + 10));
+
+        const link = svg.append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(links)
+            .enter().append("line")
+            .attr("class", "link");
+
+        const node = svg.append("g")
+            .attr("class", "nodes")
+            .selectAll("g")
+            .data(nodes)
+            .enter().append("g")
+            .attr("class", d => d.group === "category" ? "node category" : "node")
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        node.append("circle")
+            .attr("r", d => d.size)
+            .attr("fill", d => d.group === "category" ? d.color : d.group === "song" ? "#00FF00" : "#FF33CC")
+            .on("click", (event, d) => {
+                if (d.group === "song") {
+                    const song = songs.find(s => s.title === d.id);
+                    if (song) showLyrics(song.title, song.lyrics, song.coverImage);
+                }
+            });
+
+        node.append("text")
+            .attr("text-anchor", "middle")
+            .attr("dy", d => d.size + 10)
+            .text(d => d.id);
+
+        simulation.on("tick", () => {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            node.attr("transform", d => {
+                d.x = Math.max(d.size, Math.min(width - d.size, d.x));
+                d.y = Math.max(d.size, Math.min(height - d.size, d.y));
+                return `translate(${d.x},${d.y})`;
+            });
+        });
+
+        function dragstarted(event) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        }
+
+        function dragged(event) {
+            event.subject.fx = event.x;
+            event.subject.fy = event.y;
+        }
+
+        function dragended(event) {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
+        }
+
+        // Renderizar la sidebar
+        const categoryList = document.getElementById('category-list');
+        Object.entries(data).forEach(([category, songs]) => {
+            const categoryLi = document.createElement('li');
+            categoryLi.innerHTML = `<a style="color: #FF00CC;" onclick="highlightCategory('${category}')">${category}</a>`;
+            const songList = document.createElement('ul');
+            songList.style.paddingLeft = "15px";
+            songs.forEach(song => {
+                const songLi = document.createElement('li');
+                songLi.innerHTML = `<a href="#" onclick="showLyrics('${song.title}', \`${song.lyrics.replace(/`/g, '\\`')}\`, '${song.coverImage}')">${song.title}</a>`;
+                songList.appendChild(songLi);
+            });
+            categoryLi.appendChild(songList);
+            categoryList.appendChild(categoryLi);
+        });
+
+        function highlightCategory(category) {
+            node.selectAll("circle")
+                .style("stroke", "#00FFFF")
+                .style("stroke-width", "2px")
+                .filter(d => d.id === category || (d.group === "song" && songs.some(s => s.title === d.id && s.category === category)))
+                .style("stroke", "#FFFFFF")
+                .style("stroke-width", "4px");
+
+            categoryFilter.value = category;
+            renderTable();
+        }
+
+        // Mostrar letras con palabras clave resaltadas y portada
+        function showLyrics(title, lyrics, coverImage) {
+            const lyricsContainer = document.getElementById('lyrics-container');
+            const coverImageElement = document.getElementById('cover-image');
+            const song = songs.find(s => s.title === title);
+            let highlightedLyrics = lyrics;
+
+            // Resaltar palabras clave en la letra
+            song.keywords.forEach(keyword => {
+                const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+                highlightedLyrics = highlightedLyrics.replace(regex, `<span class="highlight">${keyword}</span>`);
+            });
+
+            document.getElementById('lyrics-title').textContent = title;
+            document.getElementById('lyrics-content').innerHTML = highlightedLyrics;
+            coverImageElement.src = coverImage;
+            coverImageElement.style.display = 'block';
+            lyricsContainer.style.display = 'flex';
+            lyricsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    </script>
+</body>
+</html>

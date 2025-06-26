@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canciones & Mapas Conceptuales 🎸🗺️</title>
+    <!-- Mermaid.js for rendering diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <!-- Google Fonts: Orbitron for cyberpunk aesthetic -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Color variables for maintainability */
+        :root {
+            --primary-color: #00FFFF; /* Neon cyan for borders, accents */
+            --secondary-color: #FF00FF; /* Neon magenta for highlights */
+            --bg-color: #000000; /* Solid black for background */
+            --text-color: #00FF00; /* Neon green for text */
+            --card-bg: #000000; /* Black for collapsible content */
+            --shadow: 0 0 20px #00FFFF; /* Cyan glow effect */
+            --nav-bg: #000000; /* Solid black for navigation */
+        }
+
+        /* Base styles */
+        body {
+            font-family: 'Orbitron', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header with solid black background */
+        header {
+            background: var(--bg-color);
+            color: var(--text-color);
+            text-align: center;
+            padding: 2rem 1rem;
+            text-shadow: 0 0 15px #00FFFF;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            animation: glow 2s infinite alternate;
+        }
+
+        /* Glow animation for header title */
+        @keyframes glow {
+            from { text-shadow: 0 0 5px #00FF00; }
+            to { text-shadow: 0 0 20px #00FFFF; }
+        }
+
+        /* Sticky navigation bar */
+        nav {
+            background: var(--nav-bg);
+            padding: 1rem;
+            box-shadow: 0 0 15px #00FFFF;
+            border-bottom: 2px solid var(--primary-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        nav a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: clamp(0.9rem, 3vw, 1rem);
+            padding: 0.5rem;
+            transition: text-shadow 0.3s;
+        }
+
+        nav a:hover {
+            text-shadow: 0 0 10px #00FFFF;
+        }
+
+        /* Main content container */
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Song sections with collapsible content */
+        .song-section {
+            background: var(--card-bg);
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .song-header {
+            background: var(--bg-color); /* Black header */
+            color: var(--text-color);
+            padding: 1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--primary-color); /* Cyan separator */
+            transition: background 0.3s;
+        }
+
+        .song-header:hover {
+            background: var(--secondary-color); /* Magenta on hover */
+        }
+
+        .song-header h2 {
+            margin: 0;
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+        }
+
+        .song-content {
+            background: var(--card-bg);
+            padding: 1rem;
+            display: none;
+        }
+
+        .song-content.active {
+            display: block;
+        }
+
+        /* Callout for reflections */
+        .callout {
+            border-left: 4px solid var(--secondary-color);
+            background: rgba(255, 0, 255, 0.05);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        /* Mermaid diagram container */
+        .mermaid-diagram {
+            margin: 1rem 0;
+            text-align: center;
+            overflow: auto;
+        }
+
+        .mermaid-diagram svg {
+            max-width: 100%;
+            height: auto;
+            background: transparent;
+        }
+
+        /* Tables for index and glossary */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            border: 1px solid var(--primary-color);
+        }
+
+        th, td {
+            border: 1px solid var(--primary-color);
+            padding: 0.8rem;
+            text-align: left;
+            font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+        }
+
+        th {
+            background: var(--primary-color);
+            color: var(--text-color);
+            text-shadow: 0 0 8px #00FF00;
+        }
+
+        /* Images with cyan border */
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border: 1px solid var(--primary-color);
+        }
+
+        /* Footer styling */
+        footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
+            border-top: 2px solid var(--primary-color);
+        }
+
+        /* Responsive design for smartphones */
+        @media (max-width: 768px) {
+            header {
+                padding: 1.5rem 0.5rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            nav a {
+                padding: 0.75rem;
+                min-height: 44px; /* Touch target size */
+                display: block;
+                text-align: center;
+            }
+
+            .song-header {
+                padding: 0.75rem;
+            }
+
+            .song-content {
+                padding: 0.75rem;
+            }
+
+            .mermaid-diagram {
+                overflow-x: auto;
+            }
+
+            .mermaid-diagram svg {
+                max-width: 100%;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            /* Smaller fonts for small screens */
+            h2 {
+                font-size: clamp(1.1rem, 3.5vw, 1.3rem);
+            }
+
+            p, li {
+                font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: clamp(1.5rem, 4.5vw, 1.8rem);
+            }
+
+            .song-header h2 {
+                font-size: clamp(1rem, 3vw, 1.2rem);
+            }
+
+            .callout {
+                padding: 0.5rem;
+            }
+
+            img {
+                margin: 0.5rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🎸 Canciones & Mapas Conceptuales 🗺️</h1>
+        <p>Navegación visual: Transcripciones y mapas conceptuales de 17 canciones con sus temas y símbolos.</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#song-1">Aquello que llaman amor 💗</a></li>
+            <li><a href="#song-2">Acero Chino 🔥</a></li>
+            <li><a href="#song-3">Presagio 🔮</a></li>
+            <li><a href="#song-4">10 Minutos ⏱️</a></li>
+            <li><a href="#song-5">Valor 🦁</a></li>
+            <li><a href="#song-6">Cielo ☁️</a></li>
+            <li><a href="#song-7">Para Siempre Joven 👶</a></li>
+            <li><a href="#song-8">Palabras miles 📚</a></li>
+            <li><a href="#song-9">Escaleras 🪜</a></li>
+            <li><a href="#song-10">Las hojas caen 🍂</a></li>
+            <li><a href="#song-11">Tótem 🗿</a></li>
+            <li><a href="#song-12">Planetas vecinos 🪐</a></li>
+            <li><a href="#song-13">La vida que merezco ⚖️</a></li>
+            <li><a href="#song-14">1000 años 🕰️</a></li>
+            <li><a href="#song-15">Buscaré 🔍</a></li>
+            <li><a href="#song-16">Animal 🦁</a></li>
+            <li><a href="#song-17">Well is small 🌊</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section>
+            <h2>📋 Índice de Canciones y Mapas</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>№</th>
+                        <th>Título</th>
+                        <th>Símbolo</th>
+                        <th>Tema Principal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>1</td><td><a href="#song-1">Aquello que llaman amor</a></td><td>💗</td><td>Búsqueda</td></tr>
+                    <tr><td>2</td><td><a href="#song-2">Acero Chino</a></td><td>🔥</td><td>Materialismo</td></tr>
+                    <tr><td>3</td><td><a href="#song-3">Presagio</a></td><td>🔮</td><td>Premonición</td></tr>
+                    <tr><td>4</td><td><a href="#song-4">10 Minutos</a></td><td>⏱️</td><td>Transformación</td></tr>
+                    <tr><td>5</td><td><a href="#song-5">Valor</a></td><td>🦁</td><td>Coraje</td></tr>
+                    <tr><td>6</td><td><a href="#song-6">Cielo</a></td><td>☁️</td><td>Aspiración</td></tr>
+                    <tr><td>7</td><td><a href="#song-7">Para Siempre Joven</a></td><td>👶</td><td>Juventud</td></tr>
+                    <tr><td>8</td><td><a href="#song-8">Palabras miles</a></td><td>📚</td><td>Comunicación</td></tr>
+                    <tr><td>9</td><td><a href="#song-9">Escaleras</a></td><td>🪜</td><td>Conexión</td></tr>
+                    <tr><td>10</td><td><a href="#song-10">Las hojas caen</a></td><td>🍂</td><td>Caída</td></tr>
+                    <tr><td>11</td><td><a href="#song-11">Tótem</a></td><td>🗿</td><td>Ancestralidad</td></tr>
+                    <tr><td>12</td><td><a href="#song-12">Planetas vecinos</a></td><td>🪐</td><td>Distancia</td></tr>
+                    <tr><td>13</td><td><a href="#song-13">La vida que merezco</a></td><td>⚖️</td><td>Aceptación</td></tr>
+                    <tr><td>14</td><td><a href="#song-14">1000 años</a></td><td>🕰️</td><td>Trascendencia</td></tr>
+                    <tr><td>15</td><td><a href="#song-15">Buscaré</a></td><td>🔍</td><td>Exploración</td></tr>
+                    <tr><td>16</td><td><a href="#song-16">Animal</a></td><td>🦁</td><td>Naturaleza</td></tr>
+                    <tr><td>17</td><td><a href="#song-17">Well is small</a></td><td>🌊</td><td>Sonoridad</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Song Sections -->
+        <section class="song-section" id="song-1" role="region" aria-labelledby="song-1-header">
+            <div class="song-header" id="song-1-header" role="button" aria-expanded="false">
+                <h2>1 • Aquello que llaman amor 💗</h2>
+                <span>▼</span>
+            </div>
+            <div class="song-content">
+                <img src="https://via.placeholder.com/600x200?text=heart_search.png" alt="Heart Search">
+                <blockquote>"Irás hasta la cima, a la misma cornisa del volcán..."</blockquote>
+                <div class="mermaid-diagram">
+                    <pre class="mermaid">
+                        graph TD
+                            A[Búsqueda del Amor] --> B[Lugares físicos]
+                            A --> C[Estados emocionales]
+                            B --> D[Cima del volcán]
+                            B --> E[África]
+                            B --> F[América]
+                            B --> G[Orilla del mar]
+                            C --> H[Soledad]
+                            C --> I[Frustración]
+                            C --> J[Esperanza]
+                            H --> K[Aquello que llaman cariño]
+                            J --> L[Aquello que llaman amor]
+                            I --> M["¿Dónde está?"]
+                    </pre>
+                </div>
+                <p><em>Lyrics excerpt:</em><br>
+                    Irás hasta la cima, a la misma cornisa del volcán.<br>
+                    Irás por la avenida trepando con piedras cortantes.<br>
+                    Irás a una cita extraña, por el día y por la noche una persona más.<br>
+                    Y quieres encontrar aquello que llaman amor.<br>
+                    Aquello que llaman amor.<br><br>
+                    Buscan en la oscuridad y en la blanca sabana del África.<br>
+                    Buscan en América y en el alto nido de las águilas.<br>
+                    Buscan desde la raíz hasta las copas de los árboles, enterrados en el más tópico.<br>
+                    Buscan hasta la orilla hasta encontrar con las manos otros peces<br>
+                    y hasta las conchas en el mar.<br>
+                    Y todos quieren encontrar aquello que llaman amor.<br><br>
+                    Irás hasta la orilla hasta encontrar con los dedos otros peces,<br>
+                    kilómetros y millas para nada.<br>
+                    Estrella por un día y por la noche una persona más.<br>
+                    Y quieres encontrar aquello que llaman amor.<br><br>
+                    ¡Hey! Tonto de mí, cuando lloras solamente,<br>
+                    lo comentas suavemente con la soledad.<br>
+                    Cuando vas para adelante pero el mundo lentamente tira para atrás.<br>
+                    Encontrarás aquello que llaman cariño.<br><br>
+                    Todos quieren encontrar aquello que llaman amor.<br>
+                    Aquello que llaman amor.<br>
+                    ¿Dónde está? ¿Dónde está?<br>
+                    Aquello que llaman amor.
+                </p>
+                <div class="callout">
+                    <strong>Reflexión:</strong> La búsqueda del amor lleva a las personas a los rincones más extremos del mundo y de sí mismos.
+                </div>
+            </div>
+        </section>
+
+        <!-- Placeholder Song Sections -->
+        <section class="song-section" id="song-2" role="region" aria-labelledby="song-2-header">
+            <div class="song-header" id="song-2-header" role="button" aria-expanded="false">
+                <h2>2 • Acero Chino 🔥</h2>
+                <span>▼</span>
+            </div>
+            <div class="song-content">
+                <img src="https://via.placeholder.com/600x200?text=forge_chains.png" alt="Forge Chains">
+                <blockquote>"Voz de hierro y de carbón, hueso de la construcción..."</blockquote>
+                <div class="mermaid-diagram">
+                    <pre class="mermaid">
+                        mindmap
+                          root((Acero Chino))
+                            Materialismo
+                              Precio vs. Valor
+                              Riqueza vs. Pobreza
+                            Elementos
+                              Hierro
+                              Carbón
+                              Metal
+                              Hornos
+                    </pre>
+                </div>
+                <p><em>Lyrics excerpt:</em><br>
+                    [Placeholder lyrics for Acero Chino]<br>
+                    Voz de hierro y de carbón,<br>
+                    hueso de la construcción,<br>
+                    volarán mis pies sin tu armazón.
+                </p>
+                <div class="callout">
+                    <strong>Metáfora:</strong> [Placeholder reflection]
+                </div>
+            </div>
+        </section>
+
+        <section class="song-section" id="song-3" role="region" aria-labelledby="song-3-header">
+            <div class="song-header" id="song-3-header" role="button" aria-expanded="false">
+                <h2>3 • Presagio 🔮</h2>
+                <span>▼</span>
+            </div>
+            <div class="song-content">
+                <img src="https://via.placeholder.com/600x200?text=presagio.png" alt="Presagio">
+                <blockquote>"[Placeholder quote]"</blockquote>
+                <div class="mermaid-diagram">
+                    <pre class="mermaid">
+                        graph TD
+                            A[Presagio] --> B[Placeholder]
+                            B --> C[Placeholder]
+                    </pre>
+                </div>
+                <p><em>Lyrics excerpt:</em><br>
+                    [Placeholder lyrics for Presagio]
+                </p>
+                <div class="callout">
+                    <strong>Reflexión:</strong> [Placeholder reflection]
+                </div>
+            </div>
+        </section>
+
+        <section class="song-section" id="song-4" role="region" aria-labelledby="song-4-header">
+            <div class="song-header" id="song-4-header" role="button" aria-expanded="false">
+                <h2>4 • 10 Minutos ⏱️</h2>
+                <span>▼</span>
+            </div>
+            <div class="song-content">
+                <img src="https://via.placeholder.com/600x200?text=10_minutos.png" alt="10 Minutos">
+                <blockquote>"[Placeholder quote]"</blockquote>
+                <div class="mermaid-diagram">
+                    <pre class="mermaid">
+                        graph TD
+                            A[10 Minutos] --> B[Placeholder]
+                            B --> C[Placeholder]
+                    </pre>
+                </div>
+                <p><em>Lyrics excerpt:</em><br>
+                    [Placeholder lyrics for 10 Minutos]
+                </p>
+                <div class="callout">
+                    <strong>Reflexión:</strong> [Placeholder reflection]
+                </div>
+            </div>
+        </section>
+
+        <section class="song-section" id="song-5" role="region" aria-labelledby="song-5-header">
+            <div class="song-header" id="song-5-header" role="button" aria-expanded="false">
+                <h2>5 • Valor 🦁</h2>
+                <span>▼</span>
+            </div>
+            <div class="song-content">
+                <img src="https://via.placeholder.com/600x200?text=valor.png" alt="Valor">
+                <blockquote>"[Placeholder quote]"</blockquote>
+                <div class="mermaid-diagram">
+                    <pre class="mermaid">
+                        graph TD
+                            A[Valor] --> B[Placeholder]
+                            B --> C[Placeholder]
+                    </pre>
+                </div>
+                <p><em>Lyrics excerpt:</em><br>
+                    [Placeholder lyrics for Valor]
+                </p>
+                <div class="callout">
+                    <strong>Reflexión:</strong> [Placeholder reflection]
+                </div>
+            </div>
+        </section>
+
+        <section class="song-section" id="song-6" role="region" aria-labelledby="song-6-header">
+            <div class="song-header" id="song-6-header" role="button" aria-expanded="false">
+                <h2>6 • Cielo ☁️</h2>
+                <span>▼</span>
+            </div>
+            <div class="song-content">
+                <img src="https://via.placeholder.com/600x200?text=cielo.png" alt="Cielo">
+                <blockquote>"[Placeholder quote]"</blockquote>
+                <div class="mermaid-diagram">
+                    <pre class="mermaid">
+                        graph TD
+                            A[Cielo] --> B[Placeholder]
+                            B --> C[Placeholder]
+                    </pre>
+                </div>
+                <p><em>Lyrics excerpt:</em><br>
+                    [Placeholder lyrics for Cielo]
+                </p>
+                <div class="callout">
+                    <strong>Reflexión:</strong> [Placeholder reflection]
+                </div>
+            </div>
+        </section>
+
+        <section class="song-section" id="song-7" role="region" aria-labelledby="song-7-header">
+            <div class="song-header" id="song-7-header" role="button" aria-expanded="false">
+                <h2>7 • Para Siempre Joven 👶</h2>
+                <span>▼</span>
+            </div>
+            <div class="song-content">
+                <img src="https://via.placeholder.com/600x200?text=para_siempre_joven.png" alt="Para Siempre Joven">
+                <blockquote>"[Placeholder quote]"</blockquote>
+                <div class="mermaid-diagram">
+                    <pre class="mermaid">
+                        graph TD
+                            A[Para Siempre Joven] --> B[Placeholder]
+                            B --> C[Placeholder]
+                    </pre>
+                </div>
+                <p><em>Lyrics excerpt:</em><br>
+                    [Placeholder lyrics for Para Siempre Joven]
+                </p>
+                <div class="callout">
+                    <strong>Reflexión:</strong> [Placeholder reflection]
+                </div>
+            </div>
+        </section>
+
+        <section class="song-section" id="song-8" role="region" aria-labelledby="song-8-header">
+            <div class="song-header" id="song-8-header" role="button" aria-expanded="false">
+                <h2>8 • Palabras miles 📚</h2>
+                <span>▼</span>
+            </div>
+            <div class="song-content">
+                <img src="https://via.placeholder.com/600x200?text=palabras_miles.png" alt="Palabras miles">
+                <blockquote>"[Placeholder quote]"</blockquote>
+                <div class="mermaid-diagram">
+                    <pre class="mermaid">
+                        graph TD
+                            A[Palabras miles] --> B[Placeholder]
+                            B --> C[Placeholder]
+                    </pre>
+                </div>
+                <p><em>Lyrics excerpt:</em><br>
+                    [Placeholder lyrics for Palabras miles]
+                </p>
+                <div class="callout">
+                    <strong>Reflexión:</strong> [Placeholder reflection]
+                </div>
+            </div>
+        </section>
+
+        <section class="song-section" id="song-9" role="region" aria-labelledby="song-9-header">
+            <div class="song-header" id="song-9-header" role="button" aria-expanded="false">
+                <h2>9 • Escaleras 🪜</h2>
+                <span>▼</span>
+            </div>
+            <div class="song-content">
+                <img src="https://via.placeholder.com/600x200?text=escaleras.png" alt="Escaleras">
+                <blockquote>"[Placeholder quote]"</blockquote>
+                <div class="mermaid-diagram">
+                    <pre class="mermaid">
+                        graph TD
+                            A[Escaleras] --> B[Placeholder]
+                            B --> C[Placeholder]
+                    </pre>
+                </div>
+                <p><em>Lyrics excerpt:</em><br>
+                    [Placeholder lyrics for Escaleras]
+                </p>
+                <div class="callout">
+                    <strong>Reflexión:</strong> [Placeholder reflection]
+                </div>
+            </div>
+        </section>
+
+        <section class="song-section" id="song-10" role="region" aria-labelledby="song-10-header">
+            <div class="song-header" id="song-10-header" role="button" aria-expanded="false">
+                <h2>10 • Las hojas caen 🍂</h2>
+                <span>▼</span>
+            </div>
+            <div class="song-content">
+                <img src="https://via.placeholder.com/600x200?text=las_hojas_caen.png" alt="Las hojas caen">
+                <blockquote>"[Placeholder quote]"</blockquote>
+                <div class="mermaid-diagram">
+                    <pre class="mermaid">
+                        graph TD
+                            A[Las hojas caen] --> B[Placeholder]
+                            B --> C[Placeholder]
+                    </pre>
+                </div>
+                <p><em>Lyrics excerpt:</em><br>
+                    [Placeholder lyrics for Las hojas caen]
+                </p>
+                <div class="callout">
+                    <strong>Reflexión:</strong> [Placeholder reflection]
+                </div>
+            </div>
+        </section>
+
+        <section class="song-section" id="song-11" role="region" aria-labelledby="song-11-header">
+            <div class="song-header" id="song-11-header" role="button" aria-expanded="false">
+                <h2>11 • Tótem 🗿</h2>
+                <span>▼</span>
+            </div>
+            <div class="song-content">
+                <img src="https://via.placeholder.com/600x200?text=totem.png" alt="Tótem">
+                <blockquote>"[Placeholder quote]"</blockquote>
+                <div class="mermaid-diagram">
+                    <pre class="mermaid">
+                        graph TD
+                            A[Tótem] --> B[Placeholder]
+                            B --> C[Placeholder]
+                    </pre>
+                </div>
+                <p><em>Lyrics excerpt:</em><br>
+                    [Placeholder lyrics for Tótem]
+                </p>
+                <div class="callout">
+                    <strong>Reflexión:</strong> [Placeholder reflection]
+                </div>
+            </div>
+        </section>
+
+        <section class="song-section" id="song-12" role="region" aria-labelledby="song-12-header">
+            <div class="song-header" id="song-12-header" role="button" aria-expanded="false">
+                <h2>12 • Planetas vecinos 🪐</h2>
+                <span>▼</span>
+            </div>
+            <div class="song-content">
+                <img src="https://via.placeholder.com/600x200?text=planetas_vecinos.png" alt="Planetas vecinos">
+                <blockquote>"[Placeholder quote]"</blockquote>
+                <div class="mermaid-diagram">
+                    <pre class="mermaid">
+                        graph TD
+                            A[Planetas vecinos] --> B[Placeholder]
+                            B --> C[Placeholder]
+                    </pre>
+                </div>
+                <p><em>Lyrics excerpt:</em><br>
+                    [Placeholder lyrics for Planetas vecinos]
+                </p>
+                <div class="callout">
+                    <strong>Reflexión:</strong> [Placeholder reflection]
+                </div>
+            </div>
+        </section>
+
+        <section class="song-section" id="song-13" role="region" aria-labelledby="song-13-header">
+            <div class="song-header" id="song-13-header" role="button" aria-expanded="false">
+                <h2>13 • La vida que merezco ⚖️</h2>
+                <span>▼</span>
+            </div>
+            <div class="song-content">
+                <img src="https://via.placeholder.com/600x200?text=la_vida_que_merezco.png" alt="La vida que merezco">
+                <blockquote>"[Placeholder quote]"</blockquote>
+                <div class="mermaid-diagram">
+                    <pre class="mermaid">
+                        graph TD
+                            A[La vida que merezco] --> B[Placeholder]
+                            B --> C[Placeholder]
+                    </pre>
+                </div>
+                <p><em>Lyrics excerpt:</em><br>
+                    [Placeholder lyrics for La vida que merezco]
+                </p>
+                <div class="callout">
+                    <strong>Reflexión:</strong> [Placeholder reflection]
+                </div>
+            </div>
+        </section>
+
+        <section class="song-section" id="song-14" role="region" aria-labelledby="song-14-header">
+            <div class="song-header" id="song-14-header" role="button" aria-expanded="false">
+                <h2>14 • 1000 años 🕰️</h2>
+                <span>▼</span>
+            </div>
+            <div class="song-content">
+                <img src="https://via.placeholder.com/600x200?text=1000_anos.png" alt="1000 años">
+                <blockquote>"[Placeholder quote]"</blockquote>
+                <div class="mermaid-diagram">
+                    <pre class="mermaid">
+                        graph TD
+                            A[1000 años] --> B[Placeholder]
+                            B --> C[Placeholder]
+                    </pre>
+                </div>
+                <p><em>Lyrics excerpt:</em><br>
+                    [Placeholder lyrics for 1000 años]
+                </p>
+                <div class="callout">
+                    <strong>Reflexión:</strong> [Placeholder reflection]
+                </div>
+            </div>
+        </section>
+
+        <section class="song-section" id="song-15" role="region" aria-labelledby="song-15-header">
+            <div class="song-header" id="song-15-header" role="button" aria-expanded="false">
+                <h2>15 • Buscaré 🔍</h2>
+                <span>▼</span>
+            </div>
+            <div class="song-content">
+                <img src="https://via.placeholder.com/600x200?text=buscare.png" alt="Buscaré">
+                <blockquote>"[Placeholder quote]"</blockquote>
+                <div class="mermaid-diagram">
+                    <pre class="mermaid">
+                        graph TD
+                            A[Buscaré] --> B[Placeholder]
+                            B --> C[Placeholder]
+                    </pre>
+                </div>
+                <p><em>Lyrics excerpt:</em><br>
+                    [Placeholder lyrics for Buscaré]
+                </p>
+                <div class="callout">
+                    <strong>Reflexión:</strong> [Placeholder reflection]
+                </div>
+            </div>
+        </section>
+
+        <section class="song-section" id="song-16" role="region" aria-labelledby="song-16-header">
+            <div class="song-header" id="song-16-header" role="button" aria-expanded="false">
+                <h2>16 • Animal 🦁</h2>
+                <span>▼</span>
+            </div>
+            <div class="song-content">
+                <img src="https://via.placeholder.com/600x200?text=animal.png" alt="Animal">
+                <blockquote>"[Placeholder quote]"</blockquote>
+                <div class="mermaid-diagram">
+                    <pre class="mermaid">
+                        graph TD
+                            A[Animal] --> B[Placeholder]
+                            B --> C[Placeholder]
+                    </pre>
+                </div>
+                <p><em>Lyrics excerpt:</em><br>
+                    [Placeholder lyrics for Animal]
+                </p>
+                <div class="callout">
+                    <strong>Reflexión:</strong> [Placeholder reflection]
+                </div>
+            </div>
+        </section>
+
+        <section class="song-section" id="song-17" role="region" aria-labelledby="song-17-header">
+            <div class="song-header" id="song-17-header" role="button" aria-expanded="false">
+                <h2>17 • Well is small 🌊</h2>
+                <span>▼</span>
+            </div>
+            <div class="song-content">
+                <img src="https://via.placeholder.com/600x200?text=well_is_small.png" alt="Well is small">
+                <blockquote>"[Placeholder quote]"</blockquote>
+                <div class="mermaid-diagram">
+                    <pre class="mermaid">
+                        graph TD
+                            A[Well is small] --> B[Placeholder]
+                            B --> C[Placeholder]
+                    </pre>
+                </div>
+                <p><em>Lyrics excerpt:</em><br>
+                    [Placeholder lyrics for Well is small]
+                </p>
+                <div class="callout">
+                    <strong>Reflexión:</strong> [Placeholder reflection]
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Glosario de Símbolos Utilizados</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Símbolo</th>
+                        <th>Significado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>💗</td><td>Amor, búsqueda emocional</td></tr>
+                    <tr><td>🔥</td><td>Materialismo, destrucción</td></tr>
+                    <tr><td>🔮</td><td>Premonición, visión futura</td></tr>
+                    <tr><td>⏱️</td><td>Tiempo, transformación</td></tr>
+                    <tr><td>🦁</td><td>Coraje, naturaleza animal</td></tr>
+                    <tr><td>☁️</td><td>Aspiración, elevación</td></tr>
+                    <tr><td>👶</td><td>Juventud eterna, inocencia</td></tr>
+                    <tr><td>📚</td><td>Comunicación, palabras</td></tr>
+                    <tr><td>🪜</td><td>Conexión imposible, paradoja</td></tr>
+                    <tr><td>🍂</td><td>Caída, declive natural</td></tr>
+                    <tr><td>🗿</td><td>Ancestralidad, pasado</td></tr>
+                    <tr><td>🪐</td><td>Distancia cósmica, separación</td></tr>
+                    <tr><td>⚖️</td><td>Aceptación, merecimiento</td></tr>
+                    <tr><td>🕰️</td><td>Trascendencia temporal</td></tr>
+                    <tr><td>🔍</td><td>Exploración, libertad</td></tr>
+                    <tr><td>🦁</td><td>Instinto animal, naturaleza</td></tr>
+                    <tr><td>🌊</td><td>Sonido puro, experimentación</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section>
+            <h2>Patrones Temáticos</h2>
+            <ul>
+                <li><strong>Búsqueda y exploración:</strong> Una constante en canciones como "Aquello que llaman amor", "Buscaré" y "Tótem"</li>
+                <li><strong>Imposibilidad de conexión:</strong> Presente en "Planetas vecinos", "Escaleras" y "Cielo"</li>
+                <li><strong>Tensión entre lo natural y artificial:</strong> Evidente en "Animal", "Acero Chino" y "Las hojas caen"</li>
+                <li><strong>Tiempo y trascendencia:</strong> Explorado en "1000 años", "Para Siempre Joven" y "Presagio"</li>
+                <li><strong>Aceptación y conformidad:</strong> Tema central de "La vida que merezco" y secundario en varias otras</li>
+                <li><strong>Experimentación con el lenguaje:</strong> Desde lo narrativo hasta lo puramente sonoro en "Well is small"</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Sobre el Formateo</h2>
+            <p>Este documento utiliza varias características de diseño web:</p>
+            <ul>
+                <li><strong>Diagramas:</strong> Visualizaciones Mermaid para mapear conceptos</li>
+                <li><strong>Callouts:</strong> Bloques especiales para reflexiones</li>
+                <li><strong>Tablas:</strong> Para organizar información estructurada</li>
+                <li><strong>Imágenes:</strong> Placeholder para visuales temáticos</li>
+                <li><strong>Énfasis tipográfico:</strong> Para destacar elementos clave</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <p><strong>Metadatos</strong><br>
+            Formato: HTML5<br>
+            Uso: Web interactiva<br>
+            Fecha de exportación: 17-04-2025<br>
+            Estilo: Análisis visual<br>
+            Elementos: Iconografía, diagramas, callouts
+        </p>
+    </footer>
+
+    <script>
+        // Initialize Mermaid for diagram rendering
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                if (typeof mermaid !== 'undefined') {
+                    mermaid.initialize({
+                        startOnLoad: true,
+                        theme: 'dark',
+                        securityLevel: 'loose'
+                    });
+                    console.log('Mermaid initialized successfully');
+                } else {
+                    console.error('Mermaid.js not loaded');
+                }
+            } catch (e) {
+                console.error('Error initializing Mermaid:', e);
+            }
+        });
+
+        // Event delegation for toggling song content
+        document.addEventListener('click', (e) => {
+            const header = e.target.closest('.song-header');
+            if (header) {
+                const content = header.nextElementSibling;
+                const isActive = content.classList.toggle('active');
+                header.querySelector('span').textContent = isActive ? '▲' : '▼';
+                header.setAttribute('aria-expanded', isActive);
+            }
+        });
+
+        // Smooth scrolling for navigation links
+        document.addEventListener('click', (e) => {
+            const anchor = e.target.closest('nav a');
+            if (anchor) {
+                e.preventDefault();
+                const target = document.querySelector(anchor.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    </script>
+</body>
+</html>

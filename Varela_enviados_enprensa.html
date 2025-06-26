@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Francisco Varela Papers [179-197] - 2025</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-green: #00FF00;
+            --neon-cyan: #00FFFF;
+            --black-bg: #000000;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: var(--black-bg);
+            color: var(--neon-green);
+            font-family: 'Orbitron', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        nav ul li {
+            margin: 0 20px;
+        }
+        nav ul li a {
+            color: var(--neon-green);
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        .main-container {
+            max-width: 100%;
+            margin: 0;
+            padding: 60px 10px 0 10px;
+            text-align: center;
+            flex: 1;
+            width: 100%;
+        }
+        .intro {
+            margin-bottom: 40px;
+        }
+        .intro h1 {
+            color: var(--neon-cyan);
+            font-size: 2.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 20px;
+        }
+        .intro p {
+            font-size: 1.1em;
+            max-width: 1000px;
+            margin: 0 auto 15px;
+        }
+        .highlight {
+            color: var(--neon-cyan);
+            font-weight: bold;
+        }
+        .filter-container {
+            margin-bottom: 20px;
+        }
+        .filter-container input {
+            padding: 10px;
+            font-size: 1em;
+            font-family: 'Orbitron', sans-serif;
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--neon-green);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+            border-radius: 5px;
+            outline: none;
+            width: 300px;
+            transition: box-shadow 0.3s ease;
+        }
+        .filter-container input:focus {
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 40px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--neon-cyan);
+        }
+        th {
+            background: rgba(0, 0, 0, 0.9);
+            color: var(--neon-cyan);
+            text-shadow: 0 0 5px var(--neon-cyan);
+            position: sticky;
+            top: 0;
+        }
+        tr:hover {
+            background: rgba(0, 255, 255, 0.1);
+        }
+        .paper-container {
+            margin: 40px 0;
+        }
+        .paper-container h3 {
+            color: var(--neon-cyan);
+            font-size: 1.5em;
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 15px;
+        }
+        .paper-iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            border-radius: 5px;
+            display: none;
+        }
+        h2 {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 20px;
+        }
+        @media (max-width: 900px) {
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                padding: 10px 0;
+            }
+            nav ul li {
+                margin: 10px 0;
+            }
+            .intro h1 {
+                font-size: 2em;
+            }
+            .intro p {
+                font-size: 1em;
+                padding: 0 15px;
+            }
+            .filter-container input {
+                width: 100%;
+            }
+            .paper-iframe {
+                height: 500px;
+            }
+        }
+        @media (max-width: 600px) {
+            nav {
+                position: static;
+            }
+            .main-container {
+                padding-top: 10px;
+            }
+            .intro h1 {
+                font-size: 1.5em;
+            }
+            .intro p {
+                font-size: 0.9em;
+            }
+            th, td {
+                font-size: 0.85em;
+                padding: 8px;
+            }
+            .paper-iframe {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navegación -->
+    <nav>
+        <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#published">Papers Publicados</a></li>
+            <li><a href="#submitted">Papers Enviados</a></li>
+            <li><a href="#contacto">Acerca de</a></li>
+        </ul>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="main-container" id="inicio">
+        <!-- Introducción -->
+        <div class="intro">
+            <h1>Francisco Varela: Papers [179-197]</h1>
+            <p>Explora los trabajos finales de <span class="highlight">Francisco Varela</span> entre <span class="highlight">1999 y 2000</span>, divididos en <span class="highlight">Papers Publicados</span> y <span class="highlight">Papers Enviados para Publicación</span>. Esta colección refleja su legado en neurofenomenología, dinámica cerebral y autopoiesis.</p>
+        </div>
+
+        <!-- Filtro -->
+        <div class="filter-container">
+            <input type="text" id="search" placeholder="Filter by title or author..." onkeyup="filterTables()">
+        </div>
+
+        <!-- Tabla 1: Papers Publicados -->
+        <div class="table-container" id="published">
+            <h2>Papers Publicados</h2>
+            <table id="table-published">
+                <thead>
+                    <tr>
+                        <th>Ref #</th>
+                        <th>Authors</th>
+                        <th>Year</th>
+                        <th>Title</th>
+                        <th>Publication Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>[179]</td><td>F.J. Varela</td><td>1999</td><td>Pour une phénoménologie de la sunyata. I.</td><td>in: N. Depraz and J.F. Marquet (Eds.), Gnosis, Metaphysique, Phénoménologie, Eds. du Cerf, Paris</td></tr>
+                    <tr><td>[180]</td><td>Varela, F.</td><td>2000</td><td>Why the proper study of mind implies the transcendence of nature</td><td>in J. Andresen (Ed.), Religion in Mind: Cognitive Science and Religious Experience, Cambridge Univ. Press 1999</td></tr>
+                    <tr><td>[181]</td><td>N. Depraz, F. Varela and P. Vermersch</td><td>1999</td><td>The gesture of awareness: An account of its structural dynamics</td><td>in: M. Velmans (Ed.), Investigating Phenomenal Consciousness, Benjamin Publishers, Amsterdam; also in: R. Kühn und Michael Staudigl (Hg.), Epochè und Reduktion, Karl Alber Verlag; also in: Etudes Philosophiques</td></tr>
+                    <tr><td>[182]</td><td>M. Le van Quyen, J. Martinerie and F. Varela</td><td>1999</td><td>Spatio-temporal dynamics of epileptogenic networks</td><td>In: Peter Grassberger and Klaus Lehnertz (Eds.), Chaos in the Brain?, World Scientific, 1999</td></tr>
+                    <tr><td>[183]</td><td>F. Varela</td><td>1999</td><td>La réduction phénoménologique à l'épreuve de l'expérience: Réponse à F.-D. Sebbah</td><td>dans: M.J. Durand-Richard (Ed.), Des lois de la pensée au constructivisme, Editions EHSS, Paris</td></tr>
+                    <tr><td>[184]</td><td>Lachaux, J.P., Rodriguez, E., M. Le Van Quyen, A. Lutz, J. Martinerie and F. Varela</td><td>2000</td><td>Studying single-trials of phase-synchronous activity in the brain</td><td>Int.J.Bifuct.Chaos</td></tr>
+                    <tr><td>[185]</td><td>M. Le van Quyen, J. Martinerie, C. Adam, S. Clemenceau, M. Baulac, and F. Varela</td><td>2000</td><td>Non-linear analysis of long-term EEG spatio-temporal dynamics in human temporal lobe epilepsy</td><td>Europ.J.Neuroscien.</td></tr>
+                    <tr><td>[186]</td><td>F.J. Varela</td><td>2000</td><td>Pour une phénoménologie de la sunyata. I.</td><td>in: N. Depraz and J.F. Marquet (Eds.), Gnosis, Metaphysique, Phénoménologie, Eds. du Cerf, Paris</td></tr>
+                    <tr><td>[187]</td><td>Varela, F.</td><td>2000</td><td>Why the proper study of mind implies the transcendence of nature</td><td>in J. Andresen (Ed.), Religion in Mind: Cognitive Science and Religious Experience, Cambridge Univ. Press</td></tr>
+                    <tr><td>[188]</td><td>N. Depraz, F. Varela and P. Vermersch</td><td>2000</td><td>The gesture of awareness: An account of its structural dynamics</td><td>in: M. Velmans (Ed.), Investigating Phenomenal Consciousness, Benjamin Publishers, Amsterdam; also in: R. Kühn und Michael Staudigl (Hg.), Epochè und Reduktion, Karl Alber Verlag; also in: Etudes Philosophiques</td></tr>
+                    <tr><td>[189]</td><td>F. Varela</td><td>2000</td><td>La réduction phénoménologique à l'épreuve de l'expérience: Réponse à F.-D. Sebbah</td><td>dans: M.J. Durand-Richard (Ed.), Des lois de la pensée au constructivisme, Editions EHSS, Paris</td></tr>
+                    <tr><td>[190]</td><td>Lachaux, J.P., Rodriguez, E., M. Le Van Quyen, A. Lutz, J. Martinerie and F. Varela</td><td>2000</td><td>Studying single-trials of phase-synchronous activity in the brain</td><td>Int.J.Bifuct.Chaos</td></tr>
+                    <tr><td>[191]</td><td>Varela, F.</td><td>2000</td><td>Imagining: Embodiment, phenomenology, transformation</td><td>In: A. Wallace (Ed.), Breaking New Ground: Essays on Buddhism and Modern Science</td></tr>
+                    <tr><td>[192]</td><td>Varela, F.</td><td>2000</td><td>Upwards and downwards causation in the brain: Case studies on the emergence and efficacy of consciousness</td><td>In: K. Yasue and M. Jibu (eds.), Towards a Science of Consciousness Tokyo '99, Benjamin Publishers, Amsterdam, 2000</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tabla 2: Papers Enviados para Publicación -->
+        <div class="table-container" id="submitted">
+            <h2>Papers Enviados para Publicación</h2>
+            <table id="table-submitted">
+                <thead>
+                    <tr>
+                        <th>Ref #</th>
+                        <th>Authors</th>
+                        <th>Year</th>
+                        <th>Title</th>
+                        <th>Publication Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>[186]</td><td>J.P. Lachaux, E. Rodriguez, J. Martinerie, C. Adam, D. Hasboun and F. Varela</td><td>-</td><td>Gamma-band activity in human intracortical recordings triggered by cognitive tasks</td><td>Europ.J.Neuroscience</td></tr>
+                    <tr><td>[187]</td><td>F. Varela and N. Depraz</td><td>-</td><td>At the source of time: Valence and the constitutional dynamics of affect</td><td>in: Ipseity and Alterity, Arob@se: An electronic journal, http://www.liane.net/arobase</td></tr>
+                    <tr><td>[188]</td><td>E. Rodriguez, B. Jamel, J.P. Lachaux, A. Lutz, J. Martinerie, B. Renault and F. Varela</td><td>-</td><td>"She's got Bette Davis eyes": Multi-band brain synchrony during a complex visual task</td><td>Nature Neuroscien.</td></tr>
+                    <tr><td>[189]</td><td>M. Le van Quyen, J. Martinerie, V. Navarro, P. Boon, M. D’Hiv, F. Varela, and M. Baulac</td><td>-</td><td>Non-invasive anticipation of epileptic seizures</td><td>The Lancet</td></tr>
+                    <tr><td>[190]</td><td>Boidron, A., J. Martinerie and F. Varela</td><td>-</td><td>Attentional shifts as a modulator of gamma activity: A study using long-lasting stimuli</td><td>J.Cog.Neurosci.</td></tr>
+                    <tr><td>[191]</td><td>Thompson, E. and F. Varela</td><td>-</td><td>What are neural correlates of consciousness? A neurophenomenological perspective</td><td>Mind and Body</td></tr>
+                    <tr><td>[192]</td><td>Weber, A. and F. Varela</td><td>-</td><td>Life after Kant: Natural purposes and the autopoietic foundation of individuality</td><td>Phylosophy & Biology</td></tr>
+                    <tr><td>[193]</td><td>E. Rodriguez, B. Jamel, J.P. Lachaux, A. Lutz, J. Martinerie, B. Renault and F. Varela</td><td>-</td><td>Multi-band brain synchrony during a complex visual task</td><td>-</td></tr>
+                    <tr><td>[194]</td><td>M. Le van Quyen, J. Martinerie, V. Navarro, P. Boon, M. D'Hiv, F. Varela, and M. Baulac</td><td>-</td><td>Anticipation of epileptic seizures from standard surface EEG</td><td>-</td></tr>
+                    <tr><td>[195]</td><td>Boidron, A., J. Martinerie and F. Varela</td><td>-</td><td>Attentional shifts as a modulator of gamma activity: A study using long-lasting stimuli</td><td>-</td></tr>
+                    <tr><td>[196]</td><td>F. Varela and Thompson, E.</td><td>-</td><td>What are neural correlates of consciousness? A neurophenomenological perspective</td><td>-</td></tr>
+                    <tr><td>[197]</td><td>Weber, A. and F. Varela</td><td>-</td><td>Life after Kant: Natural purposes and the autopoietic foundation of individuality</td><td>-</td></tr>
+                    <tr><td>[198]</td><td>Cohen, A. and F. Varela</td><td>-</td><td>Facing up to the embarrassment: Psychoanalysis and cognitive neuroscience</td><td>Actes Etats Généraux de la Psychoanalyse, Paris July 2000, http://members.aol.com/call97</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Contenedor para los Papers en Iframes -->
+        <div class="paper-container" id="paper-container">
+            <h3>View Selected Paper</h3>
+            <iframe class="paper-iframe" id="paper-179" src="[URL-Paper-179]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-180" src="[URL-Paper-180]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-181" src="[URL-Paper-181]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-182" src="[URL-Paper-182]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-183" src="[URL-Paper-183]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-184" src="[URL-Paper-184]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-185" src="[URL-Paper-185]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-186" src="[URL-Paper-186]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-187" src="[URL-Paper-187]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-188" src="[URL-Paper-188]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-189" src="[URL-Paper-189]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-190" src="[URL-Paper-190]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-191" src="[URL-Paper-191]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-192" src="[URL-Paper-192]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-193" src="[URL-Paper-193]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-194" src="[URL-Paper-194]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-195" src="[URL-Paper-195]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-196" src="[URL-Paper-196]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-197" src="[URL-Paper-197]" frameborder="0"></iframe>
+            <iframe class="paper-iframe" id="paper-198" src="[URL-Paper-198]" frameborder="0"></iframe>
+        </div>
+
+        <!-- Sección Acerca de -->
+        <div class="about-container" id="contacto">
+            <h3>Acerca de</h3>
+            <p>Curated by Grok 3, built by xAI. Data compiled as of March 19, 2025.</p>
+        </div>
+    </div>
+
+    <!-- Script para filtrar las tablas y mostrar iframes -->
+    <script>
+        function filterTables() {
+            const input = document.getElementById('search').value.toLowerCase();
+            const tables = [
+                document.getElementById('table-published'),
+                document.getElementById('table-submitted')
+            ];
+            const paperContainer = document.getElementById('paper-container');
+            const iframes = document.getElementsByClassName('paper-iframe');
+            let selectedPaper = null;
+
+            // Filtrar ambas tablas
+            tables.forEach(table => {
+                const rows = table.getElementsByTagName('tr');
+                for (let i = 1; i < rows.length; i++) {
+                    const cells = rows[i].getElementsByTagName('td');
+                    let match = false;
+                    const refNumber = cells[0].textContent.toLowerCase();
+
+                    for (let j = 0; j < cells.length; j++) {
+                        const cellText = cells[j].textContent.toLowerCase();
+                        if (cellText.includes(input)) {
+                            match = true;
+                            if (!selectedPaper && j === 0) {
+                                selectedPaper = refNumber.replace('[', '').replace(']', '');
+                            }
+                            break;
+                        }
+                    }
+                    rows[i].style.display = match ? '' : 'none';
+                }
+            });
+
+            // Ocultar todos los iframes
+            for (let iframe of iframes) {
+                iframe.style.display = 'none';
+            }
+
+            // Mostrar el iframe correspondiente al paper filtrado
+            if (selectedPaper) {
+                const iframeId = `paper-${selectedPaper}`;
+                const selectedIframe = document.getElementById(iframeId);
+                if (selectedIframe) {
+                    selectedIframe.style.display = 'block';
+                    paperContainer.style.display = 'block';
+                } else {
+                    paperContainer.style.display = 'none';
+                }
+            } else {
+                paperContainer.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

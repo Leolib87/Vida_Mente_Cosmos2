@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico de Redes de Temas de Tesis</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <style>
+        /* Estilos CSS para los nodos */
+        .node {
+            cursor: pointer;
+        }
+
+        .node circle {
+            stroke: #000;
+            stroke-width: 2px;
+        }
+
+        .node text {
+            font-size: 12px;
+            fill: #000;
+            text-anchor: middle;
+            alignment-baseline: middle;
+        }
+
+        /* Estilos CSS para los enlaces (links) */
+        .link {
+            fill: none;
+            stroke: #000;
+            stroke-width: 2px;
+        }
+    </style>
+</head>
+<body>
+    <svg width="800" height="600"></svg>
+
+    <script>
+        // Datos de tesis y sus conexiones
+        const data = [
+            { name: "Metodologías de enseñanza", tesis: 45 },
+            { name: "Evaluación del aprendizaje", tesis: 9 },
+            { name: "Competencias y habilidades", tesis: 15 },
+            { name: "Uso de tecnologías", tesis: 11 },
+            { name: "Errores y preconceptos", tesis: 6 },
+            { name: "Otros", tesis: 12 }
+        ];
+
+        const links = [
+            { source: "Metodologías de enseñanza", target: "Evaluación del aprendizaje" },
+            { source: "Metodologías de enseñanza", target: "Competencias y habilidades" },
+            { source: "Metodologías de enseñanza", target: "Uso de tecnologías" },
+            { source: "Metodologías de enseñanza", target: "Errores y preconceptos" },
+            { source: "Metodologías de enseñanza", target: "Otros" }
+        ];
+
+        // Crear el contenedor SVG
+        const svg = d3.select("svg");
+
+        // Crear una fuerza de simulación para posicionar los nodos
+        const simulation = d3.forceSimulation(data)
+            .force("link", d3.forceLink(links).id(d => d.name).distance(100))
+            .force("charge", d3.forceManyBody().strength(-200))
+            .force("center", d3.forceCenter(400, 300));
+
+        // Escalar el tamaño de los nodos proporcionalmente al número de tesis
+        const maxTesis = d3.max(data, d => d.tesis);
+        const nodeScale = d3.scaleLinear()
+            .domain([0, maxTesis])
+            .range([10, 50]);
+
+        // Crear los enlaces (links)
+        const link = svg.selectAll(".link")
+            .data(links)
+            .enter().append("line")
+            .attr("class", "link");
+
+        // Crear los nodos (círculos) con texto
+        const node = svg.selectAll(".node")
+            .data(data)
+            .enter().append("g")
+            .attr("class", "node")
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        // Agregar los círculos a los nodos
+        node.append("circle")
+            .attr("r", d => nodeScale(d.tesis))
+            .attr("fill", (d, i) => d3.schemeCategory10[i]);
+
+        // Agregar el texto a los nodos
+        node.append("text")
+            .text(d => `${d.name}\n(${d.tesis})`)
+            .attr("dy", d => -nodeScale(d.tesis) - 5)
+            .style("font-size", "10px")
+            .style("text-anchor", "middle");
+
+        // Actualizar la posición de los nodos y enlaces en cada paso de la simulación
+        simulation
+            .nodes(data)
+            .on("tick", ticked);
+
+        simulation.force("link")
+            .links(links);
+
+        // Funciones de arrastre de nodos
+        function dragstarted(d) {
+            if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(d) {
+            d.fx = d3.event.x;
+            d.fy = d3.event.y;
+        }
+
+        function dragended(d) {
+            if (!d3.event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        // Función para actualizar la posición de los nodos y enlaces en cada paso de la simulación
+        function ticked() {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            node
+                .attr("transform", d => `translate(${d.x},${d.y})`);
+        }
+    </script>
+</body>
+</html>
