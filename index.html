@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Origen, Mente y Cosmos | Una Exploración Transdisciplinaria</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #000508;
+            --primary-text: #00FFC2;
+            --primary-glow: #00FFFF;
+            --secondary-glow: #00FF00;
+            --font-main: 'Orbitron', sans-serif;
+            --nav-height: 70px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+        
+        /* --- NAVEGACIÓN REIMAGINADA Y RESPONSIVA --- */
+        nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            background: rgba(0, 10, 15, 0.6);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+            display: flex; justify-content: center; align-items: center;
+            padding: 0 2rem;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1440px;
+        }
+        
+        .nav-logo a {
+             font-size: 1.3em;
+             font-weight: 700;
+             color: #fff;
+             text-decoration: none;
+             text-shadow: 0 0 8px var(--primary-glow);
+        }
+
+        .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
+        nav .nav-container > li { position: relative; height: 100%; display: flex; align-items: center; }
+        nav .nav-container > li > a {
+            color: var(--primary-text); text-decoration: none; font-size: clamp(0.9em, 1.2vw, 1.05em); font-weight: 500;
+            transition: color 0.3s ease, text-shadow 0.3s ease; padding: 0 1rem; display: flex; align-items: center; gap: 8px;
+        }
+        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a { color: #FFFFFF; text-shadow: 0 0 12px var(--primary-glow); }
+        
+        .nav-icon { width: 18px; height: 18px; stroke-width: 2; }
+        
+        /* --- MEGA MENÚ TEMÁTICO --- */
+        .mega-menu {
+            position: absolute; top: 90%; left: 50%;
+            transform: translateX(-50%) scale(0.95);
+            background: rgba(0, 15, 20, 0.9);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--primary-glow);
+            box-shadow: 0 10px 40px rgba(0, 255, 255, 0.25);
+            border-radius: 10px; width: auto;
+            min-width: clamp(300px, 80vw, 800px); max-width: 95vw;
+            padding: 2rem; display: none;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem; opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform-origin: top center;
+        }
+        nav ul li:hover .mega-menu { display: grid; opacity: 1; transform: translateX(-50%) scale(1); }
+        .mega-menu h3 {
+            color: var(--primary-glow); font-size: 1.1em; margin-bottom: 1rem;
+            text-shadow: 0 0 5px var(--primary-glow);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+            padding-bottom: 0.75rem;
+        }
+        .mega-menu ul { display: flex; flex-direction: column; gap: 0.75rem; list-style: none; }
+        .mega-menu a {
+            font-size: 0.9em; color: var(--primary-text); text-decoration: none;
+            transition: color 0.3s, padding-left 0.3s, background-color 0.3s;
+            padding: 0.5rem 0.75rem; border-radius: 4px;
+        }
+        .mega-menu a:hover { color: #000; background-color: var(--primary-glow); padding-left: 1.25rem; }
+        
+        /* --- HERO SECTION CON PARTÍCULAS --- */
+        #particles-js { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        .hero {
+            height: 100vh; min-height: 500px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; position: relative;
+            padding: 1rem;
+        }
+        .hero-content { position: relative; z-index: 2; animation: fadeIn 2s ease-in; }
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 5.5rem); font-weight: 700; color: #fff;
+            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(0, 255, 255, 0.7);
+            animation: pulse-glow 3s infinite alternate;
+        }
+        .hero p { font-size: clamp(1rem, 2.5vw, 1.3rem); max-width: 800px; margin: 1.5rem auto 0; text-shadow: 0 0 5px #000; }
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- LAYOUT Y SECCIONES ANIMADAS --- */
+        .main-container { max-width: 1440px; margin: 0 auto; padding: 1rem; padding-top: var(--nav-height); }
+        .layout-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 2rem; }
+        
+        .section {
+            padding: clamp(1.5rem, 5vw, 2.5rem);
+            background: linear-gradient(145deg, rgba(0, 40, 40, 0.3), rgba(0, 20, 20, 0.2));
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 12px; margin-bottom: 2rem; position: relative;
+            transition: transform 0.4s ease, box-shadow 0.4s ease, opacity 0.5s ease;
+            opacity: 0; transform: translateY(30px);
+        }
+        .section.is-visible { opacity: 1; transform: translateY(0); }
+        .section:hover { transform: translateY(-5px); box-shadow: 0 0 40px rgba(0, 255, 255, 0.2); }
+        
+        h2 {
+            font-size: clamp(1.5rem, 5vw, 2.2rem); color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);
+            border-bottom: 1px solid var(--primary-glow); padding-bottom: 1rem; margin-bottom: 1.5rem;
+        }
+        h3 { font-size: clamp(1.2rem, 4vw, 1.5rem); color: var(--primary-glow); margin: 2rem 0 1rem 0; }
+        .highlight { color: var(--primary-glow); font-weight: bold; }
+        
+        /* --- VISUALIZACIONES Y OTROS ELEMENTOS --- */
+        .visualization-container { width: 100%; height: clamp(400px, 60vh, 650px); margin: 2rem 0; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(0,255,255,0.2); }
+        .node circle { stroke: var(--primary-glow); stroke-width: 1.5px; fill: var(--primary-text); transition: all 0.3s ease; cursor: pointer; }
+        .node:hover circle { fill: #FFFFFF; r: 12; filter: drop-shadow(0 0 8px var(--primary-glow)); }
+        .node text { fill: var(--primary-glow); font-family: var(--font-main); text-shadow: 0 0 5px var(--secondary-glow); pointer-events: none; font-size: 0.8em;}
+        .link { stroke: var(--primary-text); stroke-opacity: 0.4; }
+        iframe { width: 100%; height: 600px; border: 1px solid rgba(0,255,255,0.3); border-radius: 8px; }
+        
+        .footer { text-align: center; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
+        
+        /* --- MEDIA QUERIES PARA RESPONSIVE DESIGN --- */
+        
+        /* Centrado del contenido en pantallas muy anchas */
+        @media (min-width: 1600px) {
+            .layout-grid {
+                max-width: 1320px; /* Ancho máximo para el contenido principal */
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        @media (min-width: 1025px) {
+            .nav-logo { display: none; }
+            .menu-toggle { display: none; }
+            .nav-container { display: flex; }
+        }
+
+        @media (max-width: 1024px) {
+             .nav-content { justify-content: space-between; }
+            .nav-container {
+                position: fixed; top: 0; left: 0;
+                width: 100%; height: 100%;
+                background: rgba(0, 5, 8, 0.98); backdrop-filter: blur(15px);
+                flex-direction: column; justify-content: center; align-items: center;
+                transition: opacity 0.4s ease, visibility 0.4s ease;
+                opacity: 0; visibility: hidden;
+                overflow-y: auto; padding: 2rem;
+            }
+            .nav-container.is-open { opacity: 1; visibility: visible; }
+            nav .nav-container > li { width: 100%; height: auto; flex-direction: column; align-items: center; text-align: center; }
+            nav .nav-container > li > a { padding: 1rem; width: 100%; font-size: 1.5em;}
+            
+            .mega-menu {
+                position: static; display: block; opacity: 1; transform: none; width: 100%; box-shadow: none; 
+                border: none; padding: 1rem 0 1.5rem 0; background: none; backdrop-filter: none;
+                grid-template-columns: 1fr; border-top: 1px solid rgba(0, 255, 255, 0.2); margin-top: 1rem;
+            }
+            .mega-menu h3 { text-align: center; }
+            .mega-menu ul { align-items: center; }
+            nav ul li:hover .mega-menu { display: grid; }
+            
+            .menu-toggle {
+                display: block; position: relative; z-index: 1001;
+                width: 30px; height: 22px;
+                background: none; border: none; cursor: pointer;
+            }
+            .icon-bar {
+                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
+                margin: 6px 0; transition: all 0.3s ease-in-out;
+                border-radius: 2px;
+            }
+            .nav-container.is-open ~ .nav-content .menu-toggle { position: fixed; right: 2rem; }
+            .nav-container.is-open ~ .nav-content .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+            .nav-container.is-open ~ .nav-content .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
+            .nav-container.is-open ~ .nav-content .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-content">
+            <div class="nav-logo">
+                <a href="#inicio">O.M.C.</a>
+            </div>
+            <ul class="nav-container" id="nav-menu">
+                <li><a href="#inicio">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    Inicio</a></li>
+    
+                <li><a href="#">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.872 6.22c.49-.488 1.12-.73 1.75-.72H18.38c.63.01 1.26.242 1.75.72.49.488.74 1.118.72 1.75v10.06c.01.63-.232 1.26-.72 1.75-.49.488-1.12.73-1.75.72H6.62c-.63-.01-1.26-.242-1.75-.72-.49-.488-.74-1.118-.72-1.75V7.97c-.01-.63.232-1.26.72-1.75zM12 2v2M12 20v2M4 12H2M22 12h-2"/></svg>
+                    El Origen</a>
+                    <div class="mega-menu">
+                        <div><h3>Biología Celular y Molecular</h3>
+                            <ul>
+                                <li><a href="#biologia-celular">Introducción a la Célula</a></li>
+                                <li><a href="HISTOLOGIA.html">Histología y Tejidos</a></li>
+                                <li><a href="CURSO_BIOLOGIA_CELULAR.HTML">Curso Biología Celular</a></li>
+                                <li><a href="cuerpo humano completo plantilla Lt.html">Anatomía Humana</a></li>
+                            </ul>
+                        </div>
+                        <div><h3>Laboratorio e Investigación</h3>
+                            <ul>
+                                <li><a href="https://leolib87.github.io/herbario/">Herbario Digital</a></li>
+                                <li><a href="WESTERNCHILE.HTML">Proveedores Western Blot</a></li>
+                                <li><a href="histologychile.html">Proveedores Histología</a></li>
+                                <li><a href="proveedores_biologia.html">Proveedores Biología</a></li>
+                            </ul>
+                        </div>
+                         <div><h3>Preguntas Fundamentales</h3>
+                            <ul>
+                                <li><a href="#trazado-vida">El Sentido de la Vida y la Muerte</a></li>
+                                <li><a href="#epistemologia">Epistemología del Conocer</a></li>
+                                <li><a href="CITAS.HTML">Fragmentos de Mentes</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+                
+                <li><a href="#">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.163 7.89a6.002 6.002 0 01-3.663-3.663m3.663 3.663a6 6 0 00-3.663-3.663m3.663 3.663l3.663 3.663M12 21a9 9 0 110-18 9 9 0 010 18zM12 12a3 3 0 110-6 3 3 0 010 6z"/></svg>
+                    La Mente</a>
+                    <div class="mega-menu">
+                        <div><h3>Filosofía y Cognición</h3>
+                            <ul>
+                                <li><a href="#filosofia-mente">Mente, Lenguaje y Realidad</a></li>
+                                <li><a href="#ciencias-cognitivas">Ciencias Cognitivas y Mente Encarnada</a></li>
+                                <li><a href="MAPEO_FILO_MENTE_CHILE.HTML">Mapeo Filosofía Mente (Chile)</a></li>
+                                 <li><a href="Feno_style.html">Aproximación Fenomenológica</a></li>
+                            </ul>
+                        </div>
+                        <div><h3>Autores y Textos</h3>
+                            <ul>
+                                <li><a href="Explorando la Visualización Filosófica.HTML">Visualización Filosófica</a></li>
+                                <li><a href="Paper_Varela_1974.html">Paper de Varela (1974)</a></li>
+                                <li><a href="PAPERS_VARELA.HTML">Publicaciones de Varela</a></li>
+                                <li><a href=" peliculas.html">Reflexiones en el Cine</a></li>
+                                <li><a href="MUSICA.HTML">Letras de Canciones</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+    
+                <li><a href="#">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.864 5.31A8.962 8.962 0 0121 12c0 4.97-4.03 9-9 9S3 16.97 3 12a8.962 8.962 0 013.136-6.69m11.728 0a8.962 8.962 0 00-11.728 0M12 6.166a2.834 2.834 0 100 5.667 2.834 2.834 0 000-5.667z"/></svg>
+                    El Cosmos</a>
+                    <div class="mega-menu">
+                        <div><h3>Análisis y Visualización de Redes</h3>
+                            <ul>
+                                <li><a href="#analisis-redes">Introducción a las Redes</a></li>
+                                <li><a href="RED POLITICOS.html">Red de Políticos</a></li>
+                                <li><a href="Empleos_IES.html">Empleos en Educación Superior</a></li>
+                                <li><a href="FONDECYT.HTML">Análisis Proyectos Fondecyt</a></li>
+                                <li><a href="IAs.html">Red de IAs</a></li>
+                            </ul>
+                        </div>
+                        <div><h3>Sistemas Complejos e IA</h3>
+                            <ul>
+                                <li><a href="#inteligencia-artificial">Inteligencia Artificial</a></li>
+                                <li><a href="AUTOPOIESIS.HTML">Simulación Autopoiesis</a></li>
+                                <li><a href="AUTOPOIESIS_3D.HTML">Simulación Autopoiesis (3D)</a></li>
+                                <li><a href="Autopoiesis_Fractal00.html">Simulación Autopoiesis (Fractal)</a></li>
+                                <li><a href="GAME_OF_LIFE.HTML">Juego de la Vida (Conway)</a></li>
+                                <li><a href="GAME_OF_LIFE3D.HTML">Juego de la Vida (3D)</a></li>
+                            </ul>
+                        </div>
+                         <div><h3>Mapas y Cartografías</h3>
+                            <ul>
+                                <li><a href="#elementos-comunes">Mapa Conceptual General</a></li>
+                                <li><a href="MAPA_MENTAL_TRABAJO.HTML">Mapa Mental "Trabajo"</a></li>
+                                <li><a href="VARELA_CARTOGRAFIA.HTML">Cartografía Varela (3D)</a></li>
+                                <li><a href="cartografia_varela_01.html">Cartografía Varela (2D)</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+    
+                 <li><a href="#">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    El Taller</a>
+                    <div class="mega-menu">
+                         <div><h3>Herramientas Digitales</h3>
+                            <ul>
+                                <li><a href=" Herramientas_Investigacion_definitiva.html">Guía de Herramientas de Investigación</a></li>
+                                <li><a href="#voyant-tools">Análisis con Voyant Tools</a></li>
+                                <li><a href="IAS_BUSQUEDA.HTML">Buscador de IAs</a></li>
+                                <li><a href="googleias.html">IAs de Google</a></li>
+                                <li><a href="treemap_ias.html">Treemap de IAs</a></li>
+                                 <li><a href="varios graficos.html">Colección de Gráficos</a></li>
+                                <li><a href="GRAFICO DE LINEAS Y TREEMAP.html">Líneas y Treemaps</a></li>
+                                <li><a href="Paper_web.html">Plantilla Web para Papers</a></li>
+                            </ul>
+                        </div>
+                         <div><h3>Recursos y Fuentes</h3>
+                            <ul>
+                                <li><a href="MI_BIBLIOTECA.HTML">Biblioteca Humanidades</a></li>
+                                <li><a href="BIBLIOTECA_CIENCIAS.HTML">Biblioteca Ciencias</a></li>
+                                <li><a href="BIBLIOECAS_DIGITALES_SOMBRA.HTML">Bibliotecas Sombra</a></li>
+                                <li><a href="FUENTES_FINANCIAMIENTO.HTML">Fuentes de Financiamiento</a></li>
+                                 <li><a href="Fuentes_Financiamiento_CLaude.html">Fuentes Financiamiento (Claude)</a></li>
+                                 <li><a href="FONDOS.HTML">DEEP Financiamiento</a></li>
+                            </ul>
+                        </div>
+                        <div><h3>Proyectos y Educación</h3>
+                            <ul>
+                                <li><a href="Pedagogia-Biologia.html">Pedagogías en Biología (Chile)</a></li>
+                                <li><a href="INTEGRAL1sd.HTML">Integral 1</a></li>
+                                <li><a href="plataformas_Biologia_teaching.html">Plataformas para Enseñanza</a></li>
+                                <li><a href="red 2.html">Red Tesis Enseñanza Cs.</a></li>
+                                <li><a href="red3.html">Red Tesis Ejemplos</a></li>
+                                <li><a href="QF.HTML">Química y Farmacia (Chile)</a></li>
+                            </ul>
+                        </div>
+                         <div><h3>Laboratorio Experimental</h3>
+                            <ul>
+                                 <li><a href="LEOLIB NEWS BLACK.HTML">Leolib News</a></li>
+                                 <li><a href="CHAT_LEO.HTML">Chat Leo</a></li>
+                                 <li><a href="horario_2025.html">Horario 2025</a></li>
+                                 <li><a href="HORARIOS_LAB.HTML">Horarios Lab</a></li>
+                                 <li><a href="web.moderna.html">Web Moderna (Test)</a></li>
+                                 <li><a href="web.three.html">Web Three.js (Test)</a></li>
+                                 <li><a href="totem.html">Totem 1</a></li>
+                                 <li><a href="totem2.html">Totem 2</a></li>
+                                 <li><a href="PROBANDO.HTML">Probando 1</a></li>
+                                 <li><a href="probando2gemini.html">Probando 2</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+                
+                <li><a href="#contacto">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    Contacto</a></li>
+            </ul>
+            <button class="menu-toggle" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container" id="inicio">
+        <div class="hero">
+            <div id="particles-js"></div>
+            <div class="hero-content">
+                <h1>Origen, Mente y Cosmos</h1>
+                <p>Un viaje transdisciplinario a través de la vida, la conciencia y las redes del saber</p>
+            </div>
+        </div>
+
+        <div class="layout-grid">
+            <main class="content">
+                <section id="trazado-vida" data-animate>
+                    <h2>El Punto de Partida</h2>
+                    <p>Este viaje intelectual nace de una pregunta fundamental: ¿qué significa estar vivo? Mi formación en <span class="highlight">biología</span> me proporcionó las herramientas para explorar el origen de la existencia, pero cada respuesta abría una nueva puerta hacia la <span class="highlight">filosofía</span> y la complejidad de la <span class="highlight">conciencia</span>.</p>
+                </section>
+
+                <section id="filosofia-mente" data-animate>
+                    <h2>Filosofía de la Mente, Lenguaje y Cognición</h2>
+                    <p>Aquí exploro la idea de que la mente no es una entidad aislada, sino un proceso encarnado y extendido. Inspirado en <span class="highlight">Wittgenstein</span> y <span class="highlight">Varela</span>, investigo cómo el <span class="highlight">lenguaje</span> construye nuestra realidad y cómo la <span class="highlight">cognición</span> emerge de la interacción dinámica entre el cerebro, el cuerpo y el entorno. Es el cruce donde la neurociencia se encuentra con la fenomenología.</p>
+                </section>
+                
+                <section id="biologia-celular" data-animate>
+                    <h2>Biología Celular y Molecular</h2>
+                    <p>Para entender los sistemas complejos, debemos empezar por sus unidades fundamentales. Me sumerjo en el mundo de la <span class="highlight">biología celular y molecular</span> para desentrañar los mecanismos que gobiernan la vida. Desde la <span class="highlight">expresión génica</span> hasta la comunicación intercelular, cada proceso revela una danza de orden y caos que escala hasta definir organismos completos.</p>
+                </section>
+
+                <section id="analisis-redes" data-animate>
+                    <h2>Análisis de Redes y Visualización de Datos</h2>
+                    <p>Las conexiones lo son todo. A través del <span class="highlight">análisis de redes</span>, busco mapear y entender las relaciones ocultas en sistemas complejos, ya sean redes neuronales, interacciones sociales o la estructura de un texto. La <span class="highlight">visualización de datos</span> con herramientas como D3.js se convierte en un microscopio para observar patrones que de otro modo serían invisibles.</p>
+                     <h3 id="elementos-comunes">Mapa Conceptual General</h3>
+                     <div id="visualization" class="visualization-container"></div>
+                     <h3 id="redes-palabras">Red de Palabras Clave</h3>
+                     <div id="network-graph" class="visualization-container"></div>
+                </section>
+                
+                <section id="inteligencia-artificial" data-animate>
+                    <h2>Inteligencia Artificial y Sistemas Complejos</h2>
+                    <p>La <span class="highlight">Inteligencia Artificial</span> no es solo una herramienta, sino un espejo que refleja nuestras propias nociones de inteligencia y conciencia. Investigo los modelos de IA, no solo por su capacidad predictiva, sino como <span class="highlight">sistemas complejos</span> que nos permiten simular y explorar las reglas de la emergencia, el aprendizaje y la auto-organización, conectando directamente con los principios de la autopoiesis.</p>
+                </section>
+
+                <section id="voyant-tools" data-animate>
+                    <h2>Análisis de Textos con Voyant Tools</h2>
+                    <iframe src="https://voyant-tools.org/tool/CollocatesGraph/?query=a&query=the&query=powerpuff&mode=corpus&corpus=9e0ea2351023ab13cbc0979214742c17" title="Análisis de texto con Voyant Tools"></iframe>
+                </section>
+                
+                 <!-- Secciones originales ocultas pero mantenidas por si se necesitan los IDs -->
+                <div id="ciencias-cognitivas" style="display:none;"></div>
+                <div id="economia-politica" style="display:none;"></div>
+                <div id="epistemologia" style="display:none;"></div>
+            </main>
+        </div>
+        <footer class="footer" id="contacto">
+             <h2>Contacto</h2>
+            <p>Este espacio es una cartografía personal y una invitación al diálogo.</p>
+            <p style="margin-top:1.5rem; font-size: 0.9em;">La vida es terriblemente bella cuando los jugadores juegan. | 2025</p>
+        </footer>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+        // --- INICIALIZACIÓN DE PARTICLES.JS ---
+        if (window.matchMedia('(min-width: 769px)').matches) {
+            particlesJS("particles-js", {
+                "particles": { "number": { "value": 60, "density": { "enable": true, "value_area": 800 } }, "color": { "value": "#00ffff" }, "shape": { "type": "circle" }, "opacity": { "value": 0.5, "random": true }, "size": { "value": 2, "random": true }, "line_linked": { "enable": true, "distance": 150, "color": "#00ffc2", "opacity": 0.3, "width": 1 }, "move": { "enable": true, "speed": 1, "direction": "none", "random": true, "straight": false, "out_mode": "out" } },
+                "interactivity": { "detect_on": "canvas", "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": true, "mode": "push" }, "resize": true }, "modes": { "grab": { "distance": 140, "line_linked": { "opacity": 0.7 } }, "push": { "particles_nb": 4 } } }, "retina_detect": true
+            });
+        }
+
+        // --- SCRIPT PARA MENÚ HAMBURGUESA ---
+        const menuToggleBtn = document.getElementById('menu-toggle-btn');
+        const navMenu = document.getElementById('nav-menu');
+        menuToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            navMenu.classList.toggle('is-open');
+        });
+        navMenu.addEventListener('click', (e) => { if (e.target.tagName === 'A') { navMenu.classList.remove('is-open'); } });
+
+        // --- ANIMACIÓN DE SCROLL ---
+        const animatedSections = document.querySelectorAll('[data-animate]');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        animatedSections.forEach(section => { observer.observe(section); });
+
+        // --- SCRIPT D3.JS OPTIMIZADO ---
+        const vizData = { nodes: [{id:"Origen",link:"#trazado-vida"},{id:"Biología",link:"#biologia-celular"},{id:"Histología",link:"#biologia-celular"},{id:"Determinismo",link:"#filosofia-mente"},{id:"Libertad",link:"#filosofia-mente"},{id:"Ciencias Cognitivas",link:"#filosofia-mente"},{id:"Mente",link:"#filosofia-mente"},{id:"Filosofía",link:"#filosofia-mente"},{id:"Lenguaje",link:"#filosofia-mente"},{id:"Epistemología",link:"#trazado-vida"},{id:"Economía",link:"#analisis-redes"},{id:"Política",link:"#analisis-redes"},{id:"Subjetividad",link:"#filosofia-mente"},{id:"Varela",link:"#filosofia-mente"},{id:"Maturana",link:"#biologia-celular"}], links: [{source:"Origen",target:"Biología"},{source:"Biología",target:"Histología"},{source:"Biología",target:"Determinismo"},{source:"Biología",target:"Maturana"},{source:"Determinismo",target:"Libertad"},{source:"Libertad",target:"Filosofía"},{source:"Filosofía",target:"Ciencias Cognitivas"},{source:"Ciencias Cognitivas",target:"Mente"},{source:"Ciencias Cognitivas",target:"Varela"},{source:"Mente",target:"Lenguaje"},{source:"Filosofía",target:"Epistemología"},{source:"Libertad",target:"Economía"},{source:"Economía",target:"Política"},{source:"Política",target:"Subjetividad"}]};
+        const netData = { nodes: [{id:"Palabras",link:"#analisis-redes"},{id:"Lenguaje",link:"#filosofia-mente"},{id:"Visualización",link:"#analisis-redes"},{id:"Voyant",link:"#voyant-tools"},{id:"Histología",link:"#biologia-celular"},{id:"Herbario",link:"https://leolib87.github.io/herbario/"}], links: [{source:"Palabras",target:"Lenguaje"},{source:"Palabras",target:"Visualización"},{source:"Visualización",target:"Voyant"},{source:"Visualización",target:"Histología"},{source:"Histología",target:"Herbario"}]};
+        
+        function createForceGraph(containerId, data) {
+            const container = d3.select(containerId);
+            if (!container.node() || container.node().getBoundingClientRect().width === 0) return;
+            container.select("svg").remove();
+            
+            const width = container.node().getBoundingClientRect().width;
+            const height = container.node().getBoundingClientRect().height;
+            const isMobile = width < 600;
+
+            const svg = container.append("svg").attr("width", width).attr("height", height).attr("viewBox", `0 0 ${width} ${height}`);
+            const simulation = d3.forceSimulation(data.nodes)
+                .force("link", d3.forceLink(data.links).id(d => d.id).distance(isMobile ? 70 : 120))
+                .force("charge", d3.forceManyBody().strength(isMobile ? -200 : -300))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .force("collide", d3.forceCollide().radius(isMobile ? 35 : 45));
+
+            const link = svg.append("g").selectAll(".link").data(data.links).enter().append("line").attr("class", "link");
+            const node = svg.append("g").selectAll(".node").data(data.nodes).enter().append("g").attr("class", "node").call(d3.drag().on("start",dragstarted).on("drag",dragged).on("end",dragended));
+            node.append("circle").attr("r", isMobile ? 8 : 10);
+            node.append("text").attr("dy", -15).attr("text-anchor", "middle").text(d => d.id);
+            node.on("click", (event, d) => { if(d.link.startsWith('http')) { window.open(d.link, '_blank'); } else { const targetElement = document.querySelector(d.link); if (targetElement) { targetElement.scrollIntoView({ behavior: 'smooth' }); } } });
+            
+            simulation.on("tick", () => {
+                link.attr("x1", d => d.source.x).attr("y1", d => d.source.y).attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+                node.attr("transform", d => `translate(${d.x},${d.y})`);
+            });
+
+            function dragstarted(event) { if(!event.active) simulation.alphaTarget(0.3).restart(); event.subject.fx=event.subject.x; event.subject.fy=event.subject.y; }
+            function dragged(event) { event.subject.fx=event.x; event.subject.fy=event.y; }
+            function dragended(event) { if(!event.active) simulation.alphaTarget(0); event.subject.fx=null; event.subject.fy=null; }
+        }
+        function drawAllGraphs() { createForceGraph("#visualization", vizData); createForceGraph("#network-graph", netData); }
+        window.addEventListener('load', drawAllGraphs);
+        
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(drawAllGraphs, 200);
+        });
+    </script>
+</body>
+</html>
