@@ -120,8 +120,46 @@
         .mega-menu a:hover { color: #000; background-color: var(--primary-glow); padding-left: 1.25rem; }
         
         /* --- ESTILOS DE PÁGINA DE AUTOPOIESIS --- */
-        .main-container { max-width: 1440px; margin: 0 auto; padding: 1rem; padding-top: calc(var(--nav-height) + 2rem); }
-        .layout-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 2rem; }
+        .page-header {
+            position: relative;
+            text-align: center;
+            padding: 6rem 1rem;
+            margin-bottom: 2rem;
+            min-height: 40vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #particles-js {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .header-content h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(0, 255, 255, 0.7);
+            animation: pulse-glow 3s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
+        }
+
+        .main-container { max-width: 1440px; margin: 0 auto; padding: 1rem; padding-top: var(--nav-height); }
+        .layout-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 0; }
         
         .section {
             padding: clamp(1.5rem, 5vw, 2.5rem);
@@ -248,7 +286,7 @@
     <nav>
         <div class="nav-content">
             <div class="nav-logo">
-                <a href="#inicio">O.M.C.</a>
+                <a href="index.html">O.M.C.</a>
             </div>
             <!-- =============================================================================== -->
             <!-- ======================= INICIO DE NAVEGACIÓN REESTRUCTURADA ======================= -->
@@ -427,11 +465,14 @@
     </nav>
 
     <div class="main-container">
-        <div class="layout-grid">
-            <div class="section">
-                <h2>Modelo de Autopoiesis: Simulando la Esencia de los Sistemas Vivos</h2>
+        <div class="page-header">
+            <div id="particles-js"></div>
+            <div class="header-content">
+                <h1>Modelo de Autopoiesis</h1>
             </div>
+        </div>
 
+        <div class="layout-grid">
             <div class="section" id="controls">
                 <h2>Controles de Simulación</h2>
                 <div class="controls-grid">
@@ -507,8 +548,15 @@
             </footer>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <script>
-        // --- INICIALIZACIÓN DE PARTICLES.JS (No aplica a esta página) ---
+        // --- INICIALIZACIÓN DE PARTICLES.JS ---
+        if (document.getElementById('particles-js')) {
+            particlesJS("particles-js", {
+                "particles": { "number": { "value": 60, "density": { "enable": true, "value_area": 800 } }, "color": { "value": "#00ffff" }, "shape": { "type": "circle" }, "opacity": { "value": 0.5, "random": true }, "size": { "value": 2, "random": true }, "line_linked": { "enable": true, "distance": 150, "color": "#00ffc2", "opacity": 0.3, "width": 1 }, "move": { "enable": true, "speed": 1, "direction": "none", "random": true, "straight": false, "out_mode": "out" } },
+                "interactivity": { "detect_on": "canvas", "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": true, "mode": "push" }, "resize": true }, "modes": { "grab": { "distance": 140, "line_linked": { "opacity": 0.7 } }, "push": { "particles_nb": 4 } } }, "retina_detect": true
+            });
+        }
 
         // --- SCRIPTS DE NAVEGACIÓN ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -565,164 +613,172 @@
 
         // --- SCRIPT DE SIMULACIÓN DE AUTOPOIESIS ---
         const vizContainer = document.getElementById('visualization');
-        let width = vizContainer.clientWidth;
-        let height = 600;
-        const cellSize = 10;
-        let cols = Math.floor(width / cellSize);
-        let rows = Math.floor(height / cellSize);
+        if (vizContainer) {
+            let width = vizContainer.clientWidth;
+            let height = 600;
+            const cellSize = 10;
+            let cols = Math.floor(width / cellSize);
+            let rows = Math.floor(height / cellSize);
 
-        const svg = d3.select("#visualization")
-            .append("svg")
-            .attr("width", "100%")
-            .attr("height", "100%")
-            .attr("viewBox", `0 0 ${width} ${height}`)
-            .style("background", "rgba(0, 0, 0, 0.9)")
-            .attr("preserveAspectRatio", "xMidYMid meet");
+            const svg = d3.select("#visualization")
+                .append("svg")
+                .attr("width", "100%")
+                .attr("height", "100%")
+                .attr("viewBox", `0 0 ${width} ${height}`)
+                .style("background", "rgba(0, 0, 0, 0.9)")
+                .attr("preserveAspectRatio", "xMidYMid meet");
 
-        let grid, substrates, enzymes, links;
-        let enzymeCount = 10;
-        let substrateSpeed = 5;
-        let decayRate = 0.001;
+            let grid, substrates, enzymes, links;
+            let enzymeCount = 10;
+            let substrateSpeed = 5;
+            let decayRate = 0.001;
 
-        d3.select("#enzymeCount").on("input", function() {
-            enzymeCount = +this.value;
-            d3.select("#enzymeCountValue").text(enzymeCount);
-        });
-        d3.select("#substrateSpeed").on("input", function() {
-            substrateSpeed = +this.value;
-            d3.select("#substrateSpeedValue").text(substrateSpeed);
-        });
-        d3.select("#decayRate").on("input", function() {
-            decayRate = +this.value;
-            d3.select("#decayRateValue").text(decayRate.toFixed(4));
-        });
+            d3.select("#enzymeCount").on("input", function() {
+                enzymeCount = +this.value;
+                d3.select("#enzymeCountValue").text(enzymeCount);
+            });
+            d3.select("#substrateSpeed").on("input", function() {
+                substrateSpeed = +this.value;
+                d3.select("#substrateSpeedValue").text(substrateSpeed);
+            });
+            d3.select("#decayRate").on("input", function() {
+                decayRate = +this.value;
+                d3.select("#decayRateValue").text(decayRate.toFixed(4));
+            });
 
-        function resetSimulation() {
-            width = vizContainer.clientWidth;
-            height = 600; // Altura fija para la simulación
-            cols = Math.floor(width / cellSize);
-            rows = Math.floor(height / cellSize);
-            svg.attr("viewBox", `0 0 ${width} ${height}`);
+            function resetSimulation() {
+                width = vizContainer.clientWidth;
+                if (width < cellSize) { // CORRECCIÓN: Guarda para evitar errores cuando el contenedor no tiene ancho.
+                    svg.selectAll("*").remove();
+                    return;
+                }
+                height = 600; 
+                cols = Math.floor(width / cellSize);
+                rows = Math.floor(height / cellSize);
+                svg.attr("viewBox", `0 0 ${width} ${height}`);
 
-            grid = Array(cols).fill().map(() => Array(rows).fill(0));
-            substrates = [];
-            enzymes = [];
-            links = [];
+                grid = Array(cols).fill().map(() => Array(rows).fill(0));
+                substrates = [];
+                enzymes = [];
+                links = [];
 
-            const substrateCount = Math.min(1000, Math.floor(cols * rows * 0.3));
-            for (let i = 0; i < substrateCount; i++) {
-                let x, y;
-                do {
-                    x = Math.floor(Math.random() * cols);
-                    y = Math.floor(Math.random() * rows);
-                } while (grid[x][y] !== 0);
-                grid[x][y] = 1;
-                substrates.push({ x, y });
+                const substrateCount = Math.min(1000, Math.floor(cols * rows * 0.3));
+                for (let i = 0; i < substrateCount; i++) {
+                    let x, y;
+                    do {
+                        x = Math.floor(Math.random() * cols);
+                        y = Math.floor(Math.random() * rows);
+                    } while (grid[x][y] !== 0);
+                    grid[x][y] = 1;
+                    substrates.push({ x, y });
+                }
+
+                for (let i = 0; i < enzymeCount; i++) {
+                    let x, y;
+                    do {
+                        x = Math.floor(Math.random() * cols);
+                        y = Math.floor(Math.random() * rows);
+                    } while (grid[x][y] !== 0);
+                    grid[x][y] = 2;
+                    enzymes.push({ x, y });
+                }
+                updateVisualization();
             }
 
-            for (let i = 0; i < enzymeCount; i++) {
-                let x, y;
-                do {
-                    x = Math.floor(Math.random() * cols);
-                    y = Math.floor(Math.random() * rows);
-                } while (grid[x][y] !== 0);
-                grid[x][y] = 2;
-                enzymes.push({ x, y });
+            function moveSubstrates() {
+                substrates.forEach(s => {
+                    if (Math.random() < substrateSpeed / 10) {
+                        const dir = Math.floor(Math.random() * 4);
+                        const newX = s.x + [1, 0, -1, 0][dir];
+                        const newY = s.y + [0, 1, 0, -1][dir];
+                        if (isValid(newX, newY) && grid[newX][newY] === 0) {
+                            grid[s.x][s.y] = 0;
+                            s.x = newX;
+                            s.y = newY;
+                            grid[s.x][s.y] = 1;
+                        }
+                    }
+                });
             }
-            updateVisualization();
-        }
 
-        function moveSubstrates() {
-            substrates.forEach(s => {
-                if (Math.random() < substrateSpeed / 10) {
-                    const dir = Math.floor(Math.random() * 4);
-                    const newX = s.x + [1, 0, -1, 0][dir];
-                    const newY = s.y + [0, 1, 0, -1][dir];
-                    if (isValid(newX, newY) && grid[newX][newY] === 0) {
-                        grid[s.x][s.y] = 0;
-                        s.x = newX;
-                        s.y = newY;
-                        grid[s.x][s.y] = 1;
+            function interact() {
+                enzymes.forEach(e => {
+                    const neighbors = getNeighbors(e.x, e.y);
+                    const substrateNeighbors = neighbors.filter(n => grid[n.x][n.y] === 1);
+                    if (substrateNeighbors.length >= 2) {
+                        const s1 = substrateNeighbors[0];
+                        const s2 = substrateNeighbors[1];
+                        grid[s1.x][s1.y] = 3;
+                        grid[s2.x][s2.y] = 0;
+                        substrates = substrates.filter(s => !(s.x === s1.x && s.y === s1.y) && !(s.x === s2.x && s.y === s2.y));
+                        links.push({ x: s1.x, y: s1.y });
+                    }
+                });
+                disintegrateLinks();
+            }
+
+            function disintegrateLinks() {
+                links = links.filter(l => {
+                    if (Math.random() < decayRate) {
+                        grid[l.x][l.y] = 1;
+                        substrates.push({ x: l.x, y: l.y });
+                        return false;
+                    }
+                    return true;
+                });
+            }
+
+            function updateVisualization() {
+                const data = [
+                    ...substrates.map(d => ({ type: "substrate", x: d.x * cellSize + cellSize / 2, y: d.y * cellSize + cellSize / 2 })),
+                    ...enzymes.map(d => ({ type: "enzyme", x: d.x * cellSize + cellSize / 2, y: d.y * cellSize + cellSize / 2 })),
+                    ...links.map(d => ({ type: "link", x: d.x * cellSize + cellSize / 2, y: d.y * cellSize + cellSize / 2 }))
+                ];
+                const circles = svg.selectAll("circle").data(data, d => `${d.type}-${d.x}-${d.y}`);
+                circles.exit().remove();
+                circles.enter().append("circle")
+                    .attr("r", cellSize / 2)
+                    .attr("class", d => `circle-${d.type}`)
+                    .merge(circles)
+                    .attr("cx", d => d.x)
+                    .attr("cy", d => d.y);
+                d3.select("#status").text(`Sustratos: ${substrates.length}, Enlaces: ${links.length}, Enzimas: ${enzymes.length}`);
+            }
+
+            function getNeighbors(x, y) {
+                const neighbors = [];
+                for (let dx of [-1, 0, 1]) {
+                    for (let dy of [-1, 0, 1]) {
+                        if (dx === 0 && dy === 0) continue;
+                        const nx = x + dx;
+                        const ny = y + dy;
+                        if (isValid(nx, ny)) neighbors.push({ x: nx, y: ny });
                     }
                 }
-            });
-        }
-
-        function interact() {
-            enzymes.forEach(e => {
-                const neighbors = getNeighbors(e.x, e.y);
-                const substrateNeighbors = neighbors.filter(n => grid[n.x][n.y] === 1);
-                if (substrateNeighbors.length >= 2) {
-                    const s1 = substrateNeighbors[0];
-                    const s2 = substrateNeighbors[1];
-                    grid[s1.x][s1.y] = 3;
-                    grid[s2.x][s2.y] = 0;
-                    substrates = substrates.filter(s => !(s.x === s1.x && s.y === s1.y) && !(s.x === s2.x && s.y === s2.y));
-                    links.push({ x: s1.x, y: s1.y });
-                }
-            });
-            disintegrateLinks();
-        }
-
-        function disintegrateLinks() {
-            links = links.filter(l => {
-                if (Math.random() < decayRate) {
-                    grid[l.x][l.y] = 1;
-                    substrates.push({ x: l.x, y: l.y });
-                    return false;
-                }
-                return true;
-            });
-        }
-
-        function updateVisualization() {
-            const data = [
-                ...substrates.map(d => ({ type: "substrate", x: d.x * cellSize + cellSize / 2, y: d.y * cellSize + cellSize / 2 })),
-                ...enzymes.map(d => ({ type: "enzyme", x: d.x * cellSize + cellSize / 2, y: d.y * cellSize + cellSize / 2 })),
-                ...links.map(d => ({ type: "link", x: d.x * cellSize + cellSize / 2, y: d.y * cellSize + cellSize / 2 }))
-            ];
-            const circles = svg.selectAll("circle").data(data, d => `${d.type}-${d.x}-${d.y}`);
-            circles.exit().remove();
-            circles.enter().append("circle")
-                .attr("r", cellSize / 2)
-                .attr("class", d => `circle-${d.type}`)
-                .merge(circles)
-                .attr("cx", d => d.x)
-                .attr("cy", d => d.y);
-            d3.select("#status").text(`Sustratos: ${substrates.length}, Enlaces: ${links.length}, Enzimas: ${enzymes.length}`);
-        }
-
-        function getNeighbors(x, y) {
-            const neighbors = [];
-            for (let dx of [-1, 0, 1]) {
-                for (let dy of [-1, 0, 1]) {
-                    if (dx === 0 && dy === 0) continue;
-                    const nx = x + dx;
-                    const ny = y + dy;
-                    if (isValid(nx, ny)) neighbors.push({ x: nx, y: ny });
-                }
+                return neighbors;
             }
-            return neighbors;
-        }
 
-        function isValid(x, y) {
-            return x >= 0 && x < cols && y >= 0 && y < rows;
-        }
+            function isValid(x, y) {
+                return x >= 0 && x < cols && y >= 0 && y < rows;
+            }
 
-        function animate() {
-            moveSubstrates();
-            interact();
-            updateVisualization();
-            requestAnimationFrame(animate);
-        }
+            function animate() {
+                if (cols > 0 && rows > 0) { // CORRECCIÓN: Solo animar si la cuadrícula es válida
+                    moveSubstrates();
+                    interact();
+                    updateVisualization();
+                }
+                requestAnimationFrame(animate);
+            }
 
-        function resize() {
+            function resize() {
+                resetSimulation();
+            }
+
+            window.addEventListener("resize", resize);
             resetSimulation();
+            animate();
         }
-
-        window.addEventListener("resize", resize);
-        resetSimulation();
-        animate();
     </script>
 </body>
 </html>
