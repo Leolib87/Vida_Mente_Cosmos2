@@ -220,15 +220,15 @@
             }
             .mega-menu h3 { 
                 text-align: center; 
+                font-size: 1.4em; /* Fuente más grande para subtítulos */
             }
             .mega-menu ul { 
                 align-items: center; 
                 text-align: center; /* Asegura el centrado del texto en los enlaces */
             }
             
-            /* === MEJORAS PARA MÓVIL (SENIOR DEV) === */
             .mega-menu a {
-                font-size: 1.2em; /* Fuente más grande para mejor legibilidad */
+                font-size: 1.3em; /* Fuente más grande para mejor legibilidad en ítems */
                 padding: 0.8rem 1rem;
                 transition: color 0.3s, background-color 0.3s; /* Transición sin salto de padding */
             }
@@ -237,7 +237,6 @@
                 color: #000;
                 background-color: var(--primary-glow);
             }
-            /* === FIN DE MEJORAS === */
             
             .menu-toggle {
                 display: block; position: relative; z-index: 1001;
@@ -557,16 +556,19 @@
                             megaMenu.classList.add('is-active');
                         };
 
-                        const hideMenu = () => {
+                        const startHideTimer = () => {
                             leaveTimeout = setTimeout(() => {
                                 megaMenu.classList.remove('is-active');
-                            }, 300);
+                            }, 300); // A small delay
                         };
 
                         item.addEventListener('mouseenter', showMenu);
-                        item.addEventListener('mouseleave', hideMenu);
-                        megaMenu.addEventListener('mouseenter', showMenu); // Crucial: mantiene el menú abierto
-                        megaMenu.addEventListener('mouseleave', hideMenu); // Crucial: cierra el menú al salir de él
+                        item.addEventListener('mouseleave', startHideTimer);
+                        
+                        // Crucial: mantiene el menú abierto al entrar en él
+                        megaMenu.addEventListener('mouseenter', () => clearTimeout(leaveTimeout));
+                        // Crucial: cierra el menú al salir de él
+                        megaMenu.addEventListener('mouseleave', startHideTimer);
                     }
                 });
             }
