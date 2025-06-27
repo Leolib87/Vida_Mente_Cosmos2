@@ -218,8 +218,26 @@
                 border: none; padding: 1rem 0 1.5rem 0; background: none; backdrop-filter: none;
                 grid-template-columns: 1fr; border-top: 1px solid rgba(0, 255, 255, 0.2); margin-top: 1rem;
             }
-            .mega-menu h3 { text-align: center; }
-            .mega-menu ul { align-items: center; }
+            .mega-menu h3 { 
+                text-align: center; 
+            }
+            .mega-menu ul { 
+                align-items: center; 
+                text-align: center; /* Asegura el centrado del texto en los enlaces */
+            }
+            
+            /* === MEJORAS PARA MÓVIL (SENIOR DEV) === */
+            .mega-menu a {
+                font-size: 1.2em; /* Fuente más grande para mejor legibilidad */
+                padding: 0.8rem 1rem;
+                transition: color 0.3s, background-color 0.3s; /* Transición sin salto de padding */
+            }
+            .mega-menu a:hover {
+                padding-left: 1rem; /* Anula el hover de escritorio para evitar el salto */
+                color: #000;
+                background-color: var(--primary-glow);
+            }
+            /* === FIN DE MEJORAS === */
             
             .menu-toggle {
                 display: block; position: relative; z-index: 1001;
@@ -528,22 +546,27 @@
                     if (megaMenu) {
                         let leaveTimeout;
 
-                        item.addEventListener('mouseenter', () => {
+                        const showMenu = () => {
                             clearTimeout(leaveTimeout);
-                            // Ocultar otros menús para evitar solapamiento
+                            // Ocultar otros menús activos
                             document.querySelectorAll('.mega-menu.is-active').forEach(m => {
                                 if (m !== megaMenu) {
                                     m.classList.remove('is-active');
                                 }
                             });
                             megaMenu.classList.add('is-active');
-                        });
+                        };
 
-                        item.addEventListener('mouseleave', () => {
+                        const hideMenu = () => {
                             leaveTimeout = setTimeout(() => {
                                 megaMenu.classList.remove('is-active');
                             }, 300);
-                        });
+                        };
+
+                        item.addEventListener('mouseenter', showMenu);
+                        item.addEventListener('mouseleave', hideMenu);
+                        megaMenu.addEventListener('mouseenter', showMenu); // Crucial: mantiene el menú abierto
+                        megaMenu.addEventListener('mouseleave', hideMenu); // Crucial: cierra el menú al salir de él
                     }
                 });
             }
