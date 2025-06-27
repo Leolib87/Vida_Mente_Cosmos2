@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorio 1: Reconocimiento de Biomoléculas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/phosphor-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* bg-gray-900 */
+            color: #d1d5db; /* text-gray-300 */
+        }
+        .tab-button.active {
+            background-color: #3b82f6; /* bg-blue-600 */
+            color: #ffffff;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .prose-dark {
+            color: #d1d5db;
+        }
+        .prose-dark h1, .prose-dark h2, .prose-dark h3, .prose-dark h4 {
+            color: #f9fafb;
+        }
+        .prose-dark strong {
+            color: #f9fafb;
+        }
+        .prose-dark a {
+            color: #60a5fa;
+        }
+        .prose-dark ul > li::marker {
+            color: #3b82f6;
+        }
+        .prose-dark ol > li::marker {
+            color: #3b82f6;
+        }
+        .table-dark {
+            background-color: #1f2937; /* bg-gray-800 */
+        }
+        .table-dark th, .table-dark td {
+            border-color: #4b5563; /* border-gray-600 */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">Laboratorio 1: Reconocimiento de Biomoléculas</h1>
+            <p class="text-lg text-gray-400">Un análisis exhaustivo para Biología Celular</p>
+        </header>
+
+        <!-- Introduction Section -->
+        <section class="mb-12 prose prose-dark max-w-none">
+            <h2 class="text-3xl font-bold border-b-2 border-blue-500 pb-2">Introducción: Los Pilares de la Vida</h2>
+            <p>Las biomoléculas son los componentes químicos fundamentales que constituyen los seres vivos y permiten la increíble complejidad de la vida. Desde la estructura de nuestras células hasta la energía que nos impulsa, estas moléculas orquestan cada proceso biológico. En este laboratorio, nos sumergiremos en el estudio de tres de los cuatro grupos principales de biomoléculas orgánicas: <strong>proteínas, carbohidratos y lípidos</strong>. A través de una serie de ensayos colorimétricos y de solubilidad, no solo detectaremos su presencia en muestras cotidianas, sino que también comprenderemos los principios químicos que hacen posibles estas identificaciones. Este enfoque práctico es crucial para conectar la teoría abstracta de la biología molecular con fenómenos observables y tangibles.</p>
+        </section>
+
+        <!-- Materials and Methods Section -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold border-b-2 border-blue-500 pb-2 mb-6 text-white">Materiales y Métodos</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 prose prose-dark max-w-none">
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-white mt-0"><i class="ph-flask pe-2"></i>Equipamiento</h3>
+                    <ul class="list-disc pl-5">
+                        <li>Tubos de ensayo (15 por grupo)</li>
+                        <li>Gradilla para tubos de ensayo</li>
+                        <li>Pipetas graduadas o goteros</li>
+                        <li>Vaso de precipitados</li>
+                        <li>Cuchillo o bisturí</li>
+                        <li>Tabla para picar</li>
+                        <li>Mortero con pistilo o triturador</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-white mt-0"><i class="ph-test-tube pe-2"></i>Reactivos Químicos</h3>
+                    <ul class="list-disc pl-5">
+                        <li>Agua destilada</li>
+                        <li>Reactivo de Biuret:
+                            <ul class="list-disc pl-5 mt-2">
+                                <li>Sol. Hidróxido de Sodio (NaOH) 20%</li>
+                                <li>Sol. Sulfato Cúprico (CuSO₄) 1%</li>
+                            </ul>
+                        </li>
+                        <li>Reactivo de Lugol</li>
+                        <li>Alcohol etílico (Etanol) 96%</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-white mt-0"><i class="ph-leaf pe-2"></i>Muestras Biológicas</h3>
+                    <ul class="list-disc pl-5">
+                        <li>Clara de huevo fresco (albúmina)</li>
+                        <li>Leche entera</li>
+                        <li>Papa fresca</li>
+                        <li>Salchicha</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tabs Navigation -->
+        <div class="mb-8">
+            <div class="flex flex-wrap justify-center border-b border-gray-700">
+                <button class="tab-button text-lg font-semibold py-3 px-6 mr-2 mb-2 rounded-t-lg transition-colors duration-300 active" onclick="openTab(event, 'proteinas')">
+                    <i class="ph-atom pe-2"></i>Detección de Proteínas
+                </button>
+                <button class="tab-button text-lg font-semibold py-3 px-6 mr-2 mb-2 rounded-t-lg transition-colors duration-300" onclick="openTab(event, 'carbohidratos')">
+                    <i class="ph-bone pe-2"></i>Detección de Carbohidratos
+                </button>
+                <button class="tab-button text-lg font-semibold py-3 px-6 mb-2 rounded-t-lg transition-colors duration-300" onclick="openTab(event, 'lipidos')">
+                    <i class="ph-drop pe-2"></i>Detección de Lípidos
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabs Content -->
+        <div id="tab-container">
+            <!-- Proteínas Tab -->
+            <div id="proteinas" class="tab-content active">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-8">
+                    <div class="md:col-span-3 prose prose-dark max-w-none">
+                        <h3 class="text-2xl font-bold text-blue-400 mt-0">Experimento 1: Reacción de Biuret</h3>
+                        <h4>Fundamento Teórico</h4>
+                        <p>Las proteínas son polímeros de aminoácidos unidos por <strong>enlaces peptídicos</strong>. La reacción de Biuret es una prueba química específica para detectar la presencia de estos enlaces. En un medio fuertemente alcalino (proporcionado por el NaOH), los iones cúpricos (Cu²⁺) del sulfato cúprico forman un complejo de coordinación con los pares de electrones no compartidos de los átomos de nitrógeno involucrados en los enlaces peptídicos. Este complejo de color violeta o púrpura absorbe la luz a 540 nm, permitiendo una detección cualitativa. Se requieren al menos dos enlaces peptídicos para que la reacción sea positiva.</p>
+                        <h4>Protocolo Experimental</h4>
+                        <ol class="list-decimal pl-5">
+                            <li>Preparar y etiquetar 5 tubos de ensayo con las muestras: Agua, Albúmina, Leche, Papa y Salchicha.</li>
+                            <li>Añadir 3 mL de cada muestra a su tubo. Para la papa y salchicha, usar una pequeña cantidad triturada con 3 mL de agua.</li>
+                            <li>Añadir 2 mL de NaOH al 20% a cada tubo y mezclar.</li>
+                            <li>Agregar 5-6 gotas de CuSO₄ al 1% a cada tubo.</li>
+                            <li>Mezclar bien y observar cualquier cambio de color.</li>
+                        </ol>
+                    </div>
+                    <div class="md:col-span-2">
+                        <h3 class="text-2xl font-bold text-blue-400 mb-4 mt-0">Análisis de Resultados</h3>
+                        <div class="overflow-x-auto rounded-lg shadow-md">
+                            <table class="w-full text-sm text-left text-gray-300 table-dark">
+                                <thead class="text-xs text-gray-100 uppercase bg-gray-700"><tr><th scope="col" class="py-3 px-6">Muestra</th><th scope="col" class="py-3 px-6">Resultado</th><th scope="col" class="py-3 px-6">Observación</th></tr></thead>
+                                <tbody>
+                                    <tr class="border-b border-gray-600"><td class="py-3 px-6 font-medium">Albúmina</td><td class="py-3 px-6 text-center text-green-400">++++</td><td class="py-3 px-6">Violeta intenso</td></tr>
+                                    <tr class="border-b border-gray-600"><td class="py-3 px-6 font-medium">Salchicha</td><td class="py-3 px-6 text-center text-green-400">+++</td><td class="py-3 px-6">Violeta</td></tr>
+                                    <tr class="border-b border-gray-600"><td class="py-3 px-6 font-medium">Leche</td><td class="py-3 px-6 text-center text-yellow-400">++</td><td class="py-3 px-6">Violeta claro</td></tr>
+                                    <tr class="border-b border-gray-600"><td class="py-3 px-6 font-medium">Papa</td><td class="py-3 px-6 text-center text-orange-400">+</td><td class="py-3 px-6">Leve cambio</td></tr>
+                                    <tr><td class="py-3 px-6 font-medium">Agua</td><td class="py-3 px-6 text-center text-red-400">-</td><td class="py-3 px-6">Azul (control)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                         <div class="mt-6 bg-gray-800 p-4 rounded-lg shadow-inner" style="height: 300px;">
+                            <canvas id="proteinasChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carbohidratos Tab -->
+            <div id="carbohidratos" class="tab-content">
+                 <div class="grid grid-cols-1 md:grid-cols-5 gap-8">
+                    <div class="md:col-span-3 prose prose-dark max-w-none">
+                        <h3 class="text-2xl font-bold text-yellow-400 mt-0">Experimento 2: Prueba de Lugol</h3>
+                        <h4>Fundamento Teórico</h4>
+                        <p>La prueba de Lugol identifica la presencia de <strong>almidón</strong>. El reactivo de Lugol contiene iones triyoduro (I₃⁻) que se insertan dentro de la hélice de amilosa (un componente del almidón), formando un complejo de transferencia de carga. Este complejo altera las transiciones electrónicas del yodo, haciendo que absorba la luz en el espectro visible y refleje un color azul-negro intenso. La amilopectina, al ser ramificada, da un color más pardo-rojizo.</p>
+                        <h4>Protocolo Experimental</h4>
+                        <ol class="list-decimal pl-5">
+                            <li>Preparar y etiquetar 5 tubos de ensayo con las muestras: Agua, Albúmina, Leche, Papa y Salchicha.</li>
+                            <li>Colocar 3 mL de cada muestra en su tubo correspondiente.</li>
+                            <li>Añadir 3 gotas de Lugol diluido a cada tubo.</li>
+                            <li>Agitar suavemente y observar los cambios de color inmediatos.</li>
+                        </ol>
+                    </div>
+                    <div class="md:col-span-2">
+                        <h3 class="text-2xl font-bold text-yellow-400 mb-4 mt-0">Análisis de Resultados</h3>
+                        <div class="overflow-x-auto rounded-lg shadow-md">
+                             <table class="w-full text-sm text-left text-gray-300 table-dark">
+                                <thead class="text-xs text-gray-100 uppercase bg-gray-700"><tr><th scope="col" class="py-3 px-6">Muestra</th><th scope="col" class="py-3 px-6">Resultado</th><th scope="col" class="py-3 px-6">Observación</th></tr></thead>
+                                <tbody>
+                                    <tr class="border-b border-gray-600"><td class="py-3 px-6 font-medium">Papa</td><td class="py-3 px-6 text-center text-green-400">++++</td><td class="py-3 px-6">Azul-negro intenso</td></tr>
+                                    <tr class="border-b border-gray-600"><td class="py-3 px-6 font-medium">Salchicha</td><td class="py-3 px-6 text-center text-yellow-400">+/++</td><td class="py-3 px-6">Pardo/Azul claro</td></tr>
+                                    <tr class="border-b border-gray-600"><td class="py-3 px-6 font-medium">Leche</td><td class="py-3 px-6 text-center text-red-400">-</td><td class="py-3 px-6">Naranja (Lugol)</td></tr>
+                                    <tr class="border-b border-gray-600"><td class="py-3 px-6 font-medium">Albúmina</td><td class="py-3 px-6 text-center text-red-400">-</td><td class="py-3 px-6">Naranja (Lugol)</td></tr>
+                                    <tr><td class="py-3 px-6 font-medium">Agua</td><td class="py-3 px-6 text-center text-red-400">-</td><td class="py-3 px-6">Naranja (control)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-6 bg-gray-800 p-4 rounded-lg shadow-inner" style="height: 300px;">
+                            <canvas id="carbohidratosChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lípidos Tab -->
+            <div id="lipidos" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-8">
+                    <div class="md:col-span-3 prose prose-dark max-w-none">
+                        <h3 class="text-2xl font-bold text-pink-400 mt-0">Experimento 3: Prueba de Solubilidad</h3>
+                        <h4>Fundamento Teórico</h4>
+                        <p>Los lípidos son moléculas hidrofóbicas, caracterizadas por su <strong>insolubilidad en agua</strong> y su solubilidad en solventes orgánicos no polares. Esta prueba se basa en este principio. Primero, se extraen los lípidos de la muestra usando alcohol. Luego, al añadir agua a este extracto, la polaridad del solvente aumenta. Como los lípidos no son solubles en esta mezcla acuosa, precipitan formando una <strong>emulsión</strong>, una suspensión de pequeñas gotas de grasa que da una apariencia turbia o lechosa.</p>
+                        <h4>Protocolo Experimental</h4>
+                        <ol class="list-decimal pl-5">
+                            <li>Etiquetar 5 tubos con las muestras: Agua, Albúmina, Leche, Papa y Salchicha.</li>
+                            <li>Añadir la muestra correspondiente a cada tubo.</li>
+                            <li>Agregar 4 mL de alcohol, agitar vigorosamente y dejar reposar.</li>
+                            <li>Trasvasar el sobrenadante a un nuevo set de tubos limpios.</li>
+                            <li>Añadir a cada tubo nuevo un volumen de agua igual al del sobrenadante.</li>
+                            <li>Observar si la solución se vuelve turbia (positivo).</li>
+                        </ol>
+                    </div>
+                    <div class="md:col-span-2">
+                        <h3 class="text-2xl font-bold text-pink-400 mb-4 mt-0">Análisis de Resultados</h3>
+                        <div class="overflow-x-auto rounded-lg shadow-md">
+                             <table class="w-full text-sm text-left text-gray-300 table-dark">
+                                <thead class="text-xs text-gray-100 uppercase bg-gray-700"><tr><th scope="col" class="py-3 px-6">Muestra</th><th scope="col" class="py-3 px-6">Resultado</th><th scope="col" class="py-3 px-6">Observación</th></tr></thead>
+                                <tbody>
+                                    <tr class="border-b border-gray-600"><td class="py-3 px-6 font-medium">Salchicha</td><td class="py-3 px-6 text-center text-green-400">++++</td><td class="py-3 px-6">Muy turbia</td></tr>
+                                    <tr class="border-b border-gray-600"><td class="py-3 px-6 font-medium">Leche</td><td class="py-3 px-6 text-center text-green-400">+++</td><td class="py-3 px-6">Turbia</td></tr>
+                                    <tr class="border-b border-gray-600"><td class="py-3 px-6 font-medium">Albúmina</td><td class="py-3 px-6 text-center text-orange-400">+</td><td class="py-3 px-6">Leve turbidez</td></tr>
+                                    <tr class="border-b border-gray-600"><td class="py-3 px-6 font-medium">Papa</td><td class="py-3 px-6 text-center text-red-400">-</td><td class="py-3 px-6">Transparente</td></tr>
+                                    <tr><td class="py-3 px-6 font-medium">Agua</td><td class="py-3 px-6 text-center text-red-400">-</td><td class="py-3 px-6">Transparente (control)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                         <div class="mt-6 bg-gray-800 p-4 rounded-lg shadow-inner" style="height: 300px;">
+                            <canvas id="lipidosChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conclusion Section -->
+        <section class="mt-16 prose prose-dark max-w-none">
+            <h2 class="text-3xl font-bold border-b-2 border-blue-500 pb-2">Conclusiones Generales</h2>
+            <p>Este laboratorio demuestra de manera efectiva cómo diferentes ensayos químicos pueden revelar la composición macromolecular de sustancias biológicas comunes. Los resultados confirman que la mayoría de los alimentos son mezclas complejas de biomoléculas:</p>
+            <ul class="list-disc pl-5">
+                <li><strong>Clara de huevo:</strong> Predominantemente proteica.</li>
+                <li><strong>Leche:</strong> Contiene proteínas, lípidos y carbohidratos (lactosa, no detectable por Lugol).</li>
+                <li><strong>Papa:</strong> Principalmente carbohidratos complejos (almidón).</li>
+                <li><strong>Salchicha:</strong> Rica en proteínas y lípidos, con posibles carbohidratos añadidos.</li>
+            </ul>
+            <p>La utilización de controles negativos (agua destilada) fue fundamental para validar nuestros resultados, asegurando que las reacciones observadas se debieran a la presencia de la biomolécula de interés y no a los reactivos mismos. Comprender la base química de estas pruebas y la composición de las muestras permite una interpretación robusta de los datos, una habilidad esencial en cualquier disciplina científica.</p>
+        </section>
+    </div>
+
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set the first tab as active by default
+            document.querySelector('.tab-button').click();
+
+            const sharedChartOptions = {
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 4,
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: {
+                            color: '#d1d5db',
+                            stepSize: 1,
+                            callback: function(value) {
+                               const labels = {0: 'Negativo', 1: 'Leve', 2: 'Moderado', 3: 'Intenso', 4: 'Muy Intenso'};
+                               return labels[value];
+                            }
+                        }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: {
+                            color: '#d1d5db',
+                            font: { size: 14 }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                         callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.x !== null) {
+                                    const value = context.parsed.x;
+                                    const labels = {0: 'Negativo (-)', 1: 'Leve (+)', 2: 'Moderado (++)', 3: 'Intenso (+++)', 4: 'Muy Intenso (++++)'};
+                                    label += labels[value];
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                responsive: true,
+                maintainAspectRatio: false
+            };
+
+            // Chart for Proteins
+            const ctxProteinas = document.getElementById('proteinasChart');
+            new Chart(ctxProteinas, {
+                type: 'bar',
+                data: {
+                    labels: ['Agua', 'Papa', 'Leche', 'Salchicha', 'Albúmina'],
+                    datasets: [{
+                        label: 'Intensidad',
+                        data: [0, 1, 2, 3, 4],
+                        backgroundColor: ['#ef4444', '#f97316', '#3b82f6', '#3b82f6', '#3b82f6'],
+                        borderColor: ['#fca5a5', '#fdba74', '#93c5fd', '#93c5fd', '#93c5fd'],
+                        borderWidth: 1
+                    }]
+                },
+                options: sharedChartOptions
+            });
+
+            // Chart for Carbohydrates
+            const ctxCarbohidratos = document.getElementById('carbohidratosChart');
+            new Chart(ctxCarbohidratos, {
+                type: 'bar',
+                data: {
+                    labels: ['Agua', 'Albúmina', 'Leche', 'Salchicha', 'Papa'],
+                    datasets: [{
+                        label: 'Intensidad',
+                        data: [0, 0, 0, 2, 4],
+                        backgroundColor: ['#ef4444', '#ef4444', '#ef4444', '#eab308', '#eab308'],
+                        borderColor: ['#fca5a5', '#fca5a5', '#fca5a5', '#fde047', '#fde047'],
+                        borderWidth: 1
+                    }]
+                },
+                options: sharedChartOptions
+            });
+
+            // Chart for Lipids
+            const ctxLipidos = document.getElementById('lipidosChart');
+            new Chart(ctxLipidos, {
+                type: 'bar',
+                data: {
+                    labels: ['Agua', 'Papa', 'Albúmina', 'Leche', 'Salchicha'],
+                    datasets: [{
+                        label: 'Intensidad',
+                        data: [0, 0, 1, 3, 4],
+                        backgroundColor: ['#ef4444', '#ef4444', '#ec4899', '#ec4899', '#ec4899'],
+                        borderColor: ['#fca5a5', '#fca5a5', '#f9a8d4', '#f9a8d4', '#f9a8d4'],
+                        borderWidth: 1
+                    }]
+                },
+                options: sharedChartOptions
+            });
+        });
+    </script>
+</body>
+</html>
