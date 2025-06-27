@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Origen, Mente y Cosmos | Una Exploración Transdisciplinaria</title>
+    <title>Origen, Cosmos, Vida y Mente | Una Exploración Transdisciplinaria</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
@@ -166,11 +166,40 @@
         .highlight { color: var(--primary-glow); font-weight: bold; }
         
         /* --- VISUALIZACIONES Y OTROS ELEMENTOS --- */
-        .visualization-container { width: 100%; height: clamp(400px, 60vh, 650px); margin: 2rem 0; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(0,255,255,0.2); }
-        .node circle { stroke: var(--primary-glow); stroke-width: 1.5px; fill: var(--primary-text); transition: all 0.3s ease; cursor: pointer; }
-        .node:hover circle { fill: #FFFFFF; r: 12; filter: drop-shadow(0 0 8px var(--primary-glow)); }
-        .node text { fill: var(--primary-glow); font-family: var(--font-main); text-shadow: 0 0 5px var(--secondary-glow); pointer-events: none; font-size: 0.8em;}
-        .link { stroke: var(--primary-text); stroke-opacity: 0.4; }
+        .visualization-container { 
+            width: 100%; 
+            height: clamp(400px, 60vh, 650px); 
+            margin: 2rem 0; 
+            border-radius: 8px; 
+            background: rgba(0,0,0,0.4); 
+            border: 1px solid rgba(0,255,255,0.2);
+            overflow: hidden; /* Asegura que D3 no se desborde */
+        }
+        .node circle { 
+            stroke: var(--primary-glow); 
+            stroke-width: 1.5px; 
+            fill: var(--primary-text); 
+            transition: all 0.3s ease; 
+            cursor: pointer; 
+        }
+        .node:hover circle { 
+            fill: #FFFFFF; 
+            r: 12; 
+            filter: drop-shadow(0 0 8px var(--primary-glow)); 
+        }
+        .node text { 
+            fill: var(--primary-glow); 
+            font-family: var(--font-main); 
+            text-shadow: 0 0 5px var(--secondary-glow); 
+            pointer-events: none; 
+            font-size: 0.8em;
+            transition: opacity 0.3s ease;
+        }
+        .link { 
+            stroke: var(--primary-text); 
+            stroke-opacity: 0.4; 
+            transition: stroke-opacity 0.3s ease;
+        }
         iframe { width: 100%; height: 600px; border: 1px solid rgba(0,255,255,0.3); border-radius: 8px; }
         
         .footer { text-align: center; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
@@ -284,7 +313,7 @@
     <nav>
         <div class="nav-content">
             <div class="nav-logo">
-                <a href="#inicio">O.M.C.</a>
+                <a href="#inicio">O.C.V.M.</a>
             </div>
             <!-- =============================================================================== -->
             <!-- ======================= INICIO DE NAVEGACIÓN REESTRUCTURADA ======================= -->
@@ -469,8 +498,8 @@
         <div class="hero">
             <div id="particles-js"></div>
             <div class="hero-content">
-                <h1>Origen, Mente y Cosmos</h1>
-                <p>Un viaje transdisciplinario a través de la vida, la conciencia y las redes del saber</p>
+                <h1>Origen, Cosmos, Vida y Mente</h1>
+                <p>Un viaje transdisciplinario a través del cosmos, la vida, la conciencia y las redes del saber.</p>
             </div>
         </div>
 
@@ -605,50 +634,158 @@
         }, { threshold: 0.1 });
         animatedSections.forEach(section => { observer.observe(section); });
 
-        // --- SCRIPT D3.JS OPTIMIZADO ---
+        // ===================================================================================
+        // ======================= SCRIPT D3.JS MEJORADO (SENIOR LEVEL) ======================
+        // ===================================================================================
         const vizData = { nodes: [{id:"Origen",link:"#trazado-vida"},{id:"Biología",link:"#biologia-celular"},{id:"Histología",link:"#biologia-celular"},{id:"Determinismo",link:"#filosofia-mente"},{id:"Libertad",link:"#filosofia-mente"},{id:"Ciencias Cognitivas",link:"#filosofia-mente"},{id:"Mente",link:"#filosofia-mente"},{id:"Filosofía",link:"#filosofia-mente"},{id:"Lenguaje",link:"#filosofia-mente"},{id:"Epistemología",link:"#trazado-vida"},{id:"Economía",link:"#analisis-redes"},{id:"Política",link:"#analisis-redes"},{id:"Subjetividad",link:"#filosofia-mente"},{id:"Varela",link:"#filosofia-mente"},{id:"Maturana",link:"#biologia-celular"}], links: [{source:"Origen",target:"Biología"},{source:"Biología",target:"Histología"},{source:"Biología",target:"Determinismo"},{source:"Biología",target:"Maturana"},{source:"Determinismo",target:"Libertad"},{source:"Libertad",target:"Filosofía"},{source:"Filosofía",target:"Ciencias Cognitivas"},{source:"Ciencias Cognitivas",target:"Mente"},{source:"Ciencias Cognitivas",target:"Varela"},{source:"Mente",target:"Lenguaje"},{source:"Filosofía",target:"Epistemología"},{source:"Libertad",target:"Economía"},{source:"Economía",target:"Política"},{source:"Política",target:"Subjetividad"}]};
         const netData = { nodes: [{id:"Palabras",link:"#analisis-redes"},{id:"Lenguaje",link:"#filosofia-mente"},{id:"Visualización",link:"#analisis-redes"},{id:"Voyant",link:"#voyant-tools"},{id:"Histología",link:"#biologia-celular"},{id:"Herbario",link:"https://leolib87.github.io/herbario/"}], links: [{source:"Palabras",target:"Lenguaje"},{source:"Palabras",target:"Visualización"},{source:"Visualización",target:"Voyant"},{source:"Visualización",target:"Histología"},{source:"Histología",target:"Herbario"}]};
         
+        /**
+         * Crea y renderiza un grafo de fuerza en un contenedor específico.
+         * @param {string} containerId - El ID del elemento contenedor del grafo.
+         * @param {object} data - Los datos del grafo ({nodes, links}).
+         */
         function createForceGraph(containerId, data) {
             const container = d3.select(containerId);
-            if (!container.node() || container.node().getBoundingClientRect().width === 0) return;
+            if (!container.node() || container.node().getBoundingClientRect().width === 0) {
+                console.warn(`Contenedor D3.js "${containerId}" no encontrado o sin dimensiones.`);
+                return;
+            }
             container.select("svg").remove();
             
+            // --- Configuración de dimensiones y responsividad ---
             const width = container.node().getBoundingClientRect().width;
             const height = container.node().getBoundingClientRect().height;
             const isMobile = width < 600;
+            const nodeRadius = isMobile ? 8 : 10;
 
-            const svg = container.append("svg").attr("width", width).attr("height", height).attr("viewBox", `0 0 ${width} ${height}`);
+            // --- Creación del lienzo SVG ---
+            const svg = container.append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("viewBox", `0 0 ${width} ${height}`);
+
+            // --- Configuración de la simulación de fuerzas (AJUSTADA PARA NODOS MÁS CERCANOS) ---
             const simulation = d3.forceSimulation(data.nodes)
-                .force("link", d3.forceLink(data.links).id(d => d.id).distance(isMobile ? 70 : 120))
+                .force("link", d3.forceLink(data.links).id(d => d.id).distance(isMobile ? 50 : 90).strength(0.6))
                 .force("charge", d3.forceManyBody().strength(isMobile ? -200 : -300))
-                .force("center", d3.forceCenter(width / 2, height / 2))
-                .force("collide", d3.forceCollide().radius(isMobile ? 35 : 45));
+                .force("center", d3.forceCenter(width / 2, height / 2).strength(1))
+                .force("collide", d3.forceCollide().radius(nodeRadius * 3).strength(0.8));
 
-            const link = svg.append("g").selectAll(".link").data(data.links).enter().append("line").attr("class", "link");
-            const node = svg.append("g").selectAll(".node").data(data.nodes).enter().append("g").attr("class", "node").call(d3.drag().on("start",dragstarted).on("drag",dragged).on("end",dragended));
-            node.append("circle").attr("r", isMobile ? 8 : 10);
-            node.append("text").attr("dy", -15).attr("text-anchor", "middle").text(d => d.id);
-            node.on("click", (event, d) => { if(d.link.startsWith('http')) { window.open(d.link, '_blank'); } else { const targetElement = document.querySelector(d.link); if (targetElement) { targetElement.scrollIntoView({ behavior: 'smooth' }); } } });
+            // --- Creación de los elementos del grafo (links y nodos) ---
+            const link = svg.append("g")
+                .selectAll(".link")
+                .data(data.links)
+                .enter().append("line")
+                .attr("class", "link");
+
+            const node = svg.append("g")
+                .selectAll(".node")
+                .data(data.nodes)
+                .enter().append("g")
+                .attr("class", "node")
+                .call(drag(simulation)); // Habilitar arrastre
+
+            node.append("circle").attr("r", nodeRadius);
             
-            simulation.on("tick", () => {
-                link.attr("x1", d => d.source.x).attr("y1", d => d.source.y).attr("x2", d => d.target.x).attr("y2", d => d.target.y);
-                node.attr("transform", d => `translate(${d.x},${d.y})`);
+            node.append("text")
+                .attr("dy", `-${nodeRadius + 4}px`)
+                .attr("text-anchor", "middle")
+                .text(d => d.id);
+
+            // --- Manejo de interacciones (hover) ---
+            const linkedByIndex = {};
+            data.links.forEach(d => {
+                linkedByIndex[`${d.source.index},${d.target.index}`] = 1;
             });
 
-            function dragstarted(event) { if(!event.active) simulation.alphaTarget(0.3).restart(); event.subject.fx=event.subject.x; event.subject.fy=event.subject.y; }
-            function dragged(event) { event.subject.fx=event.x; event.subject.fy=event.y; }
-            function dragended(event) { if(!event.active) simulation.alphaTarget(0); event.subject.fx=null; event.subject.fy=null; }
+            function areNodesConnected(a, b) {
+                return linkedByIndex[`${a.index},${b.index}`] || linkedByIndex[`${b.index},${a.index}`] || a.index === b.index;
+            }
+
+            node.on('mouseover.fade', (event, d) => {
+                // Reducir la opacidad de todos los elementos
+                node.style('opacity', o => areNodesConnected(d, o) ? 1 : 0.2);
+                link.style('stroke-opacity', o => o.source === d || o.target === d ? 0.8 : 0.1);
+            }).on('mouseout.fade', () => {
+                // Restaurar la opacidad
+                node.style('opacity', 1);
+                link.style('stroke-opacity', 0.4);
+            });
+
+            // --- Manejo de clics en los nodos ---
+            node.on("click", (event, d) => {
+                event.preventDefault();
+                if (d.link) {
+                    if (d.link.startsWith('http')) {
+                        window.open(d.link, '_blank');
+                    } else {
+                        const targetElement = document.querySelector(d.link);
+                        if (targetElement) {
+                            targetElement.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }
+                }
+            });
+            
+            // --- Función 'tick' que actualiza la posición en cada paso de la simulación ---
+            simulation.on("tick", () => {
+                // Asegurar que los nodos permanezcan dentro de los límites
+                node.attr("transform", d => {
+                    d.x = Math.max(nodeRadius, Math.min(width - nodeRadius, d.x));
+                    d.y = Math.max(nodeRadius, Math.min(height - nodeRadius, d.y));
+                    return `translate(${d.x},${d.y})`;
+                });
+
+                link
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+            });
+
+            // --- Funciones para el comportamiento de arrastre (drag) ---
+            function drag(simulation) {
+                function dragstarted(event, d) {
+                    if (!event.active) simulation.alphaTarget(0.3).restart();
+                    d.fx = d.x;
+                    d.fy = d.y;
+                }
+                function dragged(event, d) {
+                    d.fx = Math.max(nodeRadius, Math.min(width - nodeRadius, event.x));
+                    d.fy = Math.max(nodeRadius, Math.min(height - nodeRadius, event.y));
+                }
+                function dragended(event, d) {
+                    if (!event.active) simulation.alphaTarget(0);
+                    d.fx = null;
+                    d.fy = null;
+                }
+                return d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended);
+            }
         }
-        function drawAllGraphs() { createForceGraph("#visualization", vizData); createForceGraph("#network-graph", netData); }
+        
+        function drawAllGraphs() {
+             createForceGraph("#visualization", vizData);
+             createForceGraph("#network-graph", netData);
+        }
+
+        // --- Ejecución y manejo del redimensionamiento de la ventana ---
         window.addEventListener('load', () => {
-            drawAllGraphs();
+            if (typeof d3 !== 'undefined') {
+                drawAllGraphs();
+            } else {
+                console.error("D3.js no se ha cargado.");
+            }
         });
         
         let resizeTimer;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(drawAllGraphs, 200);
+            // Debounce para evitar ejecuciones excesivas al redimensionar
+            resizeTimer = setTimeout(drawAllGraphs, 250);
         });
     </script>
 </body>
