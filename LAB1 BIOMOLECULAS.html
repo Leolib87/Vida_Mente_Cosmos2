@@ -61,13 +61,73 @@
             text-shadow: 0 0 8px var(--primary-glow);
         }
         
+        .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
+        nav .nav-container > li { position: relative; height: 100%; display: flex; align-items: center; }
+        nav .nav-container > li > a {
+            color: var(--primary-text); text-decoration: none; font-size: clamp(0.9em, 1.2vw, 1.05em); font-weight: 500;
+            transition: color 0.3s ease, text-shadow 0.3s ease; padding: 0 1rem; display: flex; align-items: center; gap: 8px;
+        }
+        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a { color: #FFFFFF; text-shadow: 0 0 12px var(--primary-glow); }
+        .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; stroke: currentColor; }
+
+        /* --- MEGA MENÚ --- */
+        .mega-menu {
+            position: fixed;
+            top: var(--nav-height);
+            left: 50%;
+            transform: translateX(-50%) scale(0.95);
+            background: rgba(0, 15, 20, 0.9);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--primary-glow);
+            box-shadow: 0 10px 40px rgba(0, 255, 255, 0.25);
+            border-radius: 10px; width: auto;
+            min-width: clamp(300px, 80vw, 950px); max-width: 95vw;
+            padding: 2rem; 
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem; 
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0.3s;
+            transform-origin: top center;
+        }
+        
+        .mega-menu.is-active { 
+            display: grid;
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) scale(1);
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0s;
+        }
+        
+        .mega-menu.mega-menu-single {
+            min-width: 280px;
+            max-width: 350px;
+            grid-template-columns: 1fr;
+        }
+
+        .mega-menu h3 {
+            color: var(--primary-glow); font-size: 1.1em; margin-bottom: 1rem;
+            text-shadow: 0 0 5px var(--primary-glow);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+            padding-bottom: 0.75rem;
+            margin-top: 0;
+        }
+        .mega-menu ul { display: flex; flex-direction: column; gap: 0.75rem; list-style: none; padding-left: 0; }
+        .mega-menu a {
+            font-size: 0.9em; color: var(--primary-text); text-decoration: none;
+            transition: color 0.3s, padding-left 0.3s, background-color 0.3s;
+            padding: 0.5rem 0.75rem; border-radius: 4px; display: block;
+        }
+        .mega-menu a:hover { color: #000; background-color: var(--primary-glow); padding-left: 1.25rem; }
+
         /* --- HERO & PARTÍCULAS --- */
         #particles-js { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
         .hero {
-            height: 100vh; min-height: 500px;
+            padding-top: var(--nav-height);
+            height: 100vh; min-height: 600px;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             text-align: center; position: relative;
-            padding: 1rem;
         }
         .hero-content { animation: fadeIn 2s ease-in; }
         .hero h1 {
@@ -190,9 +250,6 @@
         .footer { text-align: center; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
         
         /* --- ESTILOS RESPONSIVOS --- */
-        .nav-container { display: none; }
-        .menu-toggle { display: none; }
-
         @media (min-width: 768px) {
             .materials-grid {
                 grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -201,23 +258,43 @@
                  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             }
         }
-
+        
         @media (min-width: 1024px) {
             .nav-container { display: flex; }
+            .menu-toggle { display: none; }
         }
 
         @media (max-width: 1023px) {
             .nav-container {
+                display: none;
                 position: fixed; top: var(--nav-height); left: 0; width: 100%;
                 height: calc(100vh - var(--nav-height));
                 background: rgba(0, 5, 8, 0.98); backdrop-filter: blur(15px);
-                flex-direction: column; justify-content: center; align-items: center;
+                flex-direction: column; justify-content: flex-start; align-items: center;
                 transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
                 transform: translateY(-110%); overflow-y: auto; padding: 2rem;
             }
             body.menu-open .nav-container { display: flex; transform: translateY(0); }
             .nav-container li { width: 100%; text-align: center; }
-            .nav-container li a { padding: 1rem; width: 100%; font-size: 1.5em; justify-content: center; }
+            .nav-container > li > a { padding: 1rem; width: 100%; font-size: 1.5em; justify-content: center; }
+            
+            .mega-menu {
+                position: static; display: grid; opacity: 1; transform: none; visibility: visible; width: 100%; box-shadow: none; 
+                border: none; padding: 1rem 0 1.5rem 0; background: none; backdrop-filter: none;
+                grid-template-columns: 1fr; border-top: 1px solid rgba(0, 255, 255, 0.2); margin-top: 1rem;
+            }
+            .mega-menu h3 { text-align: center; font-size: 1.8em; }
+            .mega-menu ul { align-items: stretch; text-align: left; list-style: none; padding-left: 0; }
+            .mega-menu li { position: relative; }
+            .mega-menu a {
+                font-size: 1.5em; padding: 0.8rem 1rem 0.8rem 2.5rem; 
+                text-align: left; position: relative;
+            }
+            .mega-menu a::before {
+                content: '■'; color: var(--primary-glow);
+                position: absolute; left: 0.5rem; top: 50%;
+                transform: translateY(-50%) scale(0.6); font-size: 1.5em;
+            }
             
             .menu-toggle {
                 display: block; position: relative; z-index: 1001;
@@ -240,21 +317,131 @@
     <nav>
         <div class="nav-content">
             <div class="nav-logo">
-                <a href="#inicio">BIO-LAB</a>
+                <a href="#inicio">O.C.V.M.</a>
             </div>
             <ul class="nav-container" id="nav-menu">
-                <li><a href="#inicio">Inicio</a></li>
-                <li><a href="#introduccion">Introducción</a></li>
-                <li><a href="#materiales">Materiales</a></li>
-                <li><a href="#experimentos">Experimentos</a></li>
-                <li><a href="#conclusiones">Conclusiones</a></li>
+                <li><a href="#inicio">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    Inicio</a></li>
+        
+                <li><a href="#">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+                    Origen del Cosmos</a>
+                    <div class="mega-menu">
+                        <div><h3>Sistemas Complejos a Gran Escala</h3>
+                            <ul>
+                                <li><a href="GAME_OF_LIFE.HTML">Juego de la Vida (Conway)</a></li>
+                                <li><a href="GAME_OF_LIFE3D.HTML">Juego de la Vida (3D)</a></li>
+                            </ul>
+                        </div>
+                        <div><h3>Principios Fundamentales</h3>
+                            <ul>
+                                <li><a href="#">(Próximamente: Física)</a></li>
+                                <li><a href="#">(Próximamente: Cosmología)</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+        
+                <li><a href="#">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v4.586a1 1 0 01-.293.707l-2 2a1 1 0 01-1.414 0l-2-2A1 1 0 018 9.586V5l-1-1z" /></svg>
+                    Origen de la Vida</a>
+                    <div class="mega-menu">
+                        <div><h3>Fundamentos de Biología</h3>
+                            <ul>
+                                <li><a href="#introduccion">Introducción a la Célula</a></li>
+                                <li><a href="CURSO_BIOLOGIA_CELULAR.HTML">Curso Biología Celular</a></li>
+                                <li><a href="HISTOLOGIA.html">Histología y Tejidos</a></li>
+                                <li><a href="cuerpo humano completo plantilla Lt.html">Anatomía Humana</a></li>
+                            </ul>
+                        </div>
+                        <div><h3>Autopoiesis y Sistemas Vivos</h3>
+                            <ul>
+                                <li><a href="AUTOPOIESIS.HTML">Simulación Autopoiesis</a></li>
+                                <li><a href="AUTOPOIESIS_3D.HTML">Simulación Autopoiesis (3D)</a></li>
+                                <li><a href="Autopoiesis_Fractal00.html">Simulación Autopoiesis (Fractal)</a></li>
+                                <li><a href="Paper_Varela_1974.html">Paper de Varela (1974)</a></li>
+                            </ul>
+                        </div>
+                        <div><h3>Herramientas de Investigación</h3>
+                            <ul>
+                                <li><a href="https://leolib87.github.io/herbario/">Herbario Digital</a></li>
+                                <li><a href="WESTERNCHILE.HTML">Proveedores Western Blot</a></li>
+                                <li><a href="histologychile.html">Proveedores Histología</a></li>
+                                <li><a href="proveedores_biologia.html">Proveedores Biología</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+        
+                <li><a href="#">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                    Origen de la Mente</a>
+                    <div class="mega-menu">
+                        <div><h3>Filosofía y Ciencias Cognitivas</h3>
+                            <ul>
+                                <li><a href="#">Mente, Lenguaje y Realidad</a></li>
+                                <li><a href="#">Mente Encarnada y Cognición</a></li>
+                                <li><a href="#">IA y Sistemas Complejos</a></li>
+                                <li><a href="Feno_style.html">Aproximación Fenomenológica</a></li>
+                            </ul>
+                        </div>
+                        <div><h3>Autores y Referentes</h3>
+                            <ul>
+                                <li><a href="PAPERS_VARELA.HTML">Publicaciones de Varela</a></li>
+                                <li><a href="CITAS.HTML">Fragmentos de Mentes</a></li>
+                                <li><a href="MAPEO_FILO_MENTE_CHILE.HTML">Mapeo Filosofía Mente (Chile)</a></li>
+                            </ul>
+                        </div>
+                        <div><h3>Reflexiones Culturales</h3>
+                            <ul>
+                                <li><a href="peliculas.html">Reflexiones en el Cine</a></li>
+                                <li><a href="MUSICA.HTML">Letras de Canciones</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+        
+                <li><a href="#">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    Cartografías del Saber</a>
+                    <div class="mega-menu">
+                         <div><h3>Visualización de Redes y Datos</h3>
+                            <ul>
+                                <li><a href="#">Introducción a las Redes</a></li>
+                                <li><a href="#">Mapa Conceptual General</a></li>
+                                <li><a href="RED POLITICOS.html">Red de Políticos</a></li>
+                            </ul>
+                        </div>
+                        <div><h3>Mapas Conceptuales</h3>
+                            <ul>
+                                <li><a href="MAPA_MENTAL_TRABAJO.HTML">Mapa Mental "Trabajo"</a></li>
+                                <li><a href="VARELA_CARTOGRAFIA.HTML">Cartografía Varela (3D)</a></li>
+                            </ul>
+                        </div>
+                         <div><h3>Herramientas Digitales y IA</h3>
+                            <ul>
+                                <li><a href="Herramientas_Investigacion_definitiva.html">Guía de Herramientas</a></li>
+                                <li><a href="IAS_BUSQUEDA.HTML">Buscador de IAs</a></li>
+                            </ul>
+                        </div>
+                         <div><h3>Recursos y Proyectos</h3>
+                            <ul>
+                                <li><a href="MI_BIBLIOTECA.HTML">Biblioteca Humanidades</a></li>
+                                <li><a href="BIBLIOTECA_CIENCIAS.HTML">Biblioteca Ciencias</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+                <li><a href="#">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                    Contacto</a></li>
             </ul>
-             <button class="menu-toggle" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+            <button class="menu-toggle" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
                 <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
             </button>
         </div>
     </nav>
-
     <div id="inicio" class="hero">
         <div class="hero-content">
             <h1>Laboratorio I</h1>
@@ -429,18 +616,43 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // --- NAVEGACIÓN MÓVIL ---
             const menuToggleBtn = document.getElementById('menu-toggle-btn');
-            const navMenu = document.getElementById('nav-menu');
+            const navMenuContainer = document.getElementById('nav-menu');
+            
             if (menuToggleBtn) {
                 menuToggleBtn.addEventListener('click', () => {
                     document.body.classList.toggle('menu-open');
                 });
             }
-            if (navMenu) {
-                navMenu.addEventListener('click', (e) => {
-                    if (e.target.tagName === 'A' && window.innerWidth < 1024) {
-                        document.body.classList.remove('menu-open');
+            
+            document.querySelectorAll('.nav-container a').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    if (window.innerWidth < 1024) {
+                         document.body.classList.remove('menu-open');
+                    }
+                });
+            });
+
+            if (window.matchMedia('(min-width: 1024px)').matches) {
+                const menuItems = document.querySelectorAll('.nav-container > li');
+                menuItems.forEach(item => {
+                    const megaMenu = item.querySelector('.mega-menu');
+                    if (megaMenu) {
+                        let leaveTimeout;
+                        const showMenu = () => {
+                            clearTimeout(leaveTimeout);
+                            document.querySelectorAll('.mega-menu.is-active').forEach(m => {
+                                if (m !== megaMenu) m.classList.remove('is-active');
+                            });
+                            megaMenu.classList.add('is-active');
+                        };
+                        const startHideTimer = () => {
+                            leaveTimeout = setTimeout(() => megaMenu.classList.remove('is-active'), 250);
+                        };
+                        item.addEventListener('mouseenter', showMenu);
+                        item.addEventListener('mouseleave', startHideTimer);
+                         megaMenu.addEventListener('mouseenter', showMenu);
+                        megaMenu.addEventListener('mouseleave', startHideTimer);
                     }
                 });
             }
