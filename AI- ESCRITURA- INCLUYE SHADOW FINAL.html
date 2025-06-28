@@ -247,6 +247,21 @@
         /* ==========================================================================
            4. MEDIA QUERIES RESPONSIVAS (DEL SITIO ORIGINAL)
            ========================================================================== */
+
+        /* ★★★ INICIO DE LA MODIFICACIÓN: Ajustes para mejorar la legibilidad de las tarjetas en móviles ★★★ */
+        @media (max-width: 640px) {
+            .tool-card h4 {
+                font-size: 1.35em; /* Título más grande para mejor visibilidad */
+            }
+            .tool-card-description {
+                font-size: 0.95em;   /* Descripción más grande y legible */
+            }
+            .tool-badge {
+                font-size: 0.8em; /* Insignias ligeramente más grandes */
+            }
+        }
+        /* ★★★ FIN DE LA MODIFICACIÓN ★★★ */
+
         @media (max-width: 1024px) {
             .nav-content { justify-content: space-between; }
             .nav-container {
