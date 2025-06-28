@@ -1,0 +1,1827 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O.C.V.M. | Origen, Cosmos, Vida y Mente - Biblioteca Digital</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #000508;
+            --primary-text: #00FFC2;
+            --primary-glow: #00FFFF;
+            --secondary-glow: #00FF00;
+            --accent-color: #FF00FF;
+            --font-main: 'Orbitron', sans-serif;
+            --nav-height: 70px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
+            overflow-x: hidden;
+            transition: overflow 0.3s ease;
+        }
+        
+        body.menu-open { overflow: hidden; }
+        
+        /* === NAVEGACIÓN MODERNA === */
+        nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            background: rgba(0, 10, 15, 0.6);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+            display: flex; justify-content: center; align-items: center;
+            padding: 0 2rem;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1440px;
+        }
+        
+        .nav-logo a {
+             font-size: 1.3em;
+             font-weight: 700;
+             color: #fff;
+             text-decoration: none;
+             text-shadow: 0 0 8px var(--primary-glow);
+        }
+
+        .nav-container { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            list-style: none; 
+            height: 100%; 
+            gap: 0.5rem;
+        }
+        
+        nav .nav-container > li { 
+            position: relative; 
+            height: 100%; 
+            display: flex; 
+            align-items: center; 
+        }
+        
+        nav .nav-container > li > a {
+            color: var(--primary-text); 
+            text-decoration: none; 
+            font-size: clamp(0.9em, 1.2vw, 1.05em); 
+            font-weight: 500;
+            transition: color 0.3s ease, text-shadow 0.3s ease; 
+            padding: 0 1rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px;
+        }
+        
+        nav .nav-container > li > a:hover, 
+        nav .nav-container > li:hover > a { 
+            color: #FFFFFF; 
+            text-shadow: 0 0 12px var(--primary-glow); 
+        }
+        
+        .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; }
+
+        /* === HERO SECTION CON PARTÍCULAS === */
+        #particles-js { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        
+        .hero {
+            height: 100vh; min-height: 500px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; position: relative;
+            padding: 1rem;
+            background: linear-gradient(135deg, rgba(0, 40, 40, 0.1), rgba(0, 0, 0, 0.3));
+        }
+        
+        .hero-content { position: relative; z-index: 2; animation: fadeIn 2s ease-in; }
+        
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 5.5rem); 
+            font-weight: 700; 
+            color: #fff;
+            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(0, 255, 255, 0.7);
+            animation: pulse-glow 3s infinite alternate;
+            margin-bottom: 1rem;
+        }
+        
+        .hero p { 
+            font-size: clamp(1rem, 2.5vw, 1.3rem); 
+            max-width: 800px; 
+            margin: 1.5rem auto 0; 
+            text-shadow: 0 0 5px #000; 
+        }
+        
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
+        }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* === LAYOUT Y SECCIONES === */
+        .main-container { 
+            max-width: 1440px; 
+            margin: 0 auto; 
+            padding: 1rem; 
+            padding-top: var(--nav-height); 
+        }
+        
+        .section {
+            padding: clamp(1.5rem, 5vw, 2.5rem);
+            background: linear-gradient(145deg, rgba(0, 40, 40, 0.3), rgba(0, 20, 20, 0.2));
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 12px; 
+            margin-bottom: 2rem; 
+            position: relative;
+            transition: transform 0.4s ease, box-shadow 0.4s ease, opacity 0.5s ease;
+            opacity: 0; 
+            transform: translateY(30px);
+            overflow: hidden;
+        }
+        
+        .section.is-visible { opacity: 1; transform: translateY(0); }
+        .section:hover { transform: translateY(-5px); box-shadow: 0 0 40px rgba(0, 255, 255, 0.2); }
+        
+        h2 {
+            font-size: clamp(1.5rem, 5vw, 2.2rem); 
+            color: var(--primary-text); 
+            text-shadow: 0 0 8px var(--secondary-glow);
+            border-bottom: 1px solid var(--primary-glow); 
+            padding-bottom: 1rem; 
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        h3 { 
+            font-size: clamp(1.2rem, 4vw, 1.5rem); 
+            color: var(--primary-glow); 
+            margin: 2rem 0 1rem 0; 
+            text-shadow: 0 0 8px var(--primary-glow);
+        }
+
+        /* === FILTROS MODERNOS === */
+        .filters {
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-label {
+            font-size: 0.9em;
+            color: var(--primary-glow);
+            text-shadow: 0 0 5px var(--primary-glow);
+        }
+
+        select {
+            background: #000000;
+            border: 2px solid var(--primary-glow);
+            color: var(--primary-text);
+            padding: 12px 16px;
+            font-family: var(--font-main);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.95em;
+            min-width: 200px;
+        }
+
+        select:hover, select:focus {
+            background: #000000;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+            outline: none;
+            transform: translateY(-2px);
+        }
+
+        /* === TABLA MODERNA === */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+
+        th, td {
+            padding: 16px 12px;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+            text-align: left;
+        }
+
+        th {
+            background: linear-gradient(145deg, rgba(0, 255, 255, 0.15), rgba(0, 255, 255, 0.05));
+            color: var(--primary-glow);
+            font-weight: 600;
+            text-shadow: 0 0 5px var(--primary-glow);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tr:nth-child(even) {
+            background: rgba(0, 255, 255, 0.03);
+        }
+
+        tr:hover {
+            background: rgba(0, 255, 255, 0.1);
+            transform: scale(1.01);
+            transition: all 0.3s ease;
+        }
+
+        td a {
+            color: var(--primary-glow);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid transparent;
+        }
+
+        td a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 8px var(--primary-glow);
+            border-bottom: 1px solid var(--primary-glow);
+        }
+
+        /* === VISUALIZACIONES === */
+        .visualization-container { 
+            width: 100%; 
+            height: clamp(400px, 60vh, 650px); 
+            margin: 2rem 0; 
+            border-radius: 12px; 
+            background: rgba(0,0,0,0.4); 
+            border: 1px solid rgba(0,255,255,0.2);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .chart-container {
+            margin: 2rem 0;
+            padding: 2rem;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 12px;
+            background: linear-gradient(145deg, rgba(0, 40, 40, 0.2), rgba(0, 20, 20, 0.1));
+        }
+
+        .chart-container h3 {
+            color: var(--primary-glow);
+            text-shadow: 0 0 8px var(--primary-glow);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        /* === ELEMENTOS D3.JS === */
+        .node circle { 
+            stroke: var(--primary-glow); 
+            stroke-width: 2px; 
+            transition: all 0.3s ease; 
+            cursor: pointer;
+        }
+        
+        .node.resource circle {
+            fill: var(--primary-text);
+            r: 6;
+        }
+        
+        .node.category circle {
+            fill: var(--accent-color);
+            r: 12;
+        }
+        
+        .node:hover circle { 
+            fill: #FFFFFF; 
+            r: 15; 
+            filter: drop-shadow(0 0 12px var(--primary-glow)); 
+        }
+        
+        .node.selected circle {
+            fill: var(--secondary-glow);
+            stroke: var(--bg-color);
+            stroke-width: 3px;
+            r: 18;
+            filter: drop-shadow(0 0 15px var(--secondary-glow));
+        }
+        
+        .node text { 
+            fill: var(--primary-glow); 
+            font-family: var(--font-main); 
+            text-shadow: 0 0 5px var(--secondary-glow); 
+            pointer-events: none; 
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .node.selected text {
+            fill: #FFFFFF;
+            text-shadow: 0 0 8px var(--bg-color);
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .link { 
+            stroke: var(--primary-text); 
+            stroke-opacity: 0.7; 
+            stroke-width: 1.5px;
+            transition: all 0.3s ease;
+        }
+        
+        .link.category-link {
+            stroke: var(--accent-color);
+            stroke-width: 3px;
+            stroke-opacity: 0.9;
+        }
+
+        /* === GRÁFICOS DE BARRAS Y PIE === */
+        .bar {
+            fill: var(--primary-text);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .bar:hover {
+            fill: var(--secondary-glow);
+            filter: drop-shadow(0 0 8px var(--primary-text));
+        }
+
+        .bar-text {
+            fill: var(--primary-glow);
+            font-size: 11px;
+            text-shadow: 0 0 5px var(--bg-color);
+            text-anchor: middle;
+            font-weight: 500;
+        }
+
+        .arc path {
+            stroke: var(--primary-text);
+            stroke-width: 3px;
+            fill: var(--bg-color);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .arc path:hover {
+            opacity: 0.8;
+            filter: drop-shadow(0 0 8px var(--primary-text));
+        }
+
+        .arc text {
+            fill: var(--primary-glow);
+            font-size: 11px;
+            text-shadow: 0 0 5px var(--bg-color);
+            pointer-events: none;
+            font-weight: 500;
+        }
+
+        .treemap-rect {
+            stroke: var(--primary-text);
+            stroke-width: 2px;
+            fill: var(--bg-color);
+            fill-opacity: 0.8;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .treemap-rect:hover {
+            fill-opacity: 1;
+            filter: drop-shadow(0 0 8px var(--primary-text));
+        }
+
+        #treemap-info {
+            color: var(--primary-text);
+            text-shadow: 0 0 8px var(--primary-text);
+            font-size: 14px;
+            margin-top: 1rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* === FOOTER === */
+        .footer { 
+            text-align: center; 
+            padding: 3rem 1rem; 
+            color: var(--primary-glow); 
+            border-top: 2px solid var(--primary-text); 
+            margin-top: 3rem;
+            background: linear-gradient(145deg, rgba(0, 40, 40, 0.1), rgba(0, 20, 20, 0.05));
+        }
+
+        /* === RESPONSIVE DESIGN === */
+        @media (max-width: 1024px) {
+            .nav-content { justify-content: space-between; }
+            
+            .nav-container {
+                position: fixed;
+                top: var(--nav-height);
+                left: 0;
+                width: 100%;
+                height: calc(100vh - var(--nav-height));
+                background: rgba(0, 5, 8, 0.98);
+                backdrop-filter: blur(15px);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+                transform: translateY(-110%);
+                overflow-y: auto;
+                padding: 2rem;
+            }
+            
+            body.menu-open .nav-container {
+                transform: translateY(0);
+            }
+
+            nav .nav-container > li { 
+                width: 100%; 
+                height: auto; 
+                flex-direction: column; 
+                align-items: center; 
+                text-align: center; 
+            }
+            
+            nav .nav-container > li > a { 
+                padding: 1.5rem; 
+                width: 100%; 
+                font-size: 1.4em;
+                border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+            }
+            
+            /* === MEGA MENÚ MÓVIL === */
+            .mega-menu {
+                position: static; 
+                display: grid; 
+                opacity: 1; 
+                transform: none; 
+                visibility: visible; 
+                width: 100%; 
+                box-shadow: none; 
+                border: none; 
+                padding: 1rem 0 1.5rem 0; 
+                background: none; 
+                backdrop-filter: none;
+                grid-template-columns: 1fr; 
+                border-top: 1px solid rgba(0, 255, 255, 0.2); 
+                margin-top: 1rem;
+            }
+            
+            .mega-menu h3 { 
+                text-align: center; 
+                font-size: 1.8em;
+            }
+            
+            .mega-menu ul { 
+                align-items: stretch;
+                text-align: left;
+                list-style: none;
+                padding-left: 0;
+            }
+            
+            .mega-menu li {
+                position: relative;
+            }
+
+            .mega-menu a {
+                font-size: 1.5em;
+                padding: 0.8rem 1rem 0.8rem 2.5rem;
+                transition: color 0.3s, background-color 0.3s;
+                display: block;
+                text-align: left;
+                position: relative;
+            }
+
+            .mega-menu a::before {
+                content: '■';
+                color: var(--primary-glow);
+                position: absolute;
+                left: 0.5rem;
+                top: 50%;
+                transform: translateY(-50%) scale(0.6);
+                font-size: 1.5em;
+            }
+
+            .mega-menu a:hover {
+                padding-left: 2.5rem;
+                color: #000;
+                background-color: var(--primary-glow);
+            }
+            
+            .mega-menu a:hover::before {
+                color: #000;
+            }
+            
+            .menu-toggle {
+                display: block; 
+                position: relative; 
+                z-index: 1001;
+                width: 30px; 
+                height: 22px;
+                background: none; 
+                border: none; 
+                cursor: pointer;
+            }
+            
+            .icon-bar {
+                display: block; 
+                width: 100%; 
+                height: 3px; 
+                background-color: var(--primary-text); 
+                margin: 6px 0; 
+                transition: all 0.3s ease-in-out;
+                border-radius: 2px;
+            }
+
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) { 
+                transform: rotate(45deg) translate(7px, 7px); 
+            }
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) { 
+                opacity: 0; 
+            }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) { 
+                transform: rotate(-45deg) translate(7px, -7px); 
+            }
+        }
+
+        @media (min-width: 1025px) {
+            .nav-logo { display: none; }
+            .menu-toggle { display: none; }
+            .nav-container { display: flex; }
+            
+            /* === MEGA MENÚ DESKTOP === */
+            .mega-menu {
+                position: fixed;
+                top: var(--nav-height);
+                left: 50%;
+                transform: translateX(-50%) scale(0.95);
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+                border: 1px solid var(--primary-glow);
+                box-shadow: 0 10px 40px rgba(0, 255, 255, 0.25);
+                border-radius: 10px; 
+                width: auto;
+                min-width: clamp(300px, 80vw, 950px); 
+                max-width: 95vw;
+                padding: 2rem; 
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 2rem; 
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0.3s;
+                transform-origin: top center;
+            }
+            
+            .mega-menu.is-active { 
+                opacity: 1;
+                visibility: visible;
+                transform: translateX(-50%) scale(1);
+                transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0s;
+            }
+            
+            .mega-menu.mega-menu-single {
+                min-width: 280px;
+                max-width: 350px;
+                grid-template-columns: 1fr;
+            }
+
+            .mega-menu h3 {
+                color: var(--primary-glow); 
+                font-size: 1.1em; 
+                margin-bottom: 1rem;
+                text-shadow: 0 0 5px var(--primary-glow);
+                border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+                padding-bottom: 0.75rem;
+            }
+            
+            .mega-menu ul { 
+                display: flex; 
+                flex-direction: column; 
+                gap: 0.75rem; 
+                list-style: none; 
+            }
+            
+            .mega-menu a {
+                font-size: 0.9em; 
+                color: var(--primary-text); 
+                text-decoration: none;
+                transition: color 0.3s, padding-left 0.3s, background-color 0.3s;
+                padding: 0.5rem 0.75rem; 
+                border-radius: 4px;
+            }
+            
+            .mega-menu a:hover { 
+                color: #000; 
+                background-color: var(--primary-glow); 
+                padding-left: 1.25rem; 
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container { padding: 0.5rem; }
+            .section { padding: 1.5rem 1rem; margin-bottom: 1.5rem; }
+            .filters { flex-direction: column; gap: 1rem; }
+            .filter-group { width: 100%; }
+            select { min-width: auto; width: 100%; max-width: 300px; }
+            .chart-container { padding: 1rem; }
+            .visualization-container { height: 300px; }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 { font-size: clamp(1.8rem, 6vw, 3rem); }
+            .hero p { font-size: clamp(0.9rem, 2vw, 1.1rem); }
+            th, td { padding: 12px 8px; font-size: 0.85em; }
+            .node text { font-size: 9px; }
+            .bar-text, .arc text { font-size: 9px; }
+        }
+
+        /* === ANIMACIONES ADICIONALES === */
+        .highlight { 
+            color: var(--primary-glow); 
+            font-weight: 600;
+            text-shadow: 0 0 5px var(--primary-glow);
+        }
+
+        .loading {
+            opacity: 0.6;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* === ESTILOS PARA FALLBACKS === */
+        .fallback-chart {
+            padding: 1rem;
+            background: rgba(0, 40, 40, 0.2);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .fallback-bar {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .fallback-bar:hover {
+            background: rgba(0, 255, 255, 0.1) !important;
+            transform: translateX(5px);
+        }
+
+        .fallback-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .fallback-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-content">
+            <div class="nav-logo">
+                <a href="#inicio">O.C.V.M.</a>
+            </div>
+            <ul class="nav-container" id="nav-menu">
+                <li><a href="#inicio">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    Inicio</a></li>
+    
+                <!-- === PILAR I: Origen del Cosmos === -->
+                <li><a href="#">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+                    Origen del Cosmos</a>
+                    <div class="mega-menu">
+                        <div><h3>Sistemas Complejos a Gran Escala</h3>
+                            <ul>
+                                <li><a href="GAME_OF_LIFE.HTML">Juego de la Vida (Conway)</a></li>
+                                <li><a href="GAME_OF_LIFE3D.HTML">Juego de la Vida (3D)</a></li>
+                            </ul>
+                        </div>
+                        <div><h3>Principios Fundamentales</h3>
+                            <ul>
+                                <li><a href="#">(Próximamente: Física)</a></li>
+                                <li><a href="#">(Próximamente: Cosmología)</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+                
+                <!-- === PILAR II: Origen de la Vida === -->
+                <li><a href="#">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v4.586a1 1 0 01-.293.707l-2 2a1 1 0 01-1.414 0l-2-2A1 1 0 018 9.586V5l-1-1z" /></svg>
+                    Origen de la Vida</a>
+                    <div class="mega-menu">
+                        <div><h3>Fundamentos de Biología</h3>
+                            <ul>
+                                <li><a href="#biologia-celular">Introducción a la Célula</a></li>
+                                <li><a href="CURSO_BIOLOGIA_CELULAR.HTML">Curso Biología Celular</a></li>
+                                <li><a href="HISTOLOGIA.html">Histología y Tejidos</a></li>
+                                <li><a href="cuerpo humano completo plantilla Lt.html">Anatomía Humana</a></li>
+                            </ul>
+                        </div>
+                        <div><h3>Autopoiesis y Sistemas Vivos</h3>
+                            <ul>
+                                <li><a href="AUTOPOIESIS.HTML">Simulación Autopoiesis</a></li>
+                                <li><a href="AUTOPOIESIS_3D.HTML">Simulación Autopoiesis (3D)</a></li>
+                                <li><a href="Autopoiesis_Fractal00.html">Simulación Autopoiesis (Fractal)</a></li>
+                                <li><a href="Paper_Varela_1974.html">Paper de Varela (1974)</a></li>
+                            </ul>
+                        </div>
+                        <div><h3>Herramientas de Investigación</h3>
+                            <ul>
+                                <li><a href="https://leolib87.github.io/herbario/">Herbario Digital</a></li>
+                                <li><a href="WESTERNCHILE.HTML">Proveedores Western Blot</a></li>
+                                <li><a href="histologychile.html">Proveedores Histología</a></li>
+                                <li><a href="proveedores_biologia.html">Proveedores Biología</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+                
+                <!-- === PILAR III: Origen de la Mente === -->
+                <li><a href="#">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                    Origen de la Mente</a>
+                    <div class="mega-menu">
+                        <div><h3>Filosofía y Ciencias Cognitivas</h3>
+                            <ul>
+                                <li><a href="#filosofia-mente">Mente, Lenguaje y Realidad</a></li>
+                                <li><a href="#ciencias-cognitivas">Mente Encarnada y Cognición</a></li>
+                                <li><a href="#inteligencia-artificial">IA y Sistemas Complejos</a></li>
+                                <li><a href="Feno_style.html">Aproximación Fenomenológica</a></li>
+                                <li><a href="#epistemologia">Epistemología del Conocer</a></li>
+                                <li><a href="#trazado-vida">Sentido de Vida y Muerte</a></li>
+                            </ul>
+                        </div>
+                        <div><h3>Autores y Referentes</h3>
+                            <ul>
+                                <li><a href="PAPERS_VARELA.HTML">Publicaciones de Varela</a></li>
+                                <li><a href="CITAS.HTML">Fragmentos de Mentes</a></li>
+                                <li><a href="MAPEO_FILO_MENTE_CHILE.HTML">Mapeo Filosofía Mente (Chile)</a></li>
+                            </ul>
+                        </div>
+                        <div><h3>Reflexiones Culturales</h3>
+                             <ul>
+                                <li><a href="peliculas.html">Reflexiones en el Cine</a></li>
+                                <li><a href="MUSICA.HTML">Letras de Canciones</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+    
+                <!-- === PILAR IV: Cartografías del Saber === -->
+                <li><a href="#">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    Cartografías del Saber</a>
+                    <div class="mega-menu">
+                         <div><h3>Visualización de Redes y Datos</h3>
+                            <ul>
+                                <li><a href="#analisis-redes">Introducción a las Redes</a></li>
+                                <li><a href="#elementos-comunes">Mapa Conceptual General</a></li>
+                                <li><a href="RED POLITICOS.html">Red de Políticos</a></li>
+                                <li><a href="varios graficos.html">Colección de Gráficos</a></li>
+                                <li><a href="GRAFICO DE LINEAS Y TREEMAP.html">Líneas y Treemaps</a></li>
+                                <li><a href="treemap_ias.html">Treemap de IAs</a></li>
+                            </ul>
+                        </div>
+                        <div><h3>Mapas Conceptuales</h3>
+                            <ul>
+                                <li><a href="MAPA_MENTAL_TRABAJO.HTML">Mapa Mental "Trabajo"</a></li>
+                                <li><a href="VARELA_CARTOGRAFIA.HTML">Cartografía Varela (3D)</a></li>
+                                <li><a href="cartografia_varela_01.html">Cartografía Varela (2D)</a></li>
+                                <li><a href="Explorando la Visualización Filosófica.HTML">Visualización Filosófica</a></li>
+                            </ul>
+                        </div>
+                         <div><h3>Herramientas Digitales y IA</h3>
+                            <ul>
+                                <li><a href="Herramientas_Investigacion_definitiva.html">Guía de Herramientas</a></li>
+                                <li><a href="IAS_BUSQUEDA.HTML">Buscador de IAs</a></li>
+                                <li><a href="googleias.html">IAs de Google</a></li>
+                                <li><a href="IAs.html">Red de IAs</a></li>
+                                <li><a href="#voyant-tools">Análisis con Voyant Tools</a></li>
+                                <li><a href="Paper_web.html">Plantilla Web para Papers</a></li>
+                            </ul>
+                        </div>
+                         <div><h3>Recursos y Proyectos</h3>
+                            <ul>
+                                <li><a href="MI_BIBLIOTECA.HTML">Biblioteca Humanidades</a></li>
+                                <li><a href="BIBLIOTECA_CIENCIAS.HTML">Biblioteca Ciencias</a></li>
+                                <li><a href="BIBLIOECAS_DIGITALES_SOMBRA.HTML">Bibliotecas Sombra</a></li>
+                                <li><a href="FUENTES_FINANCIAMIENTO.HTML">Fuentes de Financiamiento</a></li>
+                                <li><a href="FONDOS.HTML">DEEP Financiamiento</a></li>
+                                <li><a href="FONDECYT.HTML">Análisis Proyectos Fondecyt</a></li>
+                                <li><a href="Empleos_IES.html">Empleos en Educación Superior</a></li>
+                                <li><a href="Pedagogia-Biologia.html">Pedagogías en Biología (Chile)</a></li>
+                                <li><a href="QF.HTML">Química y Farmacia (Chile)</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+
+                <!-- === PILAR V: Laboratorio Experimental === -->
+                <li><a href="#">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v4.586a1 1 0 01-.293.707l-2 2a1 1 0 01-1.414 0l-2-2A1 1 0 018 9.586V5l-1-1z" /></svg>
+                    Laboratorio</a>
+                    <div class="mega-menu mega-menu-single">
+                        <div>
+                            <h3>Laboratorio Experimental</h3>
+                            <ul>
+                                 <li><a href="LEOLIB NEWS BLACK.HTML">Leolib News</a></li>
+                                 <li><a href="CHAT_LEO.HTML">Chat Leo</a></li>
+                                 <li><a href="horario_2025.html">Horario 2025</a></li>
+                                 <li><a href="HORARIOS_LAB.HTML">Horarios Lab</a></li>
+                                 <li><a href="INTEGRAL1_noq.HTML">Integral 1</a></li>
+                                 <li><a href="red 2.html">Red Tesis Enseñanza Cs.</a></li>
+                                 <li><a href="red3.html">Red Tesis Ejemplos</a></li>
+                                 <li><a href="web.moderna.html">Web Moderna (Test)</a></li>
+                                 <li><a href="web.three.html">Web Three.js (Test)</a></li>
+                                 <li><a href="totem.html">Totem 1</a></li>
+                                 <li><a href="totem2.html">Totem 2</a></li>
+                                 <li><a href="PROBANDO.HTML">Probando 1</a></li>
+                                 <li><a href="probando2gemini.html">Probando 2</a></li>
+                                 <li><a href="vida mente cosmos web deepresearcheada.html">VIDA MENTE COSMOS DEEP</a></li>
+                                 <li><a href="fondosX2.html">DasHboard fondos</a></li>
+                                <li><a href="LAB1 BIOMOLECULAS.html">LAB I Biomoléculas</a></li>
+                                <li><a href="web caos orden.html">Web Caos y Orden</a></li>
+                                <li><a href="AI- ESCRITURA- INCLUYE SHADOW FINAL.html">AI Escritura Incluye Shadow Final</a></li>                               
+                                                               
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+                
+                <li><a href="#contacto">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                    Contacto</a></li>
+            </ul>
+            <button class="menu-toggle" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container" id="inicio">
+        <div class="hero">
+            <div id="particles-js"></div>
+            <div class="hero-content">
+                <h1>Origen, Cosmos, Vida y Mente</h1>
+                <p>Directorio curado de shadow libraries y bibliotecas digitales alternativas para acceso libre al conocimiento</p>
+            </div>
+        </div>
+
+        <section class="section" id="library" data-animate>
+            <h2>Directorio de Shadow Libraries</h2>
+            <p style="text-align: center; margin-bottom: 2rem; opacity: 0.9;">
+                Catálogo curado de <span class="highlight">41 shadow libraries</span> y repositorios alternativos, incluyendo 
+                <span class="highlight">Library Genesis, Sci-Hub, Z-Library, Anna's Archive</span> y sus mirrors activos. 
+                Estas plataformas operan como <span class="highlight">bibliotecas de resistencia digital</span>, democratizando el acceso 
+                a conocimiento académico tradicionalmente restringido por paywalls editoriales.
+            </p>
+            
+            <h3>Red de Conexiones por Categoría</h3>
+            <div id="network" class="visualization-container"></div>
+            
+            <h3>Catálogo de Shadow Libraries</h3>
+            <div class="filters">
+                <div class="filter-group">
+                    <label class="filter-label">Categoría Temática</label>
+                    <select id="categoryFilter">
+                        <option value="">Todas las Categorías</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Tipo de Contenido</label>
+                    <select id="typeFilter">
+                        <option value="">Todos los Tipos</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table id="resourceTable">
+                    <thead>
+                        <tr>
+                            <th>Shadow Library / Mirror</th>
+                            <th>URL de Acceso</th>
+                            <th>Descripción Especializada</th>
+                            <th>Categoría</th>
+                            <th>Tipo de Recurso</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Secciones adicionales para navegación -->
+        <section class="section" id="biologia-celular" data-animate>
+            <h2>Shadow Libraries Especializadas en Ciencias</h2>
+            <p>Acceso a las principales <span class="highlight">shadow libraries</span> especializadas en ciencias de la vida y biomedicina. Desde <span class="highlight">Library Genesis (LibGen)</span> hasta <span class="highlight">Sci-Hub</span>, esta colección incluye mirrors alternativos y repositorios que democratizan el acceso a <span class="highlight">papers científicos, textbooks y bases de datos</span> tradicionalmente bloqueadas por paywalls académicos.</p>
+        </section>
+
+        <section class="section" id="filosofia-mente" data-animate>
+            <h2>Repositorios Alternativos de Filosofía y Humanidades</h2>
+            <p>Mapeo de <span class="highlight">shadow libraries</span> especializadas en filosofía, ciencias cognitivas y humanidades. Incluye acceso alternativo a través de <span class="highlight">LibGen, Z-Library</span> y <span class="highlight">Anna's Archive</span>, así como mirrors de <span class="highlight">Sci-Hub</span> para papers bloqueados. Estas plataformas contornean las restricciones editoriales tradicionales, proporcionando acceso libre a conocimiento académico esencial.</p>
+        </section>
+
+        <section class="section" id="analisis-redes" data-animate>
+            <h2>Ecosistema de Shadow Libraries Globales</h2>
+            <p>Análisis exhaustivo del ecosistema mundial de <span class="highlight">shadow libraries</span> y su arquitectura de resistencia digital. Desde los fundacionales <span class="highlight">Library Genesis</span> y <span class="highlight">Sci-Hub</span> hasta nuevos nodos como <span class="highlight">Anna's Archive</span>. Cada plataforma representa un punto de acceso alternativo al conocimiento, operando en zonas grises legales para democratizar el acceso a la información académica.</p>
+        </section>
+
+        <section class="section" id="inteligencia-artificial" data-animate>
+            <h2>Shadow Libraries de Tecnología y Computación</h2>
+            <p>Directorio de <span class="highlight">shadow libraries</span> especializadas en informática, IA y ciencias de la computación. Incluye acceso alternativo a <span class="highlight">libros técnicos, papers de conferencias</span> y documentación especializada a través de <span class="highlight">LibGen Tech</span>, mirrors de <span class="highlight">Sci-Hub</span> y repositorios alternativos que evitan las restricciones editoriales de IEEE, ACM y otras publicaciones técnicas.</p>
+        </section>
+
+        <section class="section" id="analytics" data-animate>
+            <h2>Análisis del Ecosistema Shadow</h2>
+            
+            <div class="chart-container">
+                <h3>Distribución por Categoría Temática</h3>
+                <div id="bar-chart"></div>
+            </div>
+            
+            <div class="chart-container">
+                <h3>Cobertura por Área de Conocimiento</h3>
+                <div id="pie-chart"></div>
+            </div>
+            
+            <div class="chart-container">
+                <h3>Análisis por Tipo de Recurso Digital</h3>
+                <div id="type-bar-chart"></div>
+            </div>
+            
+            <div class="chart-container">
+                <h3>Mapa de Volumen Estimado por Shadow Library</h3>
+                <div id="treemap"></div>
+                <div id="treemap-info">Explora el volumen estimado de archivos por shadow library</div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <p>Explorando el Conocimiento Digital | <span class="highlight">Marzo 2025</span></p>
+            <p style="margin-top:1rem; font-size: 0.9em;">Curated with ❤️ for knowledge seekers</p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // === INICIALIZACIÓN DE PARTICLES.JS CON VERIFICACIÓN ===
+        function initializeParticles() {
+            if (typeof particlesJS !== 'undefined') {
+                particlesJS("particles-js", {
+                    "particles": { 
+                        "number": { "value": 80, "density": { "enable": true, "value_area": 800 } }, 
+                        "color": { "value": "#00ffff" }, 
+                        "shape": { "type": "circle" }, 
+                        "opacity": { "value": 0.5, "random": true }, 
+                        "size": { "value": 2, "random": true }, 
+                        "line_linked": { 
+                            "enable": true, 
+                            "distance": 150, 
+                            "color": "#00ffc2", 
+                            "opacity": 0.3, 
+                            "width": 1 
+                        }, 
+                        "move": { 
+                            "enable": true, 
+                            "speed": 1, 
+                            "direction": "none", 
+                            "random": true, 
+                            "straight": false, 
+                            "out_mode": "out" 
+                        } 
+                    },
+                    "interactivity": { 
+                        "detect_on": "canvas", 
+                        "events": { 
+                            "onhover": { "enable": true, "mode": "grab" }, 
+                            "onclick": { "enable": true, "mode": "push" }, 
+                            "resize": true 
+                        }, 
+                        "modes": { 
+                            "grab": { "distance": 140, "line_linked": { "opacity": 0.7 } }, 
+                            "push": { "particles_nb": 4 } 
+                        } 
+                    }, 
+                    "retina_detect": true
+                });
+            } else {
+                console.log('Particles.js no disponible, usando fondo alternativo');
+                // Fallback: añadir un gradiente animado si particles.js no carga
+                const heroElement = document.querySelector('.hero');
+                if (heroElement) {
+                    heroElement.style.background = 'linear-gradient(-45deg, #000508, #001a1a, #000a0f, #002020)';
+                    heroElement.style.backgroundSize = '400% 400%';
+                    heroElement.style.animation = 'gradientShift 15s ease infinite';
+                    
+                    // Añadir keyframes para la animación del gradiente
+                    if (!document.querySelector('#fallback-animation')) {
+                        const style = document.createElement('style');
+                        style.id = 'fallback-animation';
+                        style.textContent = `
+                            @keyframes gradientShift {
+                                0% { background-position: 0% 50%; }
+                                50% { background-position: 100% 50%; }
+                                100% { background-position: 0% 50%; }
+                            }
+                        `;
+                        document.head.appendChild(style);
+                    }
+                }
+            }
+        }
+
+        // === DATOS DE RECURSOS ===
+        const resources = [
+            { title: "Observatorio de Bibliotecas Sombra", link: "https://open-slum.org/", comments: "Recursos y análisis de bibliotecas alternativas", category: "Archivo", type: "eBooks/Papers" },
+            { title: "Planet eBook", link: "https://www.planetebook.com/", comments: "Clásicos gratuitos en PDF", category: "Literatura", type: "eBooks" },
+            { title: "Free-eBooks.net", link: "https://www.free-ebooks.net/", comments: "eBooks gratuitos y de pago", category: "Literatura", type: "eBooks" },
+            { title: "ManyBooks", link: "https://manybooks.net/", comments: "Miles de eBooks gratuitos", category: "Literatura", type: "eBooks" },
+            { title: "LibriVox", link: "https://librivox.org/", comments: "Audiolibros de dominio público", category: "Audiolibros", type: "Audiolibros" },
+            { title: "Internet Archive", link: "https://archive.org/", comments: "Archivo masivo de textos y multimedia", category: "Archivo", type: "eBooks/Multimedia" },
+            { title: "BookBub", link: "https://www.bookbub.com/", comments: "Ofertas y recomendaciones de eBooks", category: "Literatura", type: "eBooks" },
+            { title: "Open Library", link: "https://openlibrary.org/", comments: "Biblioteca digital abierta", category: "Archivo", type: "eBooks" },
+            { title: "BookBoon", link: "https://bookboon.com/", comments: "Libros educativos y empresariales", category: "Educación", type: "eBooks" },
+            { title: "Feedbooks", link: "https://www.feedbooks.com/", comments: "eBooks gratuitos y comerciales", category: "Literatura", type: "eBooks" },
+            { title: "Smashwords", link: "https://www.smashwords.com/", comments: "Publicación y distribución de eBooks", category: "Literatura", type: "eBooks" },
+            { title: "Project Gutenberg", link: "https://www.gutenberg.org/", comments: "Clásicos gratuitos en múltiples formatos", category: "Literatura", type: "eBooks" },
+            { title: "Google Books", link: "https://books.google.com/", comments: "Vista previa y libros completos", category: "Literatura", type: "eBooks" },
+            { title: "PDFBooksWorld", link: "https://www.pdfbooksworld.com/", comments: "PDFs de dominio público", category: "Literatura", type: "eBooks" },
+            { title: "FreeTechBooks", link: "https://www.freetechbooks.com/", comments: "Libros técnicos gratuitos", category: "Tecnología", type: "eBooks" },
+            { title: "Bookyards", link: "http://www.bookyards.com/", comments: "eBooks y recursos educativos", category: "Educación", type: "eBooks" },
+            { title: "GetFreeBooks", link: "https://www.getfreebooks.com/", comments: "Libros electrónicos gratuitos", category: "Literatura", type: "eBooks" },
+            { title: "eBookLobby", link: "https://www.ebooklobby.com/", comments: "eBooks variados gratuitos", category: "Literatura", type: "eBooks" },
+            { title: "FreeComputerBooks", link: "https://freecomputerbooks.com/", comments: "Libros de informática gratuitos", category: "Tecnología", type: "eBooks" },
+            { title: "OpenCulture", link: "https://www.openculture.com/free_ebooks", comments: "Recursos culturales y educativos", category: "Educación", type: "eBooks" },
+            { title: "Library Genesis (LibGen)", link: "http://libgen.rs/", comments: "Base de datos masiva de libros y artículos", category: "Archivo", type: "eBooks/Papers" },
+            { title: "Goodreads", link: "https://www.goodreads.com/", comments: "Comunidad y reseñas de libros", category: "Comunidad", type: "eBooks" },
+            { title: "Obooko", link: "https://www.obooko.com/", comments: "eBooks gratuitos de autores independientes", category: "Literatura", type: "eBooks" },
+            { title: "O'Reilly", link: "https://www.oreilly.com/", comments: "Libros técnicos y de programación", category: "Tecnología", type: "eBooks" },
+            { title: "PDF Drive", link: "https://www.pdfdrive.com/", comments: "Motor de búsqueda de PDFs", category: "Archivo", type: "eBooks" },
+            { title: "Anna's Archive", link: "http://annas-archive.org/", comments: "Archivo alternativo de textos", category: "Archivo", type: "eBooks" },
+            { title: "PDF Room", link: "https://pdfroom.com/", comments: "Descarga de PDFs variados", category: "Archivo", type: "eBooks" },
+            { title: "PDF Coffee", link: "https://www.pdfcoffee.com/", comments: "Colección de PDFs gratuitos", category: "Archivo", type: "eBooks" },
+            { title: "Dokumen Pub", link: "https://dokumen.pub/", comments: "Documentos y libros en PDF", category: "Archivo", type: "eBooks" },
+            { title: "Z Library", link: "https://z-lib.org/", comments: "Biblioteca digital extensa", category: "Archivo", type: "eBooks" },
+            { title: "Ocean of PDF", link: "https://oceanofpdf.com/", comments: "Descargas de PDFs populares", category: "Literatura", type: "eBooks" },
+            { title: "Dirzon", link: "https://dirzon.com/", comments: "Directorio de recursos digitales", category: "Archivo", type: "eBooks" },
+            { title: "Booksfree", link: "https://booksfree.org/", comments: "Libros gratuitos en PDF", category: "Literatura", type: "eBooks" },
+            { title: "EngbooksPDF", link: "https://www.engbookspdf.com/", comments: "Libros en inglés en PDF", category: "Educación", type: "eBooks" },
+            { title: "Elejandria", link: "https://www.elejandria.com/", comments: "Clásicos en español", category: "Literatura", type: "eBooks" },
+            { title: "Espaebook", link: "https://www.espabeok.com/", comments: "eBooks en español", category: "Literatura", type: "eBooks" },
+            { title: "Wonderful Books", link: "https://www.wonderfulbooks.com/", comments: "Colección de libros digitales", category: "Literatura", type: "eBooks" },
+            { title: "Lectuland", link: "https://lectuland.com/", comments: "Libros gratuitos en español", category: "Literatura", type: "eBooks" },
+            { title: "LeerLibrosOnline", link: "https://www.leerlibrosonline.org/", comments: "Lectura online y descarga", category: "Literatura", type: "eBooks" },
+            { title: "ePubLibre", link: "https://www.epublibre.org/", comments: "eBooks en formato ePub", category: "Literatura", type: "eBooks" },
+            { title: "Standard Ebooks", link: "https://standardebooks.org/", comments: "eBooks bien formateados", category: "Literatura", type: "eBooks" }
+        ];
+
+        // === INICIALIZACIÓN ===
+        document.addEventListener('DOMContentLoaded', () => {
+            // Esperar un poco para asegurar que todas las librerías estén cargadas
+            setTimeout(() => {
+                initializeParticles();
+                initializeNavigation();
+                initializeData();
+                initializeAnimations();
+                
+                // Verificar D3 antes de usar visualizaciones
+                if (typeof d3 !== 'undefined') {
+                    initializeNetwork();
+                    initializeCharts();
+                } else {
+                    console.log('D3.js no disponible, esperando...');
+                    // Intentar de nuevo después de un momento
+                    setTimeout(() => {
+                        if (typeof d3 !== 'undefined') {
+                            initializeNetwork();
+                            initializeCharts();
+                        } else {
+                            console.log('D3.js no se cargó, usando fallbacks');
+                            createFallbackCharts();
+                            // Mostrar mensaje alternativo para la red
+                            const networkContainer = document.querySelector('#network');
+                            if (networkContainer) {
+                                networkContainer.innerHTML = `
+                                    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; color: var(--primary-glow); text-align: center; padding: 2rem;">
+                                        <svg width="100" height="100" viewBox="0 0 100 100" style="margin-bottom: 1rem;">
+                                            <circle cx="50" cy="50" r="8" fill="var(--primary-glow)" opacity="0.8"/>
+                                            <circle cx="25" cy="25" r="6" fill="var(--primary-text)" opacity="0.6"/>
+                                            <circle cx="75" cy="25" r="6" fill="var(--primary-text)" opacity="0.6"/>
+                                            <circle cx="25" cy="75" r="6" fill="var(--primary-text)" opacity="0.6"/>
+                                            <circle cx="75" cy="75" r="6" fill="var(--primary-text)" opacity="0.6"/>
+                                            <line x1="50" y1="50" x2="25" y2="25" stroke="var(--primary-glow)" stroke-width="1" opacity="0.4"/>
+                                            <line x1="50" y1="50" x2="75" y2="25" stroke="var(--primary-glow)" stroke-width="1" opacity="0.4"/>
+                                            <line x1="50" y1="50" x2="25" y2="75" stroke="var(--primary-glow)" stroke-width="1" opacity="0.4"/>
+                                            <line x1="50" y1="50" x2="75" y2="75" stroke="var(--primary-glow)" stroke-width="1" opacity="0.4"/>
+                                        </svg>
+                                        <h3 style="margin: 0 0 0.5rem 0; color: var(--primary-glow);">Red de Conexiones</h3>
+                                        <p style="margin: 0; opacity: 0.8;">Visualización interactiva no disponible temporalmente</p>
+                                        <p style="margin: 0.5rem 0 0 0; font-size: 0.9em; opacity: 0.6;">Los filtros y tabla funcionan normalmente</p>
+                                    </div>
+                                `;
+                            }
+                        }
+                    }, 2000);
+                }
+            }, 100);
+        });
+
+        // Fallback adicional para inicializar particles cuando la ventana esté completamente cargada
+        window.addEventListener('load', () => {
+            if (!document.querySelector('#particles-js canvas')) {
+                initializeParticles();
+            }
+            
+            // Verificación final para D3 si no se inicializó antes
+            if (typeof d3 !== 'undefined' && !document.querySelector('#network svg')) {
+                initializeNetwork();
+                initializeCharts();
+            }
+        });
+
+        // === NAVEGACIÓN MÓVIL ===
+        function initializeNavigation() {
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            const navMenu = document.getElementById('nav-menu');
+
+            const toggleMenu = (e) => {
+                e.stopPropagation();
+                document.body.classList.toggle('menu-open');
+            };
+
+            const closeMenu = () => {
+                if (document.body.classList.contains('menu-open')) {
+                    document.body.classList.remove('menu-open');
+                }
+            };
+            
+            menuToggleBtn.addEventListener('click', toggleMenu);
+            navMenu.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A') {
+                   closeMenu();
+                }
+            });
+            document.addEventListener('click', (e) => {
+                if (document.body.classList.contains('menu-open') && !navMenu.contains(e.target) && !menuToggleBtn.contains(e.target)) {
+                    closeMenu();
+                }
+            });
+
+            // === LÓGICA PARA MEGA MENÚ EN ESCRITORIO ===
+            if (window.matchMedia('(min-width: 1025px)').matches) {
+                const menuItems = document.querySelectorAll('.nav-container > li');
+                menuItems.forEach(item => {
+                    const megaMenu = item.querySelector('.mega-menu');
+                    if (megaMenu) {
+                        let leaveTimeout;
+
+                        const showMenu = () => {
+                            clearTimeout(leaveTimeout);
+                            // Ocultar otros menús activos
+                            document.querySelectorAll('.mega-menu.is-active').forEach(m => {
+                                if (m !== megaMenu) {
+                                    m.classList.remove('is-active');
+                                }
+                            });
+                            megaMenu.classList.add('is-active');
+                        };
+
+                        const startHideTimer = () => {
+                            leaveTimeout = setTimeout(() => {
+                                megaMenu.classList.remove('is-active');
+                            }, 250);
+                        };
+
+                        item.addEventListener('mouseenter', showMenu);
+                        item.addEventListener('mouseleave', startHideTimer);
+                        megaMenu.addEventListener('mouseenter', showMenu);
+                        megaMenu.addEventListener('mouseleave', startHideTimer);
+                    }
+                });
+            }
+        }
+
+        // === ANIMACIONES DE SCROLL ===
+        function initializeAnimations() {
+            const animatedSections = document.querySelectorAll('[data-animate]');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            animatedSections.forEach(section => { observer.observe(section); });
+        }
+
+        // === INICIALIZACIÓN DE DATOS ===
+        function initializeData() {
+            populateFilters();
+            renderTable();
+        }
+
+        function populateFilters() {
+            const categories = [...new Set(resources.map(r => r.category))].sort();
+            const types = [...new Set(resources.map(r => r.type))].sort();
+            
+            const categoryFilter = document.getElementById('categoryFilter');
+            const typeFilter = document.getElementById('typeFilter');
+
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+
+            types.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                typeFilter.appendChild(option);
+            });
+
+            categoryFilter.addEventListener('change', renderTable);
+            typeFilter.addEventListener('change', renderTable);
+        }
+
+        function renderTable() {
+            const selectedCategory = document.getElementById('categoryFilter').value;
+            const selectedType = document.getElementById('typeFilter').value;
+            
+            const filteredResources = resources.filter(resource => 
+                (!selectedCategory || resource.category === selectedCategory) &&
+                (!selectedType || resource.type === selectedType)
+            );
+
+            const tbody = document.querySelector('#resourceTable tbody');
+            tbody.innerHTML = '';
+
+            filteredResources.forEach(resource => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${resource.title}</strong></td>
+                    <td><a href="${resource.link}" target="_blank" rel="noopener" title="Acceder a ${resource.title}">${resource.link}</a></td>
+                    <td>${resource.comments}</td>
+                    <td><span class="highlight">${resource.category}</span></td>
+                    <td>${resource.type}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // === RED DE CONEXIONES ===
+        function initializeNetwork() {
+            if (typeof d3 === 'undefined') {
+                console.log('D3.js no disponible, mostrando mensaje alternativo');
+                const networkContainer = document.querySelector('#network');
+                if (networkContainer) {
+                    networkContainer.innerHTML = `
+                        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; color: var(--primary-glow); text-align: center; padding: 2rem;">
+                            <svg width="100" height="100" viewBox="0 0 100 100" style="margin-bottom: 1rem;">
+                                <circle cx="50" cy="50" r="8" fill="var(--primary-glow)" opacity="0.8"/>
+                                <circle cx="25" cy="25" r="6" fill="var(--primary-text)" opacity="0.6"/>
+                                <circle cx="75" cy="25" r="6" fill="var(--primary-text)" opacity="0.6"/>
+                                <circle cx="25" cy="75" r="6" fill="var(--primary-text)" opacity="0.6"/>
+                                <circle cx="75" cy="75" r="6" fill="var(--primary-text)" opacity="0.6"/>
+                                <line x1="50" y1="50" x2="25" y2="25" stroke="var(--primary-glow)" stroke-width="1" opacity="0.4"/>
+                                <line x1="50" y1="50" x2="75" y2="25" stroke="var(--primary-glow)" stroke-width="1" opacity="0.4"/>
+                                <line x1="50" y1="50" x2="25" y2="75" stroke="var(--primary-glow)" stroke-width="1" opacity="0.4"/>
+                                <line x1="50" y1="50" x2="75" y2="75" stroke="var(--primary-glow)" stroke-width="1" opacity="0.4"/>
+                            </svg>
+                            <h3 style="margin: 0 0 0.5rem 0; color: var(--primary-glow);">Red de Shadow Libraries</h3>
+                            <p style="margin: 0; opacity: 0.8;">Mapa interactivo de conexiones no disponible</p>
+                            <p style="margin: 0.5rem 0 0 0; font-size: 0.9em; opacity: 0.6;">Usa los filtros para explorar por categoría y tipo</p>
+                        </div>
+                    `;
+                }
+                return;
+            }
+
+            const categories = [...new Set(resources.map(r => r.category))].sort();
+            const categoryNodes = categories.map((category, index) => ({
+                id: `category-${index}`,
+                name: category,
+                type: "category"
+            }));
+            
+            const resourceNodes = resources.map((resource, index) => ({
+                id: `resource-${index}`,
+                title: resource.title,
+                category: resource.category,
+                resourceType: resource.type,
+                type: "resource"
+            }));
+            
+            const nodes = [...categoryNodes, ...resourceNodes];
+            
+            const resourceLinks = resourceNodes.map(resourceNode => ({
+                source: resourceNode.id,
+                target: categoryNodes.find(categoryNode => categoryNode.name === resourceNode.category).id,
+                type: "resource-category"
+            }));
+            
+            const categoryLinks = [];
+            for (let i = 0; i < categoryNodes.length; i++) {
+                for (let j = i + 1; j < categoryNodes.length; j++) {
+                    const cat1 = categoryNodes[i].name;
+                    const cat2 = categoryNodes[j].name;
+                    const resourcesInCat1 = resources.filter(r => r.category === cat1);
+                    const resourcesInCat2 = resources.filter(r => r.category === cat2);
+                    const typesInCat1 = new Set(resourcesInCat1.map(r => r.type));
+                    const typesInCat2 = new Set(resourcesInCat2.map(r => r.type));
+                    const sharedTypes = [...typesInCat1].filter(type => typesInCat2.has(type));
+                    if (sharedTypes.length > 0) {
+                        categoryLinks.push({
+                            source: categoryNodes[i].id,
+                            target: categoryNodes[j].id,
+                            type: "category-category"
+                        });
+                    }
+                }
+            }
+            
+            const links = [...resourceLinks, ...categoryLinks];
+            
+            createNetworkVisualization('#network', { nodes, links });
+        }
+
+        function createNetworkVisualization(selector, data) {
+            if (typeof d3 === 'undefined') {
+                console.log('D3.js no disponible para crear visualización de red');
+                return;
+            }
+
+            const container = d3.select(selector);
+            container.select("svg").remove();
+            
+            const width = container.node().getBoundingClientRect().width;
+            const height = container.node().getBoundingClientRect().height;
+            const isMobile = width < 600;
+            
+            const svg = container.append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("viewBox", `0 0 ${width} ${height}`);
+
+            const simulation = d3.forceSimulation(data.nodes)
+                .force("link", d3.forceLink(data.links).id(d => d.id).distance(d => d.type === "category-category" ? 120 : 80).strength(0.5))
+                .force("charge", d3.forceManyBody().strength(-250))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .force("collide", d3.forceCollide(25))
+                .force("x", d3.forceX(width / 2).strength(0.1))
+                .force("y", d3.forceY(height / 2).strength(0.1));
+
+            const link = svg.append("g")
+                .attr("class", "links")
+                .selectAll("line")
+                .data(data.links)
+                .join("line")
+                .attr("class", d => `link ${d.type === "category-category" ? "category-link" : ""}`);
+
+            const node = svg.append("g")
+                .attr("class", "nodes")
+                .selectAll("g")
+                .data(data.nodes)
+                .join("g")
+                .attr("class", d => `node ${d.type}`)
+                .call(d3.drag()
+                    .on("start", dragStarted)
+                    .on("drag", dragged)
+                    .on("end", dragEnded))
+                .on("click", (event, d) => {
+                    d3.selectAll(".node").classed("selected", false);
+                    d3.select(event.currentTarget).classed("selected", true);
+                    if (d.type === "category") {
+                        const categoryFilter = document.getElementById('categoryFilter');
+                        categoryFilter.value = d.name;
+                        const changeEvent = new Event('change');
+                        categoryFilter.dispatchEvent(changeEvent);
+                    }
+                });
+
+            node.append("circle")
+                .attr("r", d => d.type === "category" ? 12 : 6);
+
+            node.append("text")
+                .attr("dy", d => d.type === "category" ? -20 : -15)
+                .attr("text-anchor", "middle")
+                .text(d => d.type === "category" ? d.name : d.title);
+
+            simulation.on("tick", () => {
+                link.attr("x1", d => Math.max(15, Math.min(width - 15, d.source.x)))
+                    .attr("y1", d => Math.max(15, Math.min(height - 15, d.source.y)))
+                    .attr("x2", d => Math.max(15, Math.min(width - 15, d.target.x)))
+                    .attr("y2", d => Math.max(15, Math.min(height - 15, d.target.y)));
+                node.attr("transform", d => `translate(${Math.max(15, Math.min(width - 15, d.x))},${Math.max(15, Math.min(height - 15, d.y))})`);
+            });
+
+            function dragStarted(event) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                event.subject.fx = event.subject.x;
+                event.subject.fy = event.subject.y;
+            }
+
+            function dragged(event) {
+                event.subject.fx = Math.max(15, Math.min(width - 15, event.x));
+                event.subject.fy = Math.max(15, Math.min(height - 15, event.y));
+            }
+
+            function dragEnded(event) {
+                if (!event.active) simulation.alphaTarget(0);
+                event.subject.fx = null;
+                event.subject.fy = null;
+            }
+        }
+
+        // === GRÁFICOS DE ANÁLISIS ===
+        function initializeCharts() {
+            if (typeof d3 === 'undefined') {
+                console.log('D3.js no disponible, mostrando estadísticas alternativas');
+                createFallbackCharts();
+                return;
+            }
+
+            const categoryCounts = d3.rollup(resources, v => v.length, d => d.category);
+            const categoryData = Array.from(categoryCounts, ([category, count]) => ({ category, count }));
+            const totalResources = resources.length;
+            const typeCounts = d3.rollup(resources, v => v.length, d => d.type);
+            const typeData = Array.from(typeCounts, ([type, count]) => ({ type, count }));
+            const resourceCounts = resources.map(r => ({
+                name: r.title,
+                value: Math.floor(Math.random() * 10000) + 100
+            }));
+
+            createBarChart('#bar-chart', categoryData, 'category', 'categoryFilter');
+            createPieChart('#pie-chart', categoryData, totalResources, 'categoryFilter');
+            createBarChart('#type-bar-chart', typeData, 'type', 'typeFilter');
+            createTreemap('#treemap', resourceCounts);
+        }
+
+        function createFallbackCharts() {
+            // Crear estadísticas simples sin D3
+            const categoryCounts = {};
+            const typeCounts = {};
+            
+            resources.forEach(resource => {
+                categoryCounts[resource.category] = (categoryCounts[resource.category] || 0) + 1;
+                typeCounts[resource.type] = (typeCounts[resource.type] || 0) + 1;
+            });
+
+            // Gráfico de barras alternativo para categorías
+            createFallbackBarChart('#bar-chart', categoryCounts, 'Distribución por Categoría Temática');
+            
+            // Lista alternativa para pie chart
+            createFallbackList('#pie-chart', categoryCounts, 'Cobertura por Área de Conocimiento');
+            
+            // Gráfico de barras alternativo para tipos
+            createFallbackBarChart('#type-bar-chart', typeCounts, 'Análisis por Tipo de Recurso Digital');
+            
+            // Treemap alternativo
+            createFallbackTreemap('#treemap');
+        }
+
+        function createFallbackBarChart(selector, data, title) {
+            const container = document.querySelector(selector);
+            if (!container) return;
+            
+            const total = Object.values(data).reduce((a, b) => a + b, 0);
+            const maxValue = Math.max(...Object.values(data));
+            
+            container.innerHTML = `
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <h4 style="color: var(--primary-glow); margin: 0;">${title}</h4>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    ${Object.entries(data).map(([key, value]) => `
+                        <div class="fallback-bar" style="display: flex; align-items: center; gap: 1rem; padding: 0.5rem; border-radius: 4px;" onclick="updateFilter('${key}', '${selector.includes('type') ? 'typeFilter' : 'categoryFilter'}')">
+                            <div style="min-width: 100px; color: var(--primary-text); font-size: 0.9em;">${key}</div>
+                            <div style="flex: 1; background: rgba(0,255,255,0.1); border-radius: 4px; height: 20px; position: relative;">
+                                <div style="background: var(--secondary-glow); height: 100%; width: ${(value / maxValue) * 100}%; border-radius: 4px; transition: width 0.3s ease;"></div>
+                            </div>
+                            <div style="min-width: 60px; color: var(--primary-glow); font-size: 0.9em; text-align: right;">
+                                ${value} (${((value / total) * 100).toFixed(1)}%)
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function createFallbackList(selector, data, title) {
+            const container = document.querySelector(selector);
+            if (!container) return;
+            
+            const total = Object.values(data).reduce((a, b) => a + b, 0);
+            
+            container.innerHTML = `
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <h4 style="color: var(--primary-glow); margin: 0;">${title}</h4>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    ${Object.entries(data).map(([key, value]) => `
+                        <div class="fallback-card" style="padding: 1rem; border: 1px solid rgba(0,255,194,0.2); border-radius: 8px; text-align: center; background: rgba(0,40,40,0.2);" onclick="updateFilter('${key}', 'categoryFilter')">
+                            <div style="color: var(--primary-glow); font-weight: 600; margin-bottom: 0.5rem;">${key}</div>
+                            <div style="color: var(--primary-text); font-size: 1.2em; margin-bottom: 0.25rem;">${value}</div>
+                            <div style="color: var(--secondary-glow); font-size: 0.9em;">${((value / total) * 100).toFixed(1)}%</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Función auxiliar para actualizar filtros desde fallbacks
+        function updateFilter(value, filterId) {
+            const filter = document.getElementById(filterId);
+            if (filter) {
+                filter.value = value;
+                filter.dispatchEvent(new Event('change'));
+            }
+        }
+
+        function createFallbackTreemap(selector) {
+            const container = document.querySelector(selector);
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div style="text-align: center; color: var(--primary-glow); padding: 2rem;">
+                    <svg width="80" height="80" viewBox="0 0 80 80" style="margin-bottom: 1rem;">
+                        <rect x="5" y="5" width="30" height="30" fill="var(--secondary-glow)" opacity="0.8" rx="2"/>
+                        <rect x="40" y="5" width="35" height="20" fill="var(--primary-glow)" opacity="0.6" rx="2"/>
+                        <rect x="40" y="30" width="35" height="15" fill="var(--accent-color)" opacity="0.7" rx="2"/>
+                        <rect x="5" y="40" width="70" height="35" fill="var(--primary-text)" opacity="0.5" rx="2"/>
+                    </svg>
+                    <h4 style="margin: 0 0 0.5rem 0;">Mapa de Recursos</h4>
+                    <p style="margin: 0; opacity: 0.8; font-size: 0.9em;">Visualización interactiva no disponible</p>
+                    <p style="margin: 0.5rem 0 0 0; font-size: 0.8em; opacity: 0.6;">Total: ${resources.length} recursos</p>
+                </div>
+            `;
+            
+            const infoDiv = document.querySelector('#treemap-info');
+            if (infoDiv) {
+                infoDiv.textContent = `Colección completa: ${resources.length} recursos digitales disponibles`;
+            }
+        }
+
+        function createBarChart(selector, data, key, filterId) {
+            if (typeof d3 === 'undefined') {
+                console.log('D3.js no disponible para gráfico de barras');
+                return;
+            }
+
+            const container = d3.select(selector);
+            container.select("svg").remove();
+            
+            const svg = container.append("svg")
+                .attr("width", "100%")
+                .attr("height", 400);
+
+            const margin = { top: 20, right: 20, bottom: 100, left: 50 };
+            const width = svg.node().clientWidth - margin.left - margin.right;
+            const height = 400 - margin.top - margin.bottom;
+
+            const x = d3.scaleBand()
+                .domain(data.map(d => d[key]))
+                .range([0, width])
+                .padding(0.1);
+
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.count)])
+                .range([height, 0]);
+
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            g.append("g")
+                .attr("class", "x-axis")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x))
+                .selectAll("text")
+                .attr("fill", "var(--primary-glow)")
+                .attr("transform", "rotate(-45)")
+                .style("text-anchor", "end");
+
+            g.append("g")
+                .attr("class", "y-axis")
+                .call(d3.axisLeft(y))
+                .selectAll("text")
+                .attr("fill", "var(--primary-glow)");
+
+            // Colorear las líneas de los ejes también
+            g.select(".x-axis").selectAll("path, line").attr("stroke", "var(--primary-glow)");
+            g.select(".y-axis").selectAll("path, line").attr("stroke", "var(--primary-glow)");
+
+            g.selectAll(".bar")
+                .data(data)
+                .join("rect")
+                .attr("class", "bar")
+                .attr("x", d => x(d[key]))
+                .attr("y", d => y(d.count))
+                .attr("width", x.bandwidth())
+                .attr("height", d => height - y(d.count))
+                .on("click", (event, d) => {
+                    const filter = document.getElementById(filterId);
+                    filter.value = d[key];
+                    filter.dispatchEvent(new Event('change'));
+                });
+
+            g.selectAll(".bar-text")
+                .data(data)
+                .join("text")
+                .attr("class", "bar-text")
+                .attr("x", d => x(d[key]) + x.bandwidth() / 2)
+                .attr("y", d => y(d.count) - 5)
+                .attr("dy", ".35em")
+                .text(d => d.count);
+        }
+
+        function createPieChart(selector, data, total, filterId) {
+            if (typeof d3 === 'undefined') {
+                console.log('D3.js no disponible para gráfico circular');
+                return;
+            }
+
+            const container = d3.select(selector);
+            container.select("svg").remove();
+            
+            const svg = container.append("svg")
+                .attr("width", "100%")
+                .attr("height", 400);
+
+            const width = svg.node().clientWidth;
+            const height = 400;
+            const radius = Math.min(width, height) / 2 - 80; // Más margen para las etiquetas
+
+            const g = svg.append("g")
+                .attr("transform", `translate(${width / 2},${height / 2})`);
+
+            const pie = d3.pie()
+                .value(d => d.count)
+                .sort((a, b) => d3.ascending(a.category, b.category));
+
+            const arc = d3.arc()
+                .innerRadius(radius * 0.4)
+                .outerRadius(radius);
+
+            const outerArc = d3.arc()
+                .innerRadius(radius * 0.9)
+                .outerRadius(radius * 0.9);
+
+            const arcsData = pie(data);
+            const arcs = g.selectAll(".arc")
+                .data(arcsData)
+                .join("g")
+                .attr("class", "arc");
+
+            // Calcular posiciones de etiquetas para evitar superposición
+            const labelPositions = [];
+            arcsData.forEach((d, i) => {
+                const pos = outerArc.centroid(d);
+                const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+                const side = midAngle < Math.PI ? 1 : -1;
+                pos[0] = radius * (midAngle < Math.PI ? 1.2 : -1.2);
+                pos[1] += (midAngle > Math.PI/2 && midAngle < 3*Math.PI/2) ? 10 : -10;
+
+                let adjustedY = pos[1];
+                for (let j = 0; j < labelPositions.length; j++) {
+                    const prevPos = labelPositions[j];
+                    if (Math.abs(prevPos.y - adjustedY) < 25 && prevPos.side === side) {
+                        adjustedY += (adjustedY > prevPos.y ? 25 : -25);
+                    }
+                }
+                labelPositions.push({ y: adjustedY, side });
+                d.adjustedPos = [pos[0], adjustedY];
+            });
+
+            // Crear los arcos
+            arcs.append("path")
+                .attr("d", arc)
+                .on("click", (event, d) => {
+                    const filter = document.getElementById(filterId);
+                    filter.value = d.data.category;
+                    filter.dispatchEvent(new Event('change'));
+                });
+
+            // Añadir etiquetas con líneas
+            arcs.append("text")
+                .attr("transform", d => `translate(${d.adjustedPos})`)
+                .attr("dy", ".35em")
+                .style("text-anchor", d => {
+                    const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+                    return midAngle < Math.PI ? "start" : "end";
+                })
+                .text(d => `${d.data.category} (${((d.data.count / total) * 100).toFixed(1)}%)`)
+                .style("font-size", "11px")
+                .style("font-weight", "500");
+
+            // Añadir líneas conectoras
+            arcs.append("polyline")
+                .attr("points", d => {
+                    const pos = outerArc.centroid(d);
+                    const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+                    const offset = radius * (midAngle < Math.PI ? 1.15 : -1.15);
+                    return [arc.centroid(d), outerArc.centroid(d), [offset, d.adjustedPos[1]]];
+                })
+                .style("fill", "none")
+                .style("stroke", "var(--primary-text)")
+                .style("stroke-width", 1)
+                .style("opacity", 0.7);
+        }
+
+        function createTreemap(selector, data) {
+            if (typeof d3 === 'undefined') {
+                console.log('D3.js no disponible para treemap');
+                return;
+            }
+
+            const container = d3.select(selector);
+            container.select("svg").remove();
+            
+            const svg = container.append("svg")
+                .attr("width", "100%")
+                .attr("height", 400);
+
+            const margin = { top: 10, right: 10, bottom: 10, left: 10 };
+            const width = svg.node().clientWidth - margin.left - margin.right;
+            const height = 400 - margin.top - margin.bottom;
+
+            const treemap = d3.treemap()
+                .size([width, height])
+                .padding(3)
+                .round(true);
+
+            const root = d3.hierarchy({ children: data })
+                .sum(d => d.value);
+
+            treemap(root);
+
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            g.selectAll(".treemap-rect")
+                .data(root.leaves())
+                .join("rect")
+                .attr("class", "treemap-rect")
+                .attr("x", d => d.x0)
+                .attr("y", d => d.y0)
+                .attr("width", d => d.x1 - d.x0)
+                .attr("height", d => d.y1 - d.y0)
+                .on("click", (event, d) => {
+                    const resource = resources.find(r => r.title === d.data.name);
+                    if (resource) {
+                        const categoryFilter = document.getElementById('categoryFilter');
+                        categoryFilter.value = resource.category;
+                        categoryFilter.dispatchEvent(new Event('change'));
+                    }
+                    d3.select("#treemap-info")
+                        .text(`Shadow Library: ${d.data.name} | Volumen estimado: ${d.data.value.toLocaleString()} archivos`);
+                });
+        }
+
+        // === RESPONSIVE RESIZE ===
+        window.addEventListener('resize', () => {
+            setTimeout(() => {
+                if (typeof d3 !== 'undefined') {
+                    initializeNetwork();
+                    initializeCharts();
+                } else {
+                    console.log('D3.js no disponible durante resize, manteniendo fallbacks');
+                }
+            }, 300);
+        });
+    </script>
+</body>
+</html>
