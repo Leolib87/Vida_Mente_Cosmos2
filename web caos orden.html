@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Arquitecto del Caos: Un Mapa Interactivo del Orden</title>
+    <!-- Chosen Palette: Deep Nexus & Cyan Glow -->
+    <!-- Application Structure Plan: Complete redesign based on user feedback. Implemented a fixed header containing the main title and primary navigation tabs. This ensures the title is always visible, addressing the core complaint. The main content area scrolls underneath this fixed header. The information within each accordion has been significantly expanded to be more comprehensive. A new interactive timeline component was added to Part 3 to visualize the history of cognitive thought. A final synthesis table from the source doc is now included. This architecture provides a more robust, application-like feel. -->
+    <!-- Visualization & Content Choices: *Goal: Permanent Title & Navigation* - A fixed header with `position: fixed` is implemented. *Goal: Comprehensive Content* - All text sections are expanded based on a re-analysis of the source document. *Goal: Enhanced Visualization* - Part 3 now features an interactive timeline built with HTML/CSS/JS to show the progression of philosophers. The Radar Chart in Part 4 and Viewpoint toggles in Part 6 are kept and refined. A final interactive table is added in a new "Synthesis" section. *Goal: Perfected UI/UX* - The particle background animation is enhanced. The "Thinker Card" tooltips and fade-in animations are polished. (Library: Chart.js). -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
+        :root {
+            --bg-color: #050608;
+            --primary-text: #e0e0e0;
+            --accent-color: #00e5ff;
+            --accent-color-rgb: 0, 229, 255;
+            --border-color: rgba(255, 255, 255, 0.15);
+        }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--primary-text); padding-top: 110px; }
+        #particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.3; }
+        .fixed-header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background-color: rgba(5, 6, 8, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); }
+        .tab-button::after { content: ''; position: absolute; bottom: 0px; left: 0; width: 0; height: 2px; background-color: var(--accent-color); transition: width 0.3s ease; }
+        .tab-button.active { color: #ffffff; }
+        .tab-button.active::after { width: 100%; }
+        .accordion-header { background-color: rgba(255,255,255,0.03); cursor: pointer; transition: background-color 0.3s ease; }
+        .accordion-header:hover { background-color: rgba(255,255,255,0.07); }
+        .accordion-content { background-color: transparent; overflow: hidden; max-height: 0; transition: max-height 0.5s ease-out, padding 0.5s ease-out; padding: 0 1.5rem; border-top: 1px solid var(--border-color); }
+        .accordion-content.open { max-height: 2500px; transition: max-height 0.7s ease-in, padding 0.7s ease-in; padding: 1.5rem; }
+        .accordion-icon { transition: transform 0.4s ease; }
+        .accordion-header.open .accordion-icon { transform: rotate(180deg); }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 450px; max-height: 550px; }
+        .concept-highlight, .thinker { font-weight: 600; color: var(--accent-color); text-shadow: 0 0 10px rgba(var(--accent-color-rgb), 0.4); cursor: pointer; position: relative; }
+        .content-card { background: rgba(10, 10, 15, 0.4); border: 1px solid var(--border-color); border-radius: 1rem; opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        .content-card.is-visible { opacity: 1; transform: translateY(0); }
+        .thinker-card { position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%); width: 280px; background-color: #1a1a2e; border: 1px solid var(--accent-color); border-radius: 8px; padding: 1rem; z-index: 50; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(var(--accent-color-rgb), 0.3); pointer-events: none; }
+        .thinker:hover .thinker-card { opacity: 1; visibility: visible; }
+        .thinker-card h5 { color: var(--accent-color); font-weight: 700; margin-bottom: 0.5rem; }
+        .thinker-card p { font-size: 0.875rem; color: var(--primary-text); line-height: 1.4; font-weight: 400; text-shadow: none; }
+        .timeline { position: relative; padding: 2rem 0; }
+        .timeline::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background-color: var(--border-color); }
+        .timeline-item { position: relative; width: 50%; padding: 1rem 2rem; }
+        .timeline-item:nth-child(odd) { left: 0; text-align: right; }
+        .timeline-item:nth-child(even) { left: 50%; }
+        .timeline-item::after { content: ''; position: absolute; top: 1.5rem; width: 20px; height: 20px; background-color: var(--bg-color); border: 2px solid var(--accent-color); border-radius: 50%; z-index: 1; }
+        .timeline-item:nth-child(odd)::after { right: -11px; }
+        .timeline-item:nth-child(even)::after { left: -9px; }
+    </style>
+</head>
+<body class="antialiased">
+    <canvas id="particle-canvas"></canvas>
+    <header class="fixed-header">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center pt-5 pb-3">
+                 <h1 class="text-3xl md:text-4xl font-black text-white tracking-tight" style="text-shadow: 0 0 15px rgba(var(--accent-color-rgb),0.5);">El Arquitecto del Caos</h1>
+                 <p class="text-sm text-gray-400">Un Mapa Interactivo del Orden</p>
+            </div>
+            <nav class="border-t border-gray-800">
+                <div class="flex flex-wrap justify-center">
+                    <button class="tab-button relative py-3 px-3 sm:px-5 text-xs sm:text-sm font-medium text-gray-400 hover:text-white active" data-tab="part1">FÍSICA</button>
+                    <button class="tab-button relative py-3 px-3 sm:px-5 text-xs sm:text-sm font-medium text-gray-400 hover:text-white" data-tab="part2">BIOLOGÍA</button>
+                    <button class="tab-button relative py-3 px-3 sm:px-5 text-xs sm:text-sm font-medium text-gray-400 hover:text-white" data-tab="part3">COGNICIÓN</button>
+                    <button class="tab-button relative py-3 px-3 sm:px-5 text-xs sm:text-sm font-medium text-gray-400 hover:text-white" data-tab="part4">SOCIAL</button>
+                    <button class="tab-button relative py-3 px-3 sm:px-5 text-xs sm:text-sm font-medium text-gray-400 hover:text-white" data-tab="part5">FORMALIZACIÓN</button>
+                    <button class="tab-button relative py-3 px-3 sm:px-5 text-xs sm:text-sm font-medium text-gray-400 hover:text-white" data-tab="part6">FUTURO</button>
+                    <button class="tab-button relative py-3 px-3 sm:px-5 text-xs sm:text-sm font-medium text-gray-400 hover:text-white" data-tab="synthesis">SÍNTESIS</button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+            <section id="part1" class="tab-content">
+                <div class="content-card p-6 mb-8">
+                    <h2 class="text-3xl font-bold text-white mb-4">Parte I: El Substrato Físico</h2>
+                    <p class="text-lg text-gray-300">Esta sección explora cómo los principios de la física sientan las bases para la emergencia del orden, presentando el universo como un sustrato informacional donde la complejidad surge espontáneamente del caos.</p>
+                </div>
+                 <div class="accordion-container space-y-4">
+                    <div class="accordion-item content-card overflow-hidden">
+                        <div class="accordion-header flex justify-between items-center p-5"><h3 class="text-xl font-semibold text-white">1.1 El Universo Informacional y la Neguentropía</h3><div class="accordion-icon text-gray-400 text-xl">▼</div></div>
+                        <div class="accordion-content"><p class="text-gray-300 leading-relaxed">El cosmos tiene una historia, desde el "átomo primitivo" de <span class="thinker">Lemaître<span class="thinker-card"><h5>Georges Lemaître</h5><p>Sacerdote y astrónomo belga, propuso la teoría del Big Bang sobre el origen del universo.</p></span></span> y las observaciones de <span class="thinker">Hubble<span class="thinker-card"><h5>Edwin Hubble</h5><p>Astrónomo estadounidense cuyas observaciones demostraron la expansión del universo.</p></span></span>, hasta la flecha del tiempo de la termodinámica de <span class="thinker">Carnot<span class="thinker-card"><h5>Sadi Carnot</h5><p>Físico francés, fundador de la termodinámica.</p></span></span> y <span class="thinker">Boltzmann<span class="thinker-card"><h5>Ludwig Boltzmann</h5><p>Físico austriaco, pionero de la mecánica estadística y la teoría de la entropía.</p></span></span>. <span class="thinker">Schrödinger<span class="thinker-card"><h5>Erwin Schrödinger</h5><p>Físico austriaco, su libro "¿Qué es la vida?" unió la física y la biología a través de la idea de la "neguentropía".</p></span></span> resolvió la paradoja: la vida mantiene su orden alimentándose de <span class="concept-highlight">neguentropía</span>. Esto resuena con <span class="thinker">J.A. Wheeler<span class="thinker-card"><h5>John Archibald Wheeler</h5><p>Físico teórico estadounidense. Acuñó la frase "It from Bit", sugiriendo que la información es fundamental para la física.</p></span></span> ("It from Bit") y <span class="thinker">David Deutsch<span class="thinker-card"><h5>David Deutsch</h5><p>Físico británico, pionero en computación cuántica y defensor del universo como un proceso computacional.</p></span></span> (el universo como computación).</p></div>
+                    </div>
+                     <div class="accordion-item content-card overflow-hidden">
+                        <div class="accordion-header flex justify-between items-center p-5"><h3 class="text-xl font-semibold text-white">1.2 La Génesis Espontánea del Orden</h3><div class="accordion-icon text-gray-400 text-xl">▼</div></div>
+                        <div class="accordion-content"><p class="text-gray-300 leading-relaxed">El premio Nobel <span class="thinker">Ilya Prigogine<span class="thinker-card"><h5>Ilya Prigogine</h5><p>Químico-físico belga, ganador del Nobel por su trabajo sobre estructuras disipativas y sistemas lejos del equilibrio.</p></span></span> demostró que, en sistemas lejos del equilibrio, el orden emerge como "<span class="concept-highlight">estructuras disipativas</span>". Más recientemente, <span class="thinker">Jeremy England<span class="thinker-card"><h5>Jeremy England</h5><p>Físico estadounidense. Propone que la adaptación impulsada por la disipación explica la tendencia de la materia a auto-organizarse.</p></span></span> propone que la materia se auto-organiza para disipar energía, enmarcando la vida como una consecuencia casi inevitable de la termodinámica.</p></div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="part2" class="tab-content hidden">
+                 <div class="content-card p-6 mb-8"><h2 class="text-3xl font-bold text-white mb-4">Parte II: El Sujeto Autónomo</h2><p class="text-lg text-gray-300">Esta sección se adentra en el origen de la vida, centrándose en la emergencia de la autonomía, la creación de un "yo" biológico y la dinámica evolutiva de competencia y cooperación.</p></div>
+                 <div class="accordion-container space-y-4">
+                    <div class="accordion-item content-card overflow-hidden">
+                        <div class="accordion-header flex justify-between items-center p-5"><h3 class="text-xl font-semibold text-white">2.1 Autocatálisis y Autopoiesis</h3><div class="accordion-icon text-gray-400 text-xl">▼</div></div>
+                        <div class="accordion-content"><p class="text-gray-300 leading-relaxed"><span class="thinker">Stuart Kauffman<span class="thinker-card"><h5>Stuart Kauffman</h5><p>Biólogo teórico estadounidense. Propuso los "conjuntos autocatalíticos" como modelo para el origen de la vida (metabolismo primero).</p></span></span> propuso los "conjuntos autocatalíticos" como un modelo donde un sistema adquiere un propósito intrínseco. Esto encuentra su contraparte biológica en la <span class="concept-highlight">autopoiesis</span> de <span class="thinker">Maturana<span class="thinker-card"><h5>Humberto Maturana</h5><p>Biólogo y filósofo chileno. Co-creador, con Varela, del concepto de autopoiesis.</p></span></span> y <span class="thinker">Varela<span class="thinker-card"><h5>Francisco Varela</h5><p>Biólogo y filósofo chileno. Su trabajo se centró en la autopoiesis, la neurociencia y la cognición encarnada.</p></span></span>, donde un sistema se auto-produce y crea una frontera que distingue el "yo" del "no-yo", el acto fundacional del significado.</p></div>
+                    </div>
+                    <div class="accordion-item content-card overflow-hidden">
+                        <div class="accordion-header flex justify-between items-center p-5"><h3 class="text-xl font-semibold text-white">2.2 Lógica Evolutiva y Cooperación</h3><div class="accordion-icon text-gray-400 text-xl">▼</div></div>
+                        <div class="accordion-content"><p class="text-gray-300 leading-relaxed">La cooperación, como en la <span class="concept-highlight">endosimbiosis</span> de <span class="thinker">Lynn Margulis<span class="thinker-card"><h5>Lynn Margulis</h5><p>Bióloga estadounidense, su teoría de la endosimbiosis revolucionó la comprensión de la célula eucariota.</p></span></span>, es un motor de complejidad. Esta existe en tensión con la competencia del "<span class="concept-highlight">gen egoísta</span>" de <span class="thinker">Richard Dawkins<span class="thinker-card"><h5>Richard Dawkins</h5><p>Biólogo evolutivo británico. Su libro "El gen egoísta" popularizó la visión de la evolución centrada en los genes.</p></span></span>. La <span class="thinker">teoría de juegos evolutiva<span class="thinker-card"><h5>John Maynard Smith</h5><p>Biólogo evolutivo y genetista británico. Aplicó la teoría de juegos a la evolución, desarrollando el concepto de EEE.</p></span></span> (<span class="thinker">J. M. Smith<span class="thinker-card"><h5>John Maynard Smith</h5><p>Biólogo evolutivo y genetista británico. Aplicó la teoría de juegos a la evolución, desarrollando el concepto de EEE.</p></span></span>) resuelve esta paradoja, mostrando cómo la cooperación emerge como una Estrategia Evolutivamente Estable (EEE).</p></div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="part3" class="tab-content hidden">
+                <div class="content-card p-6 mb-8"><h2 class="text-3xl font-bold text-white mb-4">Parte III: La Mente Auto-Referencial</h2><p class="text-lg text-gray-300">Esta sección explora el surgimiento de la mente, la conciencia y cómo la auto-referencia, al chocar con sus límites lógicos, proporciona un modelo para entender la subjetividad.</p></div>
+                <div class="accordion-container space-y-4">
+                     <div class="accordion-item content-card overflow-hidden">
+                        <div class="accordion-header flex justify-between items-center p-5"><h3 class="text-xl font-semibold text-white">3.1 El Espejo Interior: Conciencia y Significado</h3><div class="accordion-icon text-gray-400 text-xl">▼</div></div>
+                        <div class="accordion-content">
+                            <p class="text-gray-300 mb-6 leading-relaxed">La investigación sobre la mente se despliega a través de una rica historia de ideas. Explore la línea de tiempo para ver la progresión desde el dualismo hasta la externalización del significado.</p>
+                            <div class="timeline">
+                                <div class="timeline-item content-card"><h4 class="font-bold text-white text-lg">1641: Dualismo</h4><p><span class="thinker">Descartes<span class="thinker-card"><h5>René Descartes</h5><p>Postula una división fundamental entre la mente (res cogitans) y el cuerpo (res extensa), creando el problema mente-cuerpo.</p></span></span></p></div>
+                                <div class="timeline-item content-card"><h4 class="font-bold text-white text-lg">1677: Monismo</h4><p><span class="thinker">Spinoza<span class="thinker-card"><h5>Baruch Spinoza</h5><p>Resuelve el dualismo proponiendo que mente y cuerpo son dos atributos de una única sustancia: la Naturaleza.</p></span></span></p></div>
+                                <div class="timeline-item content-card"><h4 class="font-bold text-white text-lg">1879: Psicología Experimental</h4><p><span class="thinker">Wundt<span class="thinker-card"><h5>Wilhelm Wundt</h5><p>Funda el primer laboratorio de psicología, usando la introspección para estudiar la estructura de la conciencia.</p></span></span></p></div>
+                                <div class="timeline-item content-card"><h4 class="font-bold text-white text-lg">1890: Funcionalismo</h4><p><span class="thinker">W. James<span class="thinker-card"><h5>William James</h5><p>Se enfoca en la función adaptativa de la mente, describiéndola como una "corriente de la conciencia".</p></span></span></p></div>
+                                <div class="timeline-item content-card"><h4 class="font-bold text-white text-lg">1913: Fenomenología</h4><p><span class="thinker">Husserl<span class="thinker-card"><h5>Edmund Husserl</h5><p>Desarrolla un método para estudiar cómo la conciencia "constituye" activamente el significado de la experiencia.</p></span></span></p></div>
+                                <div class="timeline-item content-card"><h4 class="font-bold text-white text-lg">1953: Giro Lingüístico</h4><p><span class="thinker">Wittgenstein<span class="thinker-card"><h5>Ludwig Wittgenstein</h5><p>Argumenta que el significado es el uso en "juegos de lenguaje", moviendo el foco de la mente al lenguaje público.</p></span></span>, <span class="thinker">Ryle<span class="thinker-card"><h5>Gilbert Ryle</h5><p>Ataca el "fantasma en la máquina", viendo lo mental como disposiciones conductuales.</p></span></span>, <span class="thinker">Austin<span class="thinker-card"><h5>J. L. Austin</h5><p>Analiza los "actos de habla", mostrando que el lenguaje realiza acciones.</p></span></span></p></div>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="accordion-item content-card overflow-hidden">
+                        <div class="accordion-header flex justify-between items-center p-5"><h3 class="text-xl font-semibold text-white">3.2 El Límite de la Razón: Gödel y el Bucle Extraño</h3><div class="accordion-icon text-gray-400 text-xl">▼</div></div>
+                        <div class="accordion-content"><p class="text-gray-300 leading-relaxed">Los teoremas de incompletitud de <span class="thinker">Kurt Gödel<span class="thinker-card"><h5>Kurt Gödel</h5><p>Lógico, matemático y filósofo austriaco. Sus teoremas de incompletitud revolucionaron la lógica matemática.</p></span></span> revelaron un límite fundamental a la auto-referencia. <span class="thinker">Douglas Hofstadter<span class="thinker-card"><h5>Douglas Hofstadter</h5><p>Científico cognitivo estadounidense. Su libro "Gödel, Escher, Bach" propone la conciencia como un "Bucle Extraño" emergente.</p></span></span> utiliza esta idea para proponer la conciencia como un "<span class="concept-highlight">Bucle Extraño</span>". El "yo" no es una cosa, sino un patrón recursivo, una ilusión que emerge cuando un sistema adquiere la capacidad de observarse a sí mismo.</p></div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="part4" class="tab-content hidden">
+                 <div class="content-card p-6 mb-8"><h2 class="text-3xl font-bold text-white mb-4">Parte IV: La Mente Colectiva</h2><p class="text-lg text-gray-300">Aquí, la filosofía política y económica se presentan como la ciencia cognitiva de los sistemas a gran escala, contrastando arquitecturas de orden social.</p></div>
+                 <div class="accordion-container space-y-4">
+                     <div class="accordion-item content-card overflow-hidden">
+                        <div class="accordion-header flex justify-between items-center p-5"><h3 class="text-xl font-semibold text-white">4.1 El Problema Fundamental: Poder y Orden</h3><div class="accordion-icon text-gray-400 text-xl">▼</div></div>
+                        <div class="accordion-content"><p class="text-gray-300 leading-relaxed">El realismo político de <span class="thinker">Tucídides<span class="thinker-card"><h5>Tucídides</h5><p>Historiador y general ateniense. Su "Historia de la Guerra del Peloponeso" es fundacional para el realismo político.</p></span></span> y <span class="thinker">Maquiavelo<span class="thinker-card"><h5>Nicolás Maquiavelo</h5><p>Diplomático y filósofo político italiano. Su obra "El Príncipe" separó la política de la moralidad convencional.</p></span></span> establece el poder como la fuerza motriz. <span class="thinker">Thomas Hobbes<span class="thinker-card"><h5>Thomas Hobbes</h5><p>Filósofo inglés. Su obra "Leviatán" argumenta a favor de un soberano absoluto para evitar la "guerra de todos contra todos".</p></span></span> lo formaliza en su <span class="concept-highlight">Leviatán</span>: para escapar del caos, los individuos ceden el poder a un soberano absoluto en una arquitectura de control centralizado.</p></div>
+                    </div>
+                    <div class="accordion-item content-card overflow-hidden">
+                        <div class="accordion-header flex justify-between items-center p-5"><h3 class="text-xl font-semibold text-white">4.2 Modelos de Orden Social: Diseño vs. Emergencia</h3><div class="accordion-icon text-gray-400 text-xl">▼</div></div>
+                        <div class="accordion-content">
+                            <p class="text-gray-400 mb-4 text-center">Este gráfico compara diferentes modelos de orden social a través de múltiples dimensiones, revelando sus arquitecturas subyacentes. El modelo de **Orden Diseñado** (<span class="thinker">Locke<span class="thinker-card"><h5>John Locke</h5><p>Filósofo inglés. Defensor de los derechos naturales y el gobierno por consentimiento de los gobernados.</p></span></span>, <span class="thinker">Montesquieu<span class="thinker-card"><h5>Montesquieu</h5><p>Filósofo francés. Su teoría de la separación de poderes fue clave para el diseño constitucional moderno.</p></span></span>) se basa en la razón y la ingeniería política. El **Orden Sistémico** (<span class="thinker">Hegel<span class="thinker-card"><h5>G.W.F. Hegel</h5><p>Filósofo alemán. Concibió la historia como el despliegue dialéctico del Espíritu Absoluto.</p></span></span>, <span class="thinker">Marx<span class="thinker-card"><h5>Karl Marx</h5><p>Filósofo y economista alemán. Su materialismo histórico postula que la base económica determina la superestructura social.</p></span></span>) ve el orden como el resultado de una lógica histórica inmanente. El **Orden Espontáneo** (<span class="thinker">Adam Smith<span class="thinker-card"><h5>Adam Smith</h5><p>Economista y filósofo escocés. Su concepto de la "mano invisible" describe cómo el interés propio puede llevar al bien común.</p></span></span>, <span class="thinker">Hayek<span class="thinker-card"><h5>Friedrich Hayek</h5><p>Economista y filósofo austriaco-británico. Defensor del orden espontáneo y crítico de la planificación central.</p></span></span>) surge de la interacción descentralizada. El **Modelo Cibernético** (<span class="thinker">S. Beer<span class="thinker-card"><h5>Stafford Beer</h5><p>Cibernético británico. Creador del Modelo de Sistema Viable y del Proyecto Cybersyn.</p></span></span>) busca el control a través de la gestión de la información en tiempo real.</p>
+                            <div class="chart-container"><canvas id="socialOrderChart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+             <section id="part5" class="tab-content hidden">
+                <div class="content-card p-6 mb-8"><h2 class="text-3xl font-bold text-white mb-4">Parte V: La Mente como Gobernador</h2><p class="text-lg text-gray-300">Esta sección explora el intento de formalizar y controlar sistemas complejos a través de la cibernética y la IA simbólica, y las críticas a estas visiones de control.</p></div>
+                 <div class="accordion-container space-y-4">
+                    <div class="accordion-item content-card overflow-hidden">
+                        <div class="accordion-header flex justify-between items-center p-5"><h3 class="text-xl font-semibold text-white">5.1 Cibernética y el Sueño del Control Total</h3><div class="accordion-icon text-gray-400 text-xl">▼</div></div>
+                        <div class="accordion-content"><p class="text-gray-300 leading-relaxed">La <span class="concept-highlight">cibernética</span> (<span class="thinker">Norbert Wiener<span class="thinker-card"><h5>Norbert Wiener</h5><p>Matemático estadounidense, fundador de la cibernética, el estudio del control y la comunicación en animales y máquinas.</p></span></span>, <span class="thinker">W. R. Ashby<span class="thinker-card"><h5>W. Ross Ashby</h5><p>Psiquiatra y cibernético inglés. Pionero en el estudio de sistemas complejos y la auto-organización.</p></span></span>) es la ciencia del control, basada en el <span class="concept-highlight">bucle de retroalimentación</span>. <span class="thinker">Stafford Beer<span class="thinker-card"><h5>Stafford Beer</h5><p>Cibernético británico. Creador del Modelo de Sistema Viable y del Proyecto Cybersyn.</p></span></span> intentó aplicarla a la gobernanza con su <span class="concept-highlight">Modelo de Sistema Viable</span> y el <span class="concept-highlight">Proyecto Cybersyn</span>, el sueño de un control perfectamente racional.</p></div>
+                    </div>
+                    <div class="accordion-item content-card overflow-hidden">
+                        <div class="accordion-header flex justify-between items-center p-5"><h3 class="text-xl font-semibold text-white">5.2 IA Simbólica: El Planificador Central Racional</h3><div class="accordion-icon text-gray-400 text-xl">▼</div></div>
+                        <div class="accordion-content"><p class="text-gray-300 leading-relaxed">La <span class="concept-highlight">IA clásica</span> (<span class="thinker">Minsky<span class="thinker-card"><h5>Marvin Minsky</h5><p>Científico cognitivo estadounidense, cofundador del laboratorio de IA del MIT y figura clave de la IA simbólica.</p></span></span>, <span class="thinker">Herbert Simon<span class="thinker-card"><h5>Herbert Simon</h5><p>Economista y psicólogo estadounidense, Nobel de Economía. Pionero de la IA y la teoría de la racionalidad limitada.</p></span></span>) concebía la inteligencia como la manipulación de símbolos. Su "General Problem Solver" es la encarnación algorítmica del "planificador central" que <span class="thinker">Hayek<span class="thinker-card"><h5>Friedrich Hayek</h5><p>Economista y filósofo austriaco-británico. Su crítica al cálculo socialista se basa en la imposibilidad de centralizar el conocimiento disperso.</p></span></span> criticó.</p></div>
+                    </div>
+                     <div class="accordion-item content-card overflow-hidden">
+                        <div class="accordion-header flex justify-between items-center p-5"><h3 class="text-xl font-semibold text-white">5.3 Poder, Conocimiento y Control Distribuido</h3><div class="accordion-icon text-gray-400 text-xl">▼</div></div>
+                        <div class="accordion-content"><p class="text-gray-300 leading-relaxed"><span class="thinker">Michel Foucault<span class="thinker-card"><h5>Michel Foucault</h5><p>Filósofo francés. Analizó cómo el poder y el conocimiento se entrelazan para crear sistemas de control social como la disciplina y el biopoder.</p></span></span> argumentó que el poder moderno es una red distribuida de <span class="concept-highlight">disciplina</span> y <span class="concept-highlight">biopoder</span>. En contraste, <span class="thinker">Jürgen Habermas<span class="thinker-card"><h5>Jürgen Habermas</h5><p>Filósofo y sociólogo alemán. Defensor de la acción comunicativa y la esfera pública como bases de un orden racional.</p></span></span> defiende un orden basado en la <span class="concept-highlight">acción comunicativa</span> y el consenso racional.</p></div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="part6" class="tab-content hidden">
+                <div class="content-card p-6 mb-8"><h2 class="text-3xl font-bold text-white mb-4">Parte VI: El Nuevo Orden</h2><p class="text-lg text-gray-300">La sección final analiza la era de la IA, explorando cómo encarna los principios de orden espontáneo y planteando preguntas críticas sobre el poder, la conciencia y el futuro.</p></div>
+                 <div class="accordion-container space-y-4">
+                    <div class="accordion-item content-card overflow-hidden">
+                        <div class="accordion-header flex justify-between items-center p-5"><h3 class="text-xl font-semibold text-white">6.1 La Mente Global como Orden Espontáneo</h3><div class="accordion-icon text-gray-400 text-xl">▼</div></div>
+                        <div class="accordion-content"><p class="text-gray-300 leading-relaxed">El <span class="concept-highlight">conexionismo</span> (<span class="thinker">Geoffrey Hinton<span class="thinker-card"><h5>Geoffrey Hinton</h5><p>Científico cognitivo y de la computación británico-canadiense, considerado uno de los "padrinos" del aprendizaje profundo.</p></span></span>) y la arquitectura <span class="concept-highlight">Transformer</span> (<span class="thinker">Vaswani et al.<span class="thinker-card"><h5>Ashish Vaswani et al.</h5><p>Equipo de investigadores de Google que publicó "Attention Is All You Need" en 2017, introduciendo la arquitectura Transformer.</p></span></span>) son la base de los LLMs. Estos sistemas son una manifestación del <span class="concept-highlight">orden espontáneo</span> de <span class="thinker">Hayek<span class="thinker-card"><h5>Friedrich Hayek</h5><p>Economista y filósofo austriaco-británico. Su visión del mercado como un sistema de procesamiento de información distribuida es análoga a las redes neuronales.</p></span></span>: el conocimiento está distribuido, el procesamiento es descentralizado y el orden emerge de abajo hacia arriba.</p></div>
+                    </div>
+                    <div class="accordion-item content-card overflow-hidden">
+                        <div class="accordion-header flex justify-between items-center p-5"><h3 class="text-xl font-semibold text-white">6.2 El Debate Final: ¿Leviathan Digital o Polis Abierta?</h3><div class="accordion-icon text-gray-400 text-xl">▼</div></div>
+                        <div class="accordion-content">
+                             <div class="space-y-8">
+                                <div>
+                                    <h4 class="text-lg font-semibold text-white mb-3">Poder y Control</h4>
+                                    <div class="flex flex-wrap gap-2 mb-3"><button class="viewpoint-button px-4 py-2 text-sm rounded-md active" data-category="power" data-view="foucault">Foucault</button><button class="viewpoint-button px-4 py-2 text-sm rounded-md" data-category="power" data-view="habermas">Habermas</button></div>
+                                    <p id="power-viewpoint" class="text-gray-300 p-4 bg-black/20 rounded-md leading-relaxed"></p>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-semibold text-white mb-3">Conciencia y Significado</h4>
+                                    <div class="flex flex-wrap gap-2 mb-3"><button class="viewpoint-button px-4 py-2 text-sm rounded-md active" data-category="consciousness" data-view="hofstadter">Hofstadter</button><button class="viewpoint-button px-4 py-2 text-sm rounded-md" data-category="consciousness" data-view="searle">Searle</button></div>
+                                    <p id="consciousness-viewpoint" class="text-gray-300 p-4 bg-black/20 rounded-md leading-relaxed"></p>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-semibold text-white mb-3">Economía Política de la IA</h4>
+                                    <div class="flex flex-wrap gap-2 mb-3"><button class="viewpoint-button px-4 py-2 text-sm rounded-md active" data-category="economy" data-view="feudalism">Tecnofeudalismo</button><button class="viewpoint-button px-4 py-2 text-sm rounded-md" data-category="economy" data-view="networkstate">Estado-Red</button></div>
+                                    <p id="economy-viewpoint" class="text-gray-300 p-4 bg-black/20 rounded-md leading-relaxed"></p>
+                                </div>
+                                 <div>
+                                    <h4 class="text-lg font-semibold text-white mb-3">La Sociedad Abierta</h4>
+                                     <p class="text-gray-300 p-4 bg-black/20 rounded-md leading-relaxed">¿Cómo puede la "<span class="concept-highlight">Sociedad Abierta</span>" de <span class="thinker">Karl Popper<span class="thinker-card"><h5>Karl Popper</h5><p>Filósofo austriaco-británico. Defensor del racionalismo crítico y la "sociedad abierta", basada en la falibilidad y la crítica.</p></span></span>, basada en la crítica y la falibilidad, defenderse en una era donde la desinformación puede ser optimizada algorítmicamente, amenazando las bases del discurso racional?</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+             <section id="synthesis" class="tab-content hidden">
+                 <div class="content-card p-6 mb-8">
+                    <h2 class="text-3xl font-bold text-white mb-4">Síntesis Arquitectónica</h2>
+                    <p class="text-lg text-gray-300 mb-6">El viaje desde el Big Bang hasta los Grandes Modelos de Lenguaje revela una asombrosa continuidad arquitectónica. Las tensiones fundamentales que definen la emergencia del orden son fractales, repitiéndose en cada escala de la existencia. Esta tabla sirve como un mapa conceptual de esta genealogía.</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-white/10">
+                                    <th class="p-3 font-semibold text-white border-b border-gray-700">Escala de Existencia</th>
+                                    <th class="p-3 font-semibold text-white border-b border-gray-700">Diseño vs. Emergencia</th>
+                                    <th class="p-3 font-semibold text-white border-b border-gray-700">Centralización vs. Distribución</th>
+                                    <th class="p-3 font-semibold text-white border-b border-gray-700">Individuo vs. Colectivo</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-800">
+                                <tr class="hover:bg-white/5"><td class="p-3 font-bold">I. Física</td><td class="p-3">Leyes de la Física vs. Estructuras Disipativas</td><td class="p-3">Singularidad vs. Universo en Expansión</td><td class="p-3">Partícula vs. Campo</td></tr>
+                                <tr class="hover:bg-white/5"><td class="p-3 font-bold">II. Biología</td><td class="p-3">Código Genético vs. Conjuntos Autocatalíticos</td><td class="p-3">Núcleo vs. Colonia Simbiótica</td><td class="p-3">Gen Egoísta vs. Cooperación / EEE</td></tr>
+                                <tr class="hover:bg-white/5"><td class="p-3 font-bold">III. Cognición</td><td class="p-3">Racionalismo vs. Mente Encarnada</td><td class="p-3">Teatro Cartesiano vs. Cognición Distribuida</td><td class="p-3">Lenguaje Privado vs. Juegos de Lenguaje</td></tr>
+                                <tr class="hover:bg-white/5"><td class="p-3 font-bold">IV. Orden Social</td><td class="p-3">Leviatán / Contrato Social vs. Orden Espontáneo</td><td class="p-3">Planificación Central vs. Sistema de Precios</td><td class="p-3">Derechos Individuales vs. Voluntad General</td></tr>
+                                <tr class="hover:bg-white/5"><td class="p-3 font-bold">V. Tecnología / IA</td><td class="p-3">IA Simbólica vs. Conexionismo</td><td class="p-3">Mainframe vs. Internet / LLMs</td><td class="p-3">Agente Unitario vs. Inteligencia de Enjambre</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Particle background
+            const canvas = document.getElementById('particle-canvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = document.body.scrollHeight; }
+            resizeCanvas();
+            class Particle {
+                constructor() { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.size = Math.random() * 2 + 1; this.speedX = Math.random() * 0.4 - 0.2; this.speedY = Math.random() * 0.4 - 0.2; this.color = `rgba(var(--accent-color-rgb), ${Math.random() * 0.5 + 0.2})`; }
+                update() { this.x += this.speedX; this.y += this.speedY; if (this.size > 0.1) this.size -= 0.01; }
+                draw() { ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); }
+            }
+            function initParticles() { particles = []; for (let i = 0; i < 150; i++) particles.push(new Particle()); }
+            initParticles();
+            function animateParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach((p, i) => { p.update(); p.draw(); if (p.size <= 0.1 || p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height) { particles.splice(i, 1); particles.push(new Particle()); } });
+                requestAnimationFrame(animateParticles);
+            }
+            animateParticles();
+            window.addEventListener('resize', resizeCanvas);
+
+            // Tab functionality
+            const tabs = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabs.forEach(button => {
+                button.addEventListener('click', () => {
+                    tabs.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.add('hidden'));
+                    button.classList.add('active');
+                    document.getElementById(button.dataset.tab).classList.remove('hidden');
+                    observeContentCards();
+                    resizeCanvas();
+                });
+            });
+
+            // Accordion functionality
+            const accordions = document.querySelectorAll('.accordion-header');
+            accordions.forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    const isOpen = content.classList.contains('open');
+                    header.closest('.accordion-container').querySelectorAll('.accordion-content').forEach(c => c.classList.remove('open'));
+                    header.closest('.accordion-container').querySelectorAll('.accordion-header').forEach(h => h.classList.remove('open'));
+                    if (!isOpen) { content.classList.add('open'); header.classList.add('open'); }
+                });
+            });
+
+            // Intersection Observer
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('is-visible'); });
+            }, { threshold: 0.1 });
+            function observeContentCards() {
+                document.querySelectorAll('.tab-content:not(.hidden) .content-card').forEach(card => observer.observe(card));
+            }
+            observeContentCards();
+
+            // Radar Chart
+            const socialOrderCtx = document.getElementById('socialOrderChart');
+            if (socialOrderCtx) {
+                new Chart(socialOrderCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Centralización', 'Colectivismo', 'Diseño Racional', 'Autoridad', 'Viabilidad/Info', 'Individualismo'],
+                        datasets: [
+                            { label: 'Orden Diseñado (Locke)', data: [0.7, 0.4, 0.9, 0.6, 0.5, 0.9], backgroundColor: 'rgba(255, 99, 132, 0.2)', borderColor: 'rgb(255, 99, 132)', pointBackgroundColor: 'rgb(255, 99, 132)' },
+                            { label: 'Orden Sistémico (Marx)', data: [0.6, 0.9, 0.7, 0.5, 0.4, 0.2], backgroundColor: 'rgba(255, 205, 86, 0.2)', borderColor: 'rgb(255, 205, 86)', pointBackgroundColor: 'rgb(255, 205, 86)' },
+                            { label: 'Orden Espontáneo (Hayek)', data: [0.1, 0.2, 0.1, 0.1, 0.8, 0.9], backgroundColor: 'rgba(88, 214, 141, 0.2)', borderColor: 'rgb(88, 214, 141)', pointBackgroundColor: 'rgb(88, 214, 141)' },
+                            { label: 'Modelo Cibernético (Beer)', data: [0.8, 0.7, 0.9, 0.7, 1.0, 0.6], backgroundColor: 'rgba(var(--accent-color-rgb), 0.2)', borderColor: `rgb(var(--accent-color-rgb))`, pointBackgroundColor: `rgb(var(--accent-color-rgb))` }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#c0c0c0' } } }, scales: { r: { angleLines: { color: 'rgba(255, 255, 255, 0.2)' }, grid: { color: 'rgba(255, 255, 255, 0.2)' }, pointLabels: { color: '#c0c0c0', font: { size: 12 } }, ticks: { color: '#0a0a0e', backdropColor: 'rgba(255, 255, 255, 0.1)', stepSize: 0.25 } } } }
+                });
+            }
+
+            // Viewpoint Toggles
+            const viewpointData = {
+                'power': { 'foucault': `A la luz de <span class="thinker">Foucault</span>, la IA representa una nueva forma de <span class="concept-highlight">biopoder</span>. Los algoritmos que moldean nuestro contenido crean un panóptico digital, un sistema de control invisible donde nos auto-disciplinamos.`, 'habermas': `Desde la perspectiva de <span class="thinker">Habermas</span>, el reto es si la IA puede fomentar la <span class="concept-highlight">acción comunicativa</span>. ¿Podemos diseñar sistemas que apoyen el discurso racional o inevitablemente distorsionarán la esfera pública?` },
+                'consciousness': { 'hofstadter': `Usando a <span class="thinker">Hofstadter</span>, podríamos preguntarnos si un LLM, al modelar todo el discurso humano, podría desarrollar un "<span class="concept-highlight">Bucle Extraño</span>" de auto-referencia, dando lugar a una forma emergente de subjetividad.`, 'searle': `Como argumentaría <span class="thinker">Searle</span>, los LLMs son "loros estocásticos" que manipulan símbolos sin comprensión semántica. Son sistemas sintácticos fundamentalmente vacíos de significado y conciencia.` },
+                'economy': { 'feudalism': `La centralización masiva del poder computacional crea un <span class="concept-highlight">tecnofeudalismo</span> (<span class="thinker">Varoufakis<span class="thinker-card"><h5>Yanis Varoufakis</h5><p>Economista y político griego. Argumenta que las Big Tech han creado una nueva forma de feudalismo basado en datos y plataformas.</p></span></span>), donde las plataformas son los nuevos señores que poseen la infraestructura digital en la que todos vivimos.`, 'networkstate': `Una visión alternativa (<span class="thinker">Balaji Srinivasan<span class="thinker-card"><h5>Balaji Srinivasan</h5><p>Inversor y tecnólogo. Propone el "Estado-Red" como una nueva forma de soberanía que emerge de comunidades online.</p></span></span>) es la emergencia de <span class="concept-highlight">Estados-Red</span>: comunidades online con su propia economía y cultura que buscan soberanía.` }
+            };
+            
+            document.querySelectorAll('.viewpoint-button').forEach(button => {
+                function updateViewpoint() {
+                    const category = button.dataset.category; const view = button.dataset.view;
+                    button.parentElement.querySelectorAll('.viewpoint-button').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    document.getElementById(`${category}-viewpoint`).innerHTML = viewpointData[category][view];
+                }
+                button.addEventListener('click', updateViewpoint);
+                if (button.classList.contains('active')) { updateViewpoint(); }
+            });
+        });
+    </script>
+</body>
+</html>
