@@ -870,151 +870,154 @@
                     }
                 });
             }
-
-            // --- SIMULACIÓN JUEGO DE LA VIDA ---
-            const vizContainer = document.getElementById('visualization');
-            let width = vizContainer.clientWidth - 20;
-            const cellSize = 10;
-            let height = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 600;
-            let cols = Math.floor(width / cellSize);
-            let rows = Math.floor(height / cellSize);
-
-            const svg = d3.select("#visualization")
-                .append("svg")
-                .attr("width", width)
-                .attr("height", height)
-                .style("background", "rgba(0, 0, 0, 0.9)")
-                .attr("rx", 12);
-
-            let grid = Array(cols).fill().map(() => Array(rows).fill(0));
-            let generation = 0;
-            let density = 0.3;
-            let speed = 500;
-            let isRunning = true;
-            let animationId = null;
-
-            d3.select("#density").on("input", function() {
-                density = +this.value / 100;
-                d3.select("#densityValue").text(this.value);
-            });
-            d3.select("#speed").on("input", function() {
-                speed = +this.value;
-                d3.select("#speedValue").text(this.value);
-                if (isRunning) {
-                    clearInterval(animationId);
-                    animationId = setInterval(step, speed);
-                }
-            });
-
-            function resetSimulation() {
-                width = vizContainer.clientWidth - 20;
-                height = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 600;
-                cols = Math.floor(width / cellSize);
-                rows = Math.floor(height / cellSize);
-                svg.attr("width", width).attr("height", height);
-                grid = Array(cols).fill().map(() => Array(rows).fill(0));
-                generation = 0;
-
-                for (let x = 0; x < cols; x++) {
-                    for (let y = 0; y < rows; y++) {
-                        grid[x][y] = Math.random() < density ? 1 : 0;
-                    }
-                }
-
-                updateVisualization();
-                if (isRunning) {
-                    clearInterval(animationId);
-                    animationId = setInterval(step, speed);
-                }
-            }
-
-            function toggleSimulation() {
-                isRunning = !isRunning;
-                if (isRunning) {
-                    animationId = setInterval(step, speed);
-                } else {
-                    clearInterval(animationId);
-                }
-            }
-
-            function computeNextGeneration() {
-                const newGrid = grid.map(row => [...row]);
-                for (let x = 0; x < cols; x++) {
-                    for (let y = 0; y < rows; y++) {
-                        const neighbors = countNeighbors(x, y);
-                        if (grid[x][y] === 1) {
-                            newGrid[x][y] = (neighbors === 2 || neighbors === 3) ? 1 : 0;
-                        } else {
-                            newGrid[x][y] = (neighbors === 3) ? 1 : 0;
-                        }
-                    }
-                }
-                return newGrid;
-            }
-
-            function countNeighbors(x, y) {
-                let count = 0;
-                for (let dx = -1; dx <= 1; dx++) {
-                    for (let dy = -1; dy <= 1; dy++) {
-                        if (dx === 0 && dy === 0) continue;
-                        const nx = x + dx;
-                        const ny = y + dy;
-                        if (isValid(nx, ny)) count += grid[nx][ny];
-                    }
-                }
-                return count;
-            }
-
-            function isValid(x, y) {
-                return x >= 0 && x < cols && y >= 0 && y < rows;
-            }
-
-            function step() {
-                grid = computeNextGeneration();
-                generation++;
-                updateVisualization();
-            }
-
-            function updateVisualization() {
-                const liveCells = [];
-                let liveCount = 0;
-                for (let x = 0; x < cols; x++) {
-                    for (let y = 0; y < rows; y++) {
-                        if (grid[x][y] === 1) {
-                            liveCells.push({ x: x * cellSize + cellSize / 2, y: y * cellSize + cellSize / 2 });
-                            liveCount++;
-                        }
-                    }
-                }
-
-                const circles = svg.selectAll("circle")
-                    .data(liveCells, d => `${d.x}-${d.y}`);
-
-                circles.exit().remove();
-
-                circles.enter()
-                    .append("circle")
-                    .attr("r", cellSize / 2)
-                    .attr("class", "circle-live")
-                    .merge(circles)
-                    .attr("cx", d => d.x)
-                    .attr("cy", d => d.y);
-
-                d3.select("#status").text(`Generación: ${generation}, Células vivas: ${liveCount}`);
-            }
-
-            function resize() {
-                width = vizContainer.clientWidth - 20;
-                height = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 600;
-                cols = Math.floor(width / cellSize);
-                rows = Math.floor(height / cellSize);
-                svg.attr("width", width).attr("height", height);
-                resetSimulation();
-            }
-            window.addEventListener("resize", resize);
-
-            resetSimulation();
         });
+
+        // --- SIMULACIÓN JUEGO DE LA VIDA ---
+        const vizContainer = document.getElementById('visualization');
+        let width = vizContainer.clientWidth - 20;
+        const cellSize = 10;
+        let height = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 600;
+        let cols = Math.floor(width / cellSize);
+        let rows = Math.floor(height / cellSize);
+
+        const svg = d3.select("#visualization")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .style("background", "rgba(0, 0, 0, 0.9)")
+            .attr("rx", 12);
+
+        let grid = Array(cols).fill().map(() => Array(rows).fill(0));
+        let generation = 0;
+        let density = 0.3;
+        let speed = 500;
+        let isRunning = true;
+        let animationId = null;
+
+        d3.select("#density").on("input", function() {
+            density = +this.value / 100;
+            d3.select("#densityValue").text(this.value);
+        });
+
+        d3.select("#speed").on("input", function() {
+            speed = +this.value;
+            d3.select("#speedValue").text(this.value);
+            if (isRunning) {
+                clearInterval(animationId);
+                animationId = setInterval(step, speed);
+            }
+        });
+
+        function resetSimulation() {
+            width = vizContainer.clientWidth - 20;
+            height = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 600;
+            cols = Math.floor(width / cellSize);
+            rows = Math.floor(height / cellSize);
+            svg.selectAll("*").remove(); // Clear existing SVG elements
+            svg.attr("width", width).attr("height", height);
+            grid = Array(cols).fill().map(() => Array(rows).fill(0));
+            generation = 0;
+
+            for (let x = 0; x < cols; x++) {
+                for (let y = 0; y < rows; y++) {
+                    grid[x][y] = Math.random() < density ? 1 : 0;
+                }
+            }
+
+            updateVisualization();
+            if (isRunning) {
+                clearInterval(animationId);
+                animationId = setInterval(step, speed);
+            }
+        }
+
+        function toggleSimulation() {
+            isRunning = !isRunning;
+            if (isRunning) {
+                animationId = setInterval(step, speed);
+            } else {
+                clearInterval(animationId);
+            }
+        }
+
+        function computeNextGeneration() {
+            const newGrid = grid.map(row => [...row]);
+            for (let x = 0; x < cols; x++) {
+                for (let y = 0; y < rows; y++) {
+                    const neighbors = countNeighbors(x, y);
+                    if (grid[x][y] === 1) {
+                        newGrid[x][y] = (neighbors === 2 || neighbors === 3) ? 1 : 0;
+                    } else {
+                        newGrid[x][y] = (neighbors === 3) ? 1 : 0;
+                    }
+                }
+            }
+            return newGrid;
+        }
+
+        function countNeighbors(x, y) {
+            let count = 0;
+            for (let dx = -1; dx <= 1; dx++) {
+                for (let dy = -1; dy <= 1; dy++) {
+                    if (dx === 0 && dy === 0) continue;
+                    const nx = x + dx;
+                    const ny = y + dy;
+                    if (isValid(nx, ny)) count += grid[nx][ny];
+                }
+            }
+            return count;
+        }
+
+        function isValid(x, y) {
+            return x >= 0 && x < cols && y >= 0 && y < rows;
+        }
+
+        function step() {
+            grid = computeNextGeneration();
+            generation++;
+            updateVisualization();
+        }
+
+        function updateVisualization() {
+            const liveCells = [];
+            let liveCount = 0;
+            for (let x = 0; x < cols; x++) {
+                for (let y = 0; y < rows; y++) {
+                    if (grid[x][y] === 1) {
+                        liveCells.push({ x: x * cellSize + cellSize / 2, y: y * cellSize + cellSize / 2 });
+                        liveCount++;
+                    }
+                }
+            }
+
+            const circles = svg.selectAll("circle")
+                .data(liveCells, d => `${d.x}-${d.y}`);
+
+            circles.exit().remove();
+
+            circles.enter()
+                .append("circle")
+                .attr("r", cellSize / 2)
+                .attr("class", "circle-live")
+                .merge(circles)
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y);
+
+            d3.select("#status").text(`Generación: ${generation}, Células vivas: ${liveCount}`);
+        }
+
+        function resize() {
+            width = vizContainer.clientWidth - 20;
+            height = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 600;
+            cols = Math.floor(width / cellSize);
+            rows = Math.floor(height / cellSize);
+            svg.selectAll("*").remove(); // Clear existing SVG elements
+            svg.attr("width", width).attr("height", height);
+            resetSimulation();
+        }
+
+        window.addEventListener("resize", resize);
+        resetSimulation();
     </script>
 </body>
 </html>
