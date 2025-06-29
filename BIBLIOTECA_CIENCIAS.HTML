@@ -4,89 +4,249 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Biblioteca Física</title>
-    <!-- Fuente Orbitron para el estilo cyberpunk -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Librería D3.js para visualización dinámica -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/phosphor-icons"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
-        /* Estilo base del cuerpo */
+        :root {
+            --bg-color: #000508;
+            --primary-text: #00FFC2;
+            --primary-glow: #00FFFF;
+            --secondary-glow: #00FF00;
+            --font-main: 'Orbitron', sans-serif;
+            --nav-height: 70px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
         body {
-            background-color: #000000; /* Fondo negro */
-            color: #00FF00; /* Verde neón */
-            font-family: 'Orbitron', sans-serif; /* Fuente futurista */
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
+            background-color: var(--bg-color);
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
             overflow-x: hidden;
         }
-        /* Contenedor principal */
-        .main-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-            box-sizing: border-box;
+        body.menu-open { overflow: hidden; }
+
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: var(--nav-height);
+            background: rgba(0, 10, 15, 0.6);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+            display: flex;
+            justify-content: center;
         }
-        /* Encabezado */
-        .header {
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1440px;
+            padding: 0 1rem;
+        }
+
+        .nav-logo a {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            text-shadow: 0 0 8px var(--primary-glow);
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            list-style: none;
+            gap: 0.5rem;
+        }
+
+        .nav-container > li {
             position: relative;
-            height: 50vh;
-            background: url('https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center/cover;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-container > li > a {
+            color: var(--primary-text);
+            text-decoration: none;
+            font-size: clamp(0.9em, 1.2vw, 1.05em);
+            font-weight: 500;
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+
+        .nav-container > li > a:hover {
+            color: #FFFFFF;
+            text-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            stroke-width: 1.5;
+        }
+
+        .mega-menu {
+            position: fixed;
+            top: var(--nav-height);
+            left: 50%;
+            transform: translateX(-50%) scale(0.95);
+            background: rgba(0, 15, 20, 0.9);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--primary-glow);
+            border-radius: 10px;
+            min-width: clamp(300px, 80vw, 950px);
+            max-width: 95vw;
+            padding: 2rem;
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, transform 0.3s, visibility 0s 0.3s;
+        }
+
+        .mega-menu.is-active {
+            display: grid;
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) scale(1);
+            transition: opacity 0.3s, transform 0.3s, visibility 0s;
+        }
+
+        .mega-menu.mega-menu-single {
+            min-width: 280px;
+            max-width: 350px;
+            grid-template-columns: 1fr;
+        }
+
+        .mega-menu h3 {
+            color: var(--primary-glow);
+            font-size: 1.1em;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 5px var(--primary-glow);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+            padding-bottom: 0.75rem;
+        }
+
+        .mega-menu ul {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            list-style: none;
+        }
+
+        .mega-menu a {
+            font-size: 0.9em;
+            color: var(--primary-text);
+            text-decoration: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            transition: color 0.3s, padding-left 0.3s, background-color 0.3s;
+        }
+
+        .mega-menu a:hover {
+            color: #000;
+            background-color: var(--primary-glow);
+            padding-left: 1.25rem;
+        }
+
+        #particles-js {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .hero {
+            padding-top: var(--nav-height);
+            height: 100vh;
+            min-height: 600px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-            color: #00FFFF; /* Cian neón */
-            text-shadow: 0 0 15px #00FF00; /* Sombra verde */
+        }
+
+        .hero-content {
             animation: fadeIn 2s ease-in;
         }
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7); /* Capa oscura */
-            z-index: 1;
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 10vw, 5.5rem);
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow);
+            animation: pulse-glow 3s infinite alternate;
         }
-        .header h1, .header p {
-            position: relative;
-            z-index: 2;
+
+        .hero p {
+            font-size: clamp(1rem, 4vw, 1.3rem);
+            max-width: 800px;
+            margin: 1.5rem auto 0;
+            text-shadow: 0 0 5px #000;
         }
-        .header h1 {
-            font-size: clamp(2em, 4vw, 4em); /* Tamaño adaptable */
-            animation: glow 2s infinite alternate;
+
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
         }
-        @keyframes glow {
-            from { text-shadow: 0 0 5px #00FF00; }
-            to { text-shadow: 0 0 20px #00FFFF; }
-        }
+
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
-        /* Secciones */
-        .section {
-            margin: 40px 0;
-            padding: 25px;
-            border: 2px solid #00FFFF; /* Borde cian */
-            box-shadow: 0 0 20px #00FFFF; /* Sombra brillante */
-            background: rgba(0, 255, 255, 0.05); /* Fondo traslúcido */
-            border-radius: 10px;
-            box-sizing: border-box;
-            overflow-x: auto; /* Scroll horizontal para tablas en móviles */
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            position: relative;
+            z-index: 2;
         }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .content {
+            grid-column: 1 / 2;
+        }
+
+        .section {
+            padding: clamp(1.5rem, 5vw, 3rem);
+            background: linear-gradient(145deg, rgba(0, 40, 40, 0.5), rgba(0, 20, 20, 0.4));
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
         h2 {
-            color: #00FF00;
-            text-shadow: 0 0 8px #00FF00;
-            border-bottom: 1px solid #00FFFF;
-            padding-bottom: 10px;
-            margin: 0 0 15px 0;
-            font-size: 1.5em;
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            color: var(--primary-text);
+            text-shadow: 0 0 8px var(--secondary-glow);
+            border-bottom: 1px solid var(--primary-glow);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
             text-align: center;
         }
-        /* Filtros */
+
         .filters {
             margin-bottom: 20px;
             display: flex;
@@ -94,314 +254,556 @@
             gap: 10px;
             justify-content: center;
         }
+
         select {
-            background: #000000;
-            border: 2px solid #00FFFF;
-            color: #00FF00;
+            background: var(--bg-color);
+            border: 2px solid var(--primary-glow);
+            color: var(--primary-text);
             padding: 8px;
-            font-family: 'Orbitron', sans-serif;
+            font-family: var(--font-main);
             border-radius: 5px;
             transition: all 0.3s ease;
         }
+
         select:hover, select:focus {
-            background: #00FFFF;
+            background: var(--primary-glow);
             color: #000000;
             outline: none;
         }
-        /* Tabla */
+
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.95em;
+            font-size: clamp(0.9rem, 2vw, 0.95rem);
         }
+
         th, td {
             padding: 10px;
-            border: 1px solid #00FFFF;
+            border: 1px solid var(--primary-glow);
             text-align: left;
         }
+
         th {
-            background: rgba(0, 255, 255, 0.1); /* Fondo cian traslúcido */
-            color: #00FFFF;
+            background: rgba(0, 255, 255, 0.1);
+            color: var(--primary-glow);
         }
+
         tr:nth-child(even) {
-            background: rgba(0, 255, 255, 0.03); /* Fondo alternado */
+            background: rgba(0, 255, 255, 0.03);
         }
+
         tr:hover {
-            background: rgba(0, 255, 255, 0.2); /* Hover brillante */
+            background: rgba(0, 255, 255, 0.2);
         }
-        /* Red D3.js */
+
         #network {
             width: 100%;
             height: 500px;
             background: rgba(0, 0, 0, 0.9);
-            border-radius: 5px;
+            border-radius: 12px;
             overflow: hidden;
         }
+
         .node circle {
-            stroke: #00FFFF;
+            stroke: var(--primary-glow);
             stroke-width: 2px;
             transition: all 0.3s ease;
         }
+
         .node.book circle {
-            fill: #00FF00; /* Verde para libros */
+            fill: var(--secondary-glow);
             r: 5;
         }
+
         .node.genre circle {
-            fill: #FF00FF; /* Magenta para géneros */
+            fill: var(--primary-glow);
             r: 10;
         }
+
         .node:hover circle {
-            fill: #FFFFFF;
+            fill: var(--primary-text);
             r: 12;
-            filter: drop-shadow(0 0 8px #00FFFF);
+            filter: drop-shadow(0 0 8px var(--primary-glow));
         }
+
         .node.selected circle {
-            fill: #FFFF00; /* Amarillo neón para nodos seleccionados */
-            stroke: #000000; /* Borde negro para contraste */
+            fill: var(--secondary-glow);
+            stroke: var(--bg-color);
             stroke-width: 3px;
-            r: 15; /* Tamaño mayor para destacar */
-            filter: drop-shadow(0 0 10px #FFFF00); /* Brillo amarillo */
+            r: 15;
+            filter: drop-shadow(0 0 10px var(--primary-glow));
         }
+
         .node text {
-            fill: #00FFFF;
-            font-family: 'Orbitron', sans-serif;
-            text-shadow: 0 0 5px #00FF00;
+            fill: var(--primary-text);
+            font-family: var(--font-main);
+            text-shadow: 0 0 5px var(--secondary-glow);
             font-size: 10px;
             pointer-events: none;
         }
+
         .node.selected text {
-            fill: #FFFFFF; /* Blanco para texto de nodos seleccionados */
-            text-shadow: 0 0 5px #000000; /* Sombra negra para contraste */
-            font-size: 12px; /* Ligeramente más grande */
+            fill: var(--primary-text);
+            text-shadow: 0 0 5px var(--bg-color);
+            font-size: 12px;
         }
+
         .link {
-            stroke: #00FF00;
+            stroke: var(--secondary-glow);
             stroke-opacity: 0.7;
             stroke-width: 1px;
         }
+
         .link.genre-link {
-            stroke: #FF00FF; /* Magenta para conexiones entre géneros */
+            stroke: var(--primary-glow);
             stroke-width: 2px;
             stroke-opacity: 0.9;
         }
-        .footer {
-            text-align: center;
-            padding: 30px;
-            color: #00FFFF;
-            border-top: 2px solid #00FF00;
-            margin-top: 40px;
-        }
+
         .chart-container {
             margin: 20px 0;
             padding: 20px;
-            border: 2px solid #00FFFF;
-            border-radius: 5px;
-            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid var(--primary-glow);
+            border-radius: 12px;
+            background: linear-gradient(145deg, rgba(0, 40, 40, 0.5), rgba(0, 20, 20, 0.4));
+            backdrop-filter: blur(5px);
         }
+
         .chart-container h3 {
-            color: #00FF00;
-            text-shadow: 0 0 8px #00FF00;
+            color: var(--secondary-glow);
+            text-shadow: 0 0 8px var(--secondary-glow);
             margin-bottom: 15px;
             text-align: center;
         }
+
         #bar-chart, #pie-chart, #theme-bar-chart, #treemap {
             width: 100%;
             max-width: 1200px;
             margin: 0 auto;
         }
+
         .bar {
-            fill: #00FF00;
+            fill: var(--secondary-glow);
             transition: fill 0.3s ease;
         }
+
         .bar:hover {
-            fill: #FFFF00;
+            fill: var(--primary-glow);
         }
+
         .bar-text {
-            fill: #00FFFF;
+            fill: var(--primary-text);
             font-size: 10px;
-            text-shadow: 0 0 5px #000000;
-            text-anchor: middle; /* Corregido sin comillas innecesarias */
+            text-shadow: 0 0 5px var(--bg-color);
+            text-anchor: middle;
         }
+
         .arc path {
-            stroke: #00FF00; /* Verde neón para bordes */
-            stroke-width: 4px; /* Borde grueso */
-            fill: #000000; /* Interior negro */
+            stroke: var(--secondary-glow);
+            stroke-width: 4px;
+            fill-opacity: 0.8;
             transition: opacity 0.3s ease;
         }
+
         .arc path:hover {
             opacity: 0.8;
         }
+
         .arc text {
-            fill: #00FFFF;
+            fill: var(--primary-text);
             font-size: 10px;
-            text-shadow: 0 0 5px #000000;
+            text-shadow: 0 0 5px var(--bg-color);
             pointer-events: none;
         }
+
         .treemap-rect {
-            stroke: #00FF00; /* Verde neón para bordes */
-            stroke-width: 4px; /* Borde grueso */
-            fill: #000000; /* Interior negro */
+            stroke: var(--secondary-glow);
+            stroke-width: 4px;
             fill-opacity: 0.8;
             transition: fill-opacity 0.3s ease;
         }
+
         .treemap-rect:hover {
             fill-opacity: 1;
         }
+
         #treemap-info {
-            color: #00FF00;
-            text-shadow: 0 0 8px #00FF00;
+            color: var(--secondary-glow);
+            text-shadow: 0 0 8px var(--secondary-glow);
             font-size: 14px;
             margin-top: 10px;
             text-align: center;
         }
-        /* Media Queries para diseño responsivo */
+
+        .footer {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: var(--primary-glow);
+            border-top: 1px solid var(--primary-text);
+            margin-top: 2rem;
+            grid-column: 1 / 2;
+        }
+
+        @media (max-width: 1023px) {
+            .nav-container {
+                display: none;
+                position: fixed;
+                top: var(--nav-height);
+                left: 0;
+                width: 100%;
+                height: calc(100vh - var(--nav-height));
+                background: rgba(0, 5, 8, 0.98);
+                backdrop-filter: blur(15px);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                transform: translateY(-110%);
+                transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+                padding: 2rem;
+            }
+
+            body.menu-open .nav-container {
+                display: flex;
+                transform: translateY(0);
+            }
+
+            .nav-container li {
+                width: 100%;
+                text-align: center;
+            }
+
+            .nav-container > li > a {
+                padding: 1rem;
+                width: 100%;
+                font-size: 1.5em;
+                justify-content: center;
+            }
+
+            .mega-menu {
+                position: static;
+                display: grid;
+                opacity: 1;
+                transform: none;
+                visibility: visible;
+                width: 100%;
+                box-shadow: none;
+                border: none;
+                padding: 1rem 0 1.5rem 0;
+                background: none;
+                backdrop-filter: none;
+                grid-template-columns: 1fr;
+                border-top: 1px solid rgba(0, 255, 255, 0.2);
+                margin-top: 1rem;
+            }
+
+            .mega-menu h3 {
+                text-align: center;
+                font-size: 1.8em;
+            }
+
+            .mega-menu a {
+                font-size: 1.5em;
+                padding: 0.8rem 1rem 0.8rem 2.5rem;
+            }
+
+            .mega-menu a::before {
+                content: '■';
+                color: var(--primary-glow);
+                position: absolute;
+                left: 0.5rem;
+                top: 50%;
+                transform: translateY(-50%) scale(0.6);
+                font-size: 1.5em;
+            }
+
+            .menu-toggle {
+                display: block;
+                width: 30px;
+                height: 22px;
+                background: none;
+                border: none;
+                cursor: pointer;
+            }
+
+            .icon-bar {
+                display: block;
+                width: 100%;
+                height: 3px;
+                background-color: var(--primary-text);
+                margin: 6px 0;
+                transition: all 0.3s ease-in-out;
+                border-radius: 2px;
+            }
+
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) {
+                transform: rotate(45deg) translate(7px, 7px);
+            }
+
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) {
+                opacity: 0;
+            }
+
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) {
+                transform: rotate(-45deg) translate(7px, -7px);
+            }
+        }
+
         @media (max-width: 768px) {
-            .main-container {
-                padding: 10px;
+            .hero {
+                height: 60vh;
+                min-height: 400px;
             }
-            .header {
-                height: 40vh;
+
+            .hero h1 {
+                font-size: clamp(1.5rem, 5vw, 3rem);
             }
-            .header h1 {
-                font-size: clamp(1.5em, 3vw, 2.5em);
+
+            .hero p {
+                font-size: clamp(0.9rem, 3vw, 1.1rem);
             }
-            .header p {
-                font-size: 0.9em;
-            }
+
             .section {
                 margin: 20px 0;
                 padding: 15px;
             }
-            h2 {
-                font-size: 1.2em;
+
+            #network {
+                height: 400px;
             }
+
             table {
-                font-size: 0.85em;
+                font-size: clamp(0.8rem, 1.8vw, 0.85rem);
             }
+
             th, td {
                 padding: 8px;
             }
-            #network {
-                height: 400px; /* Reducir altura en tablets */
-            }
-            .chart-container {
-                padding: 15px;
-            }
-        }
-        @media (max-width: 480px) {
-            .header {
-                height: 30vh;
-            }
-            .header h1 {
-                font-size: clamp(1.2em, 2.5vw, 2em);
-            }
-            .header p {
-                font-size: 0.8em;
-            }
-            .section {
-                margin: 15px 0;
-                padding: 10px;
-            }
-            h2 {
-                font-size: 1em;
-            }
-            table {
-                font-size: 0.75em;
-            }
-            th, td {
-                padding: 6px;
-            }
+
             .filters {
                 flex-direction: column;
                 align-items: center;
             }
+
             select {
                 width: 100%;
                 max-width: 200px;
             }
-            #network {
-                height: 300px; /* Reducir altura en móviles */
-            }
-            .node text {
-                font-size: 8px; /* Texto más pequeño en móviles */
-            }
-            .node.selected text {
-                font-size: 10px; /* Ajuste para móviles */
-            }
+
             .chart-container {
-                padding: 10px;
+                padding: 15px;
             }
+
             .bar-text, .arc text {
-                font-size: 8px; /* Texto más pequeño en móviles */
+                font-size: 8px;
             }
+
+            .node text {
+                font-size: 8px;
+            }
+
+            .node.selected text {
+                font-size: 10px;
+            }
+
             #treemap-info {
                 font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero {
+                height: 50vh;
+                min-height: 300px;
+            }
+
+            .hero h1 {
+                font-size: clamp(1.2rem, 4vw, 2rem);
+            }
+
+            .hero p {
+                font-size: clamp(0.8rem, 2.5vw, 1rem);
+            }
+
+            .section {
+                margin: 15px 0;
+                padding: 10px;
+            }
+
+            h2 {
+                font-size: clamp(1rem, 3.5vw, 1.2rem);
+            }
+
+            table {
+                font-size: clamp(0.7rem, 1.6vw, 0.75rem);
+            }
+
+            th, td {
+                padding: 6px;
+            }
+
+            #network {
+                height: 300px;
+            }
+
+            .chart-container {
+                padding: 10px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <!-- Encabezado -->
-        <div class="header">
+    <div id="particles-js"></div>
+    <nav>
+        <div class="nav-content">
+            <div class="nav-logo">
+                <a href="#inicio">O.C.V.M.</a>
+            </div>
+            <ul class="nav-container" id="nav-menu">
+                <li><a href="#inicio"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>Inicio</a></li>
+                <li><a href="#"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>Origen del Cosmos</a>
+                    <div class="mega-menu">
+                        <div><h3>Sistemas Complejos</h3><ul><li><a href="GAME_OF_LIFE.HTML">Juego de la Vida (Conway)</a></li><li><a href="GAME_OF_LIFE3D.HTML">Juego de la Vida (3D)</a></li></ul></div>
+                        <div><h3>Principios Fundamentales</h3><ul><li><a href="#">(Próximamente: Física)</a></li><li><a href="#">(Próximamente: Cosmología)</a></li></ul></div>
+                    </div>
+                </li>
+                <li><a href="#"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v4.586a1 1 0 01-.293.707l-2 2a1 1 0 01-1.414 0l-2-2A1 1 0 018 9.586V5l-1-1z" /></svg>Origen de la Vida</a>
+                    <div class="mega-menu">
+                        <div><h3>Fundamentos de Biología</h3><ul><li><a href="#">Introducción a la Célula</a></li><li><a href="CURSO_BIOLOGIA_CELULAR.HTML">Curso Biología Celular</a></li><li><a href="HISTOLOGIA.html">Histología y Tejidos</a></li><li><a href="cuerpo humano completo plantilla Lt.html">Anatomía Humana</a></li></ul></div>
+                        <div><h3>Autopoiesis</h3><ul><li><a href="AUTOPOIESIS.HTML">Simulación Autopoiesis</a></li><li><a href="AUTOPOIESIS_3D.HTML">Simulación Autopoiesis (3D)</a></li><li><a href="Autopoiesis_Fractal00.html">Simulación Autopoiesis (Fractal)</a></li><li><a href="Paper_Varela_1974.html">Paper de Varela (1974)</a></li></ul></div>
+                        <div><h3>Herramientas</h3><ul><li><a href="https://leolib87.github.io/herbario/">Herbario Digital</a></li><li><a href="WESTERNCHILE.HTML">Proveedores Western Blot</a></li><li><a href="histologychile.html">Proveedores Histología</a></li><li><a href="proveedores_biologia.html">Proveedores Biología</a></li></ul></div>
+                    </div>
+                </li>
+                <li><a href="#"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>Origen de la Mente</a>
+                    <div class="mega-menu">
+                        <div><h3>Ciencias Cognitivas</h3><ul><li><a href="#">Mente, Lenguaje y Realidad</a></li><li><a href="#">Mente Encarnada y Cognición</a></li><li><a href="#">IA y Sistemas Complejos</a></li><li><a href="Feno_style.html">Aproximación Fenomenológica</a></li></ul></div>
+                        <div><h3>Autores</h3><ul><li><a href="PAPERS_VARELA.HTML">Publicaciones de Varela</a></li><li><a href="CITAS.HTML">Fragmentos de Mentes</a></li><li><a href="MAPEO_FILO_MENTE_CHILE.HTML">Mapeo Filosofía Mente (Chile)</a></li></ul></div>
+                        <div><h3>Reflexiones</h3><ul><li><a href="peliculas.html">Reflexiones en el Cine</a></li><li><a href="MUSICA.HTML">Letras de Canciones</a></li></ul></div>
+                    </div>
+                </li>
+                <li><a href="#"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>Cartografías del Saber</a>
+                    <div class="mega-menu">
+                        <div><h3>Redes y Datos</h3><ul><li><a href="#">Introducción a las Redes</a></li><li><a href="#">Mapa Conceptual General</a></li><li><a href="RED POLITICOS.html">Red de Políticos</a></li></ul></div>
+                        <div><h3>Mapas Conceptuales</h3><ul><li><a href="MAPA_MENTAL_TRABAJO.HTML">Mapa Mental "Trabajo"</a></li><li><a href="VARELA_CARTOGRAFIA.HTML">Cartografía Varela (3D)</a></li></ul></div>
+                        <div><h3>Herramientas Digitales</h3><ul><li><a href="Herramientas_Investigacion_definitiva.html">Guía de Herramientas</a></li><li><a href="IAS_BUSQUEDA.HTML">Buscador de IAs</a></li></ul></div>
+                        <div><h3>Recursos</h3><ul><li><a href="MI_BIBLIOTECA.HTML">Biblioteca Humanidades</a></li><li><a href="BIBLIOTECA_CIENCIAS.HTML">Biblioteca Ciencias</a></li></ul></div>
+                    </div>
+                </li>
+                <li><a href="#"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v4.586a1 1 0 01-.293.707l-2 2a1 1 0 01-1.414 0l-2-2A1 1 0 018 9.586V5l-1-1z" /></svg>Laboratorio</a>
+                    <div class="mega-menu mega-menu-single">
+                        <div><h3>Laboratorio Experimental</h3><ul><li><a href="LEOLIB NEWS BLACK.HTML">Leolib News</a></li><li><a href="CHAT_LEO.HTML">Chat Leo</a></li><li><a href="horario_2025.html">Horario 2025</a></li><li><a href="HORARIOS_LAB.HTML">Horarios Lab</a></li><li><a href="INTEGRAL1_noq.HTML">Integral 1</a></li><li><a href="red 2.html">Red Tesis Enseñanza Cs.</a></li><li><a href="red3.html">Red Tesis Ejemplos</a></li><li><a href="web.moderna.html">Web Moderna (Test)</a></li><li><a href="web.three.html">Web Three.js (Test)</a></li><li><a href="totem.html">Totem 1</a></li><li><a href="totem2.html">Totem 2</a></li><li><a href="PROBANDO.HTML">Probando 1</a></li><li><a href="probando2gemini.html">Probando 2</a></li><li><a href="vida mente cosmos web deepresearcheada.html">VIDA MENTE COSMOS DEEP</a></li><li><a href="fondosX2.html">DasHboard fondos</a></li><li><a href="LAB1 BIOMOLECULAS.html">LAB I Biomoléculas</a></li><li><a href="web caos orden.html">Web Caos y Orden</a></li><li><a href="AI- ESCRITURA- INCLUYE SHADOW FINAL.html">AI Escritura</a></li></ul></div>
+                    </div>
+                </li>
+                <li><a href="#"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>Contacto</a></li>
+            </ul>
+            <button class="menu-toggle" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
+    </nav>
+    <div id="inicio" class="hero">
+        <div class="hero-content">
             <h1>Mi Biblioteca Física</h1>
             <p>Es Mi Universo Literario</p>
         </div>
-
-        <!-- Sección de la biblioteca -->
-        <div class="section" id="library">
-            <h2>Red de Conexiones Literarias por Género</h2>
-            <div id="network"></div>
-            <h2>Catálogo de Libros</h2>
-            <div class="filters">
-                <select id="genreFilter">
-                    <option value="">Todos los Géneros</option>
-                    <!-- Opciones se llenarán dinámicamente -->
-                </select>
-                <select id="themeFilter">
-                    <option value="">Todos los Temas</option>
-                    <!-- Opciones se llenarán dinámicamente -->
-                </select>
+    </div>
+    <div class="main-container">
+        <div class="grid-container">
+            <div class="content">
+                <section id="library" class="section">
+                    <h2>Red de Conexiones Literarias por Género</h2>
+                    <div id="network"></div>
+                    <h2>Catálogo de Libros</h2>
+                    <div class="filters">
+                        <select id="genreFilter"><option value="">Todos los Géneros</option></select>
+                        <select id="themeFilter"><option value="">Todos los Temas</option></select>
+                    </div>
+                    <table id="bookTable">
+                        <thead><tr><th>Título</th><th>Autor/Editor</th><th>Comentarios</th><th>Género</th><th>Tema</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </section>
             </div>
-            <table id="bookTable">
-                <thead>
-                    <tr>
-                        <th>Título</th>
-                        <th>Autor/Editor</th>
-                        <th>Comentarios</th>
-                        <th>Género</th>
-                        <th>Tema</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-
-        <!-- Pie de página con gráficos -->
-        <div class="footer">
-            <p>Explorando el Conocimiento | Febrero 2025</p>
-            <div class="chart-container">
-                <h3>Distribución por Género (Barras)</h3>
-                <div id="bar-chart"></div>
-            </div>
-            <div class="chart-container">
-                <h3>Distribución por Género (Torta)</h3>
-                <div id="pie-chart"></div>
-            </div>
-            <div class="chart-container">
-                <h3>Distribución por Tema (Barras)</h3>
-                <div id="theme-bar-chart"></div>
-            </div>
-            <div class="chart-container">
-                <h3>Libros por Autor (Treemap)</h3>
-                <div id="treemap"></div>
-                <div id="treemap-info"></div>
-            </div>
+            <footer class="footer">
+                <h2>Mi Biblioteca Física</h2>
+                <p>Explorando el Conocimiento | Febrero 2025</p>
+                <div class="chart-container">
+                    <h3>Distribución por Género (Barras)</h3>
+                    <div id="bar-chart"></div>
+                </div>
+                <div class="chart-container">
+                    <h3>Distribución por Género (Torta)</h3>
+                    <div id="pie-chart"></div>
+                </div>
+                <div class="chart-container">
+                    <h3>Distribución por Tema (Barras)</h3>
+                    <div id="theme-bar-chart"></div>
+                </div>
+                <div class="chart-container">
+                    <h3>Libros por Autor (Treemap)</h3>
+                    <div id="treemap"></div>
+                    <div id="treemap-info"></div>
+                </div>
+            </footer>
         </div>
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <script>
-        // Datos de los libros con géneros recatalogados para consistencia
+        particlesJS("particles-js", {
+            "particles": {
+                "number": { "value": 60, "density": { "enable": true, "value_area": 800 } },
+                "color": { "value": "#00ffff" },
+                "shape": { "type": "circle" },
+                "opacity": { "value": 0.5, "random": true },
+                "size": { "value": 2, "random": true },
+                "line_linked": { "enable": true, "distance": 150, "color": "#00ffc2", "opacity": 0.3, "width": 1 },
+                "move": { "enable": true, "speed": 1, "direction": "none", "random": true, "straight": false, "out_mode": "out" }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": true, "mode": "push" }, "resize": true },
+                "modes": { "grab": { "distance": 140, "line_linked": { "opacity": 0.7 } }, "push": { "particles_nb": 4 } }
+            },
+            "retina_detect": true
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            const navMenuContainer = document.getElementById('nav-menu');
+            menuToggleBtn.addEventListener('click', () => document.body.classList.toggle('menu-open'));
+            document.querySelectorAll('.nav-container a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth < 1024) document.body.classList.remove('menu-open');
+                });
+            });
+            if (window.matchMedia('(min-width: 1024px)').matches) {
+                document.querySelectorAll('.nav-container > li').forEach(item => {
+                    const megaMenu = item.querySelector('.mega-menu');
+                    if (megaMenu) {
+                        let leaveTimeout;
+                        const showMenu = () => {
+                            clearTimeout(leaveTimeout);
+                            document.querySelectorAll('.mega-menu.is-active').forEach(m => m !== megaMenu && m.classList.remove('is-active'));
+                            megaMenu.classList.add('is-active');
+                        };
+                        const startHideTimer = () => leaveTimeout = setTimeout(() => megaMenu.classList.remove('is-active'), 250);
+                        item.addEventListener('mouseenter', showMenu);
+                        item.addEventListener('mouseleave', startHideTimer);
+                        megaMenu.addEventListener('mouseenter', showMenu);
+                        megaMenu.addEventListener('mouseleave', startHideTimer);
+                    }
+                });
+            }
+        });
+
+        // Define CSS variables as JavaScript constants
+        const rootStyles = getComputedStyle(document.documentElement);
+        const secondaryGlow = rootStyles.getPropertyValue('--secondary-glow').trim();
+        const primaryText = rootStyles.getPropertyValue('--primary-text').trim();
+        const bgColor = rootStyles.getPropertyValue('--bg-color').trim();
+        const primaryGlow = rootStyles.getPropertyValue('--primary-glow').trim();
+
+        // Paste your full books data here
+         // --- DATOS DE LOS LIBROS ---
         const books = [
             { title: "Álgebra, Trigonometría y Geometría Analítica", author: "No identificado", comments: "Libro de matemáticas", genre: "Matemáticas", theme: "Álgebra, trigonometría" },
             { title: "Archivos de Biología y Medicina Experimentales", author: "No identificado", comments: "Libro sobre biología y medicina experimental", genre: "Ciencia", theme: "Biología y medicina experimental" },
@@ -449,30 +851,17 @@
             { title: "Zoología de los invertebrados", author: "R.D. Barnes", comments: "4ª edición, libro de zoología", genre: "Ciencia", theme: "Zoología, invertebrados" }
         ];
 
-        // Preparar datos para la red: nodos de libros y géneros
         const genres = [...new Set(books.map(book => book.genre))].sort();
-        const genreNodes = genres.map((genre, index) => ({
-            id: `genre-${index}`,
-            name: genre,
-            type: "genre"
-        }));
-        const bookNodes = books.map((book, index) => ({
-            id: `book-${index}`,
-            title: book.title,
-            genre: book.genre,
-            theme: book.theme,
-            type: "book"
-        }));
+        const genreNodes = genres.map((genre, index) => ({ id: `genre-${index}`, name: genre, type: "genre" }));
+        const bookNodes = books.map((book, index) => ({ id: `book-${index}`, title: book.title, genre: book.genre, theme: book.theme, type: "book" }));
         const nodes = [...genreNodes, ...bookNodes];
 
-        // Enlaces entre libros y sus géneros
         const bookLinks = bookNodes.map(bookNode => ({
             source: bookNode.id,
             target: genreNodes.find(genreNode => genreNode.name === bookNode.genre).id,
             type: "book-genre"
         }));
 
-        // Enlaces entre géneros: conectar todos los géneros al menos con uno
         const genreLinks = [];
         for (let i = 0; i < genreNodes.length; i++) {
             for (let j = i + 1; j < genreNodes.length; j++) {
@@ -484,41 +873,27 @@
                 const themesInGenre2 = new Set(booksInGenre2.map(b => b.theme));
                 const sharedThemes = [...themesInGenre1].filter(theme => themesInGenre2.has(theme));
                 if (sharedThemes.length > 0) {
-                    genreLinks.push({
-                        source: genreNodes[i].id,
-                        target: genreNodes[j].id,
-                        type: "genre-genre"
-                    });
+                    genreLinks.push({ source: genreNodes[i].id, target: genreNodes[j].id, type: "genre-genre" });
                 }
             }
         }
 
-        // Asegurar que todos los géneros estén conectados (conectar géneros aislados al menos con "Ciencia")
         const isolatedGenres = genreNodes.filter(gn => !genreLinks.some(gl => gl.source === gn.id || gl.target === gn.id));
         if (isolatedGenres.length > 0) {
-            const scienceGenre = genreNodes.find(gn => gn.name === "Ciencia");
+            const scienceGenre = genreNodes.find(gn => gn.name === "Ciencia") || genreNodes[0];
             isolatedGenres.forEach(ig => {
                 if (ig.id !== scienceGenre.id) {
-                    genreLinks.push({
-                        source: ig.id,
-                        target: scienceGenre.id,
-                        type: "genre-genre"
-                    });
+                    genreLinks.push({ source: ig.id, target: scienceGenre.id, type: "genre-genre" });
                 }
             });
         }
 
         const links = [...bookLinks, ...genreLinks];
 
-        // Configuración de la red D3.js
         const width = document.getElementById('network').clientWidth;
         const height = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 500;
 
-        const svg = d3.select("#network")
-            .append("svg")
-            .attr("width", width)
-            .attr("height", height);
-
+        const svg = d3.select("#network").append("svg").attr("width", width).attr("height", height);
         const simulation = d3.forceSimulation(nodes)
             .force("link", d3.forceLink(links).id(d => d.id).distance(d => d.type === "genre-genre" ? 150 : 100).strength(0.5))
             .force("charge", d3.forceManyBody().strength(-200))
@@ -527,38 +902,26 @@
             .force("x", d3.forceX(width / 2).strength(0.1))
             .force("y", d3.forceY(height / 2).strength(0.1));
 
-        const link = svg.append("g")
-            .attr("class", "links")
-            .selectAll("line")
-            .data(links)
-            .join("line")
-            .attr("class", d => `link ${d.type === "genre-genre" ? "genre-link" : ""}`);
+        const networkLinks = svg.append("g").attr("class", "links").selectAll("line").data(links).join("line")
+            .attr("class", d => `link ${d.type === "genre-genre" ? "genre-link" : ""}`)
+            .attr("stroke", d => d.type === "genre-genre" ? primaryGlow : secondaryGlow);
 
-        const node = svg.append("g")
-            .attr("class", "nodes")
-            .selectAll("g")
-            .data(nodes)
-            .join("g")
+        const node = svg.append("g").attr("class", "nodes").selectAll("g").data(nodes).join("g")
             .attr("class", d => `node ${d.type}`)
-            .call(d3.drag()
-                .on("start", dragStarted)
-                .on("drag", dragged)
-                .on("end", dragEnded))
+            .call(d3.drag().on("start", dragStarted).on("drag", dragged).on("end", dragEnded))
             .on("click", (event, d) => {
                 d3.selectAll(".node").classed("selected", false);
                 d3.select(event.currentTarget).classed("selected", true);
                 if (d.type === "genre") {
                     const genreFilter = document.getElementById('genreFilter');
                     genreFilter.value = d.name;
-                    const changeEvent = new Event('change');
-                    genreFilter.dispatchEvent(changeEvent);
+                    genreFilter.dispatchEvent(new Event('change'));
                 }
                 const selectedGenre = d.genre || (d.type === "genre" ? d.name : null);
                 if (selectedGenre) {
                     nodes.forEach(n => {
                         if (n !== d && (n.genre === selectedGenre || (n.type === "genre" && n.name === selectedGenre))) {
-                            const dx = n.x - d.x;
-                            const dy = n.y - d.y;
+                            const dx = n.x - d.x, dy = n.y - d.y;
                             const distance = Math.sqrt(dx * dx + dy * dy) || 1;
                             const force = 1000 / distance;
                             n.vx += (dx / distance) * force;
@@ -571,15 +934,17 @@
 
         node.append("circle")
             .attr("r", d => d.type === "genre" ? 10 : 5)
-            .attr("fill", d => d.type === "genre" ? "#FF00FF" : "#00FF00");
+            .attr("fill", d => d.type === "genre" ? primaryGlow : secondaryGlow)
+            .attr("stroke", primaryGlow);
 
         node.append("text")
             .attr("dy", -25)
             .attr("text-anchor", "middle")
-            .text(d => d.type === "genre" ? d.name : d.title);
+            .text(d => d.type === "genre" ? d.name : d.title)
+            .attr("fill", primaryText);
 
         simulation.on("tick", () => {
-            link.attr("x1", d => Math.max(10, Math.min(width - 10, d.source.x)))
+            networkLinks.attr("x1", d => Math.max(10, Math.min(width - 10, d.source.x)))
                 .attr("y1", d => Math.max(10, Math.min(height - 10, d.source.y)))
                 .attr("x2", d => Math.max(10, Math.min(width - 10, d.target.x)))
                 .attr("y2", d => Math.max(10, Math.min(height - 10, d.target.y)));
@@ -603,10 +968,8 @@
             event.subject.fy = null;
         }
 
-        // Llenar filtros dinámicamente
         const genresList = [...new Set(books.map(book => book.genre))].sort();
         const themes = [...new Set(books.map(book => book.theme))].sort();
-        
         const genreFilter = document.getElementById('genreFilter');
         const themeFilter = document.getElementById('themeFilter');
 
@@ -627,23 +990,12 @@
         function renderTable() {
             const selectedGenre = genreFilter.value;
             const selectedTheme = themeFilter.value;
-            const filteredBooks = books.filter(book => 
-                (!selectedGenre || book.genre === selectedGenre) &&
-                (!selectedTheme || book.theme === selectedTheme)
-            );
-
+            const filteredBooks = books.filter(book => (!selectedGenre || book.genre === selectedGenre) && (!selectedTheme || book.theme === selectedTheme));
             const tbody = document.querySelector('#bookTable tbody');
             tbody.innerHTML = '';
-
             filteredBooks.forEach(book => {
                 const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${book.title}</td>
-                    <td>${book.author}</td>
-                    <td>${book.comments}</td>
-                    <td>${book.genre}</td>
-                    <td>${book.theme}</td>
-                `;
+                row.innerHTML = `<td>${book.title}</td><td>${book.author}</td><td>${book.comments}</td><td>${book.genre}</td><td>${book.theme}</td>`;
                 tbody.appendChild(row);
             });
         }
@@ -652,18 +1004,6 @@
         themeFilter.addEventListener('change', renderTable);
         renderTable();
 
-        function resize() {
-            const newWidth = document.getElementById('network').clientWidth;
-            const newHeight = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 500;
-            svg.attr("width", newWidth).attr("height", newHeight);
-            simulation.force("center", d3.forceCenter(newWidth / 2, newHeight / 2));
-            simulation.force("x", d3.forceX(newWidth / 2).strength(0.1));
-            simulation.force("y", d3.forceY(newHeight / 2).strength(0.1));
-            simulation.alpha(1).restart();
-        }
-        window.addEventListener("resize", resize);
-
-        // Preparar datos para los gráficos
         const genreCounts = d3.rollup(books, v => v.length, d => d.genre);
         const genreData = Array.from(genreCounts, ([genre, count]) => ({ genre, count }));
         const totalBooks = books.length;
@@ -675,109 +1015,54 @@
         function updateGenreFilter(genre) {
             const genreFilter = document.getElementById('genreFilter');
             genreFilter.value = genre;
-            const changeEvent = new Event('change');
-            genreFilter.dispatchEvent(changeEvent);
+            genreFilter.dispatchEvent(new Event('change'));
         }
 
         function updateThemeFilter(theme) {
             const themeFilter = document.getElementById('themeFilter');
             themeFilter.value = theme;
-            const changeEvent = new Event('change');
-            themeFilter.dispatchEvent(changeEvent);
+            themeFilter.dispatchEvent(new Event('change'));
         }
 
-        // Gráfico de barras por género
-        const barSvg = d3.select("#bar-chart")
-            .append("svg")
-            .attr("width", "100%")
-            .attr("height", 400);
+        // Color scale for pie chart and treemap
+        const colorScale = d3.scaleLinear()
+            .domain([0, Math.max(genreData.length, authorData.length)])
+            .range([primaryGlow, secondaryGlow]);
 
+        const barSvg = d3.select("#bar-chart").append("svg").attr("width", "100%").attr("height", 400);
         const barMargin = { top: 20, right: 20, bottom: 100, left: 40 };
         const barWidth = barSvg.node().clientWidth - barMargin.left - barMargin.right;
         const barHeight = 400 - barMargin.top - barMargin.bottom;
 
-        const barX = d3.scaleBand()
-            .domain(genreData.map(d => d.genre))
-            .range([0, barWidth])
-            .padding(0.1);
+        const barX = d3.scaleBand().domain(genreData.map(d => d.genre)).range([0, barWidth]).padding(0.1);
+        const barY = d3.scaleLinear().domain([0, d3.max(genreData, d => d.count)]).range([barHeight, 0]);
 
-        const barY = d3.scaleLinear()
-            .domain([0, d3.max(genreData, d => d.count)])
-            .range([barHeight, 0]);
-
-        const barG = barSvg.append("g")
-            .attr("transform", `translate(${barMargin.left},${barMargin.top})`);
-
-        barG.append("g")
-            .attr("class", "x-axis")
-            .attr("transform", `translate(0,${barHeight})`)
-            .call(d3.axisBottom(barX))
-            .selectAll("text")
-            .attr("fill", "#00FFFF")
-            .attr("text-shadow", "0 0 5px #00FF00")
-            .attr("transform", "rotate(-45)")
-            .style("text-anchor", "end");
-
-        barG.append("g")
-            .attr("class", "y-axis")
-            .call(d3.axisLeft(barY))
-            .selectAll("text")
-            .attr("fill", "#00FFFF");
-
-        barG.selectAll(".bar")
-            .data(genreData)
-            .join("rect")
-            .attr("class", "bar")
-            .attr("x", d => barX(d.genre))
-            .attr("y", d => barY(d.count))
-            .attr("width", barX.bandwidth())
-            .attr("height", d => barHeight - barY(d.count))
+        const barG = barSvg.append("g").attr("transform", `translate(${barMargin.left},${barMargin.top})`);
+        barG.append("g").attr("class", "x-axis").attr("transform", `translate(0,${barHeight})`).call(d3.axisBottom(barX))
+            .selectAll("text").attr("fill", primaryText).attr("text-shadow", "0 0 5px " + secondaryGlow);
+        barG.append("g").attr("class", "y-axis").call(d3.axisLeft(barY)).selectAll("text").attr("fill", primaryText);
+        barG.selectAll(".bar").data(genreData).join("rect").attr("class", "bar").attr("x", d => barX(d.genre))
+            .attr("y", d => barY(d.count)).attr("width", barX.bandwidth()).attr("height", d => barHeight - barY(d.count))
+            .attr("fill", secondaryGlow)
             .on("click", (event, d) => updateGenreFilter(d.genre));
-
-        barG.selectAll(".bar-text")
-            .data(genreData)
-            .join("text")
-            .attr("class", "bar-text")
-            .attr("x", d => barX(d.genre) + barX.bandwidth() / 2)
-            .attr("y", d => barY(d.count) - 5)
-            .attr("dy", ".35em")
+        barG.selectAll(".bar-text").data(genreData).join("text").attr("class", "bar-text")
+            .attr("x", d => barX(d.genre) + barX.bandwidth() / 2).attr("y", d => barY(d.count) - 5).attr("dy", ".35em")
             .text(d => `${d.count} (${((d.count / totalBooks) * 100).toFixed(1)}%)`)
-            .attr("font-size", d => {
-                const barHeightPx = barHeight - barY(d.count);
-                return Math.min(12, Math.max(8, barHeightPx / 4));
-            });
+            .attr("fill", primaryText)
+            .attr("font-size", d => Math.min(12, Math.max(8, (barHeight - barY(d.count)) / 4)));
 
-        // Gráfico de torta por género
-        const pieSvg = d3.select("#pie-chart")
-            .append("svg")
-            .attr("width", "100%")
-            .attr("height", 400);
-
+        const pieSvg = d3.select("#pie-chart").append("svg").attr("width", "100%").attr("height", 400);
         const pieWidth = pieSvg.node().clientWidth - barMargin.left - barMargin.right;
         const pieHeight = 400 - barMargin.top - barMargin.bottom;
         const pieRadius = Math.min(pieWidth, pieHeight) / 2 - 20;
 
-        const pieG = pieSvg.append("g")
-            .attr("transform", `translate(${pieWidth / 2 + barMargin.left},${pieHeight / 2 + 40})`);
-
-        const pie = d3.pie()
-            .value(d => d.count)
-            .sort((a, b) => d3.ascending(a.genre, b.genre));
-
-        const arc = d3.arc()
-            .innerRadius(pieRadius * 0.5)
-            .outerRadius(pieRadius);
-
-        const outerArc = d3.arc()
-            .innerRadius(pieRadius * 0.9)
-            .outerRadius(pieRadius * 0.9);
+        const pieG = pieSvg.append("g").attr("transform", `translate(${pieWidth / 2 + barMargin.left},${pieHeight / 2 + 40})`);
+        const pie = d3.pie().value(d => d.count).sort((a, b) => d3.ascending(a.genre, b.genre));
+        const arc = d3.arc().innerRadius(pieRadius * 0.5).outerRadius(pieRadius);
+        const outerArc = d3.arc().innerRadius(pieRadius * 0.9).outerRadius(pieRadius * 0.9);
 
         const arcsData = pie(genreData);
-        const arcs = pieG.selectAll(".arc")
-            .data(arcsData)
-            .join("g")
-            .attr("class", "arc");
-
+        const arcs = pieG.selectAll(".arc").data(arcsData).join("g").attr("class", "arc");
         const labelPositions = [];
         arcsData.forEach((d, i) => {
             const pos = outerArc.centroid(d);
@@ -785,7 +1070,6 @@
             const side = midAngle < Math.PI ? 1 : -1;
             pos[0] = pieRadius * (midAngle < Math.PI ? 1.2 : -1.2);
             pos[1] += (midAngle > Math.PI/2 && midAngle < 3*Math.PI/2) ? 10 : -10;
-
             let adjustedY = pos[1];
             for (let j = 0; j < labelPositions.length; j++) {
                 const prevPos = labelPositions[j];
@@ -795,133 +1079,79 @@
             }
             labelPositions.push({ y: adjustedY, side });
             d.adjustedPos = [pos[0], adjustedY];
+            d.color = colorScale(i);
         });
 
-        arcs.append("path")
-            .attr("d", arc)
+        arcs.append("path").attr("d", arc)
+            .attr("fill", d => d.color)
+            .attr("stroke", secondaryGlow)
             .on("click", (event, d) => updateGenreFilter(d.data.genre));
-
-        arcs.append("text")
-            .attr("transform", d => `translate(${d.adjustedPos})`)
-            .attr("dy", ".35em")
-            .style("text-anchor", d => {
-                const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
-                return midAngle < Math.PI ? "start" : "end";
-            })
+        arcs.append("text").attr("transform", d => `translate(${d.adjustedPos})`).attr("dy", ".35em")
+            .style("text-anchor", d => (d.startAngle + (d.endAngle - d.startAngle) / 2) < Math.PI ? "start" : "end")
             .text(d => `${d.data.genre} (${((d.data.count / totalBooks) * 100).toFixed(1)}%)`)
+            .attr("fill", primaryText)
             .each(function(d) {
                 const bbox = this.getBBox();
                 const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
-                const offsetX = midAngle < Math.PI ? bbox.width + 10 : -bbox.width - 10;
-                d3.select(this).attr("dx", offsetX > 0 ? 5 : -5);
+                d3.select(this).attr("dx", midAngle < Math.PI ? 5 : -5);
             });
+        arcs.append("polyline").attr("points", d => {
+            const pos = outerArc.centroid(d);
+            const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+            const offset = pieRadius * (midAngle < Math.PI ? 1.2 : -1.2);
+            return [arc.centroid(d), outerArc.centroid(d), [offset, d.adjustedPos[1]]];
+        }).attr("stroke", primaryText).attr("fill", "none");
 
-        arcs.append("polyline")
-            .attr("points", d => {
-                const pos = outerArc.centroid(d);
-                const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
-                const offset = pieRadius * (midAngle < Math.PI ? 1.2 : -1.2);
-                return [arc.centroid(d), outerArc.centroid(d), [offset, d.adjustedPos[1]]];
-            })
-            .attr("stroke", "#00FFFF")
-            .attr("fill", "none");
-
-        // Gráfico de barras por tema
-        const themeBarSvg = d3.select("#theme-bar-chart")
-            .append("svg")
-            .attr("width", "100%")
-            .attr("height", 400);
-
+        const themeBarSvg = d3.select("#theme-bar-chart").append("svg").attr("width", "100%").attr("height", 400);
         const themeBarWidth = themeBarSvg.node().clientWidth - barMargin.left - barMargin.right;
         const themeBarHeight = 400 - barMargin.top - barMargin.bottom;
 
-        const themeBarX = d3.scaleBand()
-            .domain(themeData.map(d => d.theme))
-            .range([0, themeBarWidth])
-            .padding(0.1);
+        const themeBarX = d3.scaleBand().domain(themeData.map(d => d.theme)).range([0, themeBarWidth]).padding(0.1);
+        const themeBarY = d3.scaleLinear().domain([0, d3.max(themeData, d => d.count)]).range([themeBarHeight, 0]);
 
-        const themeBarY = d3.scaleLinear()
-            .domain([0, d3.max(themeData, d => d.count)])
-            .range([themeBarHeight, 0]);
-
-        const themeBarG = themeBarSvg.append("g")
-            .attr("transform", `translate(${barMargin.left},${barMargin.top})`);
-
-        themeBarG.append("g")
-            .attr("class", "x-axis")
-            .attr("transform", `translate(0,${themeBarHeight})`)
-            .call(d3.axisBottom(themeBarX))
-            .selectAll("text")
-            .attr("fill", "#00FFFF")
-            .attr("text-shadow", "0 0 5px #00FF00")
-            .attr("transform", "rotate(-45)")
-            .style("text-anchor", "end");
-
-        themeBarG.append("g")
-            .attr("class", "y-axis")
-            .call(d3.axisLeft(themeBarY))
-            .selectAll("text")
-            .attr("fill", "#00FFFF");
-
-        themeBarG.selectAll(".bar")
-            .data(themeData)
-            .join("rect")
-            .attr("class", "bar")
-            .attr("x", d => themeBarX(d.theme))
-            .attr("y", d => themeBarY(d.count))
-            .attr("width", themeBarX.bandwidth())
-            .attr("height", d => themeBarHeight - themeBarY(d.count))
+        const themeBarG = themeBarSvg.append("g").attr("transform", `translate(${barMargin.left},${barMargin.top})`);
+        themeBarG.append("g").attr("class", "x-axis").attr("transform", `translate(0,${themeBarHeight})`).call(d3.axisBottom(themeBarX))
+            .selectAll("text").attr("fill", primaryText).attr("text-shadow", "0 0 5px " + secondaryGlow);
+        themeBarG.append("g").attr("class", "y-axis").call(d3.axisLeft(themeBarY)).selectAll("text").attr("fill", primaryText);
+        themeBarG.selectAll(".bar").data(themeData).join("rect").attr("class", "bar").attr("x", d => themeBarX(d.theme))
+            .attr("y", d => themeBarY(d.count)).attr("width", themeBarX.bandwidth()).attr("height", d => themeBarHeight - themeBarY(d.count))
+            .attr("fill", secondaryGlow)
             .on("click", (event, d) => updateThemeFilter(d.theme));
-
-        themeBarG.selectAll(".bar-text")
-            .data(themeData)
-            .join("text")
-            .attr("class", "bar-text")
-            .attr("x", d => themeBarX(d.theme) + themeBarX.bandwidth() / 2)
-            .attr("y", d => themeBarY(d.count) - 5)
-            .attr("dy", ".35em")
+        themeBarG.selectAll(".bar-text").data(themeData).join("text").attr("class", "bar-text")
+            .attr("x", d => themeBarX(d.theme) + themeBarX.bandwidth() / 2).attr("y", d => themeBarY(d.count) - 5).attr("dy", ".35em")
             .text(d => `${d.count} (${((d.count / totalBooks) * 100).toFixed(1)}%)`)
-            .attr("font-size", d => {
-                const barHeightPx = themeBarHeight - themeBarY(d.count);
-                return Math.min(12, Math.max(8, barHeightPx / 4));
-            });
+            .attr("fill", primaryText)
+            .attr("font-size", d => Math.min(12, Math.max(8, (themeBarHeight - themeBarY(d.count)) / 4)));
 
-        // Gráfico de treemap por autores (modificado)
-        const treemapSvg = d3.select("#treemap")
-            .append("svg")
-            .attr("width", "100%")
-            .attr("height", 400);
-
+        const treemapSvg = d3.select("#treemap").append("svg").attr("width", "100%").attr("height", 400);
         const treemapWidth = treemapSvg.node().clientWidth - barMargin.left - barMargin.right;
         const treemapHeight = 400 - barMargin.top - barMargin.bottom;
 
-        const treemap = d3.treemap()
-            .size([treemapWidth, treemapHeight])
-            .padding(4)
-            .round(true);
-
-        const root = d3.hierarchy({ children: authorData })
-            .sum(d => d.value);
-
+        const treemap = d3.treemap().size([treemapWidth, treemapHeight]).padding(4).round(true);
+        const root = d3.hierarchy({ children: authorData }).sum(d => d.value);
         treemap(root);
 
-        const treemapG = treemapSvg.append("g")
-            .attr("transform", `translate(${barMargin.left},${barMargin.top})`);
-
-        treemapG.selectAll(".treemap-rect")
-            .data(root.leaves())
-            .join("rect")
-            .attr("class", "treemap-rect")
-            .attr("x", d => d.x0)
-            .attr("y", d => d.y0)
-            .attr("width", d => d.x1 - d.x0)
-            .attr("height", d => d.y1 - d.y0)
+        const treemapG = treemapSvg.append("g").attr("transform", `translate(${barMargin.left},${barMargin.top})`);
+        treemapG.selectAll(".treemap-rect").data(root.leaves()).join("rect").attr("class", "treemap-rect")
+            .attr("x", d => d.x0).attr("y", d => d.y0).attr("width", d => d.x1 - d.x0).attr("height", d => d.y1 - d.y0)
+            .attr("fill", (d, i) => colorScale(i))
+            .attr("stroke", secondaryGlow)
             .on("click", (event, d) => {
                 const authorBooks = books.filter(b => b.author === d.data.name);
                 if (authorBooks.length > 0) updateGenreFilter(authorBooks[0].genre);
-                d3.select("#treemap-info")
-                    .text(`Autor: ${d.data.name} | Libros: ${d.data.value} (${((d.data.value / totalBooks) * 100).toFixed(1)}%)`);
+                d3.select("#treemap-info").text(`Autor: ${d.data.name} | Libros: ${d.data.value} (${((d.data.value / totalBooks) * 100).toFixed(1)}%)`);
             });
+
+        function resize() {
+            const newWidth = document.getElementById('network').clientWidth;
+            const newHeight = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 500;
+            svg.attr("width", newWidth).attr("height", newHeight);
+            simulation.force("center", d3.forceCenter(newWidth / 2, newHeight / 2));
+            simulation.force("x", d3.forceX(newWidth / 2).strength(0.1));
+            simulation.force("y", d3.forceY(newHeight / 2).strength(0.1));
+            simulation.alpha(1).restart();
+        }
+        window.addEventListener("resize", resize);
     </script>
 </body>
 </html>
