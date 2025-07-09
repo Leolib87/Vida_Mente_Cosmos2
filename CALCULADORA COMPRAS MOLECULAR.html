@@ -1,0 +1,1962 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materiales de Laboratorio de Biología Molecular</title>
+    <!-- Enlace a la fuente Inter de Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Librerías para exportar a Excel y PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables for Firebase (provided by the environment)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Expose Firebase instances and variables to the global scope for use in other scripts
+        window.firebaseApp = app;
+        window.firebaseDb = db;
+        window.firebaseAuth = auth;
+        window.currentAppId = appId;
+        window.initialAuthToken = initialAuthToken;
+
+        // Authenticate user and then load shopping list
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                console.log("User authenticated:", user.uid);
+                window.currentUserId = user.uid; // Make userId globally available
+                await window.loadShoppingList();
+            } else {
+                console.log("No user signed in. Signing in anonymously...");
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Error during anonymous sign-in:", error);
+                    window.showMessageBox('Error de autenticación', 'No se pudo iniciar sesión. Algunas funciones pueden no estar disponibles.', 'error');
+                }
+            }
+        });
+    </script>
+
+    <style>
+        /* Variables CSS para el tema oscuro */
+        :root {
+            --bg-dark: #121212;
+            --card-dark: #1e1e1e;
+            --accent-blue: #60a5fa;
+            --accent-green: #34d399;
+            --accent-purple: #a78bfa;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --border-dark: #2d3748;
+            --error-red: #ef4444;
+            --button-bg: #4a5568;
+            --button-hover-bg: #636b7a;
+            --success-green: #22c55e;
+            --info-blue: #3b82f6;
+        }
+
+        /* Reseteo básico de CSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Estilos generales del cuerpo de la página */
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        /* Contenedor principal para centrar el contenido */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 3rem 1rem;
+        }
+
+        /* Estilos del encabezado principal */
+        .main-header {
+            font-size: 2.25rem;
+            font-weight: 800;
+            text-align: center;
+            background-color: var(--card-dark);
+            color: var(--accent-blue);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Search bar styling */
+        .search-container {
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .search-input {
+            width: 100%;
+            max-width: 500px;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-dark);
+            border-radius: 0.5rem;
+            background-color: var(--card-dark);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.5);
+        }
+
+        /* Contenedor de las pestañas */
+        .tabs-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border-dark);
+            margin-bottom: 2rem;
+        }
+
+        /* Estilos de los botones de las pestañas */
+        .tab-button {
+            padding: 0.75rem 1.25rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border: none;
+            background-color: transparent;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+
+        /* Estilos para el botón de pestaña activo */
+        .tab-button.active {
+            color: var(--accent-green);
+            border-bottom: 2px solid var(--accent-green);
+            background-color: var(--card-dark);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Estilos al pasar el ratón por los botones de las pestañas */
+        .tab-button:hover:not(.active) {
+            color: var(--text-primary);
+            background-color: var(--bg-dark);
+        }
+
+        /* Contenido de las pestañas */
+        .tab-content {
+            display: none; /* Oculto por defecto */
+            background-color: var(--card-dark);
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            min-height: 450px;
+        }
+
+        /* Contenido de pestaña activo */
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Lista de elementos dentro de cada pestaña */
+        .item-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        /* Elementos individuales de la lista */
+        .item-list li {
+            display: flex;
+            flex-direction: column; /* Cambiado a columna para apilar descripción y proveedor */
+            align-items: flex-start;
+            flex-wrap: wrap;
+            padding: 1rem;
+            border-bottom: 1px dashed var(--border-dark);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 0.5rem;
+        }
+
+        /* Contenedor para la descripción y el precio en la lista de ítems */
+        .item-details-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        /* Estilos al pasar el ratón sobre los elementos de la lista */
+        .item-list li:hover {
+            background-color: var(--bg-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Eliminar borde inferior del último elemento de la lista */
+        .item-list li:last-child {
+            border-bottom: none;
+        }
+
+        /* Descripción del elemento */
+        .item-description {
+            font-weight: 500;
+            flex: 1;
+            min-width: 60%;
+            padding-right: 1rem;
+        }
+
+        /* Precio del elemento */
+        .item-price {
+            font-weight: 600;
+            color: var(--accent-green);
+            text-align: right;
+            min-width: 30%;
+        }
+
+        /* Nuevo estilo para el proveedor */
+        .item-supplier {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem; /* Espacio entre descripción y proveedor */
+            width: 100%; /* Ocupa todo el ancho disponible */
+        }
+
+
+        /* Media queries para diseño responsivo en pantallas pequeñas */
+        @media (max-width: 640px) {
+            .item-list li {
+                flex-direction: column;
+            }
+            .item-details-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .item-description {
+                min-width: 100%;
+                margin-bottom: 0.5rem;
+                padding-right: 0;
+            }
+            .item-price {
+                text-align: left;
+                width: 100%;
+            }
+            .main-header {
+                font-size: 1.875rem;
+            }
+        }
+
+        /* Estilos de la tarjeta de la calculadora */
+        .calculator-card {
+            background-color: var(--card-dark);
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            margin-top: 2.5rem;
+        }
+
+        /* Título de la calculadora */
+        .calculator-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-purple);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Elementos individuales en la lista de la calculadora */
+        .calculator-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 1rem 0;
+            border-bottom: 1px dashed var(--border-dark);
+        }
+
+        /* Eliminar borde inferior del último elemento de la calculadora */
+        .calculator-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Detalles del elemento en la calculadora */
+        .calculator-item-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 50%;
+        }
+
+        /* Nombre del elemento en la calculadora */
+        .calculator-item-name {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        /* Precio por unidad del elemento en la calculadora */
+        .calculator-item-price-per-unit {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Controles de cantidad y eliminación en la calculadora */
+        .calculator-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 40%;
+            justify-content: flex-end;
+        }
+
+        /* Campo de entrada de cantidad */
+        .calculator-item-quantity {
+            width: 4rem;
+            padding: 0.5rem;
+            border: 1px solid var(--border-dark);
+            border-radius: 0.5rem;
+            text-align: center;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+        }
+
+        /* Estilo al enfocar el campo de cantidad */
+        .calculator-item-quantity:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--accent-green);
+        }
+
+        /* Total del elemento individual en la calculadora */
+        .calculator-item-total {
+            font-weight: 600;
+            color: var(--accent-green);
+            min-width: 100px;
+            text-align: right;
+        }
+
+        /* Botón de eliminar item */
+        .remove-button {
+            background-color: var(--error-red);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        /* Efecto al pasar el ratón por el botón de eliminar */
+        .remove-button:hover {
+            background-color: #dc2626;
+        }
+
+        /* Resumen del total de la calculadora */
+        .calculator-total-summary {
+            margin-top: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-align: right;
+            padding-top: 1rem;
+            border-top: 2px solid var(--border-dark);
+        }
+
+        /* Mensaje cuando no hay elementos en la calculadora */
+        #no-items-message {
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 1.5rem 0;
+        }
+
+        /* Contenedor de botones de descarga */
+        .download-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px dashed var(--border-dark);
+        }
+
+        .download-buttons button {
+            background-color: var(--button-bg);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .download-buttons button:hover {
+            background-color: var(--button-hover-bg);
+        }
+
+        /* Media queries para la calculadora en pantallas pequeñas */
+        @media (max-width: 640px) {
+            .calculator-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .calculator-item-details, .calculator-item-controls {
+                min-width: 100%;
+                margin-bottom: 0.75rem;
+            }
+            .calculator-item-controls {
+                justify-content: flex-start;
+            }
+            .calculator-item-total {
+                width: 100%;
+                text-align: left;
+                margin-top: 0.5rem;
+            }
+            .download-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .download-buttons button {
+                width: 100%;
+            }
+        }
+
+        /* Transiciones suaves para elementos interactivos */
+        button, input, .tab-button, .item-list li, .remove-button {
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* Styles for the custom message box */
+        .message-box-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .message-box-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .message-box {
+            background-color: var(--card-dark);
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .message-box-overlay.visible .message-box {
+            transform: translateY(0);
+        }
+
+        .message-box h3 {
+            color: var(--accent-blue);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .message-box p {
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+        }
+
+        .message-box button {
+            background-color: var(--accent-green);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+
+        .message-box button:hover {
+            background-color: #28a745;
+        }
+
+        .message-box.error h3 {
+            color: var(--error-red);
+        }
+        .message-box.info h3 {
+            color: var(--info-blue);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="main-header">Materiales de Laboratorio de Biología Molecular</h1>
+
+        <!-- Search Input -->
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="Buscar materiales..." onkeyup="filterDisplayedItems()">
+        </div>
+
+        <!-- Contenedor de las pestañas de navegación -->
+        <div class="tabs-container" role="tablist">
+            <button class="tab-button active" data-tab-target="pcr-cuantificacion" role="tab" aria-selected="true">PCR y Cuantificación</button>
+            <button class="tab-button" data-tab-target="electroforesis-visualizacion" role="tab" aria-selected="false">Electroforesis y Visualización</button>
+            <button class="tab-button" data-tab-target="extraccion-purificacion" role="tab" aria-selected="false">Extracción y Purificación</button>
+            <button class="tab-button" data-tab-target="centrifugacion-agitacion" role="tab" aria-selected="false">Centrifugación y Agitación</button>
+            <button class="tab-button" data-tab-target="manejo-consumibles" role="tab" aria-selected="false">Manejo y Consumibles</button>
+            <button class="tab-button" data-tab-target="equipos-generales" role="tab" aria-selected="false">Equipos Generales y Reactivos</button>
+        </div>
+
+        <!-- Contenido de las pestañas -->
+        <div id="tab-content-container">
+            <div id="pcr-cuantificacion" class="tab-content active" role="tabpanel">
+                <ul class="item-list">
+                    <li data-description="Termociclador TC1000-G GRAD 96 Tubos 5064102300/230V DLAB" data-price="4143520" data-supplier="DLAB USA / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Termociclador TC1000-G GRAD 96 Tubos 5064102300/230V DLAB</span>
+                            <span class="item-price">$ 4.143.520</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: DLAB USA / TCL Group SpA</span>
+                    </li>
+                    <li data-description="Tubo PCR individual de 0,2 ml, tapa plana transparente SSI Bio" data-price="29100" data-supplier="SSI Bio / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">Tubo PCR individual de 0,2 ml, tapa plana transparente SSI Bio</span>
+                            <span class="item-price">$ 29.100</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: SSI Bio / GENEXPRESS</span>
+                    </li>
+                    <li data-description="DNTP SET, 100 MM, 4 X 25UMOL GE LIFESCIENCES" data-price="147263" data-supplier="GE LIFESCIENCES / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">DNTP SET, 100 MM, 4 X 25UMOL GE LIFESCIENCES</span>
+                            <span class="item-price">$ 147.263</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: GE LIFESCIENCES / GENEXPRESS</span>
+                    </li>
+                    <li data-description="dNTP Set APPLIED BIOLOGICAL MATERIAL" data-price="201366" data-supplier="APPLIED BIOLOGICAL MATERIAL / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">dNTP Set APPLIED BIOLOGICAL MATERIAL</span>
+                            <span class="item-price">$ 201.366</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: APPLIED BIOLOGICAL MATERIAL / GENEXPRESS</span>
+                    </li>
+                    <li data-description="dNTP Mix: 500 µl, 10 mM each APPLIED BIOLOGICAL MATERIAL" data-price="66105" data-supplier="APPLIED BIOLOGICAL MATERIAL / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">dNTP Mix: 500 µl, 10 mM each APPLIED BIOLOGICAL MATERIAL</span>
+                            <span class="item-price">$ 66.105</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: APPLIED BIOLOGICAL MATERIAL / GENEXPRESS</span>
+                    </li>
+                    <li data-description="dNTP Mix: 1.0 ml, 10 mM each APPLIED BIOLOGICAL MATERIAL" data-price="79326" data-supplier="APPLIED BIOLOGICAL MATERIAL / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">dNTP Mix: 1.0 ml, 10 mM each APPLIED BIOLOGICAL MATERIAL</span>
+                            <span class="item-price">$ 79.326</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: APPLIED BIOLOGICAL MATERIAL / GENEXPRESS</span>
+                    </li>
+                    <li data-description="Taq DNA Polymerase: 200 rxn (200 ul), 1,000 U APPLIED BIOLOGICAL MATERIAL" data-price="35000" data-supplier="APPLIED BIOLOGICAL MATERIAL / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">Taq DNA Polymerase: 200 rxn (200 ul), 1,000 U APPLIED BIOLOGICAL MATERIAL</span>
+                            <span class="item-price">$ 35.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: APPLIED BIOLOGICAL MATERIAL / GENEXPRESS</span>
+                    </li>
+                    <li data-description="TAQ DNA POLYMERASA: 400 units NEW ENGLAND BIOLABS" data-price="89900" data-supplier="NEW ENGLAND BIOLABS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">TAQ DNA POLYMERASA: 400 units NEW ENGLAND BIOLABS</span>
+                            <span class="item-price">$ 89.900</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: NEW ENGLAND BIOLABS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="ONE TAQ HOTSTAR DNA POLYMERASE: 200 units NEW ENGLAND BIOLABS" data-price="131800" data-supplier="NEW ENGLAND BIOLABS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">ONE TAQ HOTSTAR DNA POLYMERASE: 200 units NEW ENGLAND BIOLABS</span>
+                            <span class="item-price">$ 131.800</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: NEW ENGLAND BIOLABS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="Q5 High-Fidelity DNA Polymerase: 100 units NEW ENGLAND BIOLABS" data-price="163900" data-supplier="NEW ENGLAND BIOLABS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">Q5 High-Fidelity DNA Polymerase: 100 units NEW ENGLAND BIOLABS</span>
+                            <span class="item-price">$ 163.900</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: NEW ENGLAND BIOLABS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="SapphireAmp Fast PCR Master Mix: 160 Rxns TAKARA" data-price="153800" data-supplier="TAKARA / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">SapphireAmp Fast PCR Master Mix: 160 Rxns TAKARA</span>
+                            <span class="item-price">$ 153.800</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TAKARA / GENEXPRESS</span>
+                    </li>
+                    <li data-description="PFU ULTRA II FUSION HS DNA PLYMRSE 100U AGILENT TECHNOLOGIES" data-price="106000" data-supplier="AGILENT TECHNOLOGIES / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">PFU ULTRA II FUSION HS DNA PLYMRSE 100U AGILENT TECHNOLOGIES</span>
+                            <span class="item-price">$ 106.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: AGILENT TECHNOLOGIES / GENEXPRESS</span>
+                    </li>
+                    <li data-description="M-MULV REVERSE TRANSCRIPTASE-10,000 UN NEW ENGLAND BIOLABS" data-price="112100" data-supplier="NEW ENGLAND BIOLABS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">M-MULV REVERSE TRANSCRIPTASE-10,000 UN NEW ENGLAND BIOLABS</span>
+                            <span class="item-price">$ 112.100</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: NEW ENGLAND BIOLABS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="RNASE INHIBITOR - 2,000 UNITS NEW ENGLAND BIOLABS" data-price="119500" data-supplier="NEW ENGLAND BIOLABS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">RNASE INHIBITOR - 2,000 UNITS NEW ENGLAND BIOLABS</span>
+                            <span class="item-price">$ 119.500</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: NEW ENGLAND BIOLABS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="T4 DNA Ligase: 100000 units NEW ENGLAND BIOLABS" data-price="355634" data-supplier="NEW ENGLAND BIOLABS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">T4 DNA Ligase: 100000 units NEW ENGLAND BIOLABS</span>
+                            <span class="item-price">$ 355.634</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: NEW ENGLAND BIOLABS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="T4 DNA LIGASE: 20,000 units NEW ENGLAND BIOLABS" data-price="87500" data-supplier="NEW ENGLAND BIOLABS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">T4 DNA LIGASE: 20,000 units NEW ENGLAND BIOLABS</span>
+                            <span class="item-price">$ 87.500</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: NEW ENGLAND BIOLABS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="T4 DNA Ligase Reaction Buffer: 5 ML NEW ENGLAND BIOLABS" data-price="36702" data-supplier="NEW ENGLAND BIOLABS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">T4 DNA Ligase Reaction Buffer: 5 ML NEW ENGLAND BIOLABS</span>
+                            <span class="item-price">$ 36.702</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: NEW ENGLAND BIOLABS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="ATP: 25 umol TAKARA" data-price="246374" data-supplier="TAKARA / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">ATP: 25 umol TAKARA</span>
+                            <span class="item-price">$ 246.374</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TAKARA / GENEXPRESS</span>
+                    </li>
+                    <li data-description="Alkaline Phosphatase (E coli C75): 50 units TAKARA" data-price="167127" data-supplier="TAKARA / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">Alkaline Phosphatase (E coli C75): 50 units TAKARA</span>
+                            <span class="item-price">$ 167.127</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TAKARA / GENEXPRESS</span>
+                    </li>
+                    <li data-description="Alkaline Phosphatase (E coli C75): 250 Units TAKARA" data-price="612912" data-supplier="TAKARA / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">Alkaline Phosphatase (E coli C75): 250 Units TAKARA</span>
+                            <span class="item-price">$ 612.912</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TAKARA / GENEXPRESS</span>
+                    </li>
+                    <li data-description="DNA Polymerase I, Large (Klenow) Fragment: 200 units NEW ENGLAND BIOLABS" data-price="93654" data-supplier="NEW ENGLAND BIOLABS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">DNA Polymerase I, Large (Klenow) Fragment: 200 units NEW ENGLAND BIOLABS</span>
+                            <span class="item-price">$ 93.654</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: NEW ENGLAND BIOLABS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="DNA Polymerase I, Large (Klenow) Fragment: 1000 units NEW ENGLAND BIOLABS" data-price="370821" data-supplier="NEW ENGLAND BIOLABS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">DNA Polymerase I, Large (Klenow) Fragment: 1000 units NEW ENGLAND BIOLABS</span>
+                            <span class="item-price">$ 370.821</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: NEW ENGLAND BIOLABS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="LongAmp® Hot Start Taq 2X Master Mix (100 Rxs)" data-price="332091" data-supplier="Bioquimica.cl S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">LongAmp® Hot Start Taq 2X Master Mix (100 Rxs)</span>
+                            <span class="item-price">$ 332.091</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: Bioquimica.cl S.A.</span>
+                    </li>
+                    <li data-description="Termociclador con Gradiente Mod. K960-Heal Force" data-price="3940000" data-supplier="Heal Force / Winkler Limitada">
+                        <div class="item-details-row">
+                            <span class="item-description">Termociclador con Gradiente Mod. K960-Heal Force</span>
+                            <span class="item-price">$ 3.940.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: Heal Force / Winkler Limitada</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="electroforesis-visualizacion" class="tab-content" role="tabpanel">
+                <ul class="item-list">
+                    <li data-description="Cámara Vertical DCX-700 Multipropósito CBS Scientific, origen: USA" data-price="720000" data-supplier="CBS Scientific (Origen: USA) / MUNDOLAB S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Cámara Vertical DCX-700 Multipropósito CBS Scientific, origen: USA</span>
+                            <span class="item-price">$ 720.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: CBS Scientific (Origen: USA) / MUNDOLAB S.A.</span>
+                    </li>
+                    <li data-description="Fuente de Poder para Electroforesis MPS-300C MLAB Scientific" data-price="605000" data-supplier="MLAB Scientific / MUNDOLAB S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Fuente de Poder para Electroforesis MPS-300C MLAB Scientific</span>
+                            <span class="item-price">$ 605.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: MLAB Scientific / MUNDOLAB S.A.</span>
+                    </li>
+                    <li data-description="Sist Runview CSL-RVMSCHOICETRIO" data-price="1821754" data-supplier="TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Sist Runview CSL-RVMSCHOICETRIO</span>
+                            <span class="item-price">$ 1.821.754</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TCL Group SpA</span>
+                    </li>
+                    <li data-description="GDH-BASIC Gel Doc Hood Sin Cámara (Uso con Celular) THISTLE (ex-CLEAVER)" data-price="127628" data-supplier="THISTLE (ex-CLEAVER) / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">GDH-BASIC Gel Doc Hood Sin Cámara (Uso con Celular) THISTLE (ex-CLEAVER)</span>
+                            <span class="item-price">$ 127.628</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: THISTLE (ex-CLEAVER) / TCL Group SpA</span>
+                    </li>
+                    <li data-description="Kit para preparar geles para uso con DCX-700" data-price="197000" data-supplier="MUNDOLAB S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Kit para preparar geles para uso con DCX-700</span>
+                            <span class="item-price">$ 197.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: MUNDOLAB S.A.</span>
+                    </li>
+                    <li data-description="Starter Pack Electroforesis + Rack P200 CAT. C-9036 C-9029 C-9004 D-1030 BIONEER" data-price="229990" data-supplier="BIONEER / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Starter Pack Electroforesis + Rack P200 CAT. C-9036 C-9029 C-9004 D-1030 BIONEER</span>
+                            <span class="item-price">$ 229.990</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: BIONEER / TCL Group SpA</span>
+                    </li>
+                    <li data-description="Agarosa Grado Biologia Molecular EUROGENTEC" data-price="124000" data-supplier="EUROGENTEC / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">Agarosa Grado Biologia Molecular EUROGENTEC</span>
+                            <span class="item-price">$ 124.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: EUROGENTEC / GENEXPRESS</span>
+                    </li>
+                    <li data-description="10X TAE BUFFER-IL LONZA" data-price="112819" data-supplier="LONZA / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">10X TAE BUFFER-IL LONZA</span>
+                            <span class="item-price">$ 112.819</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: LONZA / GENEXPRESS</span>
+                    </li>
+                    <li data-description="10X TAE BUFFER - 4 L LONZA" data-price="393421" data-supplier="LONZA / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">10X TAE BUFFER - 4 L LONZA</span>
+                            <span class="item-price">$ 393.421</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: LONZA / GENEXPRESS</span>
+                    </li>
+                    <li data-description="50 x TAE Buffer OMEGA BIOTEK" data-price="100000" data-supplier="OMEGA BIOTEK / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">50 x TAE Buffer OMEGA BIOTEK</span>
+                            <span class="item-price">$ 100.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: OMEGA BIOTEK / GENEXPRESS</span>
+                    </li>
+                    <li data-description="10X TBE BUFFER - 1L LONZA" data-price="89677" data-supplier="LONZA / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">10X TBE BUFFER - 1L LONZA</span>
+                            <span class="item-price">$ 89.677</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: LONZA / GENEXPRESS</span>
+                    </li>
+                    <li data-description="5x TBE Buffer OMEGA BIOTEK" data-price="26498" data-supplier="OMEGA BIOTEK / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">5x TBE Buffer OMEGA BIOTEK</span>
+                            <span class="item-price">$ 26.498</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: OMEGA BIOTEK / GENEXPRESS</span>
+                    </li>
+                    <li data-description="Bromophenol Blue APPLIED BIOLOGICAL MATERIAL" data-price="166788" data-supplier="APPLIED BIOLOGICAL MATERIAL / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">Bromophenol Blue APPLIED BIOLOGICAL MATERIAL</span>
+                            <span class="item-price">$ 166.788</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: APPLIED BIOLOGICAL MATERIAL / GENEXPRESS</span>
+                    </li>
+                    <li data-description="Gel Loading Dye, Blue (6X) NEW ENGLAND BIOLABS" data-price="70200" data-supplier="NEW ENGLAND BIOLABS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">Gel Loading Dye, Blue (6X) NEW ENGLAND BIOLABS</span>
+                            <span class="item-price">$ 70.200</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: NEW ENGLAND BIOLABS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="50 BP DNA LADDER NEW ENGLAND BIOLABS" data-price="102300" data-supplier="NEW ENGLAND BIOLABS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">50 BP DNA LADDER NEW ENGLAND BIOLABS</span>
+                            <span class="item-price">$ 102.300</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: NEW ENGLAND BIOLABS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="100 BP DNA LADDER NEW ENGLAND BIOLABS" data-price="85000" data-supplier="NEW ENGLAND BIOLABS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">100 BP DNA LADDER NEW ENGLAND BIOLABS</span>
+                            <span class="item-price">$ 85.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: NEW ENGLAND BIOLABS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="1 KB DNA LADDER NEW ENGLAND BIOLABS" data-price="76400" data-supplier="NEW ENGLAND BIOLABS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">1 KB DNA LADDER NEW ENGLAND BIOLABS</span>
+                            <span class="item-price">$ 76.400</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: NEW ENGLAND BIOLABS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="BLUE PRESTAINED PROTEIN STANDARD, BROAD RANGE(11-250 KDA) NEW ENGLAND BIOLABS" data-price="216800" data-supplier="NEW ENGLAND BIOLABS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">BLUE PRESTAINED PROTEIN STANDARD, BROAD RANGE(11-250 KDA) NEW ENGLAND BIOLABS</span>
+                            <span class="item-price">$ 216.800</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: NEW ENGLAND BIOLABS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="GelRed Nucleic Acid Gel Stain BIOTIUM INC" data-price="142800" data-supplier="BIOTIUM INC / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">GelRed Nucleic Acid Gel Stain BIOTIUM INC</span>
+                            <span class="item-price">$ 142.800</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: BIOTIUM INC / GENEXPRESS</span>
+                    </li>
+                    <li data-description="Ethidium bromide (EB), 10mg/mL in H2O BIOTIUM INC" data-price="121407" data-supplier="BIOTIUM INC / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">Ethidium bromide (EB), 10mg/mL in H2O BIOTIUM INC</span>
+                            <span class="item-price">$ 121.407</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: BIOTIUM INC / GENEXPRESS</span>
+                    </li>
+                    <li data-description="Sistema Runview CSL-RVMSCHOICETRIO" data-price="1821754" data-supplier="TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Sistema Runview CSL-RVMSCHOICETRIO</span>
+                            <span class="item-price">$ 1.821.754</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TCL Group SpA</span>
+                    </li>
+                    <li data-description="Starter Pack Electroforesis + 10 Rack P200 XL Watson CAT. C-9036 C-9029 C-9004 D-1030-1 Bioneer" data-price="229990" data-supplier="TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Starter Pack Electroforesis + 10 Rack P200 XL Watson CAT. C-9036 C-9029 C-9004 D-1030-1 Bioneer</span>
+                            <span class="item-price">$ 229.990</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TCL Group SpA</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="extraccion-purificacion" class="tab-content" role="tabpanel">
+                <ul class="item-list">
+                    <li data-description="EZNA TISSUE DNA KIT: 50 PREPS OMEGA BIOTEK" data-price="128500" data-supplier="OMEGA BIOTEK / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">EZNA TISSUE DNA KIT: 50 PREPS OMEGA BIOTEK</span>
+                            <span class="item-price">$ 128.500</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: OMEGA BIOTEK / GENEXPRESS</span>
+                    </li>
+                    <li data-description="E.Z.N.A TISSUE DNA KIT: 200 preps OMEGA BIOTEK" data-price="353400" data-supplier="OMEGA BIOTEK / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">E.Z.N.A TISSUE DNA KIT: 200 preps OMEGA BIOTEK</span>
+                            <span class="item-price">$ 353.400</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: OMEGA BIOTEK / GENEXPRESS</span>
+                    </li>
+                    <li data-description="E.Z.N.A. TOTAL RNA KIT: 50 PREPS OMEGA BIOTEK" data-price="214500" data-supplier="OMEGA BIOTEK / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">E.Z.N.A. TOTAL RNA KIT: 50 PREPS OMEGA BIOTEK</span>
+                            <span class="item-price">$ 214.500</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: OMEGA BIOTEK / GENEXPRESS</span>
+                    </li>
+                    <li data-description="E.Z.N.A. TOTAL RNA KIT: 200 prep OMEGA BIOTEK" data-price="322000" data-supplier="OMEGA BIOTEK / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">E.Z.N.A. TOTAL RNA KIT: 200 prep OMEGA BIOTEK</span>
+                            <span class="item-price">$ 322.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: OMEGA BIOTEK / GENEXPRESS</span>
+                    </li>
+                    <li data-description="PROTEINASE K: 100 MG US BIOLOGICALS" data-price="171600" data-supplier="US BIOLOGICALS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">PROTEINASE K: 100 MG US BIOLOGICALS</span>
+                            <span class="item-price">$ 171.600</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: US BIOLOGICALS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="RNase A: 25 mg APPLIED BIOLOGICAL MATERIAL" data-price="106672" data-supplier="APPLIED BIOLOGICAL MATERIAL / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">RNase A: 25 mg APPLIED BIOLOGICAL MATERIAL</span>
+                            <span class="item-price">$ 106.672</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: APPLIED BIOLOGICAL MATERIAL / GENEXPRESS</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="centrifugacion-agitacion" class="tab-content" role="tabpanel">
+                <ul class="item-list">
+                    <li data-description="Centrífuga Modelo Z216 M HERMLE / MUNDOLAB S.A." data-price="1500000" data-supplier="HERMLE / MUNDOLAB S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Centrífuga Modelo Z216 M HERMLE / MUNDOLAB S.A.</span>
+                            <span class="item-price">$ 1.500.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: HERMLE / MUNDOLAB S.A.</span>
+                    </li>
+                    <li data-description="Agitador Orbital SK-0180-Pro Digital MUNDOLAB S.A." data-price="547000" data-supplier="MUNDOLAB S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Agitador Orbital SK-0180-Pro Digital MUNDOLAB S.A.</span>
+                            <span class="item-price">$ 547.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: MUNDOLAB S.A.</span>
+                    </li>
+                    <li data-description="Centrífuga Clínica 8 Tubos 15ML DM0412 DLAB / TCL Group SpA" data-price="669708" data-supplier="DLAB / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Centrífuga Clínica 8 Tubos 15ML DM0412 DLAB / TCL Group SpA</span>
+                            <span class="item-price">$ 669.708</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: DLAB / TCL Group SpA</span>
+                    </li>
+                    <li data-description="Centrífuga 12 T/EP 1.5-2ML D2012PLUS DLAB / TCL Group SpA" data-price="935064" data-supplier="DLAB / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Centrífuga 12 T/EP 1.5-2ML D2012PLUS DLAB / TCL Group SpA</span>
+                            <span class="item-price">$ 935.064</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: DLAB / TCL Group SpA</span>
+                    </li>
+                    <li data-description="Microcentrífuga SPIN D1008 8/2mL 7000RPM T/Verde DLAB / TCL Group SpA" data-price="138996" data-supplier="DLAB / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Microcentrífuga SPIN D1008 8/2mL 7000RPM T/Verde DLAB / TCL Group SpA</span>
+                            <span class="item-price">$ 138.996</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: DLAB / TCL Group SpA</span>
+                    </li>
+                    <li data-description="Vortex MX-S 2500 RPM CAT 8031102000 DLAB / TCL Group SpA" data-price="164268" data-supplier="DLAB / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Vortex MX-S 2500 RPM CAT 8031102000 DLAB / TCL Group SpA</span>
+                            <span class="item-price">$ 164.268</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: DLAB / TCL Group SpA</span>
+                    </li>
+                    <li data-description="Rotor Angular 24x1.5/2.0 mL para Z216M / Z316 MK / Z 216M HERMLE / MUNDOLAB S.A." data-price="377000" data-supplier="HERMLE / MUNDOLAB S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Rotor Angular 24x1.5/2.0 mL para Z216M / Z316 MK / Z 216M HERMLE / MUNDOLAB S.A.</span>
+                            <span class="item-price">$ 377.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: HERMLE / MUNDOLAB S.A.</span>
+                    </li>
+                    <li data-description="Plataforma Universal SK180.1 con Barras MUNDOLAB S.A." data-price="95000" data-supplier="MUNDOLAB S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Plataforma Universal SK180.1 con Barras MUNDOLAB S.A.</span>
+                            <span class="item-price">$ 95.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: MUNDOLAB S.A.</span>
+                    </li>
+                    <li data-description="Plataforma Lisa SK180.2 MUNDOLAB S.A." data-price="45000" data-supplier="MUNDOLAB S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Plataforma Lisa SK180.2 MUNDOLAB S.A.</span>
+                            <span class="item-price">$ 45.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: MUNDOLAB S.A.</span>
+                    </li>
+                    <li data-description="Microcentrífuga de Velocidad Fija (7000 RPM)" data-price="138996" data-supplier="TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Microcentrífuga de Velocidad Fija (7000 RPM)</span>
+                            <span class="item-price">$ 138.996</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TCL Group SpA</span>
+                    </li>
+                    <li data-description="Vortex Mezclador Multifunción Análogo" data-price="164268" data-supplier="TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Vortex Mezclador Multifunción Análogo</span>
+                            <span class="item-price">$ 164.268</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TCL Group SpA</span>
+                    </li>
+                    <li data-description="MICROCENTRIFUGA SPIN D1008 8/2mL 7000RPM T/AZUL CAT. 9031001012 DLAB" data-price="138996" data-supplier="DLAB / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">MICROCENTRIFUGA SPIN D1008 8/2mL 7000RPM T/AZUL CAT. 9031001012 DLAB</span>
+                            <span class="item-price">$ 138.996</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: DLAB / TCL Group SpA</span>
+                    </li>
+                    <li data-description="VORTEX MX-S 2500 RPM CAT 8031102000 DLAB" data-price="164268" data-supplier="DLAB / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">VORTEX MX-S 2500 RPM CAT 8031102000 DLAB</span>
+                            <span class="item-price">$ 164.268</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: DLAB / TCL Group SpA</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="manejo-consumibles" class="tab-content" role="tabpanel">
+                <ul class="item-list">
+                    <li data-description="Set Micropipetas P3942-SK4 10.20.200.1000 LABNET" data-price="720000" data-supplier="LABNET / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Set Micropipetas P3942-SK4 10.20.200.1000 LABNET</span>
+                            <span class="item-price">$ 720.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: LABNET / TCL Group SpA</span>
+                    </li>
+                    <li data-description="Tubo Eppendorf 0.2mL T/Plana (Bolsa 1000 UNID) CAT 16950 SORENSON" data-price="33987" data-supplier="SORENSON / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Tubo Eppendorf 0.2mL T/Plana (Bolsa 1000 UNID) CAT 16950 SORENSON</span>
+                            <span class="item-price">$ 33.987</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: SORENSON / TCL Group SpA</span>
+                    </li>
+                    <li data-description="Tubo Centrífuga 15mL PP (Bolsa 25 UNID) CAT. CFT011150 BIOFILTER" data-price="3890" data-supplier="BIOFILTER / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Tubo Centrífuga 15mL PP (Bolsa 25 UNID) CAT. CFT011150 BIOFILTER</span>
+                            <span class="item-price">$ 3.890</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: BIOFILTER / TCL Group SpA</span>
+                    </li>
+                    <li data-description="Tubo Eppendorf 1.5mL (Bolsa 500 UNID) CAT. CFT011015 BIOFILTER" data-price="6090" data-supplier="BIOFILTER / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Tubo Eppendorf 1.5mL (Bolsa 500 UNID) CAT. CFT011015 BIOFILTER</span>
+                            <span class="item-price">$ 6.090</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: BIOFILTER / TCL Group SpA</span>
+                    </li>
+                    <li data-description="Rack Vacio 96 Lugares 0.2-10UL TARSONS" data-price="1950" data-supplier="TARSONS / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Rack Vacio 96 Lugares 0.2-10UL TARSONS</span>
+                            <span class="item-price">$ 1.950</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TARSONS / TCL Group SpA</span>
+                    </li>
+                    <li data-description="Rack Vacio 96 Lugares 2-200UL TARSONS" data-price="1950" data-supplier="TARSONS / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Rack Vacio 96 Lugares 2-200UL TARSONS</span>
+                            <span class="item-price">$ 1.950</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TARSONS / TCL Group SpA</span>
+                    </li>
+                    <li data-description="Rack Vacio 96 Lugares 1000UL TARSONS" data-price="2090" data-supplier="TARSONS / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Rack Vacio 96 Lugares 1000UL TARSONS</span>
+                            <span class="item-price">$ 2.090</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TARSONS / TCL Group SpA</span>
+                    </li>
+                    <li data-description="Puntas de pipeta estériles de 10 µL. larga con filtro - estéril - baja retención en Rack SSI Bio" data-price="4900" data-supplier="SSI Bio / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">Puntas de pipeta estériles de 10 µL. larga con filtro - estéril - baja retención en Rack SSI Bio</span>
+                            <span class="item-price">$ 4.900</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: SSI Bio / GENEXPRESS</span>
+                    </li>
+                    <li data-description="Puntas de pipeta estériles de 20 µL con filtro estéril - baja retención en Rack SSI Bio" data-price="4900" data-supplier="SSI Bio / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">Puntas de pipeta estériles de 20 µL con filtro estéril - baja retención en Rack SSI Bio</span>
+                            <span class="item-price">$ 4.900</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: SSI Bio / GENEXPRESS</span>
+                    </li>
+                    <li data-description="Puntas de pipeta estériles de 200 µL con filtro estéril - baja retención en Rack SSI Bio" data-price="4900" data-supplier="SSI Bio / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">Puntas de pipeta estériles de 200 µL con filtro estéril - baja retención en Rack SSI Bio</span>
+                            <span class="item-price">$ 4.900</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: SSI Bio / GENEXPRESS</span>
+                    </li>
+                    <li data-description="Puntas de pipeta estériles de 1250 µL (1000 µL XL) con filtro estéril baja retención en Rack SSI Bio" data-price="5800" data-supplier="SSI Bio / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">Puntas de pipeta estériles de 1250 µL (1000 µL XL) con filtro estéril baja retención en Rack SSI Bio</span>
+                            <span class="item-price">$ 5.800</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: SSI Bio / GENEXPRESS</span>
+                    </li>
+                    <li data-description="ARIAMX ADHESIVE SEALS AGILENT TECHNOLOGIES" data-price="135600" data-supplier="AGILENT TECHNOLOGIES / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">ARIAMX ADHESIVE SEALS AGILENT TECHNOLOGIES</span>
+                            <span class="item-price">$ 135.600</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: AGILENT TECHNOLOGIES / GENEXPRESS</span>
+                    </li>
+                    <li data-description="Tubos de microcentrifuga graduados de 1,5 ml, a prueba de ebullición SSI Bio" data-price="12130" data-supplier="SSI Bio / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">Tubos de microcentrifuga graduados de 1,5 ml, a prueba de ebullición SSI Bio</span>
+                            <span class="item-price">$ 12.130</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: SSI Bio / GENEXPRESS</span>
+                    </li>
+                    <li data-description="Tubos de microcentrifuga graduados de 2,0 ml, a prueba de ebullición SSI Bio" data-price="16700" data-supplier="SSI Bio / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">Tubos de microcentrifuga graduados de 2,0 ml, a prueba de ebullición SSI Bio</span>
+                            <span class="item-price">$ 16.700</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: SSI Bio / GENEXPRESS</span>
+                    </li>
+                    <li data-description="PUNTAS CRISTAL 10UL S/CORONA (BOLSA 1000U) TARSONS" data-price="8290" data-supplier="TARSONS / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">PUNTAS CRISTAL 10UL S/CORONA (BOLSA 1000U) TARSONS</span>
+                            <span class="item-price">$ 8.290</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TARSONS / TCL Group SpA</span>
+                    </li>
+                    <li data-description="PUNTAS AMARILLA S/CORONA (BOLSA 1000UN) TARSONS" data-price="6790" data-supplier="TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">PUNTAS AMARILLA S/CORONA (BOLSA 1000UN) TARSONS</span>
+                            <span class="item-price">$ 6.790</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TCL Group SpA</span>
+                    </li>
+                    <li data-description="PUNTAS AZUL S/CORONA 3 GRADUACIONES (BOLSA 500U) TARSONS" data-price="5290" data-supplier="TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">PUNTAS AZUL S/CORONA 3 GRADUACIONES (BOLSA 500U) TARSONS</span>
+                            <span class="item-price">$ 5.290</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TCL Group SpA</span>
+                    </li>
+                    <li data-description="Rack Vacio 96 Lugares 0.2-10uL CAT. 524052 TARSONS" data-price="9750" data-supplier="TARSONS / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Rack Vacio 96 Lugares 0.2-10uL CAT. 524052 TARSONS</span>
+                            <span class="item-price">$ 9.750</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TARSONS / TCL Group SpA</span>
+                    </li>
+                    <li data-description="Rack Vacio 96 Lugares 2 - 200uL CAT. 524053 TARSONS" data-price="9750" data-supplier="TARSONS / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Rack Vacio 96 Lugares 2 - 200uL CAT. 524053 TARSONS</span>
+                            <span class="item-price">$ 9.750</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TARSONS / TCL Group SpA</span>
+                    </li>
+                    <li data-description="Rack Vacio 96 Lugares 1000uL CAT. 524054 TARSONS" data-price="14630" data-supplier="TARSONS / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Rack Vacio 96 Lugares 1000uL CAT. 524054 TARSONS</span>
+                            <span class="item-price">$ 14.630</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TARSONS / TCL Group SpA</span>
+                    </li>
+                    <li data-description="Tubo Centrífuga 50mL PP (Bolsa 25 UNID) CAT.CFT011500 BIOFILTER" data-price="2990" data-supplier="BIOFILTER / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Tubo Centrífuga 50mL PP (Bolsa 25 UNID) CAT.CFT011500 BIOFILTER</span>
+                            <span class="item-price">$ 2.990</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: BIOFILTER / TCL Group SpA</span>
+                    </li>
+                    <li data-description="Set de Micropipetas Plus Autoclavables" data-price="720000" data-supplier="TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Set de Micropipetas Plus Autoclavables</span>
+                            <span class="item-price">$ 720.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TCL Group SpA</span>
+                    </li>
+                    <li data-description="Tubos Eppendorf 1.5mL (Bolsa 500 Unidades) Estéril Libre de ARN y ADN" data-price="6090" data-supplier="TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Tubos Eppendorf 1.5mL (Bolsa 500 Unidades) Estéril Libre de ARN y ADN</span>
+                            <span class="item-price">$ 6.090</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TCL Group SpA</span>
+                    </li>
+                    <li data-description="Puntas Cristal 10UL S/Corona (Bolsa 1000U) Tarsons" data-price="8290" data-supplier="TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Puntas Cristal 10UL S/Corona (Bolsa 1000U) Tarsons</span>
+                            <span class="item-price">$ 8.290</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TCL Group SpA</span>
+                    </li>
+                    <li data-description="Puntas Amarilla S/Corona (Bolsa 1000UN) Tarsons" data-price="6790" data-supplier="TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Puntas Amarilla S/Corona (Bolsa 1000UN) Tarsons</span>
+                            <span class="item-price">$ 6.790</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TCL Group SpA</span>
+                    </li>
+                    <li data-description="Puntas Azul S/Corona 3 Graduaciones (Bolsa 500U) Tarsons" data-price="5290" data-supplier="TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Puntas Azul S/Corona 3 Graduaciones (Bolsa 500U) Tarsons</span>
+                            <span class="item-price">$ 5.290</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TCL Group SpA</span>
+                    </li>
+                    <li data-description="Placa PCR 96 Pocillos 0,1 ml Medio Faldon" data-price="38985" data-supplier="Bioquimica.cl S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Placa PCR 96 Pocillos 0,1 ml Medio Faldon</span>
+                            <span class="item-price">$ 38.985</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: Bioquimica.cl S.A.</span>
+                    </li>
+                    <li data-description="Punta Esteril con Filtro para Pipeta 1250 ul Libre DNA/RNAsas - 50 Unid" data-price="25000" data-supplier="Bioquimica.cl S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Punta Esteril con Filtro para Pipeta 1250 ul Libre DNA/RNAsas - 50 Unid</span>
+                            <span class="item-price">$ 25.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: Bioquimica.cl S.A.</span>
+                    </li>
+                    <li data-description="Tubo de microcentrifuga tipo Eppendorf - 1.5 mL-500 Unidades" data-price="24613" data-supplier="Bioquimica.cl S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Tubo de microcentrifuga tipo Eppendorf - 1.5 mL-500 Unidades</span>
+                            <span class="item-price">$ 24.613</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: Bioquimica.cl S.A.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="equipos-generales" class="tab-content" role="tabpanel">
+                <ul class="item-list">
+                    <li data-description="Balanza Analítica AS220.R2 PLUS RADWAG - INTELLIGENT WEIGHING TECHNOLOGY" data-price="1265000" data-supplier="RADWAG - Intelligent Weighing Technology / MUNDOLAB S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Balanza Analítica AS220.R2 PLUS RADWAG - INTELLIGENT WEIGHING TECHNOLOGY</span>
+                            <span class="item-price">$ 1.265.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: RADWAG - Intelligent Weighing Technology / MUNDOLAB S.A.</span>
+                    </li>
+                    <li data-description="Campana Flujo BBS-V500 BIOBASE" data-price="719500" data-supplier="BIOBASE / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Campana Flujo BBS-V500 BIOBASE</span>
+                            <span class="item-price">$ 719.500</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: BIOBASE / TCL Group SpA</span>
+                    </li>
+                    <li data-description="Baño Seco LED Digital HB120-S 5032101200 DLAB" data-price="391716" data-supplier="DLAB / TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Baño Seco LED Digital HB120-S 5032101200 DLAB</span>
+                            <span class="item-price">$ 391.716</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: DLAB / TCL Group SpA</span>
+                    </li>
+                    <li data-description="Microscopio Biologico Trinocular Acromatico E5 Series-Sunny Optical" data-price="510000" data-supplier="Sunny Optical / Winkler Limitada">
+                        <div class="item-details-row">
+                            <span class="item-description">Microscopio Biologico Trinocular Acromatico E5 Series-Sunny Optical</span>
+                            <span class="item-price">$ 510.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: Sunny Optical / Winkler Limitada</span>
+                    </li>
+                    <li data-description="Campana de Flujo Laminar Vertical BBS-V500 BIOBASE" data-price="695000" data-supplier="BIOBASE / Winkler Limitada">
+                        <div class="item-details-row">
+                            <span class="item-description">Campana de Flujo Laminar Vertical BBS-V500 BIOBASE</span>
+                            <span class="item-price">$ 695.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: BIOBASE / Winkler Limitada</span>
+                    </li>
+                    <li data-description="Alcohol (Etanol) 95° Botella 1 LT TCL Group SpA" data-price="3850" data-supplier="TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Alcohol (Etanol) 95° Botella 1 LT TCL Group SpA</span>
+                            <span class="item-price">$ 3.850</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TCL Group SpA</span>
+                    </li>
+                    <li data-description="Alcohol (Etanol) 95° Bidón 5 LTS" data-price="15500" data-supplier="TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Alcohol (Etanol) 95° Bidón 5 LTS</span>
+                            <span class="item-price">$ 15.500</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TCL Group SpA</span>
+                    </li>
+                    <li data-description="DMSO ESTERIL: 250 mL MEDIATECH-CORNING" data-price="104401" data-supplier="MEDIATECH-CORNING / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">DMSO ESTERIL: 250 mL MEDIATECH-CORNING</span>
+                            <span class="item-price">$ 104.401</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: MEDIATECH-CORNING / GENEXPRESS</span>
+                    </li>
+                    <li data-description="DMSO: 50 ML US BIOLOGICALS" data-price="133792" data-supplier="US BIOLOGICALS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">DMSO: 50 ML US BIOLOGICALS</span>
+                            <span class="item-price">$ 133.792</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: US BIOLOGICALS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="Magnesium Chloride (MgC12) Solution: 6 ML NEW ENGLAND BIOLABS" data-price="35437" data-supplier="NEW ENGLAND BIOLABS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">Magnesium Chloride (MgC12) Solution: 6 ML NEW ENGLAND BIOLABS</span>
+                            <span class="item-price">$ 35.437</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: NEW ENGLAND BIOLABS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="Recombinant Albumin, Molecular Biology Grade: 12 mg NEW ENGLAND BIOLABS" data-price="64546" data-supplier="NEW ENGLAND BIOLABS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">Recombinant Albumin, Molecular Biology Grade: 12 mg NEW ENGLAND BIOLABS</span>
+                            <span class="item-price">$ 64.546</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: NEW ENGLAND BIOLABS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="BOVINE SERUM ALBUMN, FRACT V: 50 gr ROCKLAND IMMUNOCHEMI" data-price="175000" data-supplier="ROCKLAND IMMUNOCHEMI / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">BOVINE SERUM ALBUMN, FRACT V: 50 gr ROCKLAND IMMUNOCHEMI</span>
+                            <span class="item-price">$ 175.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: ROCKLAND IMMUNOCHEMI / GENEXPRESS</span>
+                    </li>
+                    <li data-description="TRIS, ULTRAPURO: 1KG VWR" data-price="99000" data-supplier="VWR / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">TRIS, ULTRAPURO: 1KG VWR</span>
+                            <span class="item-price">$ 99.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: VWR / GENEXPRESS</span>
+                    </li>
+                    <li data-description="EDTA, DISODIUM SALT, DIHYDRATE: 500 gr VWR" data-price="124000" data-supplier="VWR / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">EDTA, DISODIUM SALT, DIHYDRATE: 500 gr VWR</span>
+                            <span class="item-price">$ 124.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: VWR / GENEXPRESS</span>
+                    </li>
+                    <li data-description="SODIUM CHLORIDE, MB GRADE: 500G US BIOLOGICALS" data-price="70512" data-supplier="US BIOLOGICALS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">SODIUM CHLORIDE, MB GRADE: 500G US BIOLOGICALS</span>
+                            <span class="item-price">$ 70.512</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: US BIOLOGICALS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="SODIUM CHLORIDE: 1KG US BIOLOGICALS" data-price="104864" data-supplier="US BIOLOGICALS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">SODIUM CHLORIDE: 1KG US BIOLOGICALS</span>
+                            <span class="item-price">$ 104.864</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: US BIOLOGICALS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="SODIUM DODECYL SULFATE (SDS): 100 gr US BIOLOGICALS" data-price="133792" data-supplier="US BIOLOGICALS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">SODIUM DODECYL SULFATE (SDS): 100 gr US BIOLOGICALS</span>
+                            <span class="item-price">$ 133.792</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: US BIOLOGICALS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="SODIUM DODECYL SULFATE (SDS): 500G US BIOLOGICALS" data-price="546016" data-supplier="US BIOLOGICALS / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">SODIUM DODECYL SULFATE (SDS): 500G US BIOLOGICALS</span>
+                            <span class="item-price">$ 546.016</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: US BIOLOGICALS / GENEXPRESS</span>
+                    </li>
+                    <li data-description="SODIUM ACETATE: 100 g PHYTOTECNOLOGY LABOR" data-price="36115" data-supplier="PHYTOTECNOLOGY LABOR / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">SODIUM ACETATE: 100 g PHYTOTECNOLOGY LABOR</span>
+                            <span class="item-price">$ 36.115</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: PHYTOTECNOLOGY LABOR / GENEXPRESS</span>
+                    </li>
+                    <li data-description="SODIUM ACETATE: 1 Kg PHYTOTECNOLOGY LABOR" data-price="79241" data-supplier="PHYTOTECNOLOGY LABOR / GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">SODIUM ACETATE: 1 Kg PHYTOTECNOLOGY LABOR</span>
+                            <span class="item-price">$ 79.241</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: PHYTOTECNOLOGY LABOR / GENEXPRESS</span>
+                    </li>
+                    <li data-description="GASTOS DE DESPACHO GENEXPRESS" data-price="8000" data-supplier="GENEXPRESS">
+                        <div class="item-details-row">
+                            <span class="item-description">GASTOS DE DESPACHO GENEXPRESS</span>
+                            <span class="item-price">$ 8.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: GENEXPRESS</span>
+                    </li>
+                    <li data-description="Alcohol Etílico 95° Grados (Etanol) Grado Técnico Bidón de 5 Lts" data-price="15500" data-supplier="TCL Group SpA">
+                        <div class="item-details-row">
+                            <span class="item-description">Alcohol Etílico 95° Grados (Etanol) Grado Técnico Bidón de 5 Lts</span>
+                            <span class="item-price">$ 15.500</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: TCL Group SpA</span>
+                    </li>
+                    <li data-description="Cloruro de Magnesio Hexahidrato - 100 Gramos" data-price="4700" data-supplier="Bioquimica.cl S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Cloruro de Magnesio Hexahidrato - 100 Gramos</span>
+                            <span class="item-price">$ 4.700</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: Bioquimica.cl S.A.</span>
+                    </li>
+                    <li data-description="Cloruro de Magnesio Hexahidrato - 500 Gramos" data-price="14500" data-supplier="Bioquimica.cl S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Cloruro de Magnesio Hexahidrato - 500 Gramos</span>
+                            <span class="item-price">$ 14.500</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: Bioquimica.cl S.A.</span>
+                    </li>
+                    <li data-description="Acido Acetico 99% 1 Litro" data-price="22900" data-supplier="Bioquimica.cl S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Acido Acetico 99% 1 Litro</span>
+                            <span class="item-price">$ 22.900</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: Bioquimica.cl S.A.</span>
+                    </li>
+                    <li data-description="Acido Borico 1000 Gramos" data-price="9900" data-supplier="Bioquimica.cl S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Acido Borico 1000 Gramos</span>
+                            <span class="item-price">$ 9.900</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: Bioquimica.cl S.A.</span>
+                    </li>
+                    <li data-description="Cloruro de Sodio Tecnico 500 Gramos" data-price="3900" data-supplier="Bioquimica.cl S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Cloruro de Sodio Tecnico 500 Gramos</span>
+                            <span class="item-price">$ 3.900</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: Bioquimica.cl S.A.</span>
+                    </li>
+                    <li data-description="Cloruro de Sodio - Usp - 500 Gramos" data-price="8025" data-supplier="Bioquimica.cl S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Cloruro de Sodio - Usp - 500 Gramos</span>
+                            <span class="item-price">$ 8.025</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: Bioquimica.cl S.A.</span>
+                    </li>
+                    <li data-description="Cloroformo Tecnico 1 Litro" data-price="16900" data-supplier="Bioquimica.cl S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Cloroformo Tecnico 1 Litro</span>
+                            <span class="item-price">$ 16.900</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: Bioquimica.cl S.A.</span>
+                    </li>
+                    <li data-description="Cloroformo- P.a. - 1 Litro" data-price="42000" data-supplier="Bioquimica.cl S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Cloroformo- P.a. - 1 Litro</span>
+                            <span class="item-price">$ 42.000</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: Bioquimica.cl S.A.</span>
+                    </li>
+                    <li data-description="Alcohol Isopropilico Tecnico - 1 Litro" data-price="7206" data-supplier="Bioquimica.cl S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Alcohol Isopropilico Tecnico - 1 Litro</span>
+                            <span class="item-price">$ 7.206</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: Bioquimica.cl S.A.</span>
+                    </li>
+                    <li data-description="Acetato de Sodio - 500 Gramos" data-price="7390" data-supplier="Bioquimica.cl S.A.">
+                        <div class="item-details-row">
+                            <span class="item-description">Acetato de Sodio - 500 Gramos</span>
+                            <span class="item-price">$ 7.390</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: Bioquimica.cl S.A.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="calculator-card">
+            <h2 class="calculator-title">Lista de Compras</h2>
+            <div id="selected-items-list" class="mb-4">
+                <p id="no-items-message">Haz clic en un material para agregarlo a la lista.</p>
+            </div>
+            <div class="calculator-total-summary">
+                Total: <span id="calculatedTotal">$ 0</span>
+            </div>
+            <div class="download-buttons">
+                <button onclick="downloadAsWord()">Descargar Word</button>
+                <button onclick="downloadAsExcel()">Descargar Excel</button>
+                <button onclick="downloadAsPdf()">Descargar PDF</button>
+            </div>
+            <div class="user-id-display" style="margin-top: 1rem; text-align: right; font-size: 0.8rem; color: var(--text-secondary);">
+                ID de Usuario: <span id="display-user-id">Cargando...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Message Box HTML -->
+    <div id="message-box-overlay" class="message-box-overlay">
+        <div class="message-box">
+            <h3 id="message-box-title"></h3>
+            <p id="message-box-content"></p>
+            <button onclick="hideMessageBox()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Array para almacenar los ítems seleccionados en la calculadora
+        let selectedItems = [];
+        // Contador para asignar IDs únicos a los ítems en la calculadora
+        let itemIdCounter = 0;
+
+        // Reference to Firestore database and current user ID
+        let db;
+        let currentUserId;
+        let appId; // Declare appId globally for use in functions
+
+        // Store all original list items for filtering, categorized by tab ID
+        const allLabItems = {
+            'pcr-cuantificacion': [],
+            'electroforesis-visualizacion': [],
+            'extraccion-purificacion': [],
+            'centrifugacion-agitacion': [],
+            'manejo-consumibles': [],
+            'equipos-generales': []
+        };
+
+        // Global variable to keep track of the currently active tab ID
+        let currentActiveTabId = 'pcr-cuantificacion'; // Initialize with the default active tab
+
+        /**
+         * Custom message box function to replace native alerts.
+         * @param {string} title - The title of the message box.
+         * @param {string} message - The content message.
+         * @param {string} type - 'info', 'success', or 'error' for styling.
+         */
+        function showMessageBox(title, message, type = 'info') {
+            const overlay = document.getElementById('message-box-overlay');
+            const box = overlay.querySelector('.message-box');
+            document.getElementById('message-box-title').textContent = title;
+            document.getElementById('message-box-content').textContent = message;
+
+            // Remove previous type classes and add the new one
+            box.classList.remove('info', 'success', 'error');
+            box.classList.add(type);
+
+            overlay.classList.add('visible');
+        }
+
+        /**
+         * Hides the custom message box.
+         */
+        function hideMessageBox() {
+            document.getElementById('message-box-overlay').classList.remove('visible');
+        }
+
+        /**
+         * Saves the current selectedItems array to Firestore.
+         */
+        async function saveShoppingList() {
+            if (!db || !currentUserId || !appId) {
+                console.warn("Firestore not ready. Cannot save shopping list.");
+                return;
+            }
+            try {
+                const docRef = window.firebaseDoc(db, `artifacts/${appId}/users/${currentUserId}/shoppingLists/mainList`);
+                await window.firebaseSetDoc(docRef, { items: selectedItems });
+                console.log("Shopping list saved to Firestore.");
+            } catch (e) {
+                console.error("Error saving document: ", e);
+                showMessageBox('Error de Guardado', 'No se pudo guardar la lista de compras. Inténtelo de nuevo.', 'error');
+            }
+        }
+
+        /**
+         * Loads the shopping list from Firestore.
+         */
+        window.loadShoppingList = async function() {
+            db = window.firebaseDb;
+            currentUserId = window.firebaseAuth.currentUser?.uid || crypto.randomUUID(); // Ensure userId is set
+            appId = window.currentAppId; // Set appId from global variable
+
+            // Display user ID
+            document.getElementById('display-user-id').textContent = currentUserId;
+
+            if (!db || !currentUserId || !appId) {
+                console.warn("Firestore not ready. Cannot load shopping list.");
+                return;
+            }
+
+            try {
+                const docRef = window.firebaseDoc(db, `artifacts/${appId}/users/${currentUserId}/shoppingLists/mainList`);
+                const docSnap = await window.firebaseGetDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    selectedItems = data.items || [];
+                    // Ensure itemIdCounter is higher than any existing item ID to prevent duplicates
+                    if (selectedItems.length > 0) {
+                        itemIdCounter = Math.max(...selectedItems.map(item => item.id)) + 1;
+                    } else {
+                        itemIdCounter = 0;
+                    }
+                    console.log("Shopping list loaded from Firestore.");
+                } else {
+                    console.log("No shopping list found for this user. Starting with an empty list.");
+                    selectedItems = [];
+                    itemIdCounter = 0;
+                }
+                renderSelectedItems();
+                calculateTotal();
+            } catch (e) {
+                console.error("Error loading document: ", e);
+                showMessageBox('Error de Carga', 'No se pudo cargar la lista de compras. Se ha iniciado una lista vacía.', 'error');
+                selectedItems = []; // Fallback to empty list on error
+                itemIdCounter = 0;
+                renderSelectedItems();
+                calculateTotal();
+            }
+        };
+
+        /**
+         * Filters items based on the search input and displays them across all tabs.
+         */
+        function filterDisplayedItems() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const allTabContents = document.querySelectorAll('.tab-content');
+            const allTabButtons = document.querySelectorAll('.tab-button');
+
+            // Hide all tab contents and deactivate all tab buttons initially
+            allTabContents.forEach(content => content.classList.remove('active'));
+            document.querySelectorAll('.item-list li').forEach(itemLi => {
+                itemLi.style.display = 'none';
+            });
+            allTabButtons.forEach(button => {
+                button.classList.remove('active');
+                button.setAttribute('aria-selected', 'false');
+            });
+
+            if (searchTerm === '') {
+                // If search term is empty, revert to showing only the currentActiveTabId's content
+                const activeContent = document.getElementById(currentActiveTabId);
+                if (activeContent) {
+                    activeContent.classList.add('active'); // Show the content of the last active tab
+                    activeContent.querySelectorAll('.item-list li').forEach(itemLi => {
+                        itemLi.style.display = 'flex'; // Show all items in that tab
+                    });
+                }
+                const activeTabButton = document.querySelector(`[data-tab-target="${currentActiveTabId}"]`);
+                if (activeTabButton) {
+                    activeTabButton.classList.add('active'); // Re-activate the button for the last active tab
+                    activeTabButton.setAttribute('aria-selected', 'true');
+                }
+            } else {
+                // If there's a search term, show matching items across all tabs
+                for (const tabId in allLabItems) {
+                    let tabHasVisibleMatches = false; // Flag to check if this tab content should be visible
+                    allLabItems[tabId].forEach(item => {
+                        const description = item.description.toLowerCase();
+                        const supplier = item.supplier.toLowerCase();
+                        const itemLi = item.element;
+
+                        if (description.includes(searchTerm) || supplier.includes(searchTerm)) {
+                            itemLi.style.display = 'flex'; // Show the matching item
+                            tabHasVisibleMatches = true;
+                        } else {
+                            itemLi.style.display = 'none'; // Hide non-matching item
+                        }
+                    });
+
+                    if (tabHasVisibleMatches) {
+                        document.getElementById(tabId).classList.add('active'); // Make the tab content visible if it has matches
+                    }
+                }
+            }
+        }
+
+        /**
+         * Muestra la pestaña con el ID especificado y actualiza los estilos de los botones.
+         * @param {string} tabId - El ID de la pestaña a mostrar.
+         */
+        function showTab(tabId) {
+            // Clear search input when changing tabs manually
+            document.getElementById('searchInput').value = '';
+            currentActiveTabId = tabId; // Update the global variable when a tab is manually selected
+
+            // Oculta todos los contenidos de las pestañas
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            // Desactiva todos los botones de las pestañas
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+                button.setAttribute('aria-selected', 'false');
+            });
+            // Muestra el contenido de la pestaña seleccionada
+            document.getElementById(tabId).classList.add('active');
+            // Activa el botón de la pestaña correspondiente
+            const activeTabButton = document.querySelector(`[data-tab-target="${tabId}"]`);
+            if (activeTabButton) {
+                activeTabButton.classList.add('active');
+                activeTabButton.setAttribute('aria-selected', 'true');
+            }
+            // Apply filter (which will now show all items in the active tab if search is empty)
+            filterDisplayedItems();
+        }
+
+        // Asigna el evento click a todos los botones de las pestañas
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => showTab(button.dataset.tabTarget));
+        });
+
+        /**
+         * Agrega un ítem a la lista de la calculadora o incrementa su cantidad si ya existe.
+         * @param {string} description - La descripción del ítem.
+         * @param {number} price - El precio unitario del ítem.
+         * @param {string} supplier - El proveedor del ítem.
+         */
+        function addItemToCalculator(description, price, supplier) {
+            // Busca si el ítem ya existe en la lista
+            const existingItem = selectedItems.find(item => item.description === description);
+            if (existingItem) {
+                // Si existe, incrementa la cantidad
+                existingItem.quantity++;
+            } else {
+                // Si no existe, lo añade como un nuevo ítem
+                itemIdCounter++;
+                selectedItems.push({ id: itemIdCounter, description, price, supplier, quantity: 1 });
+            }
+            // Vuelve a renderizar la lista y recalcula el total
+            renderSelectedItems();
+            calculateTotal();
+            saveShoppingList(); // Save to Firestore
+        }
+
+        /**
+         * Actualiza la cantidad de un ítem específico en la calculadora.
+         * @param {number} id - El ID del ítem a actualizar.
+         * @param {string} newQuantity - La nueva cantidad (como string, se parseará a entero).
+         */
+        function updateItemQuantity(id, newQuantity) {
+            const itemIndex = selectedItems.findIndex(item => item.id === id);
+            if (itemIndex > -1) {
+                // Asegura que la cantidad sea un número no negativo
+                selectedItems[itemIndex].quantity = Math.max(0, parseInt(newQuantity) || 0);
+                // Vuelve a renderizar la lista y recalcula el total
+                renderSelectedItems();
+                calculateTotal();
+                saveShoppingList(); // Save to Firestore
+            }
+        }
+
+        /**
+         * Elimina un ítem de la lista de la calculadora.
+         * @param {number} id - El ID del ítem a eliminar.
+         */
+        function removeItem(id) {
+            // Filtra la lista para remover el ítem con el ID dado
+            selectedItems = selectedItems.filter(item => item.id !== id);
+            // Vuelve a renderizar la lista y recalcula el total
+            renderSelectedItems();
+            calculateTotal();
+            saveShoppingList(); // Save to Firestore
+        }
+
+        /**
+         * Renderiza la lista de ítems seleccionados en la sección de la calculadora.
+         */
+        function renderSelectedItems() {
+            const listContainer = document.getElementById('selected-items-list');
+            listContainer.innerHTML = ''; // Limpia el contenido actual
+
+            // Muestra un mensaje si no hay ítems seleccionados
+            if (selectedItems.length === 0) {
+                listContainer.innerHTML = '<p id="no-items-message">Haz clic en un material para agregarlo a la lista.</p>';
+                return;
+            }
+
+            // Renderiza cada ítem seleccionado
+            selectedItems.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'calculator-item';
+                itemDiv.innerHTML = `
+                    <div class="calculator-item-details">
+                        <span class="calculator-item-name">${item.description}</span>
+                        <span class="calculator-item-price-per-unit">$ ${item.price.toLocaleString('es-CL')} / unidad</span>
+                        <span class="item-supplier">Proveedor: ${item.supplier}</span>
+                    </div>
+                    <div class="calculator-item-controls">
+                        <input type="number" value="${item.quantity}" min="0" class="calculator-item-quantity" onchange="updateItemQuantity(${item.id}, this.value)">
+                        <span class="calculator-item-total">$ ${(item.quantity * item.price).toLocaleString('es-CL')}</span>
+                        <button class="remove-button" onclick="removeItem(${item.id})">X</button>
+                    </div>
+                `;
+                listContainer.appendChild(itemDiv);
+            });
+        }
+
+        /**
+         * Calcula y muestra el total de todos los ítems en la calculadora.
+         */
+        function calculateTotal() {
+            // Suma el total de todos los ítems (cantidad * precio)
+            const total = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            // Actualiza el texto del total en la interfaz
+            document.getElementById('calculatedTotal').textContent = `$ ${total.toLocaleString('es-CL')}`;
+        }
+
+        /**
+         * Descarga la lista de compras como un documento de Word (HTML).
+         */
+        function downloadAsWord() {
+            if (selectedItems.length === 0) {
+                showMessageBox('Lista Vacía', 'La lista de compras está vacía. Agregue elementos antes de descargar.', 'info');
+                return;
+            }
+
+            let tableHtml = `
+                <style>
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-family: 'Inter', sans-serif; }
+                    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+                    th { background-color: #f2f2f2; }
+                    .total-row td { font-weight: bold; }
+                </style>
+                <h1>Lista de Compras de Materiales de Laboratorio</h1>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Descripción</th>
+                            <th>Cantidad</th>
+                            <th>Precio Unitario</th>
+                            <th>Proveedor</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            selectedItems.forEach(item => {
+                tableHtml += `
+                    <tr>
+                        <td>${item.description}</td>
+                        <td>${item.quantity}</td>
+                        <td>$ ${item.price.toLocaleString('es-CL')}</td>
+                        <td>${item.supplier}</td>
+                        <td>$ ${(item.quantity * item.price).toLocaleString('es-CL')}</td>
+                    </tr>
+                `;
+            });
+
+            const grandTotal = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            tableHtml += `
+                        <tr class="total-row">
+                            <td colspan="4">Total General:</td>
+                            <td>$ ${grandTotal.toLocaleString('es-CL')}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+
+            const blob = new Blob([tableHtml], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Lista_de_Compras.doc'; // Usar .doc para compatibilidad simple
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showMessageBox('Descarga Exitosa', 'La lista de compras ha sido descargada como documento de Word.', 'success');
+        }
+
+        /**
+         * Descarga la lista de compras como un archivo de Excel.
+         */
+        function downloadAsExcel() {
+            if (selectedItems.length === 0) {
+                showMessageBox('Lista Vacía', 'La lista de compras está vacía. Agregue elementos antes de descargar.', 'info');
+                return;
+            }
+
+            const ws_data = [
+                ['Descripción', 'Cantidad', 'Precio Unitario', 'Proveedor', 'Total']
+            ];
+            selectedItems.forEach(item => {
+                ws_data.push([
+                    item.description,
+                    item.quantity,
+                    item.price,
+                    item.supplier,
+                    (item.quantity * item.price)
+                ]);
+            });
+
+            const grandTotal = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            ws_data.push(['', '', '', 'Total General:', grandTotal]);
+
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Lista de Compras");
+            XLSX.writeFile(wb, "Lista_de_Compras.xlsx");
+            showMessageBox('Descarga Exitosa', 'La lista de compras ha sido descargada como archivo de Excel.', 'success');
+        }
+
+        /**
+         * Descarga la lista de compras como un archivo PDF.
+         */
+        function downloadAsPdf() {
+            if (selectedItems.length === 0) {
+                showMessageBox('Lista Vacía', 'La lista de compras está vacía. Agregue elementos antes de descargar.', 'info');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const tableColumn = ["Descripción", "Cantidad", "Precio Unitario", "Proveedor", "Total"];
+            const tableRows = [];
+
+            selectedItems.forEach(item => {
+                const itemData = [
+                    item.description,
+                    item.quantity,
+                    `$ ${item.price.toLocaleString('es-CL')}`,
+                    item.supplier,
+                    `$ ${(item.quantity * item.price).toLocaleString('es-CL')}`
+                ];
+                tableRows.push(itemData);
+            });
+
+            const grandTotal = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            tableRows.push(['', '', '', 'Total General:', `$ ${grandTotal.toLocaleString('es-CL')}`]);
+
+            doc.text("Lista de Compras de Materiales de Laboratorio", 14, 20);
+            doc.autoTable(tableColumn, tableRows, { startY: 30 });
+            doc.save('Lista_de_Compras.pdf');
+            showMessageBox('Descarga Exitosa', 'La lista de compras ha sido descargada como archivo PDF.', 'success');
+        }
+
+        // Evento que se dispara cuando el DOM ha sido completamente cargado
+        document.addEventListener('DOMContentLoaded', () => {
+            // Expose Firestore methods to global scope after Firebase is initialized
+            // This is necessary because the Firebase imports are type="module"
+            // and their exports are not directly available in the global scope.
+            if (window.firebaseApp) {
+                window.firebaseDoc = window.firebaseDb.doc;
+                window.firebaseGetDoc = window.firebaseDb.getDoc;
+                window.firebaseSetDoc = window.firebaseDb.setDoc;
+                window.firebaseOnSnapshot = window.firebaseDb.onSnapshot;
+            }
+
+            // Store original list items and add click listeners
+            document.querySelectorAll('.tab-content').forEach(tabContent => {
+                const tabId = tabContent.id;
+                tabContent.querySelectorAll('.item-list li').forEach(li => {
+                    const description = li.dataset.description;
+                    const price = parseFloat(li.dataset.price);
+                    const supplier = li.dataset.supplier;
+                    
+                    // Store a reference to the actual DOM element
+                    allLabItems[tabId].push({ description, price, supplier, element: li });
+
+                    // Add click listener
+                    li.addEventListener('click', () => addItemToCalculator(description, price, supplier));
+                });
+            });
+
+            // Muestra la primera pestaña por defecto
+            showTab('pcr-cuantificacion');
+            // loadShoppingList will be called after Firebase authentication in the script module
+        });
+    </script>
+</body>
+</html>
