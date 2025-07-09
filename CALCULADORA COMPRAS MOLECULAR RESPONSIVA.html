@@ -80,6 +80,9 @@
             --button-hover-bg: #636b7a;
             --success-green: #22c55e;
             --info-blue: #3b82f6;
+            --word-color: #2b5797; /* Microsoft Word blue */
+            --excel-color: #217346; /* Microsoft Excel green */
+            --pdf-color: #b30b00; /* Adobe PDF red */
         }
 
         /* Reseteo básico de CSS */
@@ -499,6 +502,28 @@
         }
         .message-box.info h3 {
             color: var(--info-blue);
+        }
+
+        /* Specific colors for download buttons */
+        #downloadWordBtn {
+            background-color: var(--word-color);
+        }
+        #downloadWordBtn:hover {
+            background-color: #244a82; /* Darker shade for hover */
+        }
+
+        #downloadExcelBtn {
+            background-color: var(--excel-color);
+        }
+        #downloadExcelBtn:hover {
+            background-color: #1a5a36; /* Darker shade for hover */
+        }
+
+        #downloadPdfBtn {
+            background-color: var(--pdf-color);
+        }
+        #downloadPdfBtn:hover {
+            background-color: #8c0a00; /* Darker shade for hover */
         }
     </style>
 </head>
@@ -1445,9 +1470,9 @@
                 Total: <span id="calculatedTotal">$ 0</span>
             </div>
             <div class="download-buttons">
-                <button onclick="downloadAsWord()">Descargar Word</button>
-                <button onclick="downloadAsExcel()">Descargar Excel</button>
-                <button onclick="downloadAsPdf()">Descargar PDF</button>
+                <button id="downloadWordBtn" onclick="downloadAsWord()">Descargar Word</button>
+                <button id="downloadExcelBtn" onclick="downloadAsExcel()">Descargar Excel</button>
+                <button id="downloadPdfBtn" onclick="downloadAsPdf()">Descargar PDF</button>
             </div>
             <div class="user-id-display" style="margin-top: 1rem; text-align: right; font-size: 0.8rem; color: var(--text-secondary);">
                 ID de Usuario: <span id="display-user-id">Cargando...</span>
