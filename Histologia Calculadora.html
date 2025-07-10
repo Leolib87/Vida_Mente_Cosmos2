@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materiales de Laboratorio de Histología</title>
+    <!-- Enlace a la fuente Inter de Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Librerías para exportar a Excel y PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables for Firebase (provided by the environment)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Expose Firebase instances and variables to the global scope for use in other scripts
+        window.firebaseApp = app;
+        window.firebaseDb = db;
+        window.firebaseAuth = auth;
+        window.currentAppId = appId;
+        window.initialAuthToken = initialAuthToken;
+
+        // IMPORTANT: Expose Firestore methods to global scope immediately after Firebase is initialized
+        // This is necessary because the Firebase imports are type="module"
+        // and their exports are not directly available in the global scope.
+        window.firebaseDoc = doc;
+        window.firebaseGetDoc = getDoc;
+        window.firebaseSetDoc = setDoc;
+        window.firebaseOnSnapshot = onSnapshot;
+
+        // Authenticate user and then load shopping list
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                console.log("User authenticated:", user.uid);
+                window.currentUserId = user.uid; // Make userId globally available
+                await window.loadShoppingList();
+            } else {
+                console.log("No user signed in. Signing in anonymously...");
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Error during anonymous sign-in:", error);
+                    window.showMessageBox('Error de autenticación', 'No se pudo iniciar sesión. Algunas funciones pueden no estar disponibles.', 'error');
+                }
+            }
+        });
+    </script>
+
+    <style>
+        /* Variables CSS para el tema oscuro */
+        :root {
+            --bg-dark: #121212;
+            --card-dark: #1e1e1e;
+            --accent-blue: #60a5fa;
+            --accent-green: #34d399;
+            --accent-purple: #a78bfa;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --border-dark: #2d3748;
+            --error-red: #ef4444;
+            --button-bg: #4a5568;
+            --button-hover-bg: #636b7a;
+            --success-green: #22c55e;
+            --info-blue: #3b82f6;
+            --word-color: #2b5797; /* Microsoft Word blue */
+            --excel-color: #217346; /* Microsoft Excel green */
+            --pdf-color: #b30b00; /* Adobe PDF red */
+        }
+
+        /* Reseteo básico de CSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Estilos generales del cuerpo de la página */
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            line-height: 1.5;
+            overflow-x: hidden; /* Prevent horizontal scroll on small screens */
+        }
+
+        /* Contenedor principal para centrar el contenido */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 3rem 1rem;
+        }
+
+        /* Estilos del encabezado principal */
+        .main-header {
+            font-size: 2.25rem;
+            font-weight: 800;
+            text-align: center;
+            background-color: var(--card-dark);
+            color: var(--accent-blue);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Search bar styling */
+        .search-container {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            padding: 0 1rem; /* Add horizontal padding for small screens */
+        }
+
+        .search-input {
+            width: 100%;
+            max-width: 500px;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-dark);
+            border-radius: 0.5rem;
+            background-color: var(--card-dark);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.5);
+        }
+
+        /* Contenedor de las pestañas */
+        .tabs-container {
+            display: flex;
+            flex-wrap: wrap; /* Allow tabs to wrap on smaller screens */
+            justify-content: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border-dark);
+            margin-bottom: 2rem;
+            padding: 0 0.5rem; /* Adjust padding for better fit on small screens */
+        }
+
+        /* Estilos de los botones de las pestañas */
+        .tab-button {
+            padding: 0.75rem 1.25rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border: none;
+            background-color: transparent;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 0.5rem 0.5rem 0 0;
+            flex-grow: 1; /* Allow buttons to grow and fill space */
+            min-width: fit-content; /* Prevent extreme shrinking */
+            white-space: nowrap; /* Prevent text wrapping within button */
+        }
+
+        /* Estilos para el botón de pestaña activo */
+        .tab-button.active {
+            color: var(--accent-green);
+            border-bottom: 2px solid var(--accent-green);
+            background-color: var(--card-dark);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Estilos al pasar el ratón por los botones de las pestañas */
+        .tab-button:hover:not(.active) {
+            color: var(--text-primary);
+            background-color: var(--bg-dark);
+        }
+
+        /* Contenido de las pestañas */
+        .tab-content {
+            display: none; /* Oculto por defecto */
+            background-color: var(--card-dark);
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            min-height: 450px;
+        }
+
+        /* Contenido de pestaña activo */
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Lista de elementos dentro de cada pestaña */
+        .item-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        /* Elementos individuales de la lista */
+        .item-list li {
+            display: flex;
+            flex-direction: column; /* Changed to column to stack description and supplier */
+            align-items: flex-start;
+            flex-wrap: wrap;
+            padding: 1rem;
+            border-bottom: 1px dashed var(--border-dark);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 0.5rem;
+        }
+
+        /* Contenedor para la descripción y el precio en la lista de ítems */
+        .item-details-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        /* Estilos al pasar el ratón sobre los elementos de la lista */
+        .item-list li:hover {
+            background-color: var(--bg-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Eliminar borde inferior del último elemento de la lista */
+        .item-list li:last-child {
+            border-bottom: none;
+        }
+
+        /* Descripción del elemento */
+        .item-description {
+            font-weight: 500;
+            flex: 1;
+            min-width: 60%;
+            padding-right: 1rem;
+        }
+
+        /* Precio del elemento */
+        .item-price {
+            font-weight: 600;
+            color: var(--accent-green);
+            text-align: right;
+            min-width: 30%;
+        }
+
+        /* Nuevo estilo para el proveedor */
+        .item-supplier {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem; /* Space between description and supplier */
+            width: 100%; /* Take full available width */
+        }
+
+        /* Styles for sub-category headings */
+        .sub-category-heading {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-purple);
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-dark);
+            padding-bottom: 0.5rem;
+        }
+
+
+        /* Media queries for responsive design on small screens */
+        @media (max-width: 768px) { /* Adjusted breakpoint for tablets and smaller */
+            .container {
+                padding: 2rem 0.5rem; /* Reduce overall padding */
+            }
+
+            .main-header {
+                font-size: 1.75rem; /* Smaller header on small screens */
+                padding: 1rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .tabs-container {
+                flex-direction: column; /* Stack tabs vertically on small screens */
+                align-items: stretch; /* Make tabs fill available width */
+                border-bottom: none; /* Remove bottom border for stacked tabs */
+                margin-bottom: 1rem;
+            }
+
+            .tab-button {
+                border-bottom: 1px solid var(--border-dark); /* Add border between stacked tabs */
+                border-radius: 0.5rem; /* Rounded corners for stacked tabs */
+                margin-bottom: 0.25rem; /* Small gap between stacked tabs */
+                flex-grow: unset; /* Remove flex-grow for stacking */
+            }
+
+            .tab-button:last-child {
+                border-bottom: none; /* No border on the last stacked tab */
+            }
+
+            .tab-button.active {
+                border-bottom: 2px solid var(--accent-green); /* Keep active indicator */
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            }
+
+            .tab-content {
+                padding: 1rem; /* Reduce padding inside tab content */
+                min-height: 300px; /* Adjust min-height for smaller screens */
+            }
+
+            .item-list li {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 0.75rem; /* Smaller padding for list items */
+            }
+            .item-details-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .item-description {
+                min-width: 100%;
+                margin-bottom: 0.25rem; /* Smaller margin for description */
+                padding-right: 0;
+            }
+            .item-price {
+                text-align: left;
+                width: 100%;
+                font-size: 0.95rem; /* Slightly smaller price font */
+            }
+            .item-supplier {
+                font-size: 0.8rem; /* Smaller supplier font */
+            }
+
+            .calculator-card {
+                padding: 1rem; /* Smaller padding for calculator card */
+                margin-top: 1.5rem;
+            }
+
+            .calculator-title {
+                font-size: 1.25rem; /* Smaller calculator title */
+                margin-bottom: 1rem;
+            }
+
+            .calculator-item {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 0.75rem 0;
+            }
+            .calculator-item-details, .calculator-item-controls {
+                min-width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            .calculator-item-controls {
+                justify-content: flex-start;
+                gap: 0.5rem; /* Smaller gap in controls */
+            }
+            .calculator-item-quantity {
+                width: 3.5rem; /* Smaller quantity input */
+                padding: 0.4rem;
+            }
+            .calculator-item-total {
+                width: auto; /* Adjust width automatically */
+                text-align: left; /* Align total to left on small screens */
+                margin-top: 0.25rem;
+                min-width: unset; /* Remove min-width constraint */
+            }
+            .remove-button {
+                padding: 0.25rem 0.5rem; /* Smaller remove button */
+                font-size: 0.75rem;
+            }
+            .calculator-total-summary {
+                font-size: 1.1rem; /* Smaller total summary font */
+                padding-top: 0.75rem;
+            }
+            .download-buttons {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem; /* Smaller gap between download buttons */
+                margin-top: 1rem;
+                padding-top: 0.75rem;
+            }
+            .download-buttons button {
+                width: 100%;
+                padding: 0.6rem 1rem; /* Adjust padding for download buttons */
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Further adjustments for very small screens (e.g., old smartphones) */
+        @media (max-width: 480px) {
+            .main-header {
+                font-size: 1.5rem;
+            }
+            .search-input {
+                font-size: 0.9rem;
+            }
+            .tab-button {
+                font-size: 0.9rem;
+                padding: 0.6rem 1rem;
+            }
+            .item-description {
+                font-size: 0.9rem;
+            }
+            .item-price {
+                font-size: 0.9rem;
+            }
+            .item-supplier {
+                font-size: 0.75rem;
+            }
+            .calculator-item-name {
+                font-size: 0.9rem;
+            }
+            .calculator-item-price-per-unit {
+                font-size: 0.75rem;
+            }
+            .calculator-item-quantity {
+                width: 3rem;
+                font-size: 0.8rem;
+            }
+            .calculator-item-total {
+                font-size: 0.9rem;
+            }
+            .sub-category-heading {
+                font-size: 1rem;
+            }
+        }
+
+        /* Transiciones suaves para elementos interactivos */
+        button, input, .tab-button, .item-list li, .remove-button {
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* Styles for the custom message box */
+        .message-box-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .message-box-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .message-box {
+            background-color: var(--card-dark);
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .message-box-overlay.visible .message-box {
+            transform: translateY(0);
+        }
+
+        .message-box h3 {
+            color: var(--accent-blue);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .message-box p {
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+        }
+
+        .message-box button {
+            background-color: var(--accent-green);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+
+        .message-box button:hover {
+            background-color: #28a745;
+        }
+
+        .message-box.error h3 {
+            color: var(--error-red);
+        }
+        .message-box.info h3 {
+            color: var(--info-blue);
+        }
+
+        /* Specific colors for download buttons */
+        #downloadWordBtn {
+            background-color: var(--word-color);
+        }
+        #downloadWordBtn:hover {
+            background-color: #244a82; /* Darker shade for hover */
+        }
+
+        #downloadExcelBtn {
+            background-color: var(--excel-color);
+        }
+        #downloadExcelBtn:hover {
+            background-color: #1a5a36; /* Darker shade for hover */
+        }
+
+        #downloadPdfBtn {
+            background-color: var(--pdf-color);
+        }
+        #downloadPdfBtn:hover {
+            background-color: #8c0a00; /* Darker shade for hover */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="main-header">Materiales de Laboratorio de Histología</h1>
+
+        <!-- Search Input -->
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="Buscar materiales..." onkeyup="filterDisplayedItems()">
+        </div>
+
+        <!-- Contenedor de las pestañas de navegación -->
+        <div class="tabs-container" role="tablist">
+            <button class="tab-button active" data-tab-target="procesamiento-tejidos" role="tab" aria-selected="true">Procesamiento de Tejidos</button>
+            <button class="tab-button" data-tab-target="inclusion-microtomia" role="tab" aria-selected="false">Inclusión y Microtomía</button>
+            <button class="tab-button" data-tab-target="tincion-montaje" role="tab" aria-selected="false">Tinción y Montaje</button>
+            <button class="tab-button" data-tab-target="microscopia-digitalizacion" role="tab" aria-selected="false">Microscopía y Digitalización</button>
+            <button class="tab-button" data-tab-target="general-almacenamiento" role="tab" aria-selected="false">General y Almacenamiento</button>
+        </div>
+
+        <!-- Contenido de las pestañas -->
+        <div id="tab-content-container">
+            <div id="procesamiento-tejidos" class="tab-content active" role="tabpanel">
+                <ul class="item-list">
+                    <!-- Items will be dynamically loaded or added here by JavaScript -->
+                </ul>
+            </div>
+
+            <div id="inclusion-microtomia" class="tab-content" role="tabpanel">
+                <ul class="item-list">
+                    <!-- Items will be dynamically loaded or added here by JavaScript -->
+                </ul>
+            </div>
+
+            <div id="tincion-montaje" class="tab-content" role="tabpanel">
+                <ul class="item-list">
+                    <!-- Items will be dynamically loaded or added here by JavaScript -->
+                </ul>
+            </div>
+
+            <div id="microscopia-digitalizacion" class="tab-content" role="tabpanel">
+                <ul class="item-list">
+                    <!-- Items will be dynamically loaded or added here by JavaScript -->
+                </ul>
+            </div>
+
+            <div id="general-almacenamiento" class="tab-content" role="tabpanel">
+                <ul class="item-list">
+                    <!-- Items will be dynamically loaded or added here by JavaScript -->
+                </ul>
+            </div>
+        </div>
+
+        <div class="calculator-card">
+            <h2 class="calculator-title">Lista de Compras</h2>
+            <div id="selected-items-list" class="mb-4">
+                <p id="no-items-message">Haz clic en un material para agregarlo a la lista.</p>
+            </div>
+            <div class="calculator-total-summary">
+                Total: <span id="calculatedTotal">$ 0</span>
+            </div>
+            <div class="download-buttons">
+                <button id="downloadWordBtn" onclick="downloadAsWord()">Descargar Word</button>
+                <button id="downloadExcelBtn" onclick="downloadAsExcel()">Descargar Excel</button>
+                <button id="downloadPdfBtn" onclick="downloadAsPdf()">Descargar PDF</button>
+            </div>
+            <div class="user-id-display" style="margin-top: 1rem; text-align: right; font-size: 0.8rem; color: var(--text-secondary);">
+                ID de Usuario: <span id="display-user-id">Cargando...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Message Box HTML -->
+    <div id="message-box-overlay" class="message-box-overlay">
+        <div class="message-box">
+            <h3 id="message-box-title"></h3>
+            <p id="message-box-content"></p>
+            <button onclick="hideMessageBox()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Array para almacenar los ítems seleccionados en la calculadora
+        let selectedItems = [];
+        // Contador para asignar IDs únicos a los ítems en la calculadora
+        let itemIdCounter = 0;
+
+        // Reference to Firestore database and current user ID
+        let db;
+        let currentUserId;
+        let appId; // Declare appId globally for use in functions
+
+        // Store all original list items for filtering, categorized by tab ID
+        const allLabItems = {
+            'procesamiento-tejidos': [],
+            'inclusion-microtomia': [],
+            'tincion-montaje': [],
+            'microscopia-digitalizacion': [],
+            'general-almacenamiento': []
+        };
+
+        // Global variable to keep track of the currently active tab ID
+        let currentActiveTabId = 'procesamiento-tejidos'; // Initialize with the default active tab
+
+        /**
+         * Custom message box function to replace native alerts.
+         * @param {string} title - The title of the message box.
+         * @param {string} message - The content message.
+         * @param {string} type - 'info', 'success', or 'error' for styling.
+         */
+        function showMessageBox(title, message, type = 'info') {
+            const overlay = document.getElementById('message-box-overlay');
+            const box = overlay.querySelector('.message-box');
+            document.getElementById('message-box-title').textContent = title;
+            document.getElementById('message-box-content').textContent = message;
+
+            // Remove previous type classes and add the new one
+            box.classList.remove('info', 'success', 'error');
+            box.classList.add(type);
+
+            overlay.classList.add('visible');
+        }
+
+        /**
+         * Hides the custom message box.
+         */
+        function hideMessageBox() {
+            document.getElementById('message-box-overlay').classList.remove('visible');
+        }
+
+        /**
+         * Saves the current selectedItems array to Firestore.
+         */
+        async function saveShoppingList() {
+            if (!db || !currentUserId || !appId) {
+                console.warn("Firestore not ready. Cannot save shopping list.");
+                return;
+            }
+            try {
+                const docRef = window.firebaseDoc(db, `artifacts/${appId}/users/${currentUserId}/shoppingLists/mainList`);
+                await window.firebaseSetDoc(docRef, { items: selectedItems });
+                console.log("Shopping list saved to Firestore.");
+            } catch (e) {
+                console.error("Error saving document: ", e);
+                showMessageBox('Error de Guardado', 'No se pudo guardar la lista de compras. Inténtelo de nuevo.', 'error');
+            }
+        }
+
+        /**
+         * Loads the shopping list from Firestore.
+         */
+        window.loadShoppingList = async function() {
+            db = window.firebaseDb;
+            currentUserId = window.firebaseAuth.currentUser?.uid || crypto.randomUUID(); // Ensure userId is set
+            appId = window.currentAppId; // Set appId from global variable
+
+            // Display user ID
+            document.getElementById('display-user-id').textContent = currentUserId;
+
+            if (!db || !currentUserId || !appId) {
+                console.warn("Firestore not ready. Cannot load shopping list.");
+                return;
+            }
+
+            try {
+                const docRef = window.firebaseDoc(db, `artifacts/${appId}/users/${currentUserId}/shoppingLists/mainList`);
+                const docSnap = await window.firebaseGetDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    selectedItems = data.items || [];
+                    // Ensure itemIdCounter is higher than any existing item ID to prevent duplicates
+                    if (selectedItems.length > 0) {
+                        itemIdCounter = Math.max(...selectedItems.map(item => item.id)) + 1;
+                    } else {
+                        itemIdCounter = 0;
+                    }
+                    console.log("Shopping list loaded from Firestore.");
+                } else {
+                    console.log("No shopping list found for this user. Starting with an empty list.");
+                    selectedItems = [];
+                    itemIdCounter = 0;
+                }
+                renderSelectedItems();
+                calculateTotal();
+            } catch (e) {
+                console.error("Error loading document: ", e);
+                showMessageBox('Error de Carga', 'No se pudo cargar la lista de compras. Se ha iniciado una lista vacía.', 'error');
+                selectedItems = []; // Fallback to empty list on error
+                itemIdCounter = 0;
+                renderSelectedItems();
+                calculateTotal();
+            }
+        };
+
+        /**
+         * Filters items based on the search input and displays them across all tabs.
+         */
+        function filterDisplayedItems() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const allTabContents = document.querySelectorAll('.tab-content');
+            const allTabButtons = document.querySelectorAll('.tab-button');
+
+            // Hide all tab contents and deactivate all tab buttons initially
+            allTabContents.forEach(content => content.classList.remove('active'));
+            document.querySelectorAll('.item-list li').forEach(itemLi => {
+                itemLi.style.display = 'none';
+            });
+            allTabButtons.forEach(button => {
+                button.classList.remove('active');
+                button.setAttribute('aria-selected', 'false');
+            });
+
+            if (searchTerm === '') {
+                // If search term is empty, revert to showing only the currentActiveTabId's content
+                const activeContent = document.getElementById(currentActiveTabId);
+                if (activeContent) {
+                    activeContent.classList.add('active'); // Show the content of the last active tab
+                    activeContent.querySelectorAll('.item-list li').forEach(itemLi => {
+                        itemLi.style.display = 'flex'; // Show all items in that tab
+                    });
+                }
+                const activeTabButton = document.querySelector(`[data-tab-target="${currentActiveTabId}"]`);
+                if (activeTabButton) {
+                    activeTabButton.classList.add('active'); // Re-activate the button for the last active tab
+                    activeTabButton.setAttribute('aria-selected', 'true');
+                }
+            } else {
+                // If there's a search term, show matching items across all tabs
+                for (const tabId in allLabItems) {
+                    let tabHasVisibleMatches = false; // Flag to check if this tab content should be visible
+                    // Iterate through items directly, as allLabItems[tabId] is now a flat array for search
+                    allLabItems[tabId].forEach(item => {
+                        const description = item.description.toLowerCase();
+                        const supplier = item.supplier.toLowerCase();
+                        const itemLi = item.element;
+
+                        if (itemLi && (description.includes(searchTerm) || supplier.includes(searchTerm))) {
+                            itemLi.style.display = 'flex'; // Show the matching item
+                            tabHasVisibleMatches = true;
+                        } else if (itemLi) {
+                            itemLi.style.display = 'none'; // Hide non-matching item
+                        }
+                    });
+
+                    if (tabHasVisibleMatches) {
+                        document.getElementById(tabId).classList.add('active'); // Make the tab content visible if it has matches
+                    }
+                }
+            }
+        }
+
+        /**
+         * Muestra la pestaña con el ID especificado y actualiza los estilos de los botones.
+         * @param {string} tabId - El ID de la pestaña a mostrar.
+         */
+        function showTab(tabId) {
+            // Clear search input when changing tabs manually
+            document.getElementById('searchInput').value = '';
+            currentActiveTabId = tabId; // Update the global variable when a tab is manually selected
+
+            // Oculta todos los contenidos de las pestañas
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            // Desactiva todos los botones de las pestañas
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+                button.setAttribute('aria-selected', 'false');
+            });
+            // Muestra el contenido de la pestaña seleccionada
+            document.getElementById(tabId).classList.add('active');
+            // Activa el botón de la pestaña correspondiente
+            const activeTabButton = document.querySelector(`[data-tab-target="${tabId}"]`);
+            if (activeTabButton) {
+                activeTabButton.classList.add('active');
+                activeTabButton.setAttribute('aria-selected', 'true');
+            }
+            // Apply filter (which will now show all items in the active tab if search is empty)
+            filterDisplayedItems();
+        }
+
+        // Asigna el evento click a todos los botones de las pestañas
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => showTab(button.dataset.tabTarget));
+        });
+
+        /**
+         * Agrega un ítem a la lista de la calculadora o incrementa su cantidad si ya existe.
+         * @param {string} description - La descripción del ítem.
+         * @param {number} price - El precio unitario del ítem.
+         * @param {string} supplier - El proveedor del ítem.
+         */
+        function addItemToCalculator(description, price, supplier) {
+            // Busca si el ítem ya existe en la lista
+            const existingItem = selectedItems.find(item => item.description === description);
+            if (existingItem) {
+                // Si existe, incrementa la cantidad
+                existingItem.quantity++;
+            } else {
+                // Si no existe, lo añade como un nuevo ítem
+                itemIdCounter++;
+                selectedItems.push({ id: itemIdCounter, description, price, supplier, quantity: 1 });
+            }
+            // Vuelve a renderizar la lista y recalcula el total
+            renderSelectedItems();
+            calculateTotal();
+            saveShoppingList(); // Save to Firestore
+        }
+
+        /**
+         * Actualiza la cantidad de un ítem específico en la calculadora.
+         * @param {number} id - El ID del ítem a actualizar.
+         * @param {string} newQuantity - La nueva cantidad (como string, se parseará a entero).
+         */
+        function updateItemQuantity(id, newQuantity) {
+            const itemIndex = selectedItems.findIndex(item => item.id === id);
+            if (itemIndex > -1) {
+                // Asegura que la cantidad sea un número no negativo
+                selectedItems[itemIndex].quantity = Math.max(0, parseInt(newQuantity) || 0);
+                // Vuelve a renderizar la lista y recalcula el total
+                renderSelectedItems();
+                calculateTotal();
+                saveShoppingList(); // Save to Firestore
+            }
+        }
+
+        /**
+         * Elimina un ítem de la lista de la calculadora.
+         * @param {number} id - El ID del ítem a eliminar.
+         */
+        function removeItem(id) {
+            // Filtra la lista para remover el ítem con el ID dado
+            selectedItems = selectedItems.filter(item => item.id !== id);
+            // Vuelve a renderizar la lista y recalcula el total
+            renderSelectedItems();
+            calculateTotal();
+            saveShoppingList(); // Save to Firestore
+        }
+
+        /**
+         * Renderiza la lista de ítems seleccionados en la sección de la calculadora.
+         */
+        function renderSelectedItems() {
+            const listContainer = document.getElementById('selected-items-list');
+            listContainer.innerHTML = ''; // Limpia el contenido actual
+
+            // Muestra un mensaje si no hay ítems seleccionados
+            if (selectedItems.length === 0) {
+                listContainer.innerHTML = '<p id="no-items-message">Haz clic en un material para agregarlo a la lista.</p>';
+                return;
+            }
+
+            // Renderiza cada ítem seleccionado
+            selectedItems.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'calculator-item';
+                itemDiv.innerHTML = `
+                    <div class="calculator-item-details">
+                        <span class="calculator-item-name">${item.description}</span>
+                        <span class="calculator-item-price-per-unit">$ ${item.price.toLocaleString('es-CL')} / unidad</span>
+                        <span class="item-supplier">Proveedor: ${item.supplier}</span>
+                    </div>
+                    <div class="calculator-item-controls">
+                        <input type="number" value="${item.quantity}" min="0" class="calculator-item-quantity" onchange="updateItemQuantity(${item.id}, this.value)">
+                        <span class="calculator-item-total">$ ${(item.quantity * item.price).toLocaleString('es-CL')}</span>
+                        <button class="remove-button" onclick="removeItem(${item.id})">X</button>
+                    </div>
+                `;
+                listContainer.appendChild(itemDiv);
+            });
+        }
+
+        /**
+         * Calcula y muestra el total de todos los ítems en la calculadora.
+         */
+        function calculateTotal() {
+            // Suma el total de todos los ítems (cantidad * precio)
+            const total = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            // Actualiza el texto del total en la interfaz
+            document.getElementById('calculatedTotal').textContent = `$ ${total.toLocaleString('es-CL')}`;
+        }
+
+        /**
+         * Descarga la lista de compras como un documento de Word (HTML).
+         */
+        function downloadAsWord() {
+            if (selectedItems.length === 0) {
+                showMessageBox('Lista Vacía', 'La lista de compras está vacía. Agregue elementos antes de descargar.', 'info');
+                return;
+            }
+
+            let tableHtml = `
+                <style>
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-family: 'Inter', sans-serif; }
+                    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+                    th { background-color: #f2f2f2; }
+                    .total-row td { font-weight: bold; }
+                </style>
+                <h1>Lista de Compras de Materiales de Laboratorio</h1>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Descripción</th>
+                            <th>Cantidad</th>
+                            <th>Precio Unitario</th>
+                            <th>Proveedor</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            selectedItems.forEach(item => {
+                tableHtml += `
+                    <tr>
+                        <td>${item.description}</td>
+                        <td>${item.quantity}</td>
+                        <td>$ ${item.price.toLocaleString('es-CL')}</td>
+                        <td>${item.supplier}</td>
+                        <td>$ ${(item.quantity * item.price).toLocaleString('es-CL')}</td>
+                    </tr>
+                `;
+            });
+
+            const grandTotal = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            tableHtml += `
+                        <tr class="total-row">
+                            <td colspan="4">Total General:</td>
+                            <td>$ ${grandTotal.toLocaleString('es-CL')}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+
+            const blob = new Blob([tableHtml], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Lista_de_Compras.doc'; // Usar .doc para compatibilidad simple
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showMessageBox('Descarga Exitosa', 'La lista de compras ha sido descargada como documento de Word.', 'success');
+        }
+
+        /**
+         * Descarga la lista de compras como un archivo de Excel.
+         */
+        function downloadAsExcel() {
+            if (selectedItems.length === 0) {
+                showMessageBox('Lista Vacía', 'La lista de compras está vacía. Agregue elementos antes de descargar.', 'info');
+                return;
+            }
+
+            const ws_data = [
+                ['Descripción', 'Cantidad', 'Precio Unitario', 'Proveedor', 'Total']
+            ];
+            selectedItems.forEach(item => {
+                ws_data.push([
+                    item.description,
+                    item.quantity,
+                    item.price,
+                    item.supplier,
+                    (item.quantity * item.price)
+                ]);
+            });
+
+            const grandTotal = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            ws_data.push(['', '', '', 'Total General:', grandTotal]);
+
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Lista de Compras");
+            XLSX.writeFile(wb, "Lista_de_Compras.xlsx");
+            showMessageBox('Descarga Exitosa', 'La lista de compras ha sido descargada como archivo de Excel.', 'success');
+        }
+
+        /**
+         * Descarga la lista de compras como un archivo PDF.
+         */
+        function downloadAsPdf() {
+            if (selectedItems.length === 0) {
+                showMessageBox('Lista Vacía', 'La lista de compras está vacía. Agregue elementos antes de descargar.', 'info');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const tableColumn = ["Descripción", "Cantidad", "Precio Unitario", "Proveedor", "Total"];
+            const tableRows = [];
+
+            selectedItems.forEach(item => {
+                const itemData = [
+                    item.description,
+                    item.quantity,
+                    `$ ${item.price.toLocaleString('es-CL')}`,
+                    item.supplier,
+                    `$ ${(item.quantity * item.price).toLocaleString('es-CL')}`
+                ];
+                tableRows.push(itemData);
+            });
+
+            const grandTotal = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            tableRows.push(['', '', '', 'Total General:', `$ ${grandTotal.toLocaleString('es-CL')}`]);
+
+            doc.text("Lista de Compras de Materiales de Laboratorio", 14, 20);
+            doc.autoTable(tableColumn, tableRows, { startY: 30 });
+            doc.save('Lista_de_Compras.pdf');
+            showMessageBox('Descarga Exitosa', 'La lista de compras ha sido descargada como archivo PDF.', 'success');
+        }
+
+        // Evento que se dispara cuando el DOM ha sido completamente cargado
+        document.addEventListener('DOMContentLoaded', () => {
+            // Define all histology-related items, categorized by display stage and then by type
+            const labItems = {
+                'procesamiento-tejidos': {
+                    'equipos': [
+                        { description: 'PROCESADOR DE TEJIDOS HISTOCORE PEARL (14049350667) LEICA BIOSYSTEMS', price: 38900000, supplier: 'New Path Chile SPA' }
+                    ],
+                    'reactivos': [
+                        { description: 'FORMALINA 10% LT.DIPROLAB', price: 8600, supplier: 'DIPROLAB LTDA' },
+                        { description: 'FORMALINA 10% TAMPONADA LT DIPROLAB', price: 15000, supplier: 'DIPROLAB LTDA' },
+                        { description: 'ALCOHOL ETILICO ABSOLUTO 99.8% LT DIPROLAB (AC24)', price: 7200, supplier: 'DIPROLAB LTDA' },
+                        { description: 'XILOL TECNICO LT VIDRIO AMBAR DIPROLAB', price: 6600, supplier: 'DIPROLAB LTDA' },
+                        { description: 'PARAFINA HISTOLOGICA PARAPLAST LEICA KG 56-58° NEW', price: 25600, supplier: 'DIPROLAB LTDA' },
+                        { description: '4005-1 Parafina histológica PF 56°C bolsa de 1kg', price: 25000, supplier: 'IMPORTADORA E INVERSIONES PROLAB LIMITADA' },
+                        { description: 'Formalina o Formaldehido 37%- 1 Litro', price: 9000, supplier: 'Bioquimica.CL.SA' },
+                        { description: 'Xilol Puro 11', price: 10200, supplier: 'Bioquimica.CL.SA' },
+                        { description: 'XILOL P.A. ENV.1LT', price: 17250, supplier: 'SOCIEDAD COMERCIAL RSLAB INSUMOS LTDA' },
+                        { description: 'FORMALINA 37% P.A. ENVASE 1 LITRO', price: 23250, supplier: 'SOCIEDAD COMERCIAL RSLAB INSUMOS LTDA' },
+                        { description: 'ALCOHOL ETILICO ABSOLUTO, ENVASE 1 LITRO', price: 9800, supplier: 'SOCIEDAD COMERCIAL RSLAB INSUMOS LTDA' },
+                        { description: 'PARAFINA HISTOLOGICA PELLETS PHARMA-DIAGNOS. ENVASE 1 KILO', price: 35250, supplier: 'SOCIEDAD COMERCIAL RSLAB INSUMOS LTDA' },
+                        { description: 'XILOL PURO ENVASE 1 LITRO', price: 11250, supplier: 'SOCIEDAD COMERCIAL RSLAB INSUMOS LTDA' },
+                        { description: 'CLOROFORMO PA (ENV VIDRIO) X 1L', price: 22500, supplier: 'CHEMIX / FARMALATINA' },
+                        { description: 'ALCOHOL (iso) AMILICO ACS X 1L', price: 55800, supplier: 'CHEMIX / FARMALATINA' },
+                        { description: '2-PROPANOL (ISOPROPILICO) ENVASE VIDRIO PA X 1L', price: 12200, supplier: 'CHEMIX / FARMALATINA' }
+                    ]
+                },
+                'inclusion-microtomia': {
+                    'equipos': [
+                        { description: 'MICROTOMO MANUAL (RM2125 RTS) LEICA BIOSYSTEMS', price: 10900000, supplier: 'New Path Chile SPA' },
+                        { description: 'CENTRO DE INCLUSION COMPLETO (ARCADIA) LEICA BIOSYSTEMS', price: 15900000, supplier: 'New Path Chile SPA' },
+                        { description: 'PLACA FRIA ARCADIA C (14039357262) LEICA BIOSYSTEMS', price: 7900000, supplier: 'New Path Chile SPA' },
+                        { description: 'MICROTOMO DE ROTACIÓN MANUAL (BIOCUT) LEICA BIOSYSTEMS', price: 12900000, supplier: 'New Path Chile SPA' },
+                        { description: 'CRIOSTATO CON PROTECCIÓN UV Y AG PROTEC CM1860 UV (1491860UVEU) LEICA BIOSYSTEMS', price: 35900000, supplier: 'New Path Chile SPA' },
+                        { description: 'IMPRESORA LÁSER DE CASSETE UC-160', price: 0, supplier: 'CITOTEST LABWARE MANUFACTURING CO., LTD' }, // Precio no especificado
+                        { description: 'IMPRESORA LÁSER DE CASSETE UC-600', price: 0, supplier: 'CITOTEST LABWARE MANUFACTURING CO., LTD' }, // Precio no especificado
+                        { description: 'IMPRESORA LÁSER DE PORTAOBJETOS US-100', price: 0, supplier: 'CITOTEST LABWARE MANUFACTURING CO., LTD' } // Precio no especificado
+                    ],
+                    'fungibles': [
+                        { description: '215-01-10LM-5 Casete biopsia LASER blanco con tapa x 500 un. Fatech-Holanda', price: 77500, supplier: 'IMPORTADORA E INVERSIONES PROLAB LIMITADA' }
+                    ]
+                },
+                'tincion-montaje': {
+                    'equipos': [
+                        { description: 'BAÑO DE FLOTACION HISTOCORE WATER BATH (140607020CO) LEICA BIOSYSTEMS', price: 1790000, supplier: 'New Path Chile SPA' },
+                        { description: 'BAÑO DE FLOTACIÓN WATER BATH + PLACA CALIENTE (HISTOCORE) LEICA BIOSYSTEMS', price: 2690000, supplier: 'New Path Chile SPA' }
+                    ],
+                    'fungibles': [
+                        { description: 'PORTAOBJETO BORDE ESMERI, 7101 GLOBAL ROLL X 50 UN. 25.4 X 76.2 MM', price: 1572, supplier: 'DIPROLAB LTDA' },
+                        { description: 'PORTAOBJETO FRANJA Y BORDE ESMERI. 7105 GLOBAL ROLL X50UN 25.4X76.2MM', price: 1730, supplier: 'DIPROLAB LTDA' },
+                        { description: 'CUBREOBJETO 18X18MM X100UN LABORGLASER', price: 953, supplier: 'DIPROLAB LTDA' },
+                        { description: 'CUBREOBJETO 20X20MM X100UN LABORGLASER', price: 953, supplier: 'DIPROLAB LTDA' },
+                        { description: 'CUBREOBJETO 22X22MM X100UN LABORGLASER', price: 1034, supplier: 'DIPROLAB LTDA' },
+                        { description: 'CUBREOBJETO 24X24MM X100UN LABORGLASER', price: 970, supplier: 'DIPROLAB LTDA' },
+                        { description: 'CUBREOBJETO 24X32MM X100UN LABORGLASER', price: 1173, supplier: 'DIPROLAB LTDA' },
+                        { description: 'DRW-3000 Portaobjetos compatible Impresora Automat CWS-USA 100unid.', price: 30000, supplier: 'IMPORTADORA E INVERSIONES PROLAB LIMITADA' },
+                        { description: 'PORTA OBJETO 25X76, CAJA 50 UNIDADES', price: 1480, supplier: 'SOCIEDAD COMERCIAL RSLAB INSUMOS LTDA' },
+                        { description: 'CUBREOBJETO 18X18 CAJA 100 UNIDADES', price: 910, supplier: 'SOCIEDAD COMERCIAL RSLAB INSUMOS LTDA' },
+                        { description: 'PORTAOBJETO 76X26 MM, BORDES PULIDOS PARA EVITAR CORTES EN LAS MANOS. CAJA DE 50 UNIDADES. MODELO Z01-001 COD 912001', price: 2700, supplier: 'MUNDOLAB S.A.' },
+                        { description: 'CUBREOBJETO DE VIDRIO 22X22 MM C/100 MARCA ISOLAB LABORGERATE, ORIGEN ALEMAN', price: 904, supplier: 'MUNDOLAB S.A.' },
+                        { description: 'PORTAOBJETOS CON BORDE ESMERILADA 50 UNIDADES MEDIDAS 25.4 76.2MM 7101', price: 1037, supplier: 'COMERCIALIZADORA HEALTH EQUIPMENT SUPPLY SPA' },
+                        { description: 'PORTAOBJETOS CON BORDE Y FRANJA ESMERILADA 50 UNID. DIM. 25.4 76.2MM (7105) Grosor 1.0 mm 1.2 mm N° 7105', price: 1059, supplier: 'COMERCIALIZADORA HEALTH EQUIPMENT SUPPLY SPA' },
+                        { description: 'CUBRE OBJETO 18 X 18 MM CAJA 100 UNIDADES MARCA BELL', price: 268, supplier: 'COMERCIALIZADORA HEALTH EQUIPMENT SUPPLY SPA' },
+                        { description: 'CUBRE OBJETO 20 X 20 CAJA 100 UNIDADES MARCA BELL', price: 298, supplier: 'COMERCIALIZADORA HEALTH EQUIPMENT SUPPLY SPA' },
+                        { description: 'CUBRE OBJETO 22 X 22 CAJA 100 UNIDADES MARCA BELL', price: 438, supplier: 'COMERCIALIZADORA HEALTH EQUIPMENT SUPPLY SPA' },
+                        { description: 'Portaobjetos - Franja Esmerilada - Caja 50 Uds', price: 2290, supplier: 'Bioquimica.CL.SA' },
+                        { description: 'Cubreobjetos 20X20 mm - Uso escolar - Caja 100 Un', price: 1280, supplier: 'Bioquimica.CL.SA' }
+                    ],
+                    'reactivos': [
+                        { description: 'HEMATOXILINA DE HARRIS LT. DIPROLAB', price: 58600, supplier: 'DIPROLAB LTDA' },
+                        { description: 'EOSINA ACUOSA 0,5% 100 ML DIPROLAB', price: 14300, supplier: 'DIPROLAB LTDA' },
+                        { description: 'HMM500 Hematoxylin Mayer s (Lillie s Modification) 500ml', price: 130000, supplier: 'IMPORTADORA E INVERSIONES PROLAB LIMITADA' },
+                        { description: '02740-50 Eosina amarillenta CI 45380 50gr Polysciences-USA', price: 330000, supplier: 'IMPORTADORA E INVERSIONES PROLAB LIMITADA' },
+                        { description: '6419 Mounting Medium 475ml Sakura-USA', price: 118000, supplier: 'IMPORTADORA E INVERSIONES PROLAB LIMITADA' },
+                        { description: 'AML030 Aqueous Mount (Low Viscosity) 30 ml SCYTEK-USA', price: 115000, supplier: 'IMPORTADORA E INVERSIONES PROLAB LIMITADA' },
+                        { description: 'HEMATOXILINA DE HARRIS. ENVASE 1 LITRO', price: 110850, supplier: 'SOCIEDAD COMERCIAL RSLAB INSUMOS LTDA' },
+                        { description: 'TINCION DE GRAM 4 X 100mL', price: 13200, supplier: 'CHEMIX / FARMALATINA' },
+                        { description: 'ORCEINA (SINTETICA) PA X 5g', price: 66600, supplier: 'CHEMIX / FARMALATINA' },
+                        { description: 'AGAR NUTRIENTE (500G)', price: 96600, supplier: 'BD / FARMALATINA' }
+                    ]
+                },
+                'microscopia-digitalizacion': {
+                    'equipos': [
+                        { description: 'Microscopio binocular bScope', price: 1290000, supplier: 'New Path Chile SPA' },
+                        { description: 'Microscopio binocular iScope con oculares EWF 10x/22 mm', price: 1690000, supplier: 'New Path Chile SPA' },
+                        { description: 'Microscopio trinocular bScope para fluorescencia LED', price: 5990000, supplier: 'New Path Chile SPA' },
+                        { description: 'Microscopio trinocular iScope con oculares EWF 10x/22 mm', price: 6990000, supplier: 'New Path Chile SPA' },
+                        { description: 'Cámara a color 4K UHD 2160p CMOS', price: 1600000, supplier: 'New Path Chile SPA' },
+                        { description: 'Cámara refrigerada Euromex 20MP USB 3.0 con sensor CMOS de 1"', price: 2690000, supplier: 'New Path Chile SPA' },
+                        { description: 'Microscopio iScope para Epi-fluorescencia con lámpara de vapor de mercurio 100W', price: 0, supplier: 'New Path Chile SPA' }, // Precio no especificado
+                        { description: 'STEREO BLUE BINO ZOOM CAT SB.1902 EUROMEX', price: 632750.37, supplier: 'TCL Group SpA' },
+                        { description: 'STEREO BLUE TRINO ZOOM SB.1903 EUROMEX', price: 701377.67, supplier: 'TCL Group SpA' },
+                        { description: 'MICROSCOPIO LED BINO BIOBLUE BB.4260 EUROMEX', price: 716955.96, supplier: 'TCL Group SpA' },
+                        { description: 'MICRO TRI BIOBLUE LAB CAT.BB.1153-PLI EUROMEX', price: 826098, supplier: 'TCL Group SpA' },
+                        { description: 'Cámara Euromex DC.18000 pro.', price: 1132285, supplier: 'TCL Group SpA' }
+                    ]
+                },
+                'general-almacenamiento': {
+                    'equipos': [
+                        { description: 'CABINAS DE FILTRACION DE GASES DE CLASE 2 GAMA CLASSIC (670) CRUMA', price: 5400000, supplier: 'New Path Chile SPA' },
+                        { description: 'Cabina de filtración de gases ECO2-CRUMA', price: 3990000, supplier: 'New Path Chile SPA' },
+                        { description: 'EDGE Dedicated pH/mV, 230V', price: 586428, supplier: 'HANNA Instruments Equipos Ltda' },
+                        { description: 'Electrodo de pH digital de vidrio, rellenable', price: 282804, supplier: 'HANNA Instruments Equipos Ltda' },
+                        { description: 'Agitador magnético color azul oscuro', price: 135580, supplier: 'HANNA Instruments Equipos Ltda' },
+                        { description: 'GABINETE METALICO PARA ALMACENAJE DE LAMINAS CITOTEST®', price: 0, supplier: 'CITOTEST LABWARE MANUFACTURING CO., LTD' }, // Precio no especificado
+                        { description: 'GABINETE METALICO PARA ALMACENAJE DE CASSETTES CITOTEST®', price: 0, supplier: 'CITOTEST LABWARE MANUFACTURING CO., LTD' } // Precio no especificado
+                    ],
+                    'fungibles': [
+                        { description: 'PAPEL FILTRO CIR. X 100UN 292 12.5CM W1 MFS 2 CUALIT. R1040 FILTR', price: 14767, supplier: 'DIPROLAB LTDA' },
+                        { description: 'ROLLO PAPEL PARAFILM (10CMX38M) R0950 PARAFILM (ACT24)', price: 37030, supplier: 'DIPROLAB LTDA' },
+                        { description: 'Papel Filtro 12,5 Cm W42 - Caja 100 Un', price: 17922, supplier: 'Bioquimica.CL.SA' },
+                        { description: 'Parafilm 10 Cm de Ancho - 38 Metros', price: 30095, supplier: 'Bioquimica.CL.SA' },
+                        { description: 'PAPEL FILTRO 58 X 58 EQUIVALENTE A WHATMAN N°1 X PLIEGO', price: 1890, supplier: 'SOCIEDAD COMERCIAL RSLAB INSUMOS LTDA' },
+                        { description: 'PARAFILM 4IN x 125 FT; 10 CM x 38 METROS', price: 29800, supplier: 'SOCIEDAD COMERCIAL RSLAB INSUMOS LTDA' },
+                        { description: 'PAPEL FILTRO 58X58 CM PROPOSITO GENERAL ALTO PODER ABSORVENTE, RESISTENTE A LA HUMEDAD SE PUEDE USAR COMO PROTECTOR DE MESON', price: 286, supplier: 'MUNDOLAB S.A.' },
+                        { description: 'PAPEL SELLO FILM PARA LABORATORIO ROLLO 38 mts x 10 cm FAB. USA', price: 24950, supplier: 'MUNDOLAB S.A.' }
+                    ],
+                    'reactivos': [
+                        { description: 'Solución de pH 4,01, 500 mL. c/certif. NIST', price: 19926, supplier: 'HANNA Instruments Equipos Ltda' },
+                        { description: 'Solución pH 7,01, 500 mL. c/certif. NIST', price: 19926, supplier: 'HANNA Instruments Equipos Ltda' },
+                        { description: 'Solución de pH 10,01, 500 mL. c/ certif. NIST', price: 19926, supplier: 'HANNA Instruments Equipos Ltda' },
+                        { description: 'Soluc. de limpieza de electrodos Bot. 500 mL', price: 25784, supplier: 'HANNA Instruments Equipos Ltda' },
+                        { description: 'Solución de almacenamiento electrodos 500mL', price: 25784, supplier: 'HANNA Instruments Equipos Ltda' },
+                        { description: 'Alcohol (Etanol) 95° Botella 1 LT TCL Group SpA', price: 3850, supplier: 'TCL Group SpA' },
+                        { description: 'Alcohol (Etanol) 95° Bidón 5 LTS', price: 15500, supplier: 'TCL Group SpA' },
+                        { description: 'DMSO ESTERIL: 250 mL MEDIATECH-CORNING', price: 104401, supplier: 'MEDIATECH-CORNING / GENEXPRESS' },
+                        { description: 'DMSO: 50 ML US BIOLOGICALS', price: 133792, supplier: 'US BIOLOGICALS / GENEXPRESS' },
+                        { description: 'Magnesium Chloride (MgC12) Solution: 6 ML NEW ENGLAND BIOLABS', price: 35437, supplier: 'NEW ENGLAND BIOLABS / GENEXPRESS' },
+                        { description: 'Recombinant Albumin, Molecular Biology Grade: 12 mg NEW ENGLAND BIOLABS', price: 64546, supplier: 'NEW ENGLAND BIOLABS / GENEXPRESS' },
+                        { description: 'BOVINE SERUM ALBUMN, FRACT V: 50 gr ROCKLAND IMMUNOCHEMI', price: 175000, supplier: 'ROCKLAND IMMUNOCHEMI / GENEXPRESS' },
+                        { description: 'TRIS, ULTRAPURO: 1KG VWR', price: 99000, supplier: 'VWR / GENEXPRESS' },
+                        { description: 'EDTA, DISODIUM SALT, DIHYDRATE: 500 gr VWR', price: 124000, supplier: 'VWR / GENEXPRESS' },
+                        { description: 'SODIUM CHLORIDE, MB GRADE: 500G US BIOLOGICALS', price: 70512, supplier: 'US BIOLOGICALS / GENEXPRESS' },
+                        { description: 'SODIUM CHLORIDE: 1KG US BIOLOGICALS', price: 104864, supplier: 'US BIOLOGICALS / GENEXPRESS' },
+                        { description: 'SODIUM DODECYL SULFATE (SDS): 100 gr US BIOLOGICALS', price: 133792, supplier: 'US BIOLOGICALS / GENEXPRESS' },
+                        { description: 'SODIUM DODECYL SULFATE (SDS): 500G US BIOLOGICALS', price: 546016, supplier: 'US BIOLOGICALS / GENEXPRESS' },
+                        { description: 'SODIUM ACETATE: 100 g PHYTOTECNOLOGY LABOR', price: 36115, supplier: 'PHYTOTECNOLOGY LABOR / GENEXPRESS' },
+                        { description: 'SODIUM ACETATE: 1 Kg PHYTOTECNOLOGY LABOR', price: 79241, supplier: 'PHYTOTECNOLOGY LABOR / GENEXPRESS' },
+                        { description: 'Alcohol Etílico 95° Grados (Etanol) Grado Técnico Bidón de 5 Lts', price: 15500, supplier: 'TCL Group SpA' },
+                        { description: 'Cloruro de Magnesio Hexahidrato - 100 Gramos', price: 4700, supplier: 'Bioquimica.CL.SA' },
+                        { description: 'Cloruro de Magnesio Hexahidrato - 500 Gramos', price: 14500, supplier: 'Bioquimica.CL.SA' },
+                        { description: 'Acido Acetico 99% 1 Litro', price: 22900, supplier: 'Bioquimica.CL.SA' },
+                        { description: 'Acido Borico 1000 Gramos', price: 9900, supplier: 'Bioquimica.CL.SA' },
+                        { description: 'Cloruro de Sodio Tecnico 500 Gramos', price: 3900, supplier: 'Bioquimica.CL.SA' },
+                        { description: 'Cloruro de Sodio - Usp - 500 Gramos', price: 8025, supplier: 'Bioquimica.CL.SA' },
+                        { description: 'Cloroformo Tecnico 1 Litro', price: 16900, supplier: 'Bioquimica.CL.SA' },
+                        { description: 'Cloroformo- P.a. - 1 Litro', price: 42000, supplier: 'Bioquimica.CL.SA' },
+                        { description: 'Alcohol Isopropilico Tecnico - 1 Litro', price: 7206, supplier: 'Bioquimica.CL.SA' },
+                        { description: 'Acetato de Sodio - 500 Gramos', price: 7390, supplier: 'Bioquimica.CL.SA' },
+                        { description: 'ACIDO EDTA, SAL DISODICA 2-H2O PA X 250g', price: 28600, supplier: 'CHEMIX / FARMALATINA' },
+                        { description: 'ACIDO CLORHIDRICO 36-38% ACS ISO (ENV VIDRIO) X 2,5L', price: 32500, supplier: 'SCHARLAU / FARMALATINA' },
+                        { description: 'XILENO PA (ENV VIDRIO) X 1L', price: 7100, supplier: 'CHEMIX / FARMALATINA' },
+                        { description: 'ETANOL 96° DESNATURALIZADO (ENV PLASTICO) X 1L', price: 4300, supplier: 'CHEMIX / FARMALATINA' },
+                        { description: 'ETANOL ABSOLUTO (ALCOHOL ETILICO) PA (ENV VIDRIO) X 1L', price: 9300, supplier: 'CHEMIX / FARMALATINA' },
+                        { description: 'ACIDO ACETICO GLACIAL PA (ENV VIDRIO) X 1L', price: 12400, supplier: 'CHEMIX / FARMALATINA' }
+                    ]
+                }
+            };
+
+            // Function to populate a tab's item list with sub-categories
+            function populateItemList(tabId, categories) {
+                const itemListElement = document.querySelector(`#${tabId} .item-list`);
+                if (!itemListElement) {
+                    console.error(`Error: Element with ID #${tabId} or .item-list inside it not found.`);
+                    return;
+                }
+                itemListElement.innerHTML = ''; // Clear existing items
+
+                for (const categoryType in categories) {
+                    const items = categories[categoryType];
+                    if (items.length > 0) {
+                        const heading = document.createElement('h3');
+                        heading.className = 'sub-category-heading';
+                        heading.textContent = categoryType.charAt(0).toUpperCase() + categoryType.slice(1); // Capitalize first letter
+                        itemListElement.appendChild(heading);
+
+                        items.forEach(item => {
+                            const li = document.createElement('li');
+                            li.setAttribute('data-description', item.description);
+                            li.setAttribute('data-price', item.price);
+                            li.setAttribute('data-supplier', item.supplier);
+                            li.onclick = () => addItemToCalculator(item.description, item.price, item.supplier);
+
+                            li.innerHTML = `
+                                <div class="item-details-row">
+                                    <span class="item-description">${item.description}</span>
+                                    <span class="item-price">$ ${item.price.toLocaleString('es-CL')}</span>
+                                </div>
+                                <span class="item-supplier">Proveedor: ${item.supplier}</span>
+                            `;
+                            itemListElement.appendChild(li);
+                        });
+                    }
+                }
+            }
+
+            // Populate all tab lists with the new data
+            for (const tabId in labItems) {
+                populateItemList(tabId, labItems[tabId]);
+            }
+
+            // After populating, re-collect references for allLabItems for filtering functionality
+            // This structure will now be a flat array of all items in the tab for search functionality
+            const tempAllLabItemsForSearch = {};
+            for (const tabId in labItems) {
+                tempAllLabItemsForSearch[tabId] = [];
+                for (const categoryType in labItems[tabId]) {
+                    labItems[tabId][categoryType].forEach(item => {
+                        tempAllLabItemsForSearch[tabId].push({
+                            description: item.description,
+                            price: item.price,
+                            supplier: item.supplier,
+                            element: null // Will be assigned in the next loop
+                        });
+                    });
+                }
+            }
+
+            // Now, after populating the DOM, iterate again to assign the 'element' reference
+            for (const tabId in tempAllLabItemsForSearch) {
+                const itemListElements = document.querySelector(`#${tabId} .item-list`).querySelectorAll('li');
+                tempAllLabItemsForSearch[tabId].forEach((itemData, index) => {
+                    if (itemListElements[index]) {
+                        itemData.element = itemListElements[index];
+                    }
+                });
+            }
+            // Assign the refined structure to the global allLabItems
+            Object.assign(allLabItems, tempAllLabItemsForSearch);
+
+
+            // Muestra la primera pestaña por defecto (Procesamiento de Tejidos)
+            showTab('procesamiento-tejidos');
+            // loadShoppingList will be called after Firebase authentication in the script module
+        });
+    </script>
+</body>
+</html>
