@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materiales de Laboratorio de Biología Molecular</title>
+    <!-- Link to Inter font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Libraries for exporting to Excel and PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables for Firebase (provided by the environment)
+        // These variables are essential for Firebase to connect to the correct project and authenticate the user.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Initialize Firebase app
+        const app = initializeApp(firebaseConfig);
+        // Get Firestore instance
+        const db = getFirestore(app);
+        // Get Auth instance
+        const auth = getAuth(app);
+
+        // Expose Firebase instances and variables to the global scope for use in other scripts
+        // This makes `db`, `auth`, `doc`, `getDoc`, `setDoc`, `onSnapshot` available globally.
+        window.firebaseApp = app;
+        window.firebaseDb = db;
+        window.firebaseAuth = auth;
+        window.currentAppId = appId;
+        window.initialAuthToken = initialAuthToken;
+
+        // Expose Firestore methods to global scope immediately after Firebase is initialized
+        // This is necessary because the Firebase imports are type="module" and their exports are not directly available in the global scope.
+        window.firebaseDoc = doc;
+        window.firebaseGetDoc = getDoc;
+        window.firebaseSetDoc = setDoc;
+        window.firebaseOnSnapshot = onSnapshot;
+
+        // Authenticate user and then load shopping list
+        // onAuthStateChanged listens for changes in the user's sign-in state.
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                console.log("User authenticated:", user.uid);
+                window.currentUserId = user.uid; // Make userId globally available
+                await window.loadShoppingList(); // Load shopping list after successful authentication
+            } else {
+                console.log("No user signed in. Attempting anonymous sign-in...");
+                try {
+                    if (initialAuthToken) {
+                        // Use custom token if provided (for authenticated users)
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        // Sign in anonymously if no custom token (for new or unauthenticated users)
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Error during authentication:", error);
+                    window.showMessageBox('Error de autenticación', 'No se pudo iniciar sesión. Algunas funciones pueden no estar disponibles.', 'error');
+                }
+            }
+        });
+    </script>
+
+    <style>
+        /* CSS Variables for dark theme */
+        :root {
+            --bg-dark: #121212;
+            --card-dark: #1e1e1e;
+            --accent-blue: #60a5fa;
+            --accent-green: #34d399;
+            --accent-purple: #a78bfa;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --border-dark: #2d3748;
+            --error-red: #ef4444;
+            --button-bg: #4a5568;
+            --button-hover-bg: #636b7a;
+            --success-green: #22c55e;
+            --info-blue: #3b82f6;
+            --word-color: #2b5797; /* Microsoft Word blue */
+            --excel-color: #217346; /* Microsoft Excel green */
+            --pdf-color: #b30b00; /* Adobe PDF red */
+            --clear-red: #dc2626; /* A strong red for clear all button */
+            --clear-hover-red: #b91c1c; /* Darker red for hover */
+        }
+
+        /* Basic CSS Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* General body styles */
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            line-height: 1.5;
+            overflow-x: hidden; /* Prevent horizontal scroll on small screens */
+        }
+
+        /* Main container for centering content */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 3rem 1rem;
+        }
+
+        /* Main header styles */
+        .main-header {
+            font-size: 2.25rem;
+            font-weight: 800;
+            text-align: center;
+            background-color: var(--card-dark);
+            color: var(--accent-blue);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Search bar styling */
+        .search-container {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            padding: 0 1rem; /* Add horizontal padding for small screens */
+        }
+
+        .search-input {
+            width: 100%;
+            max-width: 500px;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-dark);
+            border-radius: 0.5rem;
+            background-color: var(--card-dark);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.5);
+        }
+
+        /* Tabs container */
+        .tabs-container {
+            display: flex;
+            flex-wrap: wrap; /* Allow tabs to wrap on smaller screens */
+            justify-content: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border-dark);
+            margin-bottom: 2rem;
+            padding: 0 0.5rem; /* Adjust padding for better fit on small screens */
+        }
+
+        /* Tab button styles */
+        .tab-button {
+            padding: 0.75rem 1.25rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border: none;
+            background-color: transparent;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 0.5rem 0.5rem 0 0;
+            flex-grow: 1; /* Allow buttons to grow and fill space */
+            min-width: fit-content; /* Prevent extreme shrinking */
+            white-space: nowrap; /* Prevent text wrapping within button */
+        }
+
+        /* Active tab button styles */
+        .tab-button.active {
+            color: var(--accent-green);
+            border-bottom: 2px solid var(--accent-green);
+            background-color: var(--card-dark);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Hover styles for tab buttons */
+        .tab-button:hover:not(.active) {
+            color: var(--text-primary);
+            background-color: var(--bg-dark);
+        }
+
+        /* Tab content */
+        .tab-content {
+            display: none; /* Hidden by default */
+            background-color: var(--card-dark);
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            min-height: 450px;
+        }
+
+        /* Active tab content */
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Item list within each tab */
+        .item-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        /* Individual list items */
+        .item-list li {
+            display: flex;
+            flex-direction: column; /* Changed to column to stack description and supplier */
+            align-items: flex-start;
+            flex-wrap: wrap;
+            padding: 1rem;
+            border-bottom: 1px dashed var(--border-dark);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 0.5rem;
+        }
+
+        /* Container for description and price in the item list */
+        .item-details-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        /* Hover styles for list items */
+        .item-list li:hover {
+            background-color: var(--bg-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Remove bottom border from the last list item */
+        .item-list li:last-child {
+            border-bottom: none;
+        }
+
+        /* Item description */
+        .item-description {
+            font-weight: 500;
+            flex: 1;
+            min-width: 60%;
+            padding-right: 1rem;
+        }
+
+        /* Item price */
+        .item-price {
+            font-weight: 600;
+            color: var(--accent-green);
+            text-align: right;
+            min-width: 30%;
+        }
+
+        /* New style for supplier */
+        .item-supplier {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem; /* Space between description and supplier */
+            width: 100%; /* Take full available width */
+        }
+
+        /* Calculator card styles */
+        .calculator-card {
+            background-color: var(--card-dark);
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            margin-top: 2.5rem;
+        }
+
+        .calculator-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--accent-purple);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .calculator-item {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px dashed var(--border-dark);
+        }
+
+        .calculator-item:last-child {
+            border-bottom: none;
+        }
+
+        .calculator-item-details {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 60%; /* Ensure details take up enough space */
+        }
+
+        .calculator-item-name {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .calculator-item-price-per-unit {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .calculator-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 35%; /* Ensure controls take up enough space */
+            justify-content: flex-end; /* Align controls to the right */
+        }
+
+        .calculator-item-quantity {
+            width: 4rem;
+            padding: 0.5rem;
+            border: 1px solid var(--border-dark);
+            border-radius: 0.5rem;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .calculator-item-total {
+            font-weight: 600;
+            color: var(--accent-green);
+            min-width: 5rem; /* Give total a fixed width for alignment */
+            text-align: right;
+        }
+
+        .remove-button {
+            background-color: var(--error-red);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.3rem 0.6rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+
+        .remove-button:hover {
+            background-color: #cc0000;
+        }
+
+        .calculator-total-summary {
+            text-align: right;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-dark);
+            margin-top: 1rem;
+        }
+
+        .download-buttons {
+            display: flex;
+            flex-wrap: wrap; /* Allow buttons to wrap */
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px dashed var(--border-dark);
+        }
+
+        .download-buttons button {
+            background-color: var(--button-bg);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+            flex-grow: 1; /* Allow buttons to grow */
+            min-width: 150px; /* Minimum width for buttons */
+        }
+
+        .download-buttons button:hover {
+            background-color: var(--button-hover-bg);
+        }
+
+        /* Media queries for responsive design on small screens */
+        @media (max-width: 768px) { /* Adjusted breakpoint for tablets and smaller */
+            .container {
+                padding: 2rem 0.5rem; /* Reduce overall padding */
+            }
+
+            .main-header {
+                font-size: 1.75rem; /* Smaller header on small screens */
+                padding: 1rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .tabs-container {
+                flex-direction: column; /* Stack tabs vertically on small screens */
+                align-items: stretch; /* Make tabs fill available width */
+                border-bottom: none; /* Remove bottom border for stacked tabs */
+                margin-bottom: 1rem;
+            }
+
+            .tab-button {
+                border-bottom: 1px solid var(--border-dark); /* Add border between stacked tabs */
+                border-radius: 0.5rem; /* Rounded corners for stacked tabs */
+                margin-bottom: 0.25rem; /* Small gap between stacked tabs */
+                flex-grow: unset; /* Remove flex-grow for stacking */
+            }
+
+            .tab-button:last-child {
+                border-bottom: none; /* No border on the last stacked tab */
+            }
+
+            .tab-button.active {
+                border-bottom: 2px solid var(--accent-green); /* Keep active indicator */
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            }
+
+            .tab-content {
+                padding: 1rem; /* Reduce padding inside tab content */
+                min-height: 300px; /* Adjust min-height for smaller screens */
+            }
+
+            .item-list li {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 0.75rem; /* Smaller padding for list items */
+            }
+            .item-details-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .item-description {
+                min-width: 100%;
+                margin-bottom: 0.25rem; /* Smaller margin for description */
+                padding-right: 0;
+            }
+            .item-price {
+                text-align: left;
+                width: 100%;
+                font-size: 0.95rem; /* Slightly smaller price font */
+            }
+            .item-supplier {
+                font-size: 0.8rem; /* Smaller supplier font */
+            }
+
+            .calculator-card {
+                padding: 1rem; /* Smaller padding for calculator card */
+                margin-top: 1.5rem;
+            }
+
+            .calculator-title {
+                font-size: 1.25rem; /* Smaller calculator title */
+                margin-bottom: 1rem;
+            }
+
+            .calculator-item {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 0.75rem 0;
+            }
+            .calculator-item-details, .calculator-item-controls {
+                min-width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            .calculator-item-controls {
+                justify-content: flex-start;
+                gap: 0.5rem; /* Smaller gap in controls */
+            }
+            .calculator-item-quantity {
+                width: 3.5rem; /* Smaller quantity input */
+                padding: 0.4rem;
+            }
+            .calculator-item-total {
+                width: auto; /* Adjust width automatically */
+                text-align: left; /* Align total to left on small screens */
+                margin-top: 0.25rem;
+                min-width: unset; /* Remove min-width constraint */
+            }
+            .remove-button {
+                padding: 0.25rem 0.5rem; /* Smaller remove button */
+                font-size: 0.75rem;
+            }
+            .calculator-total-summary {
+                font-size: 1.1rem; /* Smaller total summary font */
+                padding-top: 0.75rem;
+            }
+            .download-buttons {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem; /* Smaller gap between download buttons */
+                margin-top: 1rem;
+                padding-top: 0.75rem;
+            }
+            .download-buttons button {
+                width: 100%;
+                padding: 0.6rem 1rem; /* Adjust padding for download buttons */
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Further adjustments for very small screens (e.g., old smartphones) */
+        @media (max-width: 480px) {
+            .main-header {
+                font-size: 1.5rem;
+            }
+            .search-input {
+                font-size: 0.9rem;
+            }
+            .tab-button {
+                font-size: 0.9rem;
+                padding: 0.6rem 1rem;
+            }
+            .item-description {
+                font-size: 0.9rem;
+            }
+            .item-price {
+                font-size: 0.9rem;
+            }
+            .item-supplier {
+                font-size: 0.75rem;
+            }
+            .calculator-item-name {
+                font-size: 0.9rem;
+            }
+            .calculator-item-price-per-unit {
+                font-size: 0.75rem;
+            }
+            .calculator-item-quantity {
+                width: 3rem;
+                font-size: 0.8rem;
+            }
+            .calculator-item-total {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Smooth transitions for interactive elements */
+        button, input, .tab-button, .item-list li, .remove-button {
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* Styles for the custom message box */
+        .message-box-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .message-box-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .message-box {
+            background-color: var(--card-dark);
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .message-box-overlay.visible .message-box {
+            transform: translateY(0);
+        }
+
+        .message-box h3 {
+            color: var(--accent-blue);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .message-box p {
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+        }
+
+        .message-box button {
+            background-color: var(--accent-green);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+
+        .message-box button:hover {
+            background-color: #28a745;
+        }
+
+        .message-box.error h3 {
+            color: var(--error-red);
+        }
+        .message-box.info h3 {
+            color: var(--info-blue);
+        }
+
+        /* Specific colors for download buttons */
+        #downloadWordBtn {
+            background-color: var(--word-color);
+        }
+        #downloadWordBtn:hover {
+            background-color: #244a82; /* Darker shade for hover */
+        }
+
+        #downloadExcelBtn {
+            background-color: var(--excel-color);
+        }
+        #downloadExcelBtn:hover {
+            background-color: #1a5a36; /* Darker shade for hover */
+        }
+
+        #downloadPdfBtn {
+            background-color: var(--pdf-color);
+        }
+        #downloadPdfBtn:hover {
+            background-color: #8c0a00; /* Darker shade for hover */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="main-header">Materiales de Laboratorio</h1>
+
+        <!-- Search Input -->
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="Buscar materiales..." onkeyup="filterDisplayedItems()">
+        </div>
+
+        <!-- Tab navigation container -->
+        <div class="tabs-container" role="tablist">
+            <button class="tab-button active" data-tab-target="pcr-cuantificacion" role="tab" aria-selected="true">PCR y Cuantificación</button>
+            <button class="tab-button" data-tab-target="electroforesis-visualizacion" role="tab" aria-selected="false">Electroforesis y Visualización</button>
+            <button class="tab-button" data-tab-target="extraccion-purificacion" role="tab" aria-selected="false">Extracción y Purificación</button>
+            <button class="tab-button" data-tab-target="centrifugacion-agitacion" role="tab" aria-selected="false">Centrifugación y Agitación</button>
+            <button class="tab-button" data-tab-target="manejo-consumibles" role="tab" aria-selected="false">Manejo y Consumibles</button>
+            <button class="tab-button" data-tab-target="equipos-generales" role="tab" aria-selected="false">Equipos Generales y Reactivos</button>
+        </div>
+
+        <!-- Tab contents -->
+        <div id="tab-content-container">
+            <div id="pcr-cuantificacion" class="tab-content active" role="tabpanel">
+                <ul class="item-list">
+                    <!-- Items will be added dynamically by JavaScript -->
+                </ul>
+            </div>
+
+            <div id="electroforesis-visualizacion" class="tab-content" role="tabpanel">
+                <ul class="item-list">
+                    <!-- Items will be added dynamically by JavaScript -->
+                </ul>
+            </div>
+
+            <div id="extraccion-purificacion" class="tab-content" role="tabpanel">
+                <ul class="item-list">
+                    <!-- Items will be added dynamically by JavaScript -->
+                </ul>
+            </div>
+
+            <div id="centrifugacion-agitacion" class="tab-content" role="tabpanel">
+                <ul class="item-list">
+                    <!-- Items will be added dynamically by JavaScript -->
+                </ul>
+            </div>
+
+            <div id="manejo-consumibles" class="tab-content" role="tabpanel">
+                <ul class="item-list">
+                    <!-- Items will be added dynamically by JavaScript -->
+                </ul>
+            </div>
+
+            <div id="equipos-generales" class="tab-content" role="tabpanel">
+                <ul class="item-list">
+                    <!-- Items will be added dynamically by JavaScript -->
+                </ul>
+            </div>
+        </div>
+
+        <!-- Shopping List / Calculator Section -->
+        <div class="calculator-card">
+            <h2 class="calculator-title">Lista de Compras</h2>
+            <div id="selected-items-list" class="mb-4">
+                <p id="no-items-message">Haz clic en un material para agregarlo a la lista.</p>
+            </div>
+            <div class="calculator-total-summary">
+                Total: <span id="calculatedTotal">$ 0</span>
+            </div>
+            <div class="download-buttons">
+                <button id="downloadWordBtn" onclick="downloadAsWord()">Descargar Word</button>
+                <button id="downloadExcelBtn" onclick="downloadAsExcel()">Descargar Excel</button>
+                <button id="downloadPdfBtn" onclick="downloadAsPdf()">Descargar PDF</button>
+                <button id="clearAllBtn" onclick="clearAllItems()">Limpiar Todo</button>
+            </div>
+            <div class="user-id-display" style="margin-top: 1rem; text-align: right; font-size: 0.8rem; color: var(--text-secondary);">
+                ID de Usuario: <span id="display-user-id">Cargando...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Message Box HTML -->
+    <div id="message-box-overlay" class="message-box-overlay">
+        <div class="message-box">
+            <h3 id="message-box-title"></h3>
+            <p id="message-box-content"></p>
+            <button onclick="hideMessageBox()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Array to store selected items in the calculator
+        let selectedItems = [];
+        // Counter to assign unique IDs to items in the calculator
+        let itemIdCounter = 0;
+
+        // Reference to Firestore database and current user ID
+        let db;
+        let currentUserId;
+        let appId; // Declare appId globally for use in functions
+
+        // Store all original list items for filtering, categorized by tab ID
+        // This object is now populated with simulated data.
+        const allLabItems = {
+            'pcr-cuantificacion': [
+                { description: "Termociclador Avanzado para PCR en Tiempo Real, Lorem ipsum dolor sit amet, consectetur adipiscing elit.", price: 5800000, supplier: "BioTech Solutions S.A." },
+                { description: "Kit de Cuantificación de ADN de Alta Sensibilidad, Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", price: 250000, supplier: "Quantum Bio Ltda." },
+                { description: "Placas de PCR de 96 pocillos, libres de RNasa/DNasa, Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.", price: 45000, supplier: "LabSupplies Inc." },
+                { description: "Master Mix Taq Polimerasa Hot-Start 2X, Nisi ut aliquip ex ea commodo consequat.", price: 180000, supplier: "Enzyme Innovations S.L." },
+                { description: "Tubos de PCR de 0.2 ml, con tapa plana, Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.", price: 15000, supplier: "Scientific Consumables S.A." },
+                { description: "Primers Oligonucleótidos Sintéticos (Personalizado), Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", price: 75000, supplier: "Gene Synthesis Co." },
+                { description: "Sondas Fluorescentes TaqMan para qPCR, Lorem ipsum dolor sit amet, consectetur adipiscing elit.", price: 320000, supplier: "Applied Genomics Ltda." },
+                { description: "Sistema de Detección de Fluorescencia para Microplacas, Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", price: 7500000, supplier: "SpectraLab Instruments" },
+                { description: "Reactivo de Lisis Celular para Extracción de Ácidos Nucleicos, Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.", price: 90000, supplier: "Cellular Diagnostics S.A." },
+                { description: "Buffer de Reacción para PCR, 10X concentrado, Nisi ut aliquip ex ea commodo consequat.", price: 55000, supplier: "Molecular Reagents Ltda." }
+            ],
+            'electroforesis-visualizacion': [
+                { description: "Fuente de Poder Digital para Electroforesis, 500V, Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.", price: 750000, supplier: "ElectroPhore Systems S.L." },
+                { description: "Cámara de Electroforesis Horizontal para ADN/ARN, Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", price: 420000, supplier: "GelTech Labs Inc." },
+                { description: "Transiluminador UV para Visualización de Geles, Lorem ipsum dolor sit amet, consectetur adipiscing elit.", price: 1200000, supplier: "UVision Scientific S.A." },
+                { description: "Agarosa de Grado Molecular, 500g, Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", price: 110000, supplier: "BioGel Corp." },
+                { description: "Cargador de Muestras para Geles de ADN, 6X, Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.", price: 30000, supplier: "SamplePrep Solutions Ltda." },
+                { description: "Marcador de Peso Molecular de ADN, 1kb Ladder, Nisi ut aliquip ex ea commodo consequat.", price: 85000, supplier: "Molecular Markers S.A." },
+                { description: "Colorante de Ácidos Nucleicos, No-Tóxico, Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.", price: 150000, supplier: "StainSafe Bio Inc." },
+                { description: "Sistema de Documentación de Geles con Cámara CCD, Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", price: 4500000, supplier: "Imaging Solutions S.L." },
+                { description: "Buffer TAE 50X, 1 Litro, Lorem ipsum dolor sit amet, consectetur adipiscing elit.", price: 60000, supplier: "Buffer Solutions Ltda." },
+                { description: "Buffer TBE 10X, 1 Litro, Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", price: 50000, supplier: "Buffer Solutions S.A." }
+            ],
+            'extraccion-purificacion': [
+                { description: "Kit de Extracción de ADN Genómico de Tejido, Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.", price: 180000, supplier: "DNA-Pure Kits Inc." },
+                { description: "Columnas de Spin para Purificación de ADN/ARN, Nisi ut aliquip ex ea commodo consequat.", price: 70000, supplier: "PurifyTech Ltda." },
+                { description: "Kit de Extracción de ARN Total de Células, Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.", price: 210000, supplier: "RNA-Extract Pro S.A." },
+                { description: "Proteinasa K, Grado Molecular, 100mg, Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", price: 160000, supplier: "Enzyme Source S.L." },
+                { description: "RNasa A, Libre de DNasa, 25mg, Lorem ipsum dolor sit amet, consectetur adipiscing elit.", price: 95000, supplier: "RNAse-Free Solutions Inc." },
+                { description: "Buffers de Lavado para Purificación de Ácidos Nucleicos, Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", price: 40000, supplier: "CleanGen Reagents Ltda." },
+                { description: "Etanol Absoluto, Grado Molecular, 1 Litro, Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.", price: 25000, supplier: "ChemLab Supplies S.A." },
+                { description: "Cloroformo, Grado HPLC, 1 Litro, Nisi ut aliquip ex ea commodo consequat.", price: 38000, supplier: "LabChemicals S.L." }
+            ],
+            'centrifugacion-agitacion': [
+                { description: "Microcentrífuga de Mesa, 15000 RPM, Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.", price: 950000, supplier: "CentriSpin Corp." },
+                { description: "Vortex Mixer Digital, Velocidad Variable, Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", price: 180000, supplier: "MixLab Instruments S.A." },
+                { description: "Agitador Orbital con Plataforma Universal, Lorem ipsum dolor sit amet, consectetur adipiscing elit.", price: 600000, supplier: "ShakeMaster Pro Ltda." },
+                { description: "Rotor para Microcentrífuga, 24 x 1.5/2.0 ml, Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", price: 120000, supplier: "RotorTech Inc." },
+                { description: "Plataforma Adhesiva para Agitador Orbital, Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.", price: 45000, supplier: "StickWell Lab S.L." },
+                { description: "Centrífuga de Alta Velocidad, Refrigerada, Nisi ut aliquip ex ea commodo consequat.", price: 8000000, supplier: "ColdSpin Systems S.A." },
+                { description: "Adaptadores para Tubos de Centrifuga de 50ml, Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.", price: 20000, supplier: "TubeFit Accessories Ltda." }
+            ],
+            'manejo-consumibles': [
+                { description: "Set de Micropipetas de Volumen Variable (10µl, 200µl, 1000µl), Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", price: 700000, supplier: "PipettePro Inc." },
+                { description: "Puntas de Pipeta Estériles con Filtro, 10µl (Rack de 960), Lorem ipsum dolor sit amet, consectetur adipiscing elit.", price: 55000, supplier: "TipGuard Scientific S.A." },
+                { description: "Tubos de Microcentrífuga de 1.5ml, Estériles (Bolsa de 500), Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", price: 18000, supplier: "TubeMax Consumables Ltda." },
+                { description: "Tubos de Centrífuga de 50ml, Cónicos, Estériles (Paquete de 25), Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.", price: 4000, supplier: "ConicalTube Co." },
+                { description: "Guantes de Nitrilo, Talla M (Caja de 100), Nisi ut aliquip ex ea commodo consequat.", price: 12000, supplier: "SafeHand Supplies S.L." },
+                { description: "Papel de Limpieza para Laboratorio, Baja Pelusa, Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.", price: 8000, supplier: "CleanWipe Labs Inc." },
+                { description: "Gradillas para Tubos de Microcentrífuga, 96 posiciones, Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", price: 10000, supplier: "RackIt Labware S.A." },
+                { description: "Rollos de Parafilm M, 4 pulgadas x 125 pies, Lorem ipsum dolor sit amet, consectetur adipiscing elit.", price: 30000, supplier: "SealTight Products Ltda." }
+            ],
+            'equipos-generales': [
+                { description: "Balanza Analítica de Precisión, 0.1mg, Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", price: 1500000, supplier: "PrecisionScale Inc." },
+                { description: "Campana de Flujo Laminar Vertical, Clase II, Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.", price: 7000000, supplier: "AirFlow Labs S.A." },
+                { description: "Baño Seco Digital con Bloques Intercambiables, Nisi ut aliquip ex ea commodo consequat.", price: 450000, supplier: "HeatBlock Systems Ltda." },
+                { description: "Microscopio Biológico Trinocular con Iluminación LED, Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.", price: 1200000, supplier: "OptiView Microscopes S.L." },
+                { description: "Agua Ultrapura, Grado Molecular, 5 Litros, Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", price: 15000, supplier: "PureWater Solutions S.A." },
+                { description: "Solución de Etanol al 70% para Desinfección, 1 Litro, Lorem ipsum dolor sit amet, consectetur adipiscing elit.", price: 5000, supplier: "SanitizeLab Inc." },
+                { description: "DMSO Grado Molecular, 100ml, Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", price: 120000, supplier: "SolventPro Ltda." },
+                { description: "Cloruro de Magnesio Anhidro, 500g, Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.", price: 28000, supplier: "MagChem Supplies S.A." },
+                { description: "Albúmina de Suero Bovino (BSA), Fracción V, 50g, Nisi ut aliquip ex ea commodo consequat.", price: 180000, supplier: "ProteinSource S.L." },
+                { description: "TRIS Base, Grado Ultrapuro, 1Kg, Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.", price: 85000, supplier: "BufferChem Inc." },
+                { description: "EDTA Disódico Dihidrato, 500g, Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", price: 110000, supplier: "Chelate Supplies S.A." },
+                { description: "Cloruro de Sodio, Grado Molecular, 1Kg, Lorem ipsum dolor sit amet, consectetur adipiscing elit.", price: 60000, supplier: "SaltSolutions Ltda." },
+                { description: "SDS (Dodecil Sulfato de Sodio), 100g, Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", price: 100000, supplier: "DetergentChem Inc." },
+                { description: "Acetato de Sodio Trihidrato, 500g, Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.", price: 35000, supplier: "AcetatePro S.L." }
+            ]
+        };
+
+        // Global variable to keep track of the currently active tab ID
+        let currentActiveTabId = 'pcr-cuantificacion'; // Initialize with the default active tab
+
+        /**
+         * Custom message box function to replace native alerts.
+         * @param {string} title - The title of the message box.
+         * @param {string} message - The content message.
+         * @param {string} type - 'info', 'success', or 'error' for styling.
+         */
+        function showMessageBox(title, message, type = 'info') {
+            const overlay = document.getElementById('message-box-overlay');
+            const box = overlay.querySelector('.message-box');
+            document.getElementById('message-box-title').textContent = title;
+            document.getElementById('message-box-content').textContent = message;
+
+            // Remove previous type classes and add the new one
+            box.classList.remove('info', 'success', 'error');
+            box.classList.add(type);
+
+            overlay.classList.add('visible');
+        }
+
+        /**
+         * Hides the custom message box.
+         */
+        function hideMessageBox() {
+            document.getElementById('message-box-overlay').classList.remove('visible');
+        }
+
+        /**
+         * Saves the current selectedItems array to Firestore.
+         */
+        async function saveShoppingList() {
+            // Ensure Firebase is initialized and user is authenticated before saving
+            if (!db || !currentUserId || !appId) {
+                console.warn("Firestore not ready or user not authenticated. Cannot save shopping list.");
+                return;
+            }
+            try {
+                // Construct Firestore document reference using appId and currentUserId
+                const docRef = window.firebaseDoc(db, `artifacts/${appId}/users/${currentUserId}/shoppingLists/mainList`);
+                // Set the document with the current selected items
+                await window.firebaseSetDoc(docRef, { items: selectedItems });
+                console.log("Shopping list saved to Firestore.");
+            } catch (e) {
+                console.error("Error saving document: ", e);
+                showMessageBox('Error de Guardado', 'No se pudo guardar la lista de compras. Inténtelo de nuevo.', 'error');
+            }
+        }
+
+        /**
+         * Loads the shopping list from Firestore.
+         * This function is exposed globally to be called after Firebase authentication.
+         */
+        window.loadShoppingList = async function() {
+            // Get Firebase instances and global variables from the window object
+            db = window.firebaseDb;
+            // Ensure currentUserId is set, falling back to a random UUID if not authenticated (for anonymous use)
+            currentUserId = window.firebaseAuth.currentUser?.uid || crypto.randomUUID();
+            appId = window.currentAppId; // Set appId from global variable
+
+            // Display user ID in the UI
+            document.getElementById('display-user-id').textContent = currentUserId;
+
+            // Check if Firebase is ready before attempting to load data
+            if (!db || !currentUserId || !appId) {
+                console.warn("Firestore not ready or user not authenticated. Cannot load shopping list.");
+                return;
+            }
+
+            try {
+                // Construct Firestore document reference
+                const docRef = window.firebaseDoc(db, `artifacts/${appId}/users/${currentUserId}/shoppingLists/mainList`);
+                // Get the document snapshot
+                const docSnap = await window.firebaseGetDoc(docRef);
+
+                if (docSnap.exists()) {
+                    // If document exists, retrieve data and update selectedItems
+                    const data = docSnap.data();
+                    selectedItems = data.items || [];
+                    // Ensure itemIdCounter is higher than any existing item ID to prevent duplicates
+                    if (selectedItems.length > 0) {
+                        itemIdCounter = Math.max(...selectedItems.map(item => item.id)) + 1;
+                    } else {
+                        itemIdCounter = 0;
+                    }
+                    console.log("Shopping list loaded from Firestore.");
+                } else {
+                    // If document does not exist, start with an empty list
+                    console.log("No shopping list found for this user. Starting with an empty list.");
+                    selectedItems = [];
+                    itemIdCounter = 0;
+                }
+                // Render and calculate total after loading
+                renderSelectedItems();
+                calculateTotal();
+            } catch (e) {
+                console.error("Error loading document: ", e);
+                showMessageBox('Error de Carga', 'No se pudo cargar la lista de compras. Se ha iniciado una lista vacía.', 'error');
+                // Fallback to empty list on error
+                selectedItems = [];
+                itemIdCounter = 0;
+                renderSelectedItems();
+                calculateTotal();
+            }
+        };
+
+        /**
+         * Filters items based on the search input and displays them across all tabs.
+         */
+        function filterDisplayedItems() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const allTabContents = document.querySelectorAll('.tab-content');
+            const allTabButtons = document.querySelectorAll('.tab-button');
+
+            // Hide all tab contents and deactivate all tab buttons initially
+            allTabContents.forEach(content => content.classList.remove('active'));
+            allTabButtons.forEach(button => {
+                button.classList.remove('active');
+                button.setAttribute('aria-selected', 'false');
+            });
+
+            let anyTabHasMatches = false;
+
+            for (const tabId in allLabItems) {
+                const tabContentElement = document.getElementById(tabId);
+                const itemListElement = tabContentElement.querySelector('.item-list');
+                itemListElement.innerHTML = ''; // Clear current items for re-rendering
+
+                let tabHasVisibleMatches = false; // Flag to check if this tab content should be visible
+
+                allLabItems[tabId].forEach(item => {
+                    const description = item.description.toLowerCase();
+                    const supplier = item.supplier.toLowerCase();
+
+                    if (description.includes(searchTerm) || supplier.includes(searchTerm)) {
+                        const li = document.createElement('li');
+                        li.dataset.description = item.description;
+                        li.dataset.price = item.price;
+                        li.dataset.supplier = item.supplier;
+                        li.innerHTML = `
+                            <div class="item-details-row">
+                                <span class="item-description">${item.description}</span>
+                                <span class="item-price">$ ${item.price.toLocaleString('es-CL')}</span>
+                            </div>
+                            <span class="item-supplier">Proveedor: ${item.supplier}</span>
+                        `;
+                        li.addEventListener('click', () => addItemToCalculator(item.description, item.price, item.supplier));
+                        itemListElement.appendChild(li);
+                        tabHasVisibleMatches = true;
+                        anyTabHasMatches = true;
+                    }
+                });
+
+                if (tabHasVisibleMatches) {
+                    tabContentElement.classList.add('active'); // Make the tab content visible if it has matches
+                }
+            }
+
+            // If no search term, or no matches found, reactivate the current active tab
+            if (searchTerm === '' || !anyTabHasMatches) {
+                const activeContent = document.getElementById(currentActiveTabId);
+                if (activeContent) {
+                    activeContent.classList.add('active'); // Show the content of the last active tab
+                    // Re-render all items in the current active tab if search is empty
+                    if (searchTerm === '') {
+                        const itemListElement = activeContent.querySelector('.item-list');
+                        itemListElement.innerHTML = ''; // Clear before re-populating
+                        allLabItems[currentActiveTabId].forEach(item => {
+                            const li = document.createElement('li');
+                            li.dataset.description = item.description;
+                            li.dataset.price = item.price;
+                            li.dataset.supplier = item.supplier;
+                            li.innerHTML = `
+                                <div class="item-details-row">
+                                    <span class="item-description">${item.description}</span>
+                                    <span class="item-price">$ ${item.price.toLocaleString('es-CL')}</span>
+                                </div>
+                                <span class="item-supplier">Proveedor: ${item.supplier}</span>
+                            `;
+                            li.addEventListener('click', () => addItemToCalculator(item.description, item.price, item.supplier));
+                            itemListElement.appendChild(li);
+                        });
+                    }
+                }
+                const activeTabButton = document.querySelector(`[data-tab-target="${currentActiveTabId}"]`);
+                if (activeTabButton) {
+                    activeTabButton.classList.add('active'); // Re-activate the button for the last active tab
+                    activeTabButton.setAttribute('aria-selected', 'true');
+                }
+            }
+        }
+
+        /**
+         * Displays the tab with the specified ID and updates button styles.
+         * @param {string} tabId - The ID of the tab to display.
+         */
+        function showTab(tabId) {
+            // Clear search input when changing tabs manually
+            document.getElementById('searchInput').value = '';
+            currentActiveTabId = tabId; // Update the global variable when a tab is manually selected
+
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            // Deactivate all tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+                button.setAttribute('aria-selected', 'false');
+            });
+            // Show the content of the selected tab
+            document.getElementById(tabId).classList.add('active');
+            // Activate the corresponding tab button
+            const activeTabButton = document.querySelector(`[data-tab-target="${tabId}"]`);
+            if (activeTabButton) {
+                activeTabButton.classList.add('active');
+                activeTabButton.setAttribute('aria-selected', 'true');
+            }
+            // Populate the list for the newly active tab
+            renderTabItems(tabId);
+        }
+
+        /**
+         * Renders items for a specific tab from the allLabItems data.
+         * @param {string} tabId - The ID of the tab whose items should be rendered.
+         */
+        function renderTabItems(tabId) {
+            const itemListElement = document.getElementById(tabId).querySelector('.item-list');
+            itemListElement.innerHTML = ''; // Clear existing items
+
+            const itemsToRender = allLabItems[tabId];
+            if (itemsToRender) {
+                itemsToRender.forEach(item => {
+                    const li = document.createElement('li');
+                    li.dataset.description = item.description;
+                    li.dataset.price = item.price;
+                    li.dataset.supplier = item.supplier;
+                    li.innerHTML = `
+                        <div class="item-details-row">
+                            <span class="item-description">${item.description}</span>
+                            <span class="item-price">$ ${item.price.toLocaleString('es-CL')}</span>
+                        </div>
+                        <span class="item-supplier">Proveedor: ${item.supplier}</span>
+                    `;
+                    li.addEventListener('click', () => addItemToCalculator(item.description, item.price, item.supplier));
+                    itemListElement.appendChild(li);
+                });
+            }
+        }
+
+        // Assign click event to all tab buttons
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => showTab(button.dataset.tabTarget));
+        });
+
+        /**
+         * Adds an item to the calculator list or increments its quantity if it already exists.
+         * @param {string} description - The item's description.
+         * @param {number} price - The item's unit price.
+         * @param {string} supplier - The item's supplier.
+         */
+        function addItemToCalculator(description, price, supplier) {
+            // Check if the item already exists in the list
+            const existingItem = selectedItems.find(item => item.description === description);
+            if (existingItem) {
+                // If it exists, increment the quantity
+                existingItem.quantity++;
+            } else {
+                // If it doesn't exist, add it as a new item
+                itemIdCounter++;
+                selectedItems.push({ id: itemIdCounter, description, price, supplier, quantity: 1 });
+            }
+            // Re-render the list and recalculate the total
+            renderSelectedItems();
+            calculateTotal();
+            saveShoppingList(); // Save to Firestore
+        }
+
+        /**
+         * Updates the quantity of a specific item in the calculator.
+         * @param {number} id - The ID of the item to update.
+         * @param {string} newQuantity - The new quantity (as a string, will be parsed to integer).
+         */
+        function updateItemQuantity(id, newQuantity) {
+            const itemIndex = selectedItems.findIndex(item => item.id === id);
+            if (itemIndex > -1) {
+                // Ensure the quantity is a non-negative number
+                selectedItems[itemIndex].quantity = Math.max(0, parseInt(newQuantity) || 0);
+                // Re-render the list and recalcula te the total
+                renderSelectedItems();
+                calculateTotal();
+                saveShoppingList(); // Save to Firestore
+            }
+        }
+
+        /**
+         * Removes an item from the calculator list.
+         * @param {number} id - The ID of the item to remove.
+         */
+        function removeItem(id) {
+            // Filter the list to remove the item with the given ID
+            selectedItems = selectedItems.filter(item => item.id !== id);
+            // Re-render the list and recalculate the total
+            renderSelectedItems();
+            calculateTotal();
+            saveShoppingList(); // Save to Firestore
+        }
+
+        /**
+         * Clears all items from the shopping list.
+         */
+        function clearAllItems() {
+            if (selectedItems.length === 0) {
+                showMessageBox('Lista Vacía', 'No hay elementos en la lista para limpiar.', 'info');
+                return;
+            }
+
+            // Clear the selectedItems array
+            selectedItems = [];
+            // Reset the item ID counter
+            itemIdCounter = 0;
+            // Re-render the list and recalculate the total
+            renderSelectedItems();
+            calculateTotal();
+            saveShoppingList(); // Save the empty list to Firestore
+            showMessageBox('Lista Limpiada', 'Todos los elementos han sido eliminados de la lista de compras.', 'success');
+        }
+
+        /**
+         * Renders the list of selected items in the calculator section.
+         */
+        function renderSelectedItems() {
+            const listContainer = document.getElementById('selected-items-list');
+            listContainer.innerHTML = ''; // Clear current content
+
+            // Show a message if no items are selected
+            if (selectedItems.length === 0) {
+                listContainer.innerHTML = '<p id="no-items-message">Haz clic en un material para agregarlo a la lista.</p>';
+                return;
+            }
+
+            // Render each selected item
+            selectedItems.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'calculator-item';
+                itemDiv.innerHTML = `
+                    <div class="calculator-item-details">
+                        <span class="calculator-item-name">${item.description}</span>
+                        <span class="calculator-item-price-per-unit">$ ${item.price.toLocaleString('es-CL')} / unidad</span>
+                        <span class="item-supplier">Proveedor: ${item.supplier}</span>
+                    </div>
+                    <div class="calculator-item-controls">
+                        <input type="number" value="${item.quantity}" min="0" class="calculator-item-quantity" onchange="updateItemQuantity(${item.id}, this.value)">
+                        <span class="calculator-item-total">$ ${(item.quantity * item.price).toLocaleString('es-CL')}</span>
+                        <button class="remove-button" onclick="removeItem(${item.id})">X</button>
+                    </div>
+                `;
+                listContainer.appendChild(itemDiv);
+            });
+        }
+
+        /**
+         * Calculates and displays the total of all items in the calculator.
+         */
+        function calculateTotal() {
+            // Sum the total of all items (quantity * price)
+            const total = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            // Update the total text in the interface
+            document.getElementById('calculatedTotal').textContent = `$ ${total.toLocaleString('es-CL')}`;
+        }
+
+        /**
+         * Downloads the shopping list as a Word document (HTML).
+         */
+        function downloadAsWord() {
+            if (selectedItems.length === 0) {
+                showMessageBox('Lista Vacía', 'La lista de compras está vacía. Agregue elementos antes de descargar.', 'info');
+                return;
+            }
+
+            let tableHtml = `
+                <style>
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-family: 'Inter', sans-serif; }
+                    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+                    th { background-color: #f2f2f2; }
+                    .total-row td { font-weight: bold; }
+                </style>
+                <h1>Lista de Compras de Materiales de Laboratorio</h1>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Descripción</th>
+                            <th>Cantidad</th>
+                            <th>Precio Unitario</th>
+                            <th>Proveedor</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            selectedItems.forEach(item => {
+                tableHtml += `
+                    <tr>
+                        <td>${item.description}</td>
+                        <td>${item.quantity}</td>
+                        <td>$ ${item.price.toLocaleString('es-CL')}</td>
+                        <td>${item.supplier}</td>
+                        <td>$ ${(item.quantity * item.price).toLocaleString('es-CL')}</td>
+                    </tr>
+                `;
+            });
+
+            const grandTotal = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            tableHtml += `
+                        <tr class="total-row">
+                            <td colspan="4">Total General:</td>
+                            <td>$ ${grandTotal.toLocaleString('es-CL')}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+
+            const blob = new Blob([tableHtml], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Lista_de_Compras.doc'; // Use .doc for simple compatibility
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showMessageBox('Descarga Exitosa', 'La lista de compras ha sido descargada como documento de Word.', 'success');
+        }
+
+        /**
+         * Downloads the shopping list as an Excel file.
+         */
+        function downloadAsExcel() {
+            if (selectedItems.length === 0) {
+                showMessageBox('Lista Vacía', 'La lista de compras está vacía. Agregue elementos antes de descargar.', 'info');
+                return;
+            }
+
+            const ws_data = [
+                ['Descripción', 'Cantidad', 'Precio Unitario', 'Proveedor', 'Total']
+            ];
+            selectedItems.forEach(item => {
+                ws_data.push([
+                    item.description,
+                    item.quantity,
+                    item.price,
+                    item.supplier,
+                    (item.quantity * item.price)
+                ]);
+            });
+
+            const grandTotal = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            ws_data.push(['', '', '', 'Total General:', grandTotal]);
+
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Lista de Compras");
+            XLSX.writeFile(wb, "Lista_de_Compras.xlsx");
+            showMessageBox('Descarga Exitosa', 'La lista de compras ha sido descargada como archivo de Excel.', 'success');
+        }
+
+        /**
+         * Downloads the shopping list as a PDF file.
+         */
+        function downloadAsPdf() {
+            if (selectedItems.length === 0) {
+                showMessageBox('Lista Vacía', 'La lista de compras está vacía. Agregue elementos antes de descargar.', 'info');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const tableColumn = ["Descripción", "Cantidad", "Precio Unitario", "Proveedor", "Total"];
+            const tableRows = [];
+
+            selectedItems.forEach(item => {
+                const itemData = [
+                    item.description,
+                    item.quantity,
+                    `$ ${item.price.toLocaleString('es-CL')}`,
+                    item.supplier,
+                    `$ ${(item.quantity * item.price).toLocaleString('es-CL')}`
+                ];
+                tableRows.push(itemData);
+            });
+
+            const grandTotal = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            tableRows.push(['', '', '', 'Total General:', `$ ${grandTotal.toLocaleString('es-CL')}`]);
+
+            doc.text("Lista de Compras de Materiales de Laboratorio", 14, 20);
+            doc.autoTable(tableColumn, tableRows, { startY: 30 });
+            doc.save('Lista_de_Compras.pdf');
+            showMessageBox('Descarga Exitosa', 'La lista de compras ha sido descargada como archivo PDF.', 'success');
+        }
+
+        // Event that fires when the DOM has been fully loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Populate all tabs with items from allLabItems
+            for (const tabId in allLabItems) {
+                renderTabItems(tabId);
+            }
+
+            // Show the first tab by default
+            showTab('pcr-cuantificacion');
+            // loadShoppingList will be called after Firebase authentication in the script module
+        });
+    </script>
+</body>
+</html>
