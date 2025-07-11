@@ -349,6 +349,8 @@
             .calculator-card {
                 padding: 1rem; /* Smaller padding for calculator card */
                 margin-top: 1.5rem;
+                border: 1px solid var(--border-dark); /* Added border */
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Refined shadow */
             }
 
             .calculator-title {
@@ -372,6 +374,10 @@
             .calculator-item-quantity {
                 width: 3.5rem; /* Smaller quantity input */
                 padding: 0.4rem;
+                border: 1px solid var(--border-dark); /* Added border */
+                border-radius: 0.25rem; /* Slightly rounded corners */
+                background-color: var(--bg-dark); /* Match background */
+                color: var(--text-primary); /* Match text color */
             }
             .calculator-item-total {
                 width: auto; /* Adjust width automatically */
@@ -382,6 +388,7 @@
             .remove-button {
                 padding: 0.25rem 0.5rem; /* Smaller remove button */
                 font-size: 0.75rem;
+                border-radius: 0.25rem; /* Slightly rounded corners */
             }
             .calculator-total-summary {
                 font-size: 1.1rem; /* Smaller total summary font */
@@ -1075,7 +1082,10 @@
                         { description: 'XILOL PURO ENVASE 1 LITRO', price: 11250, supplier: 'SOCIEDAD COMERCIAL RSLAB INSUMOS LTDA' },
                         { description: 'CLOROFORMO PA (ENV VIDRIO) X 1L', price: 22500, supplier: 'CHEMIX / FARMALATINA' },
                         { description: 'ALCOHOL (iso) AMILICO ACS X 1L', price: 55800, supplier: 'CHEMIX / FARMALATINA' },
-                        { description: '2-PROPANOL (ISOPROPILICO) ENVASE VIDRIO PA X 1L', price: 12200, supplier: 'CHEMIX / FARMALATINA' }
+                        { description: '2-PROPANOL (ISOPROPILICO) ENVASE VIDRIO PA X 1L', price: 12200, supplier: 'CHEMIX / FARMALATINA' },
+                        { description: 'XILENO PA (ENV VIDRIO) X 1L', price: 7100, supplier: 'CHEMIX / FARMALATINA' },
+                        { description: 'ETANOL 96° DESNATURALIZADO (ENV PLASTICO) X 1L', price: 4300, supplier: 'CHEMIX / FARMALATINA' },
+                        { description: 'ETANOL ABSOLUTO (ALCOHOL ETILICO) PA (ENV VIDRIO) X 1L', price: 9300, supplier: 'CHEMIX / FARMALATINA' }
                     ]
                 },
                 'inclusion-microtomia': {
@@ -1096,7 +1106,9 @@
                 'tincion-montaje': {
                     'equipos': [
                         { description: 'BAÑO DE FLOTACION HISTOCORE WATER BATH (140607020CO) LEICA BIOSYSTEMS', price: 1790000, supplier: 'New Path Chile SPA' },
-                        { description: 'BAÑO DE FLOTACIÓN WATER BATH + PLACA CALIENTE (HISTOCORE) LEICA BIOSYSTEMS', price: 2690000, supplier: 'New Path Chile SPA' }
+                        { description: 'BAÑO DE FLOTACIÓN WATER BATH + PLACA CALIENTE (HISTOCORE) LEICA BIOSYSTEMS', price: 2690000, supplier: 'New Path Chile SPA' },
+                        { description: 'Set de Tincion Hematologica. 3 cubetas. EDILAB', price: 65000, supplier: 'EDİLAB / SOC COMERCIAL NEIRA Y FONSECA SPA' },
+                        { description: 'Set de Tincion Histologica. Completo. EDILAB', price: 160000, supplier: 'EDİLAB / SOC COMERCIAL NEIRA Y FONSECA SPA' }
                     ],
                     'fungibles': [
                         { description: 'PORTAOBJETO BORDE ESMERI, 7101 GLOBAL ROLL X 50 UN. 25.4 X 76.2 MM', price: 1572, supplier: 'DIPROLAB LTDA' },
@@ -1117,7 +1129,8 @@
                         { description: 'CUBRE OBJETO 20 X 20 CAJA 100 UNIDADES MARCA BELL', price: 298, supplier: 'COMERCIALIZADORA HEALTH EQUIPMENT SUPPLY SPA' },
                         { description: 'CUBRE OBJETO 22 X 22 CAJA 100 UNIDADES MARCA BELL', price: 438, supplier: 'COMERCIALIZADORA HEALTH EQUIPMENT SUPPLY SPA' },
                         { description: 'Portaobjetos - Franja Esmerilada - Caja 50 Uds', price: 2290, supplier: 'Bioquimica.CL.SA' },
-                        { description: 'Cubreobjetos 20X20 mm - Uso escolar - Caja 100 Un', price: 1280, supplier: 'Bioquimica.CL.SA' }
+                        { description: 'Cubreobjetos 20X20 mm - Uso escolar - Caja 100 Un', price: 1280, supplier: 'Bioquimica.CL.SA' },
+                        { description: 'Canastillo de Tincion Plas. p 25 slide, EDILAB', price: 7500, supplier: 'EDİLAB / SOC COMERCIAL NEIRA Y FONSECA SPA' }
                     ],
                     'reactivos': [
                         { description: 'HEMATOXILINA DE HARRIS LT. DIPROLAB', price: 58600, supplier: 'DIPROLAB LTDA' },
