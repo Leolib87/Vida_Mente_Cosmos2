@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Números Clave para Biólogos Celulares</title>
+    <style>
+        :root {
+            --cyan-light: #4dd0e1;
+            --orange-light: #ffb74d;
+            --bg-color: #0a0a0a;
+            --card-bg: rgba(20, 20, 20, 0.6);
+            --card-hover-bg: rgba(35, 35, 35, 0.7);
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            color: #e0e0e0;
+            background-color: var(--bg-color);
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        #content-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 1400px;
+            height: 90vh;
+            background: rgba(10, 10, 10, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        #content-container::-webkit-scrollbar { display: none; }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            color: #ffffff;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px rgba(77, 208, 225, 0.5);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            padding: 1rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- MEJORA: Contenedor para el efecto 3D --- */
+        .grid-item {
+            background-color: transparent;
+            min-height: 350px;
+            perspective: 1000px; /* Activa el espacio 3D para los hijos */
+            animation: fadeIn 0.5s ease-out forwards;
+            opacity: 0;
+        }
+        
+        .card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+        }
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            border-radius: 15px;
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .grid-item:hover .card-face {
+             background: var(--card-hover-bg);
+             box-shadow: 0 0 20px rgba(77, 208, 225, 0.2);
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        /* Retraso escalonado para la animación de entrada */
+        .grid-item:nth-child(1) { animation-delay: 0.1s; }
+        .grid-item:nth-child(2) { animation-delay: 0.2s; }
+        .grid-item:nth-child(3) { animation-delay: 0.3s; }
+        .grid-item:nth-child(4) { animation-delay: 0.4s; }
+        .grid-item:nth-child(5) { animation-delay: 0.5s; }
+        .grid-item:nth-child(6) { animation-delay: 0.6s; }
+        .grid-item:nth-child(7) { animation-delay: 0.7s; }
+
+        h3 {
+            color: var(--cyan-light);
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-size: 1.4rem;
+            border-bottom: 1px solid var(--cyan-light);
+            padding-bottom: 0.5rem;
+        }
+
+        ul { list-style: none; padding: 0; }
+        li {
+            margin-bottom: 0.8rem;
+            line-height: 1.7;
+            font-size: 1rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--orange-light);
+            font-weight: bold;
+        }
+        
+        /* --- MEJORA: Estilos para los Tooltips --- */
+        .tooltip {
+            position: relative;
+            border-bottom: 1px dotted var(--cyan-light);
+            cursor: help;
+        }
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #2c2c2c;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            line-height: 1.4;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .tooltip:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .footer-note {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            font-style: italic;
+            font-size: 0.9rem;
+            text-align: center;
+            color: #9e9e9e;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+        
+        b { color: var(--orange-light); font-weight: 600; }
+        .footer-note a {
+            color: var(--cyan-light);
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+        .footer-note a:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+    </style>
+    <!-- MathJax para renderizar LaTeX -->
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']]
+        },
+        svg: {
+          fontCache: 'global'
+        }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div id="content-container">
+        <h1>Números Clave para Biólogos Celulares</h1>
+        <div class="grid-container">
+            
+            <!-- Tarjeta 1 -->
+            <div class="grid-item">
+                <div class="card">
+                    <div class="card-face card-front">
+                        <h3>Tamaños Celulares</h3>
+                        <ul>
+                            <li>Bacteria (E. coli): <b>$0.7\text{-}1.4 \ \mu m$</b> de diámetro; $\approx$<b>$2\text{-}4 \ \mu m$</b> de largo, $\approx$<b>$0.5\text{-}5 \ \mu m^3$</b> de volumen; $10^8 \text{-} 10^9$ cél/ml para cultivo con OD$_{600}$$\approx$1</li>
+                            <li>Levadura (S. cerevisiae): $\approx$<b>$3\text{-}6 \ \mu m$</b> de diámetro; $\approx$<b>$20\text{-}160 \ \mu m^3$</b> de volumen</li>
+                            <li>Volumen de célula de mamífero: <b>$100\text{-}10000 \ \mu m^3$</b>; HeLa: <b>$500\text{-}5000 \ \mu m^3$</b> (adherente en portaobjetos $\approx$15-30 µm de diámetro)</li>
+                        </ul>
+                    </div>
+                    <div class="card-face card-back">
+                        <h3>Dimensiones de la Vida</h3>
+                        <p>Las células varían enormemente en tamaño, desde las pequeñas bacterias hasta las grandes células de mamíferos. Estas dimensiones determinan muchas de sus propiedades biológicas.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta 2 -->
+            <div class="grid-item">
+                <div class="card">
+                    <div class="card-face card-front">
+                        <h3>Escalas de Longitud Intracelulares</h3>
+                        <ul>
+                            <li>Volumen del núcleo $\approx$<b>10%</b> del volumen celular</li>
+                            <li>Grosor de la membrana celular $\approx$<b>4-10 nm</b></li>
+                            <li>Diámetro de proteína "promedio" $\approx$<b>3-6 nm</b></li>
+                            <li>Par de bases: <b>2 nm</b> (D) x <b>0.34 nm</b> (H)</li>
+                            <li>Diámetro de molécula de agua $\approx$<b>0.3 nm</b></li>
+                        </ul>
+                    </div>
+                    <div class="card-face card-back">
+                        <h3>El Mundo Nanométrico</h3>
+                        <p>Dentro de una célula, las distancias se miden en nanómetros. Desde el ADN hasta las proteínas, todo opera en una escala increíblemente pequeña.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta 3 -->
+            <div class="grid-item">
+                <div class="card">
+                    <div class="card-face card-front">
+                        <h3>Tasas de Procesos Celulares</h3>
+                        <p>A 37°C con una Q10 de $\approx$2-3</p>
+                        <ul>
+                            <li>Ciclo celular: E. coli $\approx$<b>20-40 min</b>; levadura <b>70-140 min</b>; HeLa: <b>15-30 horas</b></li>
+                            <li>Replicación por <span class="tooltip" data-tooltip="Enzima que sintetiza ADN a partir de un molde de ADN.">ADN polimerasa</span>: E. coli $\approx$<b>200-1000 bases/s</b>; humana $\approx$<b>40 bases/s</b></li>
+                            <li>Tasa de traducción por ribosoma <b>10-20 aa/s</b></li>
+                            <li>Vida media del <span class="tooltip" data-tooltip="ARN mensajero: molécula que lleva la información genética del ADN al ribosoma.">ARNm</span> < ciclo celular; vida media de proteína $\approx$ ciclo celular</li>
+                        </ul>
+                    </div>
+                     <div class="card-face card-back">
+                        <h3>La Velocidad de la Vida</h3>
+                        <p>Las células son fábricas bulliciosas. La velocidad de replicación, transcripción y traducción determina la rapidez con la que una célula puede crecer y dividirse.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tarjeta 4 -->
+            <div class="grid-item">
+                 <div class="card">
+                    <div class="card-face card-front">
+                        <h3>Concentraciones</h3>
+                        <ul>
+                            <li>1 nM en E. coli $\approx$<b>1 molécula/célula</b>; en HeLa $\approx$<b>1,000 moléculas/célula</b></li>
+                            <li>Proteína de señalización: <b>10 nM-1µM</b></li>
+                            <li>Contenido de agua: ><b>70%</b> por masa</li>
+                            <li>Composición E. coli (peso seco): $\approx$<b>55% proteína, 20% ARN, 10% lípidos</b></li>
+                            <li>Conc. Proteína $\approx$<b>100 mg/ml</b>=3 mM. $10^6 \text{-} 10^7$ por E. coli</li>
+                        </ul>
+                    </div>
+                    <div class="card-face card-back">
+                        <h3>Un Entorno Abarrotado</h3>
+                        <p>El interior de una célula es un lugar increíblemente denso. Las altas concentraciones de moléculas influyen en todas las reacciones bioquímicas.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta 5 -->
+            <div class="grid-item">
+                 <div class="card">
+                    <div class="card-face card-front">
+                        <h3>Energética</h3>
+                        <ul>
+                            <li>Potencial de membrana $\approx$<b>70-200 mV</b> $\rightarrow$ <b>2-6</b> $k_B T$ por electrón</li>
+                            <li>Hidrólisis de <span class="tooltip" data-tooltip="Adenosín trifosfato: la principal molécula de energía de la célula.">ATP</span>: $\approx$<b>40-60 kJ/mol</b> $\rightarrow$ $\approx$<b>20</b>$k_B T$/molécula</li>
+                            <li>Moléculas de ATP para hacer una E. coli $\approx$<b>10-50x10⁸</b></li>
+                            <li>$\Delta G^{0'}$ de $\approx$<b>6 kJ/mol</b> = $\approx$<b>60 meV</b> = $\approx$<b>2</b> $k_B T$</li>
+                        </ul>
+                    </div>
+                    <div class="card-face card-back">
+                        <h3>La Moneda Energética</h3>
+                        <p>El ATP es la moneda energética universal de la célula. Su hidrólisis impulsa la gran mayoría de los procesos celulares que requieren energía.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta 6 -->
+            <div class="grid-item">
+                 <div class="card">
+                    <div class="card-face card-front">
+                        <h3>Tasa de Difusión y Catálisis</h3>
+                        <ul>
+                            <li>Coeficiente de difusión (proteína): D$\approx$5-15 $\mu$m$^2$/s $\rightarrow$ $\approx$<b>10 ms</b> para atravesar E. coli</li>
+                            <li>Tasa de entrada limitada por difusión para proteína $\approx$$10^8\text{-}10^9$ s$^{-1}$M$^{-1}$</li>
+                            <li>Para [sustrato]$\approx$1µM, la tasa de entrada es $\approx$10-100 s$^{-1}$, limitando la <span class="tooltip" data-tooltip="Número de recambio: máximo número de moléculas de sustrato que una enzima puede convertir en producto por segundo.">k$_{cat}$</span></li>
+                        </ul>
+                    </div>
+                    <div class="card-face card-back">
+                        <h3>Movimiento y Reacción</h3>
+                        <p>Las moléculas no están quietas; se mueven (difunden) constantemente. La velocidad de este movimiento puede ser el factor limitante para la rapidez con que ocurren las reacciones.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta 7 -->
+            <div class="grid-item">
+                 <div class="card">
+                    <div class="card-face card-front">
+                        <h3>Genomas, Mutación y Tasas de Error</h3>
+                        <ul>
+                            <li>Tamaño genoma: E. coli $\approx$<b>4x10⁶ pb</b>; Humano $\approx$<b>3,000x10⁶ pb</b></li>
+                            <li>Tasa de mutación en replicación de ADN $\approx$<b>10⁻¹⁰ por pb</b></li>
+                            <li>Tasa de error de incorporación: transcripción $\approx$<b>10⁻⁴</b>; traducción $\approx$<b>10⁻³-10⁻⁴</b></li>
+                        </ul>
+                    </div>
+                    <div class="card-face card-back">
+                        <h3>Fidelidad y Cambio</h3>
+                        <p>La replicación del ADN es increíblemente precisa, pero no perfecta. Pequeños errores introducen mutaciones, la materia prima de la evolución.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-note">
+            <p>Números biológicos útiles extraídos de la literatura. Los números y rangos solo deben servir como valores de "regla general".</p>
+            <p>Haz clic en un número para ver la descripción completa y la referencia: <a href="https://www.bionumbers.org/" target="_blank" rel="noopener noreferrer">www.BioNumbers.org</a></p>
+        </div>
+    </div>
+
+    <!-- Three.js -->
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js"
+        }
+    }
+    </script>
+    <script type="module">
+        // Importamos la librería Three.js
+        import * as THREE from 'three';
+
+        // Variables globales para la escena 3D
+        let scene, camera, renderer, particles;
+        let mouseX = 0, mouseY = 0;
+        const windowHalfX = window.innerWidth / 2;
+        const windowHalfY = window.innerHeight / 2;
+
+        function init() {
+            // Escena: El contenedor de todos los objetos 3D
+            scene = new THREE.Scene();
+
+            // Cámara: El punto de vista desde el que vemos la escena
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 3000);
+            camera.position.z = 1000;
+
+            // Renderer: Dibuja la escena en el lienzo (canvas)
+            const canvas = document.getElementById('bg-canvas');
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0); // Fondo transparente
+
+            // Partículas: Creamos el sistema de partículas a partir de la imagen
+            const loader = new THREE.TextureLoader();
+            const textureUrl = 'https://i.imgur.com/7IeB45V.jpeg';
+            
+            loader.load(textureUrl, (texture) => {
+                const geometry = new THREE.BufferGeometry();
+                const material = new THREE.PointsMaterial({
+                    size: 4,
+                    map: texture,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false,
+                    transparent: true,
+                    opacity: 0.8,
+                });
+
+                const positions = [];
+                const particleCount = 80000;
+
+                for (let i = 0; i < particleCount; i++) {
+                    const theta = THREE.MathUtils.randFloatSpread(360); 
+                    const phi = THREE.MathUtils.randFloatSpread(360); 
+                    const radius = Math.random() * 1200;
+                    const x = radius * Math.sin(theta) * Math.cos(phi);
+                    const y = radius * Math.sin(theta) * Math.sin(phi);
+                    const z = radius * Math.cos(theta);
+                    positions.push(x, y, z);
+                }
+
+                geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+                particles = new THREE.Points(geometry, material);
+                scene.add(particles);
+
+            }, undefined, (err) => {
+                 console.error('Ocurrió un error al cargar la textura.', err);
+                 createFallbackParticles();
+            });
+
+            // --- MEJORA: Lógica para voltear las tarjetas ---
+            const container = document.querySelector('.grid-container');
+            container.addEventListener('click', (event) => {
+                // closest() busca el ancestro más cercano que coincida con el selector
+                const card = event.target.closest('.card');
+                if (card) {
+                    card.classList.toggle('is-flipped');
+                }
+            });
+
+            // Eventos para la interacción del fondo
+            document.body.addEventListener('pointermove', onPointerMove);
+            window.addEventListener('resize', onWindowResize);
+        }
+        
+        function createFallbackParticles() {
+            const geometry = new THREE.BufferGeometry();
+            const material = new THREE.PointsMaterial({ size: 2, color: 0xffffff, transparent: true, opacity: 0.5 });
+            const positions = [];
+            const particleCount = 50000;
+            for (let i = 0; i < particleCount; i++) {
+                const x = Math.random() * 2000 - 1000;
+                const y = Math.random() * 2000 - 1000;
+                const z = Math.random() * 2000 - 1000;
+                positions.push(x, y, z);
+            }
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function onPointerMove(event) {
+            if (event.isPrimary === false) return;
+            mouseX = event.clientX - windowHalfX;
+            mouseY = event.clientY - windowHalfY;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            render();
+        }
+
+        function render() {
+            const time = Date.now() * 0.0001;
+            camera.position.x += (mouseX*0.5 - camera.position.x) * 0.05;
+            camera.position.y += (-mouseY*0.5 - camera.position.y) * 0.05;
+            camera.lookAt(scene.position);
+
+            if (particles) {
+                particles.rotation.z = time * 0.2;
+                particles.rotation.y = time * 0.1;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        init();
+        animate();
+    </script>
+</body>
+</html>
