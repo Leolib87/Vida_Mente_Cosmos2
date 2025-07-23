@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Inflación Sudamérica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .theme-switch-wrapper { display: flex; align-items: center; }
+        .theme-switch { display: inline-block; height: 24px; position: relative; width: 48px; }
+        .theme-switch input { display:none; }
+        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; }
+        .slider:before { background-color: #fff; bottom: 4px; content: ""; height: 16px; left: 4px; position: absolute; transition: .4s; width: 16px; }
+        input:checked + .slider { background-color: #1d4ed8; }
+        input:checked + .slider:before { transform: translateX(24px); }
+        .slider.round { border-radius: 34px; }
+        .slider.round:before { border-radius: 50%; }
+        .country-btn.active {
+            background-color: #1d4ed8;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        html.dark .country-btn.active { background-color: #3b82f6; }
+
+        /* Estilos para los íconos de sol y luna */
+        .slider svg {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        .sun-icon {
+            left: 5px;
+            opacity: 1;
+        }
+        .moon-icon {
+            right: 5px;
+            opacity: 0;
+        }
+        input:checked + .slider .sun-icon {
+            opacity: 0;
+        }
+        input:checked + .slider .moon-icon {
+            opacity: 1;
+        }
+    </style>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 antialiased">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="relative text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Inflación Mensual en Sudamérica</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-2">Visualizador de datos de 2019 a 2025</p>
+            <div class="absolute top-0 right-0 theme-switch-wrapper">
+                <label class="theme-switch" for="checkbox">
+                    <input type="checkbox" id="checkbox" />
+                    <div class="slider round">
+                        <!-- Icono Sol -->
+                        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                        <!-- Icono Luna -->
+                        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f1f5f9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    </div>
+                </label>
+            </div>
+        </header>
+
+        <main>
+            <!-- Selector de País -->
+            <div class="flex justify-center flex-wrap gap-2 md:gap-4 mb-8" id="country-selector">
+                <button class="country-btn active px-4 py-2 bg-white dark:bg-gray-700 rounded-lg shadow-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 transition-all duration-300" data-country="Argentina">Argentina</button>
+                <button class="country-btn px-4 py-2 bg-white dark:bg-gray-700 rounded-lg shadow-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 transition-all duration-300" data-country="Chile">Chile</button>
+                <button class="country-btn px-4 py-2 bg-white dark:bg-gray-700 rounded-lg shadow-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 transition-all duration-300" data-country="Peru">Perú</button>
+                <button class="country-btn px-4 py-2 bg-white dark:bg-gray-700 rounded-lg shadow-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 transition-all duration-300" data-country="Colombia">Colombia</button>
+                <button class="country-btn px-4 py-2 bg-white dark:bg-gray-700 rounded-lg shadow-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 transition-all duration-300" data-country="Brasil">Brasil</button>
+            </div>
+            
+            <!-- Tarjetas de Resumen -->
+            <div id="summary-cards" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg text-center">
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Inflación Anual (Año en Foco)</h3>
+                    <p id="annual-inflation" class="text-2xl font-bold text-gray-900 dark:text-white mt-1">- %</p>
+                </div>
+                 <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg text-center">
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Pico de Inflación</h3>
+                    <p id="peak-inflation" class="text-2xl font-bold text-red-500 dark:text-red-400 mt-1">- %</p>
+                </div>
+                 <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg text-center">
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Mínimo de Inflación</h3>
+                    <p id="min-inflation" class="text-2xl font-bold text-green-500 dark:text-green-400 mt-1">- %</p>
+                </div>
+            </div>
+
+            <!-- Contenedor del Gráfico -->
+            <div class="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-lg mb-8">
+                <canvas id="inflationChart" height="400"></canvas>
+            </div>
+
+            <!-- Contenedor de la Tabla de Datos -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+                 <h2 id="table-title" class="text-xl font-bold text-gray-800 dark:text-white p-4 md:p-6 border-b border-gray-200 dark:border-gray-700">Datos Detallados</h2>
+                <div class="max-h-[500px] overflow-y-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 dark:bg-gray-700 sticky top-0">
+                            <tr>
+                                <th class="p-4 font-semibold text-sm text-gray-600 dark:text-gray-300">Año</th>
+                                <th class="p-4 font-semibold text-sm text-gray-600 dark:text-gray-300">Mes</th>
+                                <th class="p-4 font-semibold text-sm text-gray-600 dark:text-gray-300">Inflación (%)</th>
+                                <th class="p-4 font-semibold text-sm text-gray-600 dark:text-gray-300">Presidente</th>
+                            </tr>
+                        </thead>
+                        <tbody id="data-table-body" class="divide-y divide-gray-200 dark:divide-gray-700">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="text-center mt-8 text-gray-500 dark:text-gray-400 text-sm">
+            <p>Datos recopilados de fuentes oficiales de cada país (INDEC, INE, INEI, DANE, IBGE).</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- BASE DE DATOS ---
+        const inflationData = {
+            Argentina: [
+                { Año: 2019, Mes: 'Enero', Inflacion: 2.9, Presidente: 'Mauricio Macri' }, { Año: 2019, Mes: 'Febrero', Inflacion: 3.8, Presidente: 'Mauricio Macri' }, { Año: 2019, Mes: 'Marzo', Inflacion: 4.7, Presidente: 'Mauricio Macri' }, { Año: 2019, Mes: 'Abril', Inflacion: 3.4, Presidente: 'Mauricio Macri' }, { Año: 2019, Mes: 'Mayo', Inflacion: 3.1, Presidente: 'Mauricio Macri' }, { Año: 2019, Mes: 'Junio', Inflacion: 2.7, Presidente: 'Mauricio Macri' }, { Año: 2019, Mes: 'Julio', Inflacion: 2.2, Presidente: 'Mauricio Macri' }, { Año: 2019, Mes: 'Agosto', Inflacion: 4.0, Presidente: 'Mauricio Macri' }, { Año: 2019, Mes: 'Septiembre', Inflacion: 5.9, Presidente: 'Mauricio Macri' }, { Año: 2019, Mes: 'Octubre', Inflacion: 3.3, Presidente: 'Mauricio Macri' }, { Año: 2019, Mes: 'Noviembre', Inflacion: 4.3, Presidente: 'Mauricio Macri' }, { Año: 2019, Mes: 'Diciembre', Inflacion: 3.7, Presidente: 'Alberto Fernández' },
+                { Año: 2020, Mes: 'Enero', Inflacion: 2.3, Presidente: 'Alberto Fernández' }, { Año: 2020, Mes: 'Febrero', Inflacion: 2.0, Presidente: 'Alberto Fernández' }, { Año: 2020, Mes: 'Marzo', Inflacion: 3.3, Presidente: 'Alberto Fernández' }, { Año: 2020, Mes: 'Abril', Inflacion: 1.5, Presidente: 'Alberto Fernández' }, { Año: 2020, Mes: 'Mayo', Inflacion: 1.5, Presidente: 'Alberto Fernández' }, { Año: 2020, Mes: 'Junio', Inflacion: 2.2, Presidente: 'Alberto Fernández' }, { Año: 2020, Mes: 'Julio', Inflacion: 1.9, Presidente: 'Alberto Fernández' }, { Año: 2020, Mes: 'Agosto', Inflacion: 2.7, Presidente: 'Alberto Fernández' }, { Año: 2020, Mes: 'Septiembre', Inflacion: 2.8, Presidente: 'Alberto Fernández' }, { Año: 2020, Mes: 'Octubre', Inflacion: 3.8, Presidente: 'Alberto Fernández' }, { Año: 2020, Mes: 'Noviembre', Inflacion: 3.2, Presidente: 'Alberto Fernández' }, { Año: 2020, Mes: 'Diciembre', Inflacion: 4.0, Presidente: 'Alberto Fernández' },
+                { Año: 2021, Mes: 'Enero', Inflacion: 4.0, Presidente: 'Alberto Fernández' }, { Año: 2021, Mes: 'Febrero', Inflacion: 3.6, Presidente: 'Alberto Fernández' }, { Año: 2021, Mes: 'Marzo', Inflacion: 4.8, Presidente: 'Alberto Fernández' }, { Año: 2021, Mes: 'Abril', Inflacion: 4.1, Presidente: 'Alberto Fernández' }, { Año: 2021, Mes: 'Mayo', Inflacion: 3.3, Presidente: 'Alberto Fernández' }, { Año: 2021, Mes: 'Junio', Inflacion: 3.2, Presidente: 'Alberto Fernández' }, { Año: 2021, Mes: 'Julio', Inflacion: 3.0, Presidente: 'Alberto Fernández' }, { Año: 2021, Mes: 'Agosto', Inflacion: 2.5, Presidente: 'Alberto Fernández' }, { Año: 2021, Mes: 'Septiembre', Inflacion: 3.5, Presidente: 'Alberto Fernández' }, { Año: 2021, Mes: 'Octubre', Inflacion: 3.5, Presidente: 'Alberto Fernández' }, { Año: 2021, Mes: 'Noviembre', Inflacion: 2.5, Presidente: 'Alberto Fernández' }, { Año: 2021, Mes: 'Diciembre', Inflacion: 3.8, Presidente: 'Alberto Fernández' },
+                { Año: 2022, Mes: 'Enero', Inflacion: 3.9, Presidente: 'Alberto Fernández' }, { Año: 2022, Mes: 'Febrero', Inflacion: 4.7, Presidente: 'Alberto Fernández' }, { Año: 2022, Mes: 'Marzo', Inflacion: 6.7, Presidente: 'Alberto Fernández' }, { Año: 2022, Mes: 'Abril', Inflacion: 6.0, Presidente: 'Alberto Fernández' }, { Año: 2022, Mes: 'Mayo', Inflacion: 5.1, Presidente: 'Alberto Fernández' }, { Año: 2022, Mes: 'Junio', Inflacion: 5.3, Presidente: 'Alberto Fernández' }, { Año: 2022, Mes: 'Julio', Inflacion: 7.4, Presidente: 'Alberto Fernández' }, { Año: 2022, Mes: 'Agosto', Inflacion: 7.0, Presidente: 'Alberto Fernández' }, { Año: 2022, Mes: 'Septiembre', Inflacion: 6.2, Presidente: 'Alberto Fernández' }, { Año: 2022, Mes: 'Octubre', Inflacion: 6.3, Presidente: 'Alberto Fernández' }, { Año: 2022, Mes: 'Noviembre', Inflacion: 4.9, Presidente: 'Alberto Fernández' }, { Año: 2022, Mes: 'Diciembre', Inflacion: 5.1, Presidente: 'Alberto Fernández' },
+                { Año: 2023, Mes: 'Enero', Inflacion: 6.0, Presidente: 'Alberto Fernández' }, { Año: 2023, Mes: 'Febrero', Inflacion: 6.6, Presidente: 'Alberto Fernández' }, { Año: 2023, Mes: 'Marzo', Inflacion: 7.7, Presidente: 'Alberto Fernández' }, { Año: 2023, Mes: 'Abril', Inflacion: 8.4, Presidente: 'Alberto Fernández' }, { Año: 2023, Mes: 'Mayo', Inflacion: 7.8, Presidente: 'Alberto Fernández' }, { Año: 2023, Mes: 'Junio', Inflacion: 6.0, Presidente: 'Alberto Fernández' }, { Año: 2023, Mes: 'Julio', Inflacion: 6.3, Presidente: 'Alberto Fernández' }, { Año: 2023, Mes: 'Agosto', Inflacion: 12.4, Presidente: 'Alberto Fernández' }, { Año: 2023, Mes: 'Septiembre', Inflacion: 12.7, Presidente: 'Alberto Fernández' }, { Año: 2023, Mes: 'Octubre', Inflacion: 8.3, Presidente: 'Alberto Fernández' }, { Año: 2023, Mes: 'Noviembre', Inflacion: 12.8, Presidente: 'Alberto Fernández' }, { Año: 2023, Mes: 'Diciembre', Inflacion: 25.5, Presidente: 'Javier Milei' },
+                { Año: 2024, Mes: 'Enero', Inflacion: 20.6, Presidente: 'Javier Milei' }, { Año: 2024, Mes: 'Febrero', Inflacion: 13.2, Presidente: 'Javier Milei' }, { Año: 2024, Mes: 'Marzo', Inflacion: 11.0, Presidente: 'Javier Milei' }, { Año: 2024, Mes: 'Abril', Inflacion: 8.8, Presidente: 'Javier Milei' }, { Año: 2024, Mes: 'Mayo', Inflacion: 4.2, Presidente: 'Javier Milei' }, { Año: 2024, Mes: 'Junio', Inflacion: 6.0, Presidente: 'Javier Milei' }, { Año: 2024, Mes: 'Julio', Inflacion: 5.3, Presidente: 'Javier Milei' }, { Año: 2024, Mes: 'Agosto', Inflacion: 4.9, Presidente: 'Javier Milei' }, { Año: 2024, Mes: 'Septiembre', Inflacion: 3.9, Presidente: 'Javier Milei' }, { Año: 2024, Mes: 'Octubre', Inflacion: 3.1, Presidente: 'Javier Milei' }, { Año: 2024, Mes: 'Noviembre', Inflacion: 2.4, Presidente: 'Javier Milei' }, { Año: 2024, Mes: 'Diciembre', Inflacion: 2.7, Presidente: 'Javier Milei' },
+                { Año: 2025, Mes: 'Enero', Inflacion: 2.2, Presidente: 'Javier Milei' }, { Año: 2025, Mes: 'Febrero', Inflacion: 1.9, Presidente: 'Javier Milei' }, { Año: 2025, Mes: 'Marzo', Inflacion: 1.8, Presidente: 'Javier Milei' }, { Año: 2025, Mes: 'Abril', Inflacion: 1.7, Presidente: 'Javier Milei' }, { Año: 2025, Mes: 'Mayo', Inflacion: 1.5, Presidente: 'Javier Milei' }, { Año: 2025, Mes: 'Junio', Inflacion: 1.6, Presidente: 'Javier Milei' },
+            ],
+            Chile: [
+                { Año: 2019, Mes: 'Enero', Inflacion: 0.1, Presidente: 'Sebastián Piñera' }, { Año: 2019, Mes: 'Febrero', Inflacion: 0.0, Presidente: 'Sebastián Piñera' }, { Año: 2019, Mes: 'Marzo', Inflacion: 0.5, Presidente: 'Sebastián Piñera' }, { Año: 2019, Mes: 'Abril', Inflacion: 0.3, Presidente: 'Sebastián Piñera' }, { Año: 2019, Mes: 'Mayo', Inflacion: 0.6, Presidente: 'Sebastián Piñera' }, { Año: 2019, Mes: 'Junio', Inflacion: 0.0, Presidente: 'Sebastián Piñera' }, { Año: 2019, Mes: 'Julio', Inflacion: 0.2, Presidente: 'Sebastián Piñera' }, { Año: 2019, Mes: 'Agosto', Inflacion: 0.2, Presidente: 'Sebastián Piñera' }, { Año: 2019, Mes: 'Septiembre', Inflacion: 0.0, Presidente: 'Sebastián Piñera' }, { Año: 2019, Mes: 'Octubre', Inflacion: 0.8, Presidente: 'Sebastián Piñera' }, { Año: 2019, Mes: 'Noviembre', Inflacion: 0.1, Presidente: 'Sebastián Piñera' }, { Año: 2019, Mes: 'Diciembre', Inflacion: 0.1, Presidente: 'Sebastián Piñera' },
+                { Año: 2020, Mes: 'Enero', Inflacion: 0.6, Presidente: 'Sebastián Piñera' }, { Año: 2020, Mes: 'Febrero', Inflacion: 0.4, Presidente: 'Sebastián Piñera' }, { Año: 2020, Mes: 'Marzo', Inflacion: 0.3, Presidente: 'Sebastián Piñera' }, { Año: 2020, Mes: 'Abril', Inflacion: 0.0, Presidente: 'Sebastián Piñera' }, { Año: 2020, Mes: 'Mayo', Inflacion: -0.1, Presidente: 'Sebastián Piñera' }, { Año: 2020, Mes: 'Junio', Inflacion: -0.1, Presidente: 'Sebastián Piñera' }, { Año: 2020, Mes: 'Julio', Inflacion: 0.1, Presidente: 'Sebastián Piñera' }, { Año: 2020, Mes: 'Agosto', Inflacion: 0.1, Presidente: 'Sebastián Piñera' }, { Año: 2020, Mes: 'Septiembre', Inflacion: 0.6, Presidente: 'Sebastián Piñera' }, { Año: 2020, Mes: 'Octubre', Inflacion: 0.7, Presidente: 'Sebastián Piñera' }, { Año: 2020, Mes: 'Noviembre', Inflacion: -0.1, Presidente: 'Sebastián Piñera' }, { Año: 2020, Mes: 'Diciembre', Inflacion: 0.3, Presidente: 'Sebastián Piñera' },
+                { Año: 2021, Mes: 'Enero', Inflacion: 0.7, Presidente: 'Sebastián Piñera' }, { Año: 2021, Mes: 'Febrero', Inflacion: 0.2, Presidente: 'Sebastián Piñera' }, { Año: 2021, Mes: 'Marzo', Inflacion: 0.4, Presidente: 'Sebastián Piñera' }, { Año: 2021, Mes: 'Abril', Inflacion: 0.4, Presidente: 'Sebastián Piñera' }, { Año: 2021, Mes: 'Mayo', Inflacion: 0.3, Presidente: 'Sebastián Piñera' }, { Año: 2021, Mes: 'Junio', Inflacion: 0.1, Presidente: 'Sebastián Piñera' }, { Año: 2021, Mes: 'Julio', Inflacion: 0.8, Presidente: 'Sebastián Piñera' }, { Año: 2021, Mes: 'Agosto', Inflacion: 0.4, Presidente: 'Sebastián Piñera' }, { Año: 2021, Mes: 'Septiembre', Inflacion: 1.2, Presidente: 'Sebastián Piñera' }, { Año: 2021, Mes: 'Octubre', Inflacion: 1.3, Presidente: 'Sebastián Piñera' }, { Año: 2021, Mes: 'Noviembre', Inflacion: 0.5, Presidente: 'Sebastián Piñera' }, { Año: 2021, Mes: 'Diciembre', Inflacion: 0.8, Presidente: 'Sebastián Piñera' },
+                { Año: 2022, Mes: 'Enero', Inflacion: 1.2, Presidente: 'Sebastián Piñera' }, { Año: 2022, Mes: 'Febrero', Inflacion: 0.3, Presidente: 'Sebastián Piñera' }, { Año: 2022, Mes: 'Marzo', Inflacion: 1.9, Presidente: 'Gabriel Boric' }, { Año: 2022, Mes: 'Abril', Inflacion: 1.4, Presidente: 'Gabriel Boric' }, { Año: 2022, Mes: 'Mayo', Inflacion: 1.2, Presidente: 'Gabriel Boric' }, { Año: 2022, Mes: 'Junio', Inflacion: 0.9, Presidente: 'Gabriel Boric' }, { Año: 2022, Mes: 'Julio', Inflacion: 1.4, Presidente: 'Gabriel Boric' }, { Año: 2022, Mes: 'Agosto', Inflacion: 1.2, Presidente: 'Gabriel Boric' }, { Año: 2022, Mes: 'Septiembre', Inflacion: 0.9, Presidente: 'Gabriel Boric' }, { Año: 2022, Mes: 'Octubre', Inflacion: 0.5, Presidente: 'Gabriel Boric' }, { Año: 2022, Mes: 'Noviembre', Inflacion: 1.0, Presidente: 'Gabriel Boric' }, { Año: 2022, Mes: 'Diciembre', Inflacion: 0.3, Presidente: 'Gabriel Boric' },
+                { Año: 2023, Mes: 'Enero', Inflacion: 0.8, Presidente: 'Gabriel Boric' }, { Año: 2023, Mes: 'Febrero', Inflacion: -0.1, Presidente: 'Gabriel Boric' }, { Año: 2023, Mes: 'Marzo', Inflacion: 1.1, Presidente: 'Gabriel Boric' }, { Año: 2023, Mes: 'Abril', Inflacion: 0.3, Presidente: 'Gabriel Boric' }, { Año: 2023, Mes: 'Mayo', Inflacion: 0.1, Presidente: 'Gabriel Boric' }, { Año: 2023, Mes: 'Junio', Inflacion: -0.2, Presidente: 'Gabriel Boric' }, { Año: 2023, Mes: 'Julio', Inflacion: 0.4, Presidente: 'Gabriel Boric' }, { Año: 2023, Mes: 'Agosto', Inflacion: 0.1, Presidente: 'Gabriel Boric' }, { Año: 2023, Mes: 'Septiembre', Inflacion: 0.7, Presidente: 'Gabriel Boric' }, { Año: 2023, Mes: 'Octubre', Inflacion: 0.4, Presidente: 'Gabriel Boric' }, { Año: 2023, Mes: 'Noviembre', Inflacion: 0.7, Presidente: 'Gabriel Boric' }, { Año: 2023, Mes: 'Diciembre', Inflacion: -0.5, Presidente: 'Gabriel Boric' },
+                { Año: 2024, Mes: 'Enero', Inflacion: 0.7, Presidente: 'Gabriel Boric' }, { Año: 2024, Mes: 'Febrero', Inflacion: 0.6, Presidente: 'Gabriel Boric' }, { Año: 2024, Mes: 'Marzo', Inflacion: 0.4, Presidente: 'Gabriel Boric' }, { Año: 2024, Mes: 'Abril', Inflacion: 0.5, Presidente: 'Gabriel Boric' }, { Año: 2024, Mes: 'Mayo', Inflacion: 0.3, Presidente: 'Gabriel Boric' }, { Año: 2024, Mes: 'Junio', Inflacion: 0.1, Presidente: 'Gabriel Boric' }, { Año: 2024, Mes: 'Julio', Inflacion: 0.2, Presidente: 'Gabriel Boric' }, { Año: 2024, Mes: 'Agosto', Inflacion: 0.1, Presidente: 'Gabriel Boric' }, { Año: 2024, Mes: 'Septiembre', Inflacion: 0.1, Presidente: 'Gabriel Boric' }, { Año: 2024, Mes: 'Octubre', Inflacion: 1.0, Presidente: 'Gabriel Boric' }, { Año: 2024, Mes: 'Noviembre', Inflacion: 0.3, Presidente: 'Gabriel Boric' }, { Año: 2024, Mes: 'Diciembre', Inflacion: -0.2, Presidente: 'Gabriel Boric' },
+                { Año: 2025, Mes: 'Enero', Inflacion: 1.1, Presidente: 'Gabriel Boric' }, { Año: 2025, Mes: 'Febrero', Inflacion: 0.4, Presidente: 'Gabriel Boric' }, { Año: 2025, Mes: 'Marzo', Inflacion: 0.5, Presidente: 'Gabriel Boric' }, { Año: 2025, Mes: 'Abril', Inflacion: 0.2, Presidente: 'Gabriel Boric' }, { Año: 2025, Mes: 'Mayo', Inflacion: 0.2, Presidente: 'Gabriel Boric' }, { Año: 2025, Mes: 'Junio', Inflacion: -0.4, Presidente: 'Gabriel Boric' },
+            ],
+            Peru: [
+                { Año: 2019, Mes: 'Enero', Inflacion: 0.05, Presidente: 'Martín Vizcarra' }, { Año: 2019, Mes: 'Febrero', Inflacion: 0.23, Presidente: 'Martín Vizcarra' }, { Año: 2019, Mes: 'Marzo', Inflacion: 0.73, Presidente: 'Martín Vizcarra' }, { Año: 2019, Mes: 'Abril', Inflacion: 0.05, Presidente: 'Martín Vizcarra' }, { Año: 2019, Mes: 'Mayo', Inflacion: -0.16, Presidente: 'Martín Vizcarra' }, { Año: 2019, Mes: 'Junio', Inflacion: 0.11, Presidente: 'Martín Vizcarra' }, { Año: 2019, Mes: 'Julio', Inflacion: 0.20, Presidente: 'Martín Vizcarra' }, { Año: 2019, Mes: 'Agosto', Inflacion: 0.03, Presidente: 'Martín Vizcarra' }, { Año: 2019, Mes: 'Septiembre', Inflacion: 0.01, Presidente: 'Martín Vizcarra' }, { Año: 2019, Mes: 'Octubre', Inflacion: 0.10, Presidente: 'Martín Vizcarra' }, { Año: 2019, Mes: 'Noviembre', Inflacion: 0.11, Presidente: 'Martín Vizcarra' }, { Año: 2019, Mes: 'Diciembre', Inflacion: 0.21, Presidente: 'Martín Vizcarra' },
+                { Año: 2020, Mes: 'Enero', Inflacion: 0.16, Presidente: 'Martín Vizcarra' }, { Año: 2020, Mes: 'Febrero', Inflacion: 0.12, Presidente: 'Martín Vizcarra' }, { Año: 2020, Mes: 'Marzo', Inflacion: 0.58, Presidente: 'Martín Vizcarra' }, { Año: 2020, Mes: 'Abril', Inflacion: -0.56, Presidente: 'Martín Vizcarra' }, { Año: 2020, Mes: 'Mayo', Inflacion: -0.21, Presidente: 'Martín Vizcarra' }, { Año: 2020, Mes: 'Junio', Inflacion: 0.35, Presidente: 'Martín Vizcarra' }, { Año: 2020, Mes: 'Julio', Inflacion: 0.44, Presidente: 'Martín Vizcarra' }, { Año: 2020, Mes: 'Agosto', Inflacion: -0.13, Presidente: 'Martín Vizcarra' }, { Año: 2020, Mes: 'Septiembre', Inflacion: 0.14, Presidente: 'Martín Vizcarra' }, { Año: 2020, Mes: 'Octubre', Inflacion: 0.02, Presidente: 'Martín Vizcarra' }, { Año: 2020, Mes: 'Noviembre', Inflacion: 0.52, Presidente: 'Francisco Sagasti' }, { Año: 2020, Mes: 'Diciembre', Inflacion: 0.46, Presidente: 'Francisco Sagasti' },
+                { Año: 2021, Mes: 'Enero', Inflacion: 0.02, Presidente: 'Francisco Sagasti' }, { Año: 2021, Mes: 'Febrero', Inflacion: 0.13, Presidente: 'Francisco Sagasti' }, { Año: 2021, Mes: 'Marzo', Inflacion: 0.92, Presidente: 'Francisco Sagasti' }, { Año: 2021, Mes: 'Abril', Inflacion: 0.48, Presidente: 'Francisco Sagasti' }, { Año: 2021, Mes: 'Mayo', Inflacion: 0.27, Presidente: 'Francisco Sagasti' }, { Año: 2021, Mes: 'Junio', Inflacion: 0.56, Presidente: 'Francisco Sagasti' }, { Año: 2021, Mes: 'Julio', Inflacion: 1.01, Presidente: 'Pedro Castillo' }, { Año: 2021, Mes: 'Agosto', Inflacion: 0.98, Presidente: 'Pedro Castillo' }, { Año: 2021, Mes: 'Septiembre', Inflacion: 0.40, Presidente: 'Pedro Castillo' }, { Año: 2021, Mes: 'Octubre', Inflacion: 0.58, Presidente: 'Pedro Castillo' }, { Año: 2021, Mes: 'Noviembre', Inflacion: 0.36, Presidente: 'Pedro Castillo' }, { Año: 2021, Mes: 'Diciembre', Inflacion: 0.78, Presidente: 'Pedro Castillo' },
+                { Año: 2022, Mes: 'Enero', Inflacion: 0.04, Presidente: 'Pedro Castillo' }, { Año: 2022, Mes: 'Febrero', Inflacion: 0.31, Presidente: 'Pedro Castillo' }, { Año: 2022, Mes: 'Marzo', Inflacion: 1.48, Presidente: 'Pedro Castillo' }, { Año: 2022, Mes: 'Abril', Inflacion: 0.96, Presidente: 'Pedro Castillo' }, { Año: 2022, Mes: 'Mayo', Inflacion: 0.38, Presidente: 'Pedro Castillo' }, { Año: 2022, Mes: 'Junio', Inflacion: 0.52, Presidente: 'Pedro Castillo' }, { Año: 2022, Mes: 'Julio', Inflacion: 0.62, Presidente: 'Pedro Castillo' }, { Año: 2022, Mes: 'Agosto', Inflacion: 0.67, Presidente: 'Pedro Castillo' }, { Año: 2022, Mes: 'Septiembre', Inflacion: 0.52, Presidente: 'Pedro Castillo' }, { Año: 2022, Mes: 'Octubre', Inflacion: 0.35, Presidente: 'Pedro Castillo' }, { Año: 2022, Mes: 'Noviembre', Inflacion: 0.15, Presidente: 'Pedro Castillo' }, { Año: 2022, Mes: 'Diciembre', Inflacion: 0.79, Presidente: 'Dina Boluarte' },
+                { Año: 2023, Mes: 'Enero', Inflacion: 0.23, Presidente: 'Dina Boluarte' }, { Año: 2023, Mes: 'Febrero', Inflacion: 0.29, Presidente: 'Dina Boluarte' }, { Año: 2023, Mes: 'Marzo', Inflacion: 1.25, Presidente: 'Dina Boluarte' }, { Año: 2023, Mes: 'Abril', Inflacion: -0.30, Presidente: 'Dina Boluarte' }, { Año: 2023, Mes: 'Mayo', Inflacion: -0.13, Presidente: 'Dina Boluarte' }, { Año: 2023, Mes: 'Junio', Inflacion: 0.14, Presidente: 'Dina Boluarte' }, { Año: 2023, Mes: 'Julio', Inflacion: 0.39, Presidente: 'Dina Boluarte' }, { Año: 2023, Mes: 'Agosto', Inflacion: 0.38, Presidente: 'Dina Boluarte' }, { Año: 2023, Mes: 'Septiembre', Inflacion: 0.02, Presidente: 'Dina Boluarte' }, { Año: 2023, Mes: 'Octubre', Inflacion: 0.32, Presidente: 'Dina Boluarte' }, { Año: 2023, Mes: 'Noviembre', Inflacion: 0.16, Presidente: 'Dina Boluarte' }, { Año: 2023, Mes: 'Diciembre', Inflacion: 0.41, Presidente: 'Dina Boluarte' },
+                { Año: 2024, Mes: 'Marzo', Inflacion: 0.94, Presidente: 'Dina Boluarte' }, { Año: 2024, Mes: 'Junio', Inflacion: 0.07, Presidente: 'Dina Boluarte' }, { Año: 2024, Mes: 'Agosto', Inflacion: 0.31, Presidente: 'Dina Boluarte' }, { Año: 2024, Mes: 'Noviembre', Inflacion: 0.07, Presidente: 'Dina Boluarte' }, { Año: 2024, Mes: 'Diciembre', Inflacion: 0.14, Presidente: 'Dina Boluarte' },
+                { Año: 2025, Mes: 'Marzo', Inflacion: 0.76, Presidente: 'Dina Boluarte' }, { Año: 2025, Mes: 'Abril', Inflacion: 0.32, Presidente: 'Dina Boluarte' }, { Año: 2025, Mes: 'Mayo', Inflacion: -0.06, Presidente: 'Dina Boluarte' }, { Año: 2025, Mes: 'Junio', Inflacion: 0.08, Presidente: 'Dina Boluarte' },
+            ],
+            Colombia: [
+                { Año: 2019, Mes: 'Enero', Inflacion: 0.60, Presidente: 'Iván Duque' }, { Año: 2019, Mes: 'Febrero', Inflacion: 0.57, Presidente: 'Iván Duque' }, { Año: 2019, Mes: 'Marzo', Inflacion: 0.49, Presidente: 'Iván Duque' }, { Año: 2019, Mes: 'Abril', Inflacion: 0.50, Presidente: 'Iván Duque' }, { Año: 2019, Mes: 'Mayo', Inflacion: 0.31, Presidente: 'Iván Duque' }, { Año: 2019, Mes: 'Junio', Inflacion: 0.27, Presidente: 'Iván Duque' }, { Año: 2019, Mes: 'Julio', Inflacion: 0.22, Presidente: 'Iván Duque' }, { Año: 2019, Mes: 'Agosto', Inflacion: 0.13, Presidente: 'Iván Duque' }, { Año: 2019, Mes: 'Septiembre', Inflacion: 0.23, Presidente: 'Iván Duque' }, { Año: 2019, Mes: 'Octubre', Inflacion: 0.10, Presidente: 'Iván Duque' }, { Año: 2019, Mes: 'Noviembre', Inflacion: 0.10, Presidente: 'Iván Duque' }, { Año: 2019, Mes: 'Diciembre', Inflacion: 0.26, Presidente: 'Iván Duque' },
+                { Año: 2020, Mes: 'Enero', Inflacion: 0.46, Presidente: 'Iván Duque' }, { Año: 2020, Mes: 'Febrero', Inflacion: 0.67, Presidente: 'Iván Duque' }, { Año: 2020, Mes: 'Marzo', Inflacion: 0.57, Presidente: 'Iván Duque' }, { Año: 2020, Mes: 'Abril', Inflacion: -0.51, Presidente: 'Iván Duque' }, { Año: 2020, Mes: 'Mayo', Inflacion: -0.32, Presidente: 'Iván Duque' }, { Año: 2020, Mes: 'Junio', Inflacion: 0.00, Presidente: 'Iván Duque' }, { Año: 2020, Mes: 'Julio', Inflacion: 0.00, Presidente: 'Iván Duque' }, { Año: 2020, Mes: 'Agosto', Inflacion: -0.01, Presidente: 'Iván Duque' }, { Año: 2020, Mes: 'Septiembre', Inflacion: 0.32, Presidente: 'Iván Duque' }, { Año: 2020, Mes: 'Octubre', Inflacion: 0.00, Presidente: 'Iván Duque' }, { Año: 2020, Mes: 'Noviembre', Inflacion: -0.15, Presidente: 'Iván Duque' }, { Año: 2020, Mes: 'Diciembre', Inflacion: 0.38, Presidente: 'Iván Duque' },
+                { Año: 2021, Mes: 'Enero', Inflacion: 0.41, Presidente: 'Iván Duque' }, { Año: 2021, Mes: 'Febrero', Inflacion: 0.64, Presidente: 'Iván Duque' }, { Año: 2021, Mes: 'Marzo', Inflacion: 0.51, Presidente: 'Iván Duque' }, { Año: 2021, Mes: 'Abril', Inflacion: -0.16, Presidente: 'Iván Duque' }, { Año: 2021, Mes: 'Mayo', Inflacion: -0.25, Presidente: 'Iván Duque' }, { Año: 2021, Mes: 'Junio', Inflacion: 0.38, Presidente: 'Iván Duque' }, { Año: 2021, Mes: 'Julio', Inflacion: 0.32, Presidente: 'Iván Duque' }, { Año: 2021, Mes: 'Agosto', Inflacion: 0.45, Presidente: 'Iván Duque' }, { Año: 2021, Mes: 'Septiembre', Inflacion: 0.38, Presidente: 'Iván Duque' }, { Año: 2021, Mes: 'Octubre', Inflacion: 0.01, Presidente: 'Iván Duque' }, { Año: 2021, Mes: 'Noviembre', Inflacion: 0.50, Presidente: 'Iván Duque' }, { Año: 2021, Mes: 'Diciembre', Inflacion: 0.73, Presidente: 'Iván Duque' },
+                { Año: 2022, Mes: 'Enero', Inflacion: 1.67, Presidente: 'Iván Duque' }, { Año: 2022, Mes: 'Febrero', Inflacion: 1.63, Presidente: 'Iván Duque' }, { Año: 2022, Mes: 'Marzo', Inflacion: 1.00, Presidente: 'Iván Duque' }, { Año: 2022, Mes: 'Abril', Inflacion: 1.25, Presidente: 'Iván Duque' }, { Año: 2022, Mes: 'Mayo', Inflacion: 0.84, Presidente: 'Iván Duque' }, { Año: 2022, Mes: 'Junio', Inflacion: 0.51, Presidente: 'Iván Duque' }, { Año: 2022, Mes: 'Julio', Inflacion: 0.81, Presidente: 'Iván Duque' }, { Año: 2022, Mes: 'Agosto', Inflacion: 1.02, Presidente: 'Gustavo Petro' }, { Año: 2022, Mes: 'Septiembre', Inflacion: 0.93, Presidente: 'Gustavo Petro' }, { Año: 2022, Mes: 'Octubre', Inflacion: 0.72, Presidente: 'Gustavo Petro' }, { Año: 2022, Mes: 'Noviembre', Inflacion: 0.77, Presidente: 'Gustavo Petro' }, { Año: 2022, Mes: 'Diciembre', Inflacion: 1.26, Presidente: 'Gustavo Petro' },
+                { Año: 2023, Mes: 'Enero', Inflacion: 1.78, Presidente: 'Gustavo Petro' }, { Año: 2023, Mes: 'Febrero', Inflacion: 1.66, Presidente: 'Gustavo Petro' }, { Año: 2023, Mes: 'Marzo', Inflacion: 1.05, Presidente: 'Gustavo Petro' }, { Año: 2023, Mes: 'Abril', Inflacion: 0.78, Presidente: 'Gustavo Petro' }, { Año: 2023, Mes: 'Mayo', Inflacion: 0.43, Presidente: 'Gustavo Petro' }, { Año: 2023, Mes: 'Junio', Inflacion: 0.30, Presidente: 'Gustavo Petro' }, { Año: 2023, Mes: 'Julio', Inflacion: 0.50, Presidente: 'Gustavo Petro' }, { Año: 2023, Mes: 'Agosto', Inflacion: 0.70, Presidente: 'Gustavo Petro' }, { Año: 2023, Mes: 'Septiembre', Inflacion: 0.54, Presidente: 'Gustavo Petro' }, { Año: 2023, Mes: 'Octubre', Inflacion: 0.25, Presidente: 'Gustavo Petro' }, { Año: 2023, Mes: 'Noviembre', Inflacion: 0.47, Presidente: 'Gustavo Petro' }, { Año: 2023, Mes: 'Diciembre', Inflacion: 0.45, Presidente: 'Gustavo Petro' },
+                { Año: 2024, Mes: 'Enero', Inflacion: 0.92, Presidente: 'Gustavo Petro' }, { Año: 2024, Mes: 'Febrero', Inflacion: 1.09, Presidente: 'Gustavo Petro' }, { Año: 2024, Mes: 'Marzo', Inflacion: 0.70, Presidente: 'Gustavo Petro' }, { Año: 2024, Mes: 'Abril', Inflacion: 0.59, Presidente: 'Gustavo Petro' }, { Año: 2024, Mes: 'Mayo', Inflacion: 0.43, Presidente: 'Gustavo Petro' }, { Año: 2024, Mes: 'Junio', Inflacion: 0.24, Presidente: 'Gustavo Petro' }, { Año: 2024, Mes: 'Julio', Inflacion: 0.42, Presidente: 'Gustavo Petro' }, { Año: 2024, Mes: 'Agosto', Inflacion: 0.08, Presidente: 'Gustavo Petro' }, { Año: 2024, Mes: 'Septiembre', Inflacion: 0.32, Presidente: 'Gustavo Petro' }, { Año: 2024, Mes: 'Octubre', Inflacion: 0.31, Presidente: 'Gustavo Petro' }, { Año: 2024, Mes: 'Noviembre', Inflacion: 0.34, Presidente: 'Gustavo Petro' }, { Año: 2024, Mes: 'Diciembre', Inflacion: 0.71, Presidente: 'Gustavo Petro' },
+                { Año: 2025, Mes: 'Enero', Inflacion: 0.99, Presidente: 'Gustavo Petro' }, { Año: 2025, Mes: 'Febrero', Inflacion: 1.01, Presidente: 'Gustavo Petro' }, { Año: 2025, Mes: 'Marzo', Inflacion: 0.47, Presidente: 'Gustavo Petro' }, { Año: 2025, Mes: 'Abril', Inflacion: 0.51, Presidente: 'Gustavo Petro' }, { Año: 2025, Mes: 'Mayo', Inflacion: 0.20, Presidente: 'Gustavo Petro' }, { Año: 2025, Mes: 'Junio', Inflacion: 0.30, Presidente: 'Gustavo Petro' },
+            ],
+            Brasil: [
+                { Año: 2019, Mes: 'Enero', Inflacion: 0.32, Presidente: 'Jair Bolsonaro' }, { Año: 2019, Mes: 'Febrero', Inflacion: 0.43, Presidente: 'Jair Bolsonaro' }, { Año: 2019, Mes: 'Marzo', Inflacion: 0.75, Presidente: 'Jair Bolsonaro' }, { Año: 2019, Mes: 'Abril', Inflacion: 0.57, Presidente: 'Jair Bolsonaro' }, { Año: 2019, Mes: 'Mayo', Inflacion: 0.13, Presidente: 'Jair Bolsonaro' }, { Año: 2019, Mes: 'Junio', Inflacion: 0.01, Presidente: 'Jair Bolsonaro' }, { Año: 2019, Mes: 'Julio', Inflacion: 0.19, Presidente: 'Jair Bolsonaro' }, { Año: 2019, Mes: 'Agosto', Inflacion: 0.11, Presidente: 'Jair Bolsonaro' }, { Año: 2019, Mes: 'Septiembre', Inflacion: -0.04, Presidente: 'Jair Bolsonaro' }, { Año: 2019, Mes: 'Octubre', Inflacion: 0.10, Presidente: 'Jair Bolsonaro' }, { Año: 2019, Mes: 'Noviembre', Inflacion: 0.51, Presidente: 'Jair Bolsonaro' }, { Año: 2019, Mes: 'Diciembre', Inflacion: 1.15, Presidente: 'Jair Bolsonaro' },
+                { Año: 2020, Mes: 'Enero', Inflacion: 0.21, Presidente: 'Jair Bolsonaro' }, { Año: 2020, Mes: 'Febrero', Inflacion: 0.25, Presidente: 'Jair Bolsonaro' }, { Año: 2020, Mes: 'Marzo', Inflacion: 0.07, Presidente: 'Jair Bolsonaro' }, { Año: 2020, Mes: 'Abril', Inflacion: -0.31, Presidente: 'Jair Bolsonaro' }, { Año: 2020, Mes: 'Mayo', Inflacion: -0.38, Presidente: 'Jair Bolsonaro' }, { Año: 2020, Mes: 'Junio', Inflacion: 0.26, Presidente: 'Jair Bolsonaro' }, { Año: 2020, Mes: 'Julio', Inflacion: 0.36, Presidente: 'Jair Bolsonaro' }, { Año: 2020, Mes: 'Agosto', Inflacion: 0.24, Presidente: 'Jair Bolsonaro' }, { Año: 2020, Mes: 'Septiembre', Inflacion: 0.64, Presidente: 'Jair Bolsonaro' }, { Año: 2020, Mes: 'Octubre', Inflacion: 0.86, Presidente: 'Jair Bolsonaro' }, { Año: 2020, Mes: 'Noviembre', Inflacion: 0.89, Presidente: 'Jair Bolsonaro' }, { Año: 2020, Mes: 'Diciembre', Inflacion: 1.35, Presidente: 'Jair Bolsonaro' },
+                { Año: 2021, Mes: 'Enero', Inflacion: 0.25, Presidente: 'Jair Bolsonaro' }, { Año: 2021, Mes: 'Febrero', Inflacion: 0.86, Presidente: 'Jair Bolsonaro' }, { Año: 2021, Mes: 'Marzo', Inflacion: 0.93, Presidente: 'Jair Bolsonaro' }, { Año: 2021, Mes: 'Abril', Inflacion: 0.31, Presidente: 'Jair Bolsonaro' }, { Año: 2021, Mes: 'Mayo', Inflacion: 0.83, Presidente: 'Jair Bolsonaro' }, { Año: 2021, Mes: 'Junio', Inflacion: 0.53, Presidente: 'Jair Bolsonaro' }, { Año: 2021, Mes: 'Julio', Inflacion: 0.96, Presidente: 'Jair Bolsonaro' }, { Año: 2021, Mes: 'Agosto', Inflacion: 0.87, Presidente: 'Jair Bolsonaro' }, { Año: 2021, Mes: 'Septiembre', Inflacion: 1.16, Presidente: 'Jair Bolsonaro' }, { Año: 2021, Mes: 'Octubre', Inflacion: 1.25, Presidente: 'Jair Bolsonaro' }, { Año: 2021, Mes: 'Noviembre', Inflacion: 0.95, Presidente: 'Jair Bolsonaro' }, { Año: 2021, Mes: 'Diciembre', Inflacion: 0.73, Presidente: 'Jair Bolsonaro' },
+                { Año: 2022, Mes: 'Enero', Inflacion: 0.54, Presidente: 'Jair Bolsonaro' }, { Año: 2022, Mes: 'Febrero', Inflacion: 1.01, Presidente: 'Jair Bolsonaro' }, { Año: 2022, Mes: 'Marzo', Inflacion: 1.62, Presidente: 'Jair Bolsonaro' }, { Año: 2022, Mes: 'Abril', Inflacion: 0.67, Presidente: 'Jair Bolsonaro' }, { Año: 2022, Mes: 'Mayo', Inflacion: 0.47, Presidente: 'Jair Bolsonaro' }, { Año: 2022, Mes: 'Junio', Inflacion: 0.67, Presidente: 'Jair Bolsonaro' }, { Año: 2022, Mes: 'Julio', Inflacion: -0.68, Presidente: 'Jair Bolsonaro' }, { Año: 2022, Mes: 'Agosto', Inflacion: -0.36, Presidente: 'Jair Bolsonaro' }, { Año: 2022, Mes: 'Septiembre', Inflacion: -0.29, Presidente: 'Jair Bolsonaro' }, { Año: 2022, Mes: 'Octubre', Inflacion: 0.59, Presidente: 'Jair Bolsonaro' }, { Año: 2022, Mes: 'Noviembre', Inflacion: 0.41, Presidente: 'Jair Bolsonaro' }, { Año: 2022, Mes: 'Diciembre', Inflacion: 0.62, Presidente: 'Jair Bolsonaro' },
+                { Año: 2023, Mes: 'Enero', Inflacion: 0.53, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2023, Mes: 'Febrero', Inflacion: 0.84, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2023, Mes: 'Marzo', Inflacion: 0.71, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2023, Mes: 'Abril', Inflacion: 0.61, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2023, Mes: 'Mayo', Inflacion: 0.23, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2023, Mes: 'Junio', Inflacion: -0.08, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2023, Mes: 'Julio', Inflacion: 0.12, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2023, Mes: 'Agosto', Inflacion: 0.23, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2023, Mes: 'Septiembre', Inflacion: 0.26, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2023, Mes: 'Octubre', Inflacion: 0.24, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2023, Mes: 'Noviembre', Inflacion: 0.28, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2023, Mes: 'Diciembre', Inflacion: 0.56, Presidente: 'Luiz Inácio Lula da Silva' },
+                { Año: 2024, Mes: 'Enero', Inflacion: 0.42, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2024, Mes: 'Febrero', Inflacion: 0.83, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2024, Mes: 'Marzo', Inflacion: 0.16, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2024, Mes: 'Abril', Inflacion: 0.38, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2024, Mes: 'Mayo', Inflacion: 0.46, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2024, Mes: 'Junio', Inflacion: 0.21, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2024, Mes: 'Julio', Inflacion: 0.38, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2024, Mes: 'Agosto', Inflacion: -0.02, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2024, Mes: 'Septiembre', Inflacion: 0.44, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2024, Mes: 'Octubre', Inflacion: 0.56, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2024, Mes: 'Noviembre', Inflacion: 0.39, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2024, Mes: 'Diciembre', Inflacion: 0.52, Presidente: 'Luiz Inácio Lula da Silva' },
+                { Año: 2025, Mes: 'Enero', Inflacion: 0.16, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2025, Mes: 'Febrero', Inflacion: 1.31, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2025, Mes: 'Marzo', Inflacion: 0.56, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2025, Mes: 'Abril', Inflacion: 0.43, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2025, Mes: 'Mayo', Inflacion: 0.26, Presidente: 'Luiz Inácio Lula da Silva' }, { Año: 2025, Mes: 'Junio', Inflacion: 0.24, Presidente: 'Luiz Inácio Lula da Silva' },
+            ],
+        };
+
+        // --- CONFIGURACIÓN DE COLORES ---
+        const countryColors = {
+            Argentina: 'rgba(101, 179, 239, 1)',
+            Chile: 'rgba(220, 38, 38, 1)',
+            Peru: 'rgba(217, 70, 239, 1)',
+            Colombia: 'rgba(250, 204, 21, 1)',
+            Brasil: 'rgba(34, 197, 94, 1)'
+        };
+
+        // --- INICIALIZACIÓN ---
+        let currentChart;
+        let currentCountry = 'Argentina'; // Mantener el estado del país actual
+        const ctx = document.getElementById('inflationChart').getContext('2d');
+        const tableBody = document.getElementById('data-table-body');
+        const tableTitle = document.getElementById('table-title');
+        
+        // Registrar los plugins globalmente
+        Chart.register(ChartDataLabels, Chart.registry.plugins.get('annotation'));
+
+
+        // --- FUNCIONES AUXILIARES ---
+        function calculateAnnualInflation(country, year) {
+            const yearData = inflationData[country].filter(d => d.Año === year);
+            if (yearData.length === 0) return 0;
+            
+            const cumulative = yearData.reduce((acc, current) => acc * (1 + current.Inflacion / 100), 1);
+            return ((cumulative - 1) * 100).toFixed(2);
+        }
+
+        function generateAnnotations(data, isDarkMode) {
+            const annotations = {};
+            const presidentPeriods = [];
+            let lastPresident = null;
+
+            data.forEach((d, i) => {
+                if (d.Presidente !== lastPresident) {
+                    if (lastPresident !== null) {
+                        presidentPeriods[presidentPeriods.length - 1].end = i - 0.5;
+                    }
+                    presidentPeriods.push({ name: d.Presidente, start: i - 0.5 });
+                    lastPresident = d.Presidente;
+                }
+            });
+            presidentPeriods[presidentPeriods.length - 1].end = data.length - 0.5;
+            
+            const presidentColors = isDarkMode ? [
+                'rgba(255, 255, 255, 0.05)',
+                'rgba(255, 255, 255, 0.02)'
+            ] : [
+                'rgba(0, 0, 0, 0.02)',
+                'rgba(0, 0, 0, 0.05)'
+            ];
+
+            presidentPeriods.forEach((p, i) => {
+                annotations[`president_${i}`] = {
+                    type: 'box',
+                    xMin: p.start,
+                    xMax: p.end,
+                    backgroundColor: presidentColors[i % 2],
+                    borderColor: 'transparent',
+                    label: {
+                        content: p.name,
+                        display: true,
+                        position: 'start',
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.3)',
+                        font: {
+                            size: 10,
+                            weight: 'bold'
+                        }
+                    }
+                };
+            });
+
+            let lastYear = null;
+            data.forEach((d, i) => {
+                if (d.Año !== lastYear) {
+                    if(i > 0) {
+                        annotations[`year_${d.Año}`] = {
+                            type: 'line',
+                            xMin: i - 0.5,
+                            xMax: i - 0.5,
+                            borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+                            borderWidth: 1,
+                            borderDash: [6, 6],
+                        };
+                    }
+                    lastYear = d.Año;
+                }
+            });
+
+            return annotations;
+        }
+
+
+        // --- FUNCIÓN PRINCIPAL DE ACTUALIZACIÓN ---
+        function updateChartAndTable(country) {
+            currentCountry = country;
+            const data = inflationData[country];
+            
+            // Actualizar tabla
+            tableBody.innerHTML = '';
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-4 text-sm">${row.Año}</td>
+                    <td class="p-4 text-sm">${row.Mes}</td>
+                    <td class="p-4 text-sm font-medium ${row.Inflacion >= 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}">${row.Inflacion.toFixed(2)}%</td>
+                    <td class="p-4 text-sm text-gray-500 dark:text-gray-400">${row.Presidente}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+            tableTitle.textContent = `Datos Detallados - ${country}`;
+            
+            // Actualizar tarjetas de resumen
+            const peak = Math.max(...data.map(d => d.Inflacion));
+            const min = Math.min(...data.map(d => d.Inflacion));
+            document.getElementById('peak-inflation').textContent = `${peak.toFixed(2)}%`;
+            document.getElementById('min-inflation').textContent = `${min.toFixed(2)}%`;
+            document.getElementById('annual-inflation').textContent = '- %';
+
+
+            // Actualizar gráfico
+            const labels = data.map(d => `${d.Mes.substring(0,3)} ${d.Año}`);
+            const chartData = data.map(d => d.Inflacion);
+            
+            if (currentChart) {
+                currentChart.destroy();
+            }
+            
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            const textColor = isDarkMode ? '#e5e7eb' : '#374151';
+            const datalabelColor = isDarkMode ? '#cbd5e1' : '#4b5563';
+            const annotations = generateAnnotations(data, isDarkMode);
+
+
+            currentChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: `Inflación Mensual de ${country}`,
+                        data: chartData,
+                        borderColor: countryColors[country] || 'rgba(59, 130, 246, 1)',
+                        backgroundColor: (countryColors[country] || 'rgba(59, 130, 246, 1)').replace('1)', '0.1)'),
+                        borderWidth: 2,
+                        pointBackgroundColor: countryColors[country] || 'rgba(59, 130, 246, 1)',
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onHover: (event, chartElement) => {
+                        if (chartElement.length > 0) {
+                            const index = chartElement[0].index;
+                            const year = data[index].Año;
+                            const annualInflation = calculateAnnualInflation(country, year);
+                            document.getElementById('annual-inflation').textContent = `${annualInflation}%`;
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: { color: gridColor },
+                            ticks: { color: textColor },
+                            title: { display: true, text: 'Porcentaje de Inflación (%)', color: textColor }
+                        },
+                        x: {
+                             grid: { color: gridColor },
+                             ticks: { color: textColor },
+                             title: { display: true, text: 'Fecha (Mes y Año)', color: textColor }
+                        }
+                    },
+                    plugins: {
+                        annotation: { annotations: annotations },
+                        datalabels: {
+                            align: 'end',
+                            anchor: 'end',
+                            rotation: -45,
+                            color: datalabelColor,
+                            font: { size: 8, weight: '600' },
+                            formatter: (value) => value.toFixed(2) + '%',
+                            offset: 8,
+                            display: 'auto'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) { label += ': '; }
+                                    if (context.parsed.y !== null) { label += `${context.parsed.y.toFixed(2)}%`; }
+                                    return label;
+                                },
+                                afterLabel: function(context) {
+                                     const president = data[context.dataIndex].Presidente;
+                                     return `Presidente: ${president}`;
+                                }
+                            }
+                        },
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // --- LÓGICA MODO OSCURO ---
+        const themeToggle = document.getElementById('checkbox');
+        const applyTheme = (theme) => {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                themeToggle.checked = true;
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeToggle.checked = false;
+            }
+            if (currentCountry) {
+                updateChartAndTable(currentCountry);
+            }
+        };
+        themeToggle.addEventListener('change', () => {
+            const newTheme = themeToggle.checked ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        });
+
+        // --- EVENT LISTENERS ---
+        const selector = document.getElementById('country-selector');
+        selector.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                const country = e.target.dataset.country;
+                selector.querySelectorAll('.country-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                updateChartAndTable(country);
+            }
+        });
+        
+        document.getElementById('inflationChart').addEventListener('mouseout', () => {
+             document.getElementById('annual-inflation').textContent = '- %';
+        });
+
+        // --- CARGA INICIAL ---
+        window.addEventListener('load', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+        });
+    </script>
+</body>
+</html>
