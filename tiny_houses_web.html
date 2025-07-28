@@ -325,20 +325,32 @@
 <script>
     // --- DATABASE ---
     const companies = [
+        // Fabricantes Especializados
+        { name: "Chile Tiny House", location: "Osorno, Región de Los Lagos", specialty: "Diseño 100% Personalizado, Paneles SIP", priceRange: "Medio, requiere cotización", website: "chiletinyhouse.cl", phone: "+56942362834" },
+        { name: "Maya Mapu", location: "Pucón, Región de La Araucanía", specialty: "Artesanal, Eco-Comunidad, Metalcom", priceRange: "Medio, requiere cotización", website: "mayamapu.com", phone: "No disponible" },
+        { name: "Tiny Paihuen", location: "Santiago (Maipú)", specialty: "Modelos Fijos y Móviles, Financiamiento", priceRange: "Desde 680 UF + IVA", website: "tinypaihuen.cl", phone: "+56923870723" },
         { name: "Loow Chile", location: "Pichilemu, Región de O’Higgins", specialty: "100% Móvil (sobre ruedas), Llave en mano", priceRange: "$10M - $21M CLP", website: "loow.cl", phone: "+56993488389" },
-        { name: "Rukann (Biosmarthouse)", location: "Santiago (atiende todo Chile)", specialty: "Off-Grid, Sostenibilidad, Acero, Financiamiento directo", priceRange: "Desde 500 UF, requiere cotización", website: "rukann.cl", phone: "+56999014481" },
-        { name: "Modul Chile", location: "Santiago (alcance nacional)", specialty: "Tecnológico, Modular, Paneles SIP MgO", priceRange: "Medio-Alto, requiere cotización", website: "modul.cl", phone: "+56922145935" },
-        { name: "Tecno Fast Home", location: "Santiago (Colina), sucursales", specialty: "Premium, Modular, Gran Escala", priceRange: "Alto, requiere cotización", website: "tecnofasthome.cl", phone: "+56934695135" },
-        { name: "Chile Tiny House", location: "Osorno (servicio Temuco a Chiloé)", specialty: "Diseño 100% Personalizado, Paneles SIP", priceRange: "Medio, requiere cotización", website: "chiletinyhouse.cl", phone: "+56942362834" },
-        { name: "Tiny Paihuen", location: "Santiago (Maipú)", specialty: "Modelos Fijos y Móviles, Financiamiento", priceRange: "Desde 680 UF + IVA (~$24M - $30M)", website: "tinypaihuen.cl", phone: "+56923870723" },
-        { name: "LuxCabin", location: "Santiago (Lo Barnechea)", specialty: "Lujo, Modular, Expandible, Madera CLT", priceRange: "Desde 568 UF + IVA (~$20M - $67M)", website: "luxcabin.cl", phone: "+56957484367" },
-        { name: "Tiny Home Chile", location: "Concepción, Santiago, Puerto Varas", specialty: "Industrializado, Rápida Entrega (90 días)", priceRange: "Competitivo (promos desde $8M)", website: "tiny-home.cl", phone: "+56964738781" },
+        { name: "Tiny-Home.cl (Patagual Home)", location: "Concepción, Región del Biobío", specialty: "Industrializado, Rápida Entrega (90 días)", priceRange: "Competitivo (promos desde $8M)", website: "tiny-home.cl", phone: "+56964738781" },
         { name: "Mini Casas Chile", location: "Coquimbo, IV Región", specialty: "Modelos estándar equipados", priceRange: "$15.5M - $17M + IVA", website: "minicasaschile1.my.canva.site", phone: "No especificado" },
         { name: "Mínima Tiny House", location: "Valdivia, Región de Los Ríos", specialty: "Clima Extremo, Sostenible, Alta Calidad", priceRange: "Desde 450 UF (~$17.6M)", website: "minima.cl", phone: "+56944178424" },
-        { name: "Megapanel Chile", location: "Nacional", specialty: "Kits de Autoconstrucción (Paneles SIP)", priceRange: "Bajo, ~$2.9M - $3.3M por kit", website: "megapanel.cl", phone: "+56975883000" },
-        { name: "MAYA MAPU", location: "Pucón, Región de La Araucanía", specialty: "Artesanal, Eco-Comunidad, Diseño", priceRange: "Medio, requiere cotización", website: "mayamapu.com", phone: "No especificado" },
         { name: "Autónoma Tiny Homes", location: "Sur de Chile (Patagonia)", specialty: "Clima Extremo, Resistencia, Paneles SIP", priceRange: "Requiere cotización", website: "autonomatinyhomes.cl", phone: "No especificado" },
         { name: "Thompsons Arquitectos", location: "Valparaíso", specialty: "Diseño Arquitectónico, Obra Gruesa", priceRange: "Medio, requiere cotización", website: "thompsonsarquitectos.com", phone: "No especificado" },
+        { name: "ModJourney", location: "No especificada", specialty: "Soluciones Modulares", priceRange: "Requiere cotización", website: "modjourney.cl", phone: "+56964697900" },
+
+        // Actores de Construcción Modular
+        { name: "Tecno Fast Home", location: "Colina, Región Metropolitana", specialty: "Premium, Modular, Gran Escala", priceRange: "Alto, requiere cotización", website: "tecnofasthome.cl", phone: "+56227905000" },
+        { name: "RGN Empresas (Modular Houses)", location: "Temuco, Región de La Araucanía", specialty: "Casas Modulares, Conglomerado", priceRange: "Requiere cotización", website: "modularhouses.cl", phone: "+56452266100" },
+        { name: "Casas Cubik", location: "Las Condes, Región Metropolitana", specialty: "Exclusivamente Llave en Mano, Garantía 24 meses", priceRange: "Premium, requiere cotización", website: "casascubik.cl", phone: "+56990988292" },
+        { name: "Modul.cl", location: "Las Condes, Región Metropolitana", specialty: "Tecnológico, Modular, Paneles SIP MgO", priceRange: "Medio-Alto, requiere cotización", website: "modul.cl", phone: "+56922145935" },
+        { name: "Casas Green Valley", location: "San Bernardo, Región Metropolitana", specialty: "Venta de Kits y Llave en Mano, Metalcon", priceRange: "Bajo-Medio, modelos y kits", website: "casasgreenvalley.cl", phone: "+56225832001" },
+        { name: "Casas Arbolito / ARKubic", location: "Buin / Villarrica", specialty: "Respaldo de maderera, Económico", priceRange: "Bajo-Medio, requiere cotización", website: "casasarbolito.cl", phone: "+56978648064" },
+        { name: "Casa Compakta", location: "Puerto Varas, Región de Los Lagos", specialty: "Módulos para clima extremo, logística a Aysén", priceRange: "Requiere cotización", website: "casacompakta.cl", phone: "No disponible" },
+        { name: "Casas Lanco", location: "Región de Los Ríos", specialty: "Casas Prefabricadas", priceRange: "Requiere cotización", website: "casaslanco.cl", phone: "+56632441300" },
+        { name: "Casas Prefabricadas Ramirez", location: "Coyhaique, Región de Aysén", specialty: "Especialista local en Aysén", priceRange: "Requiere cotización", website: "casasprefabricadasramirez.ueniweb.com", phone: "+56944517466" },
+
+        // Otros
+        { name: "Rukann (Biosmarthouse)", location: "Santiago (atiende todo Chile)", specialty: "Off-Grid, Sostenibilidad, Acero, Financiamiento directo", priceRange: "Desde 500 UF, requiere cotización", website: "rukann.cl", phone: "+56999014481" },
+        { name: "Megapanel Chile", location: "Nacional", specialty: "Kits de Autoconstrucción (Paneles SIP)", priceRange: "Bajo, ~$2.9M - $3.3M por kit", website: "megapanel.cl", phone: "+56975883000" },
         { name: "Espacio Modular", location: "Santiago", specialty: "Contenedores marítimos modificados", priceRange: "$5.3M - $8.5M + IVA", website: "espaciomodular.cl", phone: "+56955555555" }
     ];
 
@@ -402,8 +414,8 @@
                 <div class="mt-auto pt-4 border-t border-gray-700/50">
                     <p class="text-lg font-bold text-white dark:text-white html:not(.dark):text-gray-900 mb-3">${company.priceRange}</p>
                     <div class="flex space-x-2">
-                        ${company.website !== 'No especificado' ? `<a href="http://${company.website}" target="_blank" class="flex-1 text-center bg-emerald-500 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-emerald-600 transition-transform hover:scale-105">Sitio Web</a>` : ''}
-                        ${company.phone !== 'No especificado' ? `<a href="tel:${company.phone}" class="flex-1 text-center bg-gray-600/50 dark:bg-gray-600/50 html:not(.dark):bg-gray-200 text-gray-200 dark:text-gray-200 html:not(.dark):text-gray-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-500/50 transition-transform hover:scale-105">Llamar</a>` : ''}
+                        ${company.website !== 'No disponible' ? `<a href="http://${company.website}" target="_blank" class="flex-1 text-center bg-emerald-500 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-emerald-600 transition-transform hover:scale-105">Sitio Web</a>` : ''}
+                        ${company.phone !== 'No disponible' ? `<a href="tel:${company.phone}" class="flex-1 text-center bg-gray-600/50 dark:bg-gray-600/50 html:not(.dark):bg-gray-200 text-gray-200 dark:text-gray-200 html:not(.dark):text-gray-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-500/50 transition-transform hover:scale-105">Llamar</a>` : ''}
                     </div>
                 </div>
             </div>
@@ -411,8 +423,10 @@
     }
 
     function displayCompanies(companyArray) {
-        companyListContainer.innerHTML = companyArray.map(createCompanyCard).join('');
-        if (companyArray.length === 0) {
+        // Sort companies alphabetically by name before displaying
+        const sortedCompanies = companyArray.sort((a, b) => a.name.localeCompare(b.name));
+        companyListContainer.innerHTML = sortedCompanies.map(createCompanyCard).join('');
+        if (sortedCompanies.length === 0) {
             companyListContainer.innerHTML = `<p class="text-gray-500 col-span-full text-center">No se encontraron empresas que coincidan con la búsqueda.</p>`;
         }
     }
