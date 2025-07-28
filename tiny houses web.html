@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Completa de Tiny Houses en Chile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712; /* Dark background for body */
+            color: #d1d5db; /* Default text color for dark mode */
+            overflow-x: hidden;
+        }
+        .dark body {
+            background-color: #030712;
+            color: #d1d5db;
+        }
+        html:not(.dark) body {
+            background-color: #f9fafb;
+            color: #1f2937;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+        }
+
+        .tab-active {
+            border-bottom-color: #10B981;
+            color: #10B981;
+            font-weight: 700;
+        }
+        .tab-inactive {
+            border-bottom-color: transparent;
+            color: #9ca3af;
+        }
+        .dark .tab-inactive {
+             color: #6b7280;
+        }
+        
+        .tab-content { display: none; }
+        .tab-content-active { display: block; animation: fadeIn 0.5s; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .dark .glass-card {
+            background: rgba(17, 24, 39, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        html:not(.dark) .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        html:not(.dark) ::-webkit-scrollbar-track { background: #f1f1f1; }
+        html:not(.dark) ::-webkit-scrollbar-thumb { background: #a8a29e; }
+        html:not(.dark) ::-webkit-scrollbar-thumb:hover { background: #78716c; }
+    </style>
+    <script>
+        // This script is placed in the head to prevent a "flash of unstyled content" (FOUC).
+        // It sets the theme immediately based on user's previous choice or defaults to dark.
+        if (localStorage.getItem('theme') === 'light') {
+            document.documentElement.classList.remove('dark');
+        } else {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 glass-card shadow-lg">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-3">
+                    <svg class="h-9 w-9 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-500">Tiny Houses Chile</h1>
+                </div>
+                <button id="theme-toggle" class="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white transition-colors">
+                    <svg id="theme-icon-light" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    <svg id="theme-icon-dark" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                </button>
+            </div>
+            <!-- Tab Navigation -->
+            <nav class="flex border-b border-gray-700/50">
+                <button onclick="changeTab('inicio')" class="tab-btn flex items-center justify-center gap-2 py-4 px-1 text-center border-b-4 text-sm sm:text-base tab-active w-1/5 transition-colors duration-300 hover:text-emerald-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    <span class="hidden sm:inline">Inicio</span>
+                </button>
+                <button onclick="changeTab('directorio')" class="tab-btn flex items-center justify-center gap-2 py-4 px-1 text-center border-b-4 text-sm sm:text-base tab-inactive w-1/5 transition-colors duration-300 hover:text-emerald-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    <span class="hidden sm:inline">Directorio</span>
+                </button>
+                <button onclick="changeTab('precios')" class="tab-btn flex items-center justify-center gap-2 py-4 px-1 text-center border-b-4 text-sm sm:text-base tab-inactive w-1/5 transition-colors duration-300 hover:text-emerald-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <span class="hidden sm:inline">Precios</span>
+                </button>
+                <button onclick="changeTab('guia')" class="tab-btn flex items-center justify-center gap-2 py-4 px-1 text-center border-b-4 text-sm sm:text-base tab-inactive w-1/5 transition-colors duration-300 hover:text-emerald-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                    <span class="hidden sm:inline">Guía</span>
+                </button>
+                <button onclick="changeTab('tendencias')" class="tab-btn flex items-center justify-center gap-2 py-4 px-1 text-center border-b-4 text-sm sm:text-base tab-inactive w-1/5 transition-colors duration-300 hover:text-emerald-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                    <span class="hidden sm:inline">Tendencias</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- Inicio Tab -->
+        <div id="inicio" class="tab-content tab-content-active">
+            <div class="glass-card p-6 sm:p-8 rounded-2xl shadow-2xl">
+                <h2 class="text-3xl lg:text-4xl font-extrabold text-emerald-400 mb-4">El Hogar del Futuro: Pequeño y Poderoso</h2>
+                <p class="text-lg text-gray-300 dark:text-gray-300 html:not(.dark):text-gray-600 mb-6">
+                    Bienvenido a la guía definitiva del mercado de Tiny Houses en Chile. Este movimiento, que comenzó como un nicho para minimalistas y soñadores de la sostenibilidad, se ha transformado en una solución habitacional dinámica y accesible.
+                </p>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <img src="https://placehold.co/600x400/059669/FFFFFF?text=Vida+Sustentable" alt="Imagen de una Tiny House en un bosque" class="rounded-xl shadow-lg w-full h-auto object-cover">
+                        <h3 class="text-2xl font-bold text-gray-100 dark:text-gray-100 html:not(.dark):text-gray-800 mb-2">¿Por qué una Tiny House?</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3"><svg class="w-6 h-6 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01"/></svg><span><span class="font-semibold text-white dark:text-white html:not(.dark):text-gray-900">Libertad Financiera:</span> Menor costo de compra y mantenimiento.</span></li>
+                            <li class="flex items-start gap-3"><svg class="w-6 h-6 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg><span><span class="font-semibold text-white dark:text-white html:not(.dark):text-gray-900">Sostenibilidad:</span> Menor huella de carbono y consumo.</span></li>
+                            <li class="flex items-start gap-3"><svg class="w-6 h-6 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h1a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.758 16.242a3.5 3.5 0 01-5.517 0m14.028 0a3.5 3.5 0 00-5.517 0M12 21a9 9 0 100-18 9 9 0 000 18z"/></svg><span><span class="font-semibold text-white dark:text-white html:not(.dark):text-gray-900">Flexibilidad y Movilidad:</span> La posibilidad de vivir donde quieras.</span></li>
+                            <li class="flex items-start gap-3"><svg class="w-6 h-6 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span><span class="font-semibold text-white dark:text-white html:not(.dark):text-gray-900">Simplicidad:</span> Un estilo de vida enfocado en experiencias.</span></li>
+                        </ul>
+                    </div>
+                    <div class="space-y-4">
+                        <img src="https://placehold.co/600x400/5B21B6/FFFFFF?text=Diseño+Innovador" alt="Interior moderno de una Tiny House" class="rounded-xl shadow-lg w-full h-auto object-cover">
+                        <h3 class="text-2xl font-bold text-gray-100 dark:text-gray-100 html:not(.dark):text-gray-800 mb-2">Un Mercado en Plena Expansión</h3>
+                        <p class="text-gray-300 dark:text-gray-300 html:not(.dark):text-gray-600">
+                            El mercado chileno es vibrante y diverso, con más de 30 empresas que ofrecen desde kits de autoconstrucción hasta lujosas residencias modulares. Esta guía te dará las herramientas para navegar este emocionante panorama.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Directorio Tab -->
+        <div id="directorio" class="tab-content">
+            <div class="glass-card p-6 sm:p-8 rounded-2xl shadow-2xl">
+                <h2 class="text-3xl lg:text-4xl font-extrabold text-emerald-400 mb-4">Directorio de Empresas</h2>
+                <p class="text-gray-300 dark:text-gray-300 html:not(.dark):text-gray-600 mb-6">Explora la lista de fabricantes y diseñadores de Tiny Houses en Chile. Usa el buscador para encontrar empresas por nombre o especialidad.</p>
+                
+                <div class="mb-8">
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="Buscar por nombre, especialidad, región..." class="w-full p-4 pl-12 bg-gray-900/50 dark:bg-gray-900/50 html:not(.dark):bg-white/80 border border-gray-600/50 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition text-white dark:text-white html:not(.dark):text-gray-800">
+                        <svg class="w-6 h-6 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                </div>
+
+                <div id="company-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Company cards will be injected here by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Precios Tab -->
+        <div id="precios" class="tab-content">
+            <div class="glass-card p-6 sm:p-8 rounded-2xl shadow-2xl">
+                <h2 class="text-3xl lg:text-4xl font-extrabold text-emerald-400 mb-4">Análisis Comparativo de Precios</h2>
+                <p class="text-gray-300 dark:text-gray-300 html:not(.dark):text-gray-600 mb-8">El precio de una Tiny House en Chile varía enormemente. Aquí desglosamos los segmentos para que entiendas dónde se posiciona tu proyecto.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Segmento Económico -->
+                    <div class="glass-card rounded-xl p-6 shadow-lg hover:shadow-emerald-500/20 hover:-translate-y-1 transition-all duration-300">
+                        <h3 class="text-2xl font-bold text-emerald-400 mb-3">Económico</h3>
+                        <p class="text-4xl font-extrabold text-white dark:text-white html:not(.dark):text-gray-900 mb-3">Hasta $10M</p>
+                        <p class="text-gray-400 dark:text-gray-400 html:not(.dark):text-gray-600 mb-4 text-sm">Ideal para autoconstructores. Principalmente kits básicos o modelos muy compactos.</p>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex gap-2"><svg class="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="font-semibold">Megapanel:</span> Kit 27m² ~$3.3M</li>
+                            <li class="flex gap-2"><svg class="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="font-semibold">Espacio Modular:</span> 20m² ~$8.5M</li>
+                            <li class="flex gap-2"><svg class="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="font-semibold">Tiny-Home:</span> Promos 15m² ~$8M</li>
+                        </ul>
+                    </div>
+                    <!-- Segmento Medio -->
+                    <div class="glass-card rounded-xl p-6 shadow-lg relative border-2 border-emerald-500 hover:shadow-emerald-500/30 hover:-translate-y-1 transition-all duration-300">
+                         <div class="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">Popular</div>
+                        <h3 class="text-2xl font-bold text-emerald-400 mb-3">Medio</h3>
+                        <p class="text-4xl font-extrabold text-white dark:text-white html:not(.dark):text-gray-900 mb-3">$10M - $25M</p>
+                        <p class="text-gray-400 dark:text-gray-400 html:not(.dark):text-gray-600 mb-4 text-sm">Modelos "llave en mano" bien equipados, de tamaño funcional (20-35m²).</p>
+                         <ul class="space-y-2 text-sm">
+                            <li class="flex gap-2"><svg class="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="font-semibold">Loow Chile:</span> 15-27m² ($14.5M - $21M)</li>
+                            <li class="flex gap-2"><svg class="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="font-semibold">Mini Casas Chile:</span> 15m² ~$15.5M</li>
+                            <li class="flex gap-2"><svg class="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="font-semibold">Tiny Paihuen:</span> 24m² ~$25M</li>
+                        </ul>
+                    </div>
+                    <!-- Segmento Premium -->
+                    <div class="glass-card rounded-xl p-6 shadow-lg hover:shadow-emerald-500/20 hover:-translate-y-1 transition-all duration-300">
+                        <h3 class="text-2xl font-bold text-emerald-400 mb-3">Premium</h3>
+                        <p class="text-4xl font-extrabold text-white dark:text-white html:not(.dark):text-gray-900 mb-3">$25M+</p>
+                        <p class="text-gray-400 dark:text-gray-400 html:not(.dark):text-gray-600 mb-4 text-sm">Lujo, diseño de autor y materiales de alta gama como CLT y soluciones modulares.</p>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex gap-2"><svg class="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="font-semibold">Tecno Fast:</span> Alto estándar</li>
+                            <li class="flex gap-2"><svg class="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="font-semibold">LuxCabin:</span> 21m² ~$20M+</li>
+                            <li class="flex gap-2"><svg class="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="font-semibold">Mínima:</span> 18m² ~$17.6M+</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guia Tab -->
+        <div id="guia" class="tab-content">
+            <div class="glass-card p-6 sm:p-8 rounded-2xl shadow-2xl">
+                <h2 class="text-3xl lg:text-4xl font-extrabold text-emerald-400 mb-2">Guía Esencial del Comprador</h2>
+                <p class="text-gray-300 dark:text-gray-300 html:not(.dark):text-gray-600 mb-8">Comprar una Tiny House es gestionar un proyecto. Esta guía te prepara para los desafíos.</p>
+                
+                <div class="space-y-10">
+                    <!-- Section -->
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-100 dark:text-gray-100 html:not(.dark):text-gray-800 mb-4 flex items-center gap-3">
+                            <span class="flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-lg">1</span>
+                            Financiamiento: Más Allá del Hipotecario
+                        </h3>
+                        <p class="text-gray-300 dark:text-gray-300 html:not(.dark):text-gray-600 mb-4 ml-12">Tus alternativas son: Crédito de Consumo, Financiamiento Directo del Proveedor, Crédito de Autoconstrucción, y Leasing Habitacional.</p>
+                    </div>
+
+                    <!-- Section -->
+                    <div>
+                         <h3 class="text-2xl font-bold text-gray-100 dark:text-gray-100 html:not(.dark):text-gray-800 mb-4 flex items-center gap-3">
+                            <span class="flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-lg">2</span>
+                            Normativas: El Laberinto Municipal
+                        </h3>
+                        <p class="text-gray-300 dark:text-gray-300 html:not(.dark):text-gray-600 mb-4 ml-12">Es el paso más crítico. La regulación depende de si tu casa es fija o móvil.</p>
+                        <div class="grid md:grid-cols-2 gap-6 ml-12">
+                            <div class="glass-card p-4 rounded-lg border-l-4 border-emerald-400">
+                                <h4 class="font-bold text-lg mb-2 text-white dark:text-white html:not(.dark):text-gray-900">Tiny House Fija</h4>
+                                <p class="text-sm text-gray-300 dark:text-gray-300 html:not(.dark):text-gray-600">Requiere <span class="font-semibold">Permiso de Edificación</span> y <span class="font-semibold">Recepción Final</span> de la DOM.</p>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg border-l-4 border-amber-400">
+                                <h4 class="font-bold text-lg mb-2 text-white dark:text-white html:not(.dark):text-gray-900">Tiny House Móvil</h4>
+                                <p class="text-sm text-gray-300 dark:text-gray-300 html:not(.dark):text-gray-600">Existe un <span class="font-semibold text-amber-400">vacío legal</span>. Depende 100% de la <span class="font-semibold">ordenanza municipal</span>. ¡Consulta antes!</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Section -->
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-100 dark:text-gray-100 html:not(.dark):text-gray-800 mb-4 flex items-center gap-3">
+                            <span class="flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-lg">3</span>
+                            Costos Adicionales: El Iceberg
+                        </h3>
+                        <p class="text-gray-300 dark:text-gray-300 html:not(.dark):text-gray-600 mb-4 ml-12">El precio de lista es solo una parte. Presupuesta estos gastos "ocultos": Transporte, Fundaciones, Conexiones a Servicios y Sistemas Off-Grid.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tendencias Tab -->
+        <div id="tendencias" class="tab-content">
+            <div class="glass-card p-6 sm:p-8 rounded-2xl shadow-2xl">
+                <h2 class="text-3xl lg:text-4xl font-extrabold text-emerald-400 mb-4">Tendencias Futuras</h2>
+                <p class="text-gray-300 dark:text-gray-300 html:not(.dark):text-gray-600 mb-8">El mercado de las Tiny Houses en Chile no es una moda, es el futuro. Estas son las tendencias que marcarán la próxima década.</p>
+                
+                <div class="space-y-8">
+                    <!-- Trend Item -->
+                    <div class="flex items-start space-x-4 group">
+                        <div class="flex-shrink-0 h-12 w-12 rounded-lg bg-gray-800 dark:bg-gray-800 html:not(.dark):bg-gray-200 text-emerald-400 flex items-center justify-center transition-all duration-300 group-hover:bg-emerald-500 group-hover:text-white group-hover:scale-110">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white dark:text-white html:not(.dark):text-gray-900">Industrialización como Estándar</h3>
+                            <p class="text-gray-400 dark:text-gray-400 html:not(.dark):text-gray-600 mt-1">La construcción modular y prefabricada se convertirá en la norma, no la excepción.</p>
+                        </div>
+                    </div>
+                    <!-- Trend Item -->
+                    <div class="flex items-start space-x-4 group">
+                        <div class="flex-shrink-0 h-12 w-12 rounded-lg bg-gray-800 dark:bg-gray-800 html:not(.dark):bg-gray-200 text-emerald-400 flex items-center justify-center transition-all duration-300 group-hover:bg-emerald-500 group-hover:text-white group-hover:scale-110">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10s5 2 5 2a8 8 0 013.657 8.657z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1014.12 11.88l-4.242 4.242z"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white dark:text-white html:not(.dark):text-gray-900">Sostenibilidad por Defecto</h3>
+                            <p class="text-gray-400 dark:text-gray-400 html:not(.dark):text-gray-600 mt-1">Materiales ecológicos y soluciones off-grid serán una expectativa estándar.</p>
+                        </div>
+                    </div>
+                    <!-- Trend Item -->
+                    <div class="flex items-start space-x-4 group">
+                        <div class="flex-shrink-0 h-12 w-12 rounded-lg bg-gray-800 dark:bg-gray-800 html:not(.dark):bg-gray-200 text-emerald-400 flex items-center justify-center transition-all duration-300 group-hover:bg-emerald-500 group-hover:text-white group-hover:scale-110">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white dark:text-white html:not(.dark):text-gray-900">Integración de Lujo y Tecnología</h3>
+                            <p class="text-gray-400 dark:text-gray-400 html:not(.dark):text-gray-600 mt-1">Domótica, acabados premium y almacenamiento ingenioso atraerán a un público más exigente.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="mt-12 py-8 px-4 text-center text-gray-500 text-sm">
+        <p>&copy; 2025 Guía de Tiny Houses en Chile. Todos los derechos reservados.</p>
+        <p class="mt-1">Información compilada y actualizada a Julio de 2025.</p>
+    </footer>
+
+<script>
+    // --- DATABASE ---
+    const companies = [
+        { name: "Loow Chile", location: "Pichilemu, Región de O’Higgins", specialty: "100% Móvil (sobre ruedas), Llave en mano", priceRange: "$10M - $21M CLP", website: "loow.cl", phone: "+56993488389" },
+        { name: "Rukann (Biosmarthouse)", location: "Santiago (atiende todo Chile)", specialty: "Off-Grid, Sostenibilidad, Acero, Financiamiento directo", priceRange: "Desde 500 UF, requiere cotización", website: "rukann.cl", phone: "+56999014481" },
+        { name: "Modul Chile", location: "Santiago (alcance nacional)", specialty: "Tecnológico, Modular, Paneles SIP MgO", priceRange: "Medio-Alto, requiere cotización", website: "modul.cl", phone: "+56922145935" },
+        { name: "Tecno Fast Home", location: "Santiago (Colina), sucursales", specialty: "Premium, Modular, Gran Escala", priceRange: "Alto, requiere cotización", website: "tecnofasthome.cl", phone: "+56934695135" },
+        { name: "Chile Tiny House", location: "Osorno (servicio Temuco a Chiloé)", specialty: "Diseño 100% Personalizado, Paneles SIP", priceRange: "Medio, requiere cotización", website: "chiletinyhouse.cl", phone: "+56942362834" },
+        { name: "Tiny Paihuen", location: "Santiago (Maipú)", specialty: "Modelos Fijos y Móviles, Financiamiento", priceRange: "Desde 680 UF + IVA (~$24M - $30M)", website: "tinypaihuen.cl", phone: "+56923870723" },
+        { name: "LuxCabin", location: "Santiago (Lo Barnechea)", specialty: "Lujo, Modular, Expandible, Madera CLT", priceRange: "Desde 568 UF + IVA (~$20M - $67M)", website: "luxcabin.cl", phone: "+56957484367" },
+        { name: "Tiny Home Chile", location: "Concepción, Santiago, Puerto Varas", specialty: "Industrializado, Rápida Entrega (90 días)", priceRange: "Competitivo (promos desde $8M)", website: "tiny-home.cl", phone: "+56964738781" },
+        { name: "Mini Casas Chile", location: "Coquimbo, IV Región", specialty: "Modelos estándar equipados", priceRange: "$15.5M - $17M + IVA", website: "minicasaschile1.my.canva.site", phone: "No especificado" },
+        { name: "Mínima Tiny House", location: "Valdivia, Región de Los Ríos", specialty: "Clima Extremo, Sostenible, Alta Calidad", priceRange: "Desde 450 UF (~$17.6M)", website: "minima.cl", phone: "+56944178424" },
+        { name: "Megapanel Chile", location: "Nacional", specialty: "Kits de Autoconstrucción (Paneles SIP)", priceRange: "Bajo, ~$2.9M - $3.3M por kit", website: "megapanel.cl", phone: "+56975883000" },
+        { name: "MAYA MAPU", location: "Pucón, Región de La Araucanía", specialty: "Artesanal, Eco-Comunidad, Diseño", priceRange: "Medio, requiere cotización", website: "mayamapu.com", phone: "No especificado" },
+        { name: "Autónoma Tiny Homes", location: "Sur de Chile (Patagonia)", specialty: "Clima Extremo, Resistencia, Paneles SIP", priceRange: "Requiere cotización", website: "autonomatinyhomes.cl", phone: "No especificado" },
+        { name: "Thompsons Arquitectos", location: "Valparaíso", specialty: "Diseño Arquitectónico, Obra Gruesa", priceRange: "Medio, requiere cotización", website: "thompsonsarquitectos.com", phone: "No especificado" },
+        { name: "Espacio Modular", location: "Santiago", specialty: "Contenedores marítimos modificados", priceRange: "$5.3M - $8.5M + IVA", website: "espaciomodular.cl", phone: "+56955555555" }
+    ];
+
+    // --- THEME TOGGLE LOGIC ---
+    const themeToggle = document.getElementById('theme-toggle');
+    const lightIcon = document.getElementById('theme-icon-light');
+    const darkIcon = document.getElementById('theme-icon-dark');
+
+    const toggleTheme = () => {
+        document.documentElement.classList.toggle('dark');
+        const isDarkMode = document.documentElement.classList.contains('dark');
+        localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+        updateIcon();
+    };
+
+    const updateIcon = () => {
+        if (document.documentElement.classList.contains('dark')) {
+            lightIcon.classList.add('hidden');
+            darkIcon.classList.remove('hidden');
+        } else {
+            lightIcon.classList.remove('hidden');
+            darkIcon.classList.add('hidden');
+        }
+    };
+
+    themeToggle.addEventListener('click', toggleTheme);
+
+    // Update icon on initial load
+    updateIcon();
+
+
+    // --- TAB LOGIC ---
+    function changeTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('tab-content-active'));
+        document.querySelectorAll('.tab-btn').forEach(b => {
+            b.classList.remove('tab-active');
+            b.classList.add('tab-inactive');
+        });
+        document.getElementById(tabId).classList.add('tab-content-active');
+        const activeButton = document.querySelector(`button[onclick="changeTab('${tabId}')"]`);
+        activeButton.classList.add('tab-active');
+        activeButton.classList.remove('tab-inactive');
+    }
+
+    // --- DIRECTORY LOGIC ---
+    const companyListContainer = document.getElementById('company-list');
+    const searchInput = document.getElementById('searchInput');
+
+    function createCompanyCard(company) {
+        return `
+            <div class="company-card glass-card rounded-xl p-5 shadow-lg hover:shadow-emerald-500/20 hover:-translate-y-1 transition-all duration-300 flex flex-col">
+                <img src="https://placehold.co/400x250/111827/4ade80?text=${encodeURIComponent(company.name)}" alt="Imagen de ${company.name}" class="rounded-lg mb-4 w-full h-40 object-cover border border-gray-700/50">
+                <div class="flex-grow">
+                    <h3 class="text-xl font-bold text-white dark:text-white html:not(.dark):text-gray-900">${company.name}</h3>
+                    <p class="text-sm text-emerald-400 font-semibold mb-2">${company.specialty}</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-400 html:not(.dark):text-gray-600 mb-3 flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        ${company.location}
+                    </p>
+                </div>
+                <div class="mt-auto pt-4 border-t border-gray-700/50">
+                    <p class="text-lg font-bold text-white dark:text-white html:not(.dark):text-gray-900 mb-3">${company.priceRange}</p>
+                    <div class="flex space-x-2">
+                        ${company.website !== 'No especificado' ? `<a href="http://${company.website}" target="_blank" class="flex-1 text-center bg-emerald-500 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-emerald-600 transition-transform hover:scale-105">Sitio Web</a>` : ''}
+                        ${company.phone !== 'No especificado' ? `<a href="tel:${company.phone}" class="flex-1 text-center bg-gray-600/50 dark:bg-gray-600/50 html:not(.dark):bg-gray-200 text-gray-200 dark:text-gray-200 html:not(.dark):text-gray-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-500/50 transition-transform hover:scale-105">Llamar</a>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function displayCompanies(companyArray) {
+        companyListContainer.innerHTML = companyArray.map(createCompanyCard).join('');
+        if (companyArray.length === 0) {
+            companyListContainer.innerHTML = `<p class="text-gray-500 col-span-full text-center">No se encontraron empresas que coincidan con la búsqueda.</p>`;
+        }
+    }
+
+    displayCompanies(companies);
+
+    const fuse = new Fuse(companies, { keys: ['name', 'specialty', 'location'], includeScore: true, threshold: 0.4 });
+
+    searchInput.addEventListener('keyup', (e) => {
+        const query = e.target.value.trim();
+        if (query === '') {
+            displayCompanies(companies);
+            return;
+        }
+        const results = fuse.search(query);
+        displayCompanies(results.map(result => result.item));
+    });
+
+    // --- THREE.JS BACKGROUND ---
+    window.onload = function () {
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        const particles = [];
+        const particleCount = 200;
+        const geometry = new THREE.IcosahedronGeometry(0.05, 0);
+        const material = new THREE.MeshStandardMaterial({ color: 0x10B981, roughness: 0.5, metalness: 0.1 });
+
+        for (let i = 0; i < particleCount; i++) {
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.x = (Math.random() - 0.5) * 10;
+            mesh.position.y = (Math.random() - 0.5) * 10;
+            mesh.position.z = (Math.random() - 0.5) * 10;
+            mesh.rotation.x = Math.random() * 2 * Math.PI;
+            mesh.rotation.y = Math.random() * 2 * Math.PI;
+            const scale = Math.random() * 0.5 + 0.5;
+            mesh.scale.set(scale, scale, scale);
+            scene.add(mesh);
+            particles.push(mesh);
+        }
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        camera.position.z = 5;
+
+        const animate = function () {
+            requestAnimationFrame(animate);
+            particles.forEach(p => {
+                p.rotation.x += 0.001;
+                p.rotation.y += 0.002;
+                p.position.y -= 0.005;
+                if (p.position.y < -5) {
+                    p.position.y = 5;
+                }
+            });
+            renderer.render(scene, camera);
+        };
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    }
+
+</script>
+
+</body>
+</html>
