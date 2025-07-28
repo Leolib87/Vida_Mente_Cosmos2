@@ -3,410 +3,599 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fondos para Emprendimiento e Investigación en Chile 2025</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <title>Dashboard Avanzado de Financiamiento CTCI Chile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --danger: #f87171;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         body {
-            background-color: #000000;
-            color: #00FF00;
-            font-family: 'Orbitron', sans-serif;
-            line-height: 1.6;
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: #e5e7eb;
             overflow-x: hidden;
+            margin: 0;
         }
-        nav {
+
+        #bg-canvas {
             position: fixed;
             top: 0;
+            left: 0;
             width: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 1000;
-            padding: 15px 0;
-            border-bottom: 2px solid #00FFFF;
-            box-shadow: 0 0 15px #00FFFF;
+            height: 100%;
+            z-index: -1;
         }
-        nav ul {
-            display: flex;
+
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-btn.active {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 0 15px rgba(129, 140, 248, 0.4);
+        }
+
+        .tab-link {
+            transition: var(--transition);
+            border-bottom: 2px solid transparent;
+        }
+        .tab-link.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .funding-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            border-color: var(--primary);
+        }
+
+        .modal {
+            display: none;
+            animation: fadeIn 0.3s ease;
+            align-items: center;
             justify-content: center;
-            list-style: none;
-            flex-wrap: wrap;
         }
-        nav ul li {
-            position: relative;
-            margin: 0 20px;
+
+        .modal.active {
+            display: flex;
         }
-        nav ul li a {
-            color: #00FF00;
-            text-decoration: none;
-            font-size: 1.1em;
-            transition: all 0.3s ease;
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-        nav ul li a:hover {
-            color: #FFFFFF;
-            text-shadow: 0 0 10px #00FFFF;
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
-        .main-container {
-            max-width: 1400px;
-            margin: 80px auto 0;
-            padding: 20px;
-            display: grid;
-            grid-template-columns: 3fr 1fr;
-            gap: 20px;
+
+        .modal-content {
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .content {
-            grid-column: 1 / 2;
+
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-        .sidebar {
-            grid-column: 2 / 3;
-            position: sticky;
-            top: 100px;
-            max-height: calc(100vh - 120px);
-            overflow-y: auto;
-            background: rgba(0, 255, 255, 0.1);
-            padding: 20px;
-            border: 2px solid #00FFFF;
-            box-shadow: 0 0 20px #00FFFF;
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
         }
-        .section {
-            margin: 50px 0;
-            padding: 30px;
-            border: 2px solid #00FFFF;
-            box-shadow: 0 0 20px #00FFFF;
-            background: rgba(0, 255, 255, 0.05);
-            border-radius: 10px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
         }
-        .section:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0 30px #00FFFF;
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
         }
-        h2 {
-            color: #00FF00;
-            text-shadow: 0 0 8px #00FF00;
-            border-bottom: 1px solid #00FFFF;
-            padding-bottom: 10px;
+
+        .tab-link:focus, .filter-btn:focus, .funding-card:focus, .reset-filters:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.95em;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid #00FFFF;
-            text-align: left;
-        }
-        th {
-            background: rgba(0, 255, 255, 0.1);
-            color: #00FFFF;
-        }
-        tr:nth-child(even) {
-            background: rgba(0, 255, 255, 0.03);
-        }
-        tr:hover {
-            background: rgba(0, 255, 255, 0.2);
-        }
-        a {
-            color: #00FFFF;
-            text-decoration: none;
-        }
-        a:hover {
-            text-shadow: 0 0 5px #00FFFF;
-        }
-        #network-graph {
-            width: 100%;
-            height: 600px;
-            margin: 30px 0;
-        }
-        .node circle {
-            stroke: #00FFFF;
-            stroke-width: 2px;
-            fill: #00FF00;
-            transition: all 0.3s ease;
-        }
-        .node.category circle {
-            fill: #FF00CC;
-        }
-        .node:hover circle {
-            fill: #FFFFFF;
-            stroke: #00FFFF;
-        }
-        .node text {
-            fill: #00FFFF;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 12px;
-            pointer-events: none;
-        }
-        .link {
-            stroke: #00FF00;
-            stroke-opacity: 0.6;
-            stroke-width: 1.5px;
-        }
-        .sidebar a {
-            color: #00FF00;
-            text-decoration: none;
-            display: block;
-            margin: 10px 0;
-            transition: all 0.3s ease;
-        }
-        .sidebar a:hover {
-            color: #FFFFFF;
-            text-shadow: 0 0 10px #00FFFF;
-        }
-        @media (max-width: 900px) {
-            .main-container {
-                grid-template-columns: 1fr;
-                margin-top: 120px;
+
+        @media (max-width: 768px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
             }
-            .sidebar {
-                position: static;
-                max-height: none;
+            .funding-grid {
+                grid-template-columns: 1fr !important;
+            }
+            .modal-content {
+                max-height: 80vh;
+                padding: 1.5rem;
             }
         }
     </style>
 </head>
-<body>
-    <nav>
-        <ul>
-            <li><a href="#inicio">Inicio</a></li>
-            <li><a href="#startups">Fondos para Startups</a></li>
-            <li><a href="#investigacion">Investigación Académica</a></li>
-            <li><a href="#becas">Becas</a></li>
-            <li><a href="#proyectos">Proyectos Institucionales</a></li>
-        </ul>
-    </nav>
+<body class="text-gray-300">
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
 
-    <div class="main-container" id="inicio">
-        <div class="content">
-            <div class="section">
-                <h2>Red Interactiva de Fondos en Chile 2025</h2>
-                <div id="network-graph"></div>
+    <div class="container relative z-10 mx-auto p-4 md:p-8">
+        <header class="glassmorphism rounded-2xl p-6 md:p-8 mb-8 shadow-2xl">
+            <h1 class="text-3xl md:text-5xl font-bold bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] bg-clip-text text-transparent mb-2 text-center">Dashboard de Financiamiento CTCI</h1>
+            <p class="text-center text-gray-400 text-lg">La plataforma definitiva para explorar fondos de investigación, innovación y emprendimiento en Chile.</p>
+            
+            <div class="stats grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+                <div class="stat-card bg-gray-900/50 p-4 rounded-xl text-center transition-transform duration-300 hover:scale-105 border border-white/10">
+                    <div class="stat-number text-4xl font-bold bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] bg-clip-text text-transparent" id="totalFunds">0</div>
+                    <div class="stat-label text-sm text-gray-400 uppercase tracking-wider mt-1"><i class="fas fa-layer-group mr-2"></i>Fondos Totales</div>
+                </div>
+                <div class="stat-card bg-gray-900/50 p-4 rounded-xl text-center transition-transform duration-300 hover:scale-105 border border-white/10">
+                    <div class="stat-number text-4xl font-bold bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] bg-clip-text text-transparent" id="publicFunds">0</div>
+                    <div class="stat-label text-sm text-gray-400 uppercase tracking-wider mt-1"><i class="fas fa-landmark mr-2"></i>Fondos Públicos</div>
+                </div>
+                <div class="stat-card bg-gray-900/50 p-4 rounded-xl text-center transition-transform duration-300 hover:scale-105 border border-white/10">
+                    <div class="stat-number text-4xl font-bold bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] bg-clip-text text-transparent" id="privateFunds">0</div>
+                    <div class="stat-label text-sm text-gray-400 uppercase tracking-wider mt-1"><i class="fas fa-handshake mr-2"></i>Fondos Privados</div>
+                </div>
+                <div class="stat-card bg-gray-900/50 p-4 rounded-xl text-center transition-transform duration-300 hover:scale-105 border border-white/10">
+                    <div class="stat-number text-4xl font-bold bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] bg-clip-text text-transparent" id="maxAmount">0</div>
+                    <div class="stat-label text-sm text-gray-400 uppercase tracking-wider mt-1"><i class="fas fa-coins mr-2"></i>Monto Máximo</div>
+                </div>
             </div>
+            <div class="mt-8 border-t border-white/10 pt-6">
+                <div class="flex flex-wrap justify-center gap-4 md:gap-8" id="tab-navigation" role="tablist">
+                    <button class="tab-link active font-semibold py-2 px-3 focus:outline-none" data-tab-filter="all" role="tab" aria-selected="true"><i class="fas fa-border-all mr-2"></i>Dashboard</button>
+                    <button class="tab-link font-semibold py-2 px-3 focus:outline-none" data-tab-filter="publico" role="tab" aria-selected="false"><i class="fas fa-landmark mr-2"></i>Públicos</button>
+                    <button class="tab-link font-semibold py-2 px-3 focus:outline-none" data-tab-filter="regional" role="tab" aria-selected="false"><i class="fas fa-map-marked-alt mr-2"></i>Regionales</button>
+                    <button class="tab-link font-semibold py-2 px-3 focus:outline-none" data-tab-filter="privado" role="tab" aria-selected="false"><i class="fas fa-handshake mr-2"></i>Privados</button>
+                    <button class="tab-link font-semibold py-2 px-3 focus:outline-none" data-tab-filter="educacion" role="tab" aria-selected="false"><i class="fas fa-graduation-cap mr-2"></i>Educación y Cultura</button>
+                    <button class="tab-link font-semibold py-2 px-3 focus:outline-none" data-tab-filter="medioambiente" role="tab" aria-selected="false"><i class="fas fa-leaf mr-2"></i>Medioambiente</button>
+                    <button class="tab-link font-semibold py-2 px-3 focus:outline-none" data-tab-filter="internacional" role="tab" aria-selected="false"><i class="fas fa-plane-departure mr-2"></i>Internacionales</button>
+                </div>
+            </div>
+        </header>
 
-            <div class="section" id="startups">
-                <h2>Fondos para Startups y Emprendimientos</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nombre del Fondo</th>
-                            <th>Tipo de Fondo</th>
-                            <th>Monto de Financiamiento</th>
-                            <th>Nacional/Internacional</th>
-                            <th>Fechas de Postulación</th>
-                            <th>Link</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>Start-Up Chile – Build (Corfo)</td><td>Pre-aceleración (fase temprana)</td><td>$10.000.000 CLP (equity-free)</td><td>Nacional</td><td>Cohortes múltiples: Ej. Feb–Mar, Jun–Jul</td><td><a href="https://www.startupchile.org/programs/build/" target="_blank">Start-Up Chile Build</a></td></tr>
-                        <tr><td>Start-Up Chile – Ignite (Corfo)</td><td>Aceleración (prototipo validado)</td><td>$25.000.000 CLP (80% cofinanciamiento, 90% si liderado por mujer)</td><td>Nacional</td><td>Cohortes múltiples: Ej. Feb–Mar, Jun–Jul</td><td><a href="https://www.startupchile.org/programs/ignite/" target="_blank">Start-Up Chile Ignite</a></td></tr>
-                        <tr><td>Start-Up Chile – Growth (Corfo)</td><td>Escalamiento (expansión global)</td><td>$75.000.000 CLP (50% cofinanciamiento)</td><td>Nacional</td><td>Cohortes múltiples: Ej. Feb–Mar, Jun–Jul</td><td><a href="https://www.startupchile.org/programs/growth/" target="_blank">Start-Up Chile Growth</a></td></tr>
-                        <tr><td>Semilla Inicia (Corfo)</td><td>Subsidio semilla (nuevos emprendimientos)</td><td>$15.000.000 CLP ($17.000.000 si liderado por mujer)</td><td>Nacional</td><td>Anual: Ej. Oct 2024 – Ene 2025</td><td><a href="https://www.corfo.cl/sites/cpp/sala_de_prensa/semilla-inicia-2024" target="_blank">Semilla Inicia</a></td></tr>
-                        <tr><td>Semilla Expande (Corfo)</td><td>Subsidio expansión</td><td>$25.000.000 CLP (Etapa 1) + $20.000.000 (Etapa 2) (+10% si liderado por mujer)</td><td>Nacional</td><td>Anual: Ej. Nov 2024 – Feb 2025</td><td><a href="https://www.corfo.cl/sites/cpp/sala_de_prensa/semilla-expande-2024" target="_blank">Semilla Expande</a></td></tr>
-                        <tr><td>Capital Semilla Emprende (Sercotec)</td><td>Fondo concursable (microempresas)</td><td>$3.500.000 CLP (con aporte beneficiario)</td><td>Nacional</td><td>Anual por regiones: Ej. Mar–May 2025</td><td><a href="https://www.sercotec.cl/capital-semilla-emprende/" target="_blank">Capital Semilla Emprende</a></td></tr>
-                        <tr><td>Capital Abeja Emprende (Sercotec)</td><td>Fondo emprendedoras (negocios nuevos)</td><td>$3.500.000 CLP</td><td>Nacional</td><td>Anual por regiones: Ej. Mar–May 2025</td><td><a href="https://www.sercotec.cl/capital-abeja-emprende/" target="_blank">Capital Abeja Emprende</a></td></tr>
-                        <tr><td>Capital Pioneras (Sercotec)</td><td>Fondo emprendedoras (rubros masculinizados)</td><td>$3.500.000 CLP</td><td>Nacional</td><td>Anual por regiones: Ej. Mar–May 2025</td><td><a href="https://www.sercotec.cl/capital-pioneras/" target="_blank">Capital Pioneras</a></td></tr>
-                        <tr><td>Crece (Sercotec)</td><td>Subsidio crecimiento MIPYMEs</td><td>$5.000.000 CLP</td><td>Nacional</td><td>Anual por regiones: Ej. Feb–Abr 2025</td><td><a href="https://www.sercotec.cl/crece/" target="_blank">Crece</a></td></tr>
-                        <tr><td>Kit Digital (Sercotec)</td><td>Subsidio digitalización</td><td>Hasta $1.200.000 CLP</td><td>Nacional</td><td>Anual por regiones: Ej. Abr–Jun 2025</td><td><a href="https://www.sercotec.cl/kit-digital/" target="_blank">Kit Digital</a></td></tr>
-                        <tr><td>Emprendamos Semilla (FOSIS)</td><td>Microemprendimiento (vulnerables)</td><td>~$400.000 CLP + capacitación</td><td>Nacional</td><td>Anual por regiones: Ej. Ene–Mar 2025</td><td><a href="https://www.fosis.gob.cl/es/programa/emprendamos-semilla/" target="_blank">Emprendamos Semilla</a></td></tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="main-content grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <aside class="filters lg:col-span-1 glassmorphism rounded-2xl p-6 shadow-2xl h-fit sticky top-8">
+                <h2 class="text-2xl font-bold mb-6 text-white flex items-center"><i class="fas fa-filter mr-3 text-[var(--primary)]"></i>Filtros</h2>
+                
+                <div class="filter-section mb-6">
+                    <div class="search-box relative">
+                        <input type="text" id="searchInput" placeholder="Buscar por nombre..." class="w-full bg-gray-900/70 border-2 border-gray-700 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-[var(--primary)] transition-colors" aria-label="Buscar fondos">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                    </div>
+                </div>
 
-            <div class="section" id="investigacion">
-                <h2>Financiamiento para Investigación Académica</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nombre del Fondo</th>
-                            <th>Tipo de Fondo</th>
-                            <th>Monto de Financiamiento</th>
-                            <th>Nacional/Internacional</th>
-                            <th>Fechas de Postulación</th>
-                            <th>Link</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>Fondecyt Iniciación (ANID)</td><td>Investigación básica (investigador novel)</td><td>Hasta $30.000.000 CLP/año (3 años)</td><td>Nacional</td><td>Anual: Ej. Abr–Jul 2025</td><td><a href="https://www.anid.cl/concursos/concurso-de-proyectos-fondecyt-de-iniciacion-en-investigacion-2025/" target="_blank">Fondecyt Iniciación</a></td></tr>
-                        <tr><td>Fondecyt Regular (ANID)</td><td>Investigación básica (investigador senior)</td><td>Hasta $57.000.000 CLP/año (4 años)</td><td>Nacional</td><td>Anual: Ej. Abr–Jun 2025</td><td><a href="https://www.anid.cl/concursos/concurso-de-proyectos-fondecyt-regular-2025/" target="_blank">Fondecyt Regular</a></td></tr>
-                        <tr><td>Fondecyt Postdoctorado (ANID)</td><td>Beca/Proyecto postdoctoral</td><td>$31.164.000 CLP/año (2-3 años)</td><td>Nacional</td><td>Anual: Ej. Ene–Abr 2025</td><td><a href="https://www.anid.cl/concursos/concurso-fondecyt-de-postdoctorado-2025/" target="_blank">Fondecyt Postdoctorado</a></td></tr>
-                        <tr><td>Fondos ANID – Exploración</td><td>Investigación exploratoria (alto riesgo)</td><td>Hasta $80.000.000 CLP/año (1-2 años)</td><td>Nacional</td><td>Anual: Ej. Abr–Ago 2025</td><td><a href="https://www.anid.cl/concursos/proyectos-de-exploracion/" target="_blank">Fondos Exploración</a></td></tr>
-                        <tr><td>Fondo I+D en Salud (FONIS) (ANID)</td><td>Investigación aplicada en salud</td><td>Hasta $70.000.000 CLP (24 meses)</td><td>Nacional</td><td>Anual: Ej. Feb–Abr 2025</td><td><a href="https://www.anid.cl/concursos/fondo-de-investigacion-y-desarrollo-en-salud-fonis/" target="_blank">FONIS</a></td></tr>
-                        <tr><td>Concurso IDeA I+D (ANID)</td><td>Investigación tecnológica aplicada</td><td>Hasta $237.000.000 CLP (cofinanciamiento 15%)</td><td>Nacional</td><td>Anual: Ej. Ene–Mar 2025</td><td><a href="https://www.anid.cl/concursos/concurso-idea-id-2024/" target="_blank">IDeA I+D</a></td></tr>
-                        <tr><td>Anillos de Investigación (ANID)</td><td>Investigación asociativa</td><td>Hasta $220.000.000 CLP/año (3 años)</td><td>Nacional</td><td>Periódica: Ej. Convocatoria cada 2-3 años</td><td><a href="https://www.anid.cl/concursos/anillos-de-investigacion/" target="_blank">Anillos</a></td></tr>
-                        <tr><td>Fondo ALMA-ANID</td><td>Investigación astronómica (postdoctoral)</td><td>~$69.800.000 CLP (2 años)</td><td>Internacional (Chile–ALMA)</td><td>Anual: Ej. Mar–May 2025</td><td><a href="https://www.anid.cl/concursos/fondo-alma-anid/" target="_blank">Fondo ALMA</a></td></tr>
-                        <tr><td>Fondo CAS-ANID (Chile–China)</td><td>Investigación astronómica conjunta</td><td>$73.100.000 CLP (2 años)</td><td>Internacional (Chile–China)</td><td>Anual: Ej. Feb–Abr 2025</td><td><a href="https://www.anid.cl/concursos/fondo-cas-anid/" target="_blank">Fondo CAS</a></td></tr>
-                        <tr><td>Fondo Gemini-ANID</td><td>Investigación astronómica (Telescopio Gemini)</td><td>~$70.000.000 CLP (2 años)</td><td>Internacional (Chile–EE.UU.)</td><td>Anual: Ej. Mar–May 2025</td><td><a href="https://www.anid.cl/concursos/fondo-gemini-anid/" target="_blank">Fondo Gemini</a></td></tr>
-                    </tbody>
-                </table>
-            </div>
+                <div class="filter-section mb-6">
+                    <h3 class="font-semibold mb-3 text-white flex items-center"><i class="fas fa-sitemap mr-2 text-[var(--primary)]"></i>Tipo de Fuente</h3>
+                    <div class="filter-group flex flex-col gap-2" id="typeFilters" role="group" aria-label="Filtros por tipo de fuente">
+                        <button class="filter-btn text-left w-full p-2 rounded-lg transition-colors hover:bg-[var(--primary)]/20 flex justify-between items-center focus:outline-none" data-filter="all"><span><i class="fas fa-globe w-6"></i>Todas</span> <span class="filter-count bg-gray-700 px-2 py-0.5 rounded-full text-xs">0</span></button>
+                        <button class="filter-btn text-left w-full p-2 rounded-lg transition-colors hover:bg-[var(--primary)]/20 flex justify-between items-center focus:outline-none" data-filter="publico"><span><i class="fas fa-landmark w-6"></i>Público Nacional</span> <span class="filter-count bg-gray-700 px-2 py-0.5 rounded-full text-xs">0</span></button>
+                        <button class="filter-btn text-left w-full p-2 rounded-lg transition-colors hover:bg-[var(--primary)]/20 flex justify-between items-center focus:outline-none" data-filter="regional"><span><i class="fas fa-map-marked-alt w-6"></i>Público Regional</span> <span class="filter-count bg-gray-700 px-2 py-0.5 rounded-full text-xs">0</span></button>
+                        <button class="filter-btn text-left w-full p-2 rounded-lg transition-colors hover:bg-[var(--primary)]/20 flex justify-between items-center focus:outline-none" data-filter="privado"><span><i class="fas fa-handshake w-6"></i>Privado</span> <span class="filter-count bg-gray-700 px-2 py-0.5 rounded-full text-xs">0</span></button>
+                        <button class="filter-btn text-left w-full p-2 rounded-lg transition-colors hover:bg-[var(--primary)]/20 flex justify-between items-center focus:outline-none" data-filter="internacional"><span><i class="fas fa-plane-departure w-6"></i>Internacional</span> <span class="filter-count bg-gray-700 px-2 py-0.5 rounded-full text-xs">0</span></button>
+                    </div>
+                </div>
 
-            <div class="section" id="becas">
-                <h2>Becas para Investigadores y Emprendedores</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nombre de la Beca/Fondo</th>
-                            <th>Tipo de Beca</th>
-                            <th>Monto de Financiamiento</th>
-                            <th>Nacional/Internacional</th>
-                            <th>Fechas de Postulación</th>
-                            <th>Link</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>Beca Doctorado Nacional (ANID)</td><td>Doctorado en Chile</td><td>$7.800.000 CLP/año + matrícula (~$2.700.000)</td><td>Nacional</td><td>Anual: Ej. Sep–Dic 2025</td><td><a href="https://www.anid.cl/concursos/beca-de-doctorado-nacional/" target="_blank">Beca Doctorado Nacional</a></td></tr>
-                        <tr><td>Beca Magíster Nacional (ANID)</td><td>Magíster en Chile</td><td>$4.800.000 CLP/año + arancel</td><td>Nacional</td><td>Anual: Ej. Ago–Nov 2025</td><td><a href="https://www.anid.cl/concursos/beca-de-magister-nacional/" target="_blank">Beca Magíster Nacional</a></td></tr>
-                        <tr><td>Beca Doctorado Extranjero (Becas Chile – ANID)</td><td>Doctorado fuera de Chile</td><td>~USD 62.000/año + estipendio (~USD 1.300/mes)</td><td>Internacional</td><td>Anual: Ej. Abr–Jul 2025</td><td><a href="https://www.anid.cl/concursos/beca-de-doctorado-extranjero-becas-chile/" target="_blank">Becas Chile</a></td></tr>
-                        <tr><td>Beca Chevening (Reino Unido)</td><td>Máster en Reino Unido (1 año)</td><td>Tuition (~£18.000) + estipendio + pasajes</td><td>Internacional</td><td>Anual: Ej. Ago–Nov 2025</td><td><a href="https://www.chevening.org/scholarship/chile/" target="_blank">Chevening Chile</a></td></tr>
-                        <tr><td>Beca Fulbright-CONICYT (Chile–EE.UU.)</td><td>Doctorado en EE.UU.</td><td>Cobertura completa (compartida ANID/Fulbright)</td><td>Internacional</td><td>Anual: Ej. Oct 2024 – Mar 2025</td><td><a href="https://www.fulbright.cl/programas/" target="_blank">Fulbright Chile</a></td></tr>
-                        <tr><td>Programas Erasmus Mundus (UE)</td><td>Máster conjunto en Europa</td><td>~€1.400/mes + matrícula + seguro + viaje</td><td>Internacional</td><td>Anual: Ej. Oct 2024 – Feb 2025</td><td><a href="https://www.eacea.ec.europa.eu/scholarships/erasmus-mundus-catalogue_en" target="_blank">Erasmus Mundus</a></td></tr>
-                    </tbody>
-                </table>
-            </div>
+                <div class="filter-section mb-6">
+                    <h3 class="font-semibold mb-3 text-white flex items-center"><i class="fas fa-crosshairs mr-2 text-[var(--primary)]"></i>Enfoque</h3>
+                    <div class="filter-group flex flex-col gap-2" id="focusFilters" role="group" aria-label="Filtros por enfoque">
+                        <button class="filter-btn text-left w-full p-2 rounded-lg transition-colors hover:bg-[var(--primary)]/20 flex justify-between items-center focus:outline-none" data-filter="all"><span><i class="fas fa-star w-6"></i>Todos</span> <span class="filter-count bg-gray-700 px-2 py-0.5 rounded-full text-xs">0</span></button>
+                        <button class="filter-btn text-left w-full p-2 rounded-lg transition-colors hover:bg-[var(--primary)]/20 flex justify-between items-center focus:outline-none" data-filter="investigacion"><span><i class="fas fa-flask w-6"></i>Investigación</span> <span class="filter-count bg-gray-700 px-2 py-0.5 rounded-full text-xs">0</span></button>
+                        <button class="filter-btn text-left w-full p-2 rounded-lg transition-colors hover:bg-[var(--primary)]/20 flex justify-between items-center focus:outline-none" data-filter="innovacion"><span><i class="fas fa-lightbulb w-6"></i>Innovación</span> <span class="filter-count bg-gray-700 px-2 py-0.5 rounded-full text-xs">0</span></button>
+                        <button class="filter-btn text-left w-full p-2 rounded-lg transition-colors hover:bg-[var(--primary)]/20 flex justify-between items-center focus:outline-none" data-filter="emprendimiento"><span><i class="fas fa-rocket w-6"></i>Emprendimiento</span> <span class="filter-count bg-gray-700 px-2 py-0.5 rounded-full text-xs">0</span></button>
+                        <button class="filter-btn text-left w-full p-2 rounded-lg transition-colors hover:bg-[var(--primary)]/20 flex justify-between items-center focus:outline-none" data-filter="escalamiento"><span><i class="fas fa-chart-line w-6"></i>Escalamiento</span> <span class="filter-count bg-gray-700 px-2 py-0.5 rounded-full text-xs">0</span></button>
+                        <button class="filter-btn text-left w-full p-2 rounded-lg transition-colors hover:bg-[var(--primary)]/20 flex justify-between items-center focus:outline-none" data-filter="educacion"><span><i class="fas fa-book-reader w-6"></i>Educación/Cultura</span> <span class="filter-count bg-gray-700 px-2 py-0.5 rounded-full text-xs">0</span></button>
+                        <button class="filter-btn text-left w-full p-2 rounded-lg transition-colors hover:bg-[var(--primary)]/20 flex justify-between items-center focus:outline-none" data-filter="medioambiente"><span><i class="fas fa-leaf w-6"></i>Medioambiente</span> <span class="filter-count bg-gray-700 px-2 py-0.5 rounded-full text-xs">0</span></button>
+                    </div>
+                </div>
+                
+                <button class="reset-filters w-full py-2 bg-[var(--danger)]/80 hover:bg-[var(--danger)] rounded-lg font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-[var(--danger)]/30 focus:outline-none" onclick="resetFilters()">
+                    <i class="fas fa-sync-alt mr-2"></i>Restablecer Filtros
+                </button>
+            </aside>
 
-            <div class="section" id="proyectos">
-                <h2>Fondos para Proyectos Institucionales y Empresariales</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nombre del Fondo</th>
-                            <th>Tipo de Fondo</th>
-                            <th>Monto de Financiamiento</th>
-                            <th>Nacional/Internacional</th>
-                            <th>Fechas de Postulación</th>
-                            <th>Link</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>Crea y Valida I+D+i (Corfo)</td><td>Subsidio I+D (prototipo a validación)</td><td>$100.000.000 CLP (80%) o $120.000.000 (colaborativo)</td><td>Nacional</td><td>Anual: Ej. Ene–Mar 2025</td><td><a href="https://www.corfo.cl/sites/cpp/convocatorias/crea-y-valida" target="_blank">Crea y Valida</a></td></tr>
-                        <tr><td>Consolida y Expande Innovación (Corfo)</td><td>Subsidio escalamiento innovación</td><td>$150.000.000 CLP (40-60% cofinanciamiento)</td><td>Nacional</td><td>Bianual: Ej. Dic 2024 – Mar 2025</td><td><a href="https://www.corfo.cl/sites/cpp/convocatorias/consolida-y-expande" target="_blank">Consolida y Expande</a></td></tr>
-                        <tr><td>Innova Región (Corfo)</td><td>Subsidio I+D regional (sostenibilidad)</td><td>~$100.000.000 CLP</td><td>Nacional</td><td>Anual por regiones: Ej. Feb–Abr 2025</td><td><a href="https://www.corfo.cl/sites/cpp/convocatorias/innova-region" target="_blank">Innova Región</a></td></tr>
-                        <tr><td>Capital Humano para la Innovación (Corfo)</td><td>Inserción investigadores en empresas</td><td>Variable (cofinancia salario)</td><td>Nacional</td><td>Ventanilla abierta: Todo 2025</td><td><a href="https://www.corfo.cl/sites/cpp/convocatorias/capital-humano-para-la-innovacion" target="_blank">Capital Humano</a></td></tr>
-                        <tr><td>Red Eureka (Corfo)</td><td>I+D colaborativo internacional</td><td>~70% costo pymes (60% medianas)</td><td>Internacional</td><td>Convocatorias periódicas: Ej. Todo 2025</td><td><a href="https://www.eurekanetwork.org/countries/chile/" target="_blank">Red Eureka</a></td></tr>
-                        <tr><td>Fondo de Innovación para la Competitividad (FIC-R)</td><td>I+D+i regional (Gobiernos Regionales)</td><td>~$100.000.000 CLP/proyecto</td><td>Nacional</td><td>Anual por región: Ej. Mar–Jun 2025</td><td><a href="https://www.subdere.gov.cl/fondo-de-innovacion-para-la-competitividad-fic" target="_blank">FIC-R</a></td></tr>
-                        <tr><td>Centros Tecnológicos (ANID)</td><td>Creación centros I+D empresariales</td><td>Hasta $9.250.000.000 CLP (plurianual)</td><td>Nacional</td><td>Periódica: Ej. Convocatoria cada 3-5 años</td><td><a href="https://www.anid.cl/concursos/centros-tecnologicos/" target="_blank">Centros Tecnológicos</a></td></tr>
-                        <tr><td>Centros de Investigación Aplicada (ANID)</td><td>Centros I+D aplicada</td><td>Miles de millones CLP (plurianual)</td><td>Nacional</td><td>Periódica: Ej. Convocatoria cada 3-5 años</td><td><a href="https://www.anid.cl/concursos/centros-de-investigacion-aplicada/" target="_blank">Centros Aplicada</a></td></tr>
-                        <tr><td>Institutos Milenio (ANID)</td><td>Centros excelencia científica</td><td>$300–500.000.000 CLP/año (10 años)</td><td>Nacional</td><td>Periódica: Ej. Convocatoria cada 5-10 años</td><td><a href="https://www.anid.cl/concursos/institutos-milenio/" target="_blank">Institutos Milenio</a></td></tr>
-                    </tbody>
-                </table>
-            </div>
+            <main class="content lg:col-span-3 glassmorphism rounded-2xl p-6 shadow-2xl">
+                <div class="content-header flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                    <div class="results-info text-gray-400">
+                        Mostrando <span id="resultsCount" class="font-bold text-[var(--primary)]">0</span> de <span id="totalCount">0</span> fondos
+                    </div>
+                    <select class="sort-dropdown bg-gray-900/70 border-2 border-gray-700 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[var(--primary)]" id="sortDropdown" aria-label="Ordenar fondos">
+                        <option value="name">Ordenar por Nombre</option>
+                        <option value="amount">Ordenar por Monto</option>
+                        <option value="type">Ordenar por Tipo</option>
+                        <option value="cofinance">Ordenar por Cofinanciamiento</option>
+                    </select>
+                </div>
+
+                <div class="funding-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6" id="fundingGrid">
+                </div>
+
+                <div class="no-results text-center py-16 text-gray-500" id="noResults" style="display: none;">
+                    <div class="no-results-icon text-6xl mb-4"><i class="fas fa-search"></i></div>
+                    <h3 class="text-2xl font-bold text-white mb-2">No se encontraron resultados</h3>
+                    <p>Intenta ajustar los filtros o términos de búsqueda</p>
+                </div>
+            </main>
         </div>
+    </div>
 
-        <div class="sidebar">
-            <h2>Categorías</h2>
-            <ul>
-                <li><a href="#startups">Fondos para Startups</a></li>
-                <li><a href="#investigacion">Investigación Académica</a></li>
-                <li><a href="#becas">Becas</a></li>
-                <li><a href="#proyectos">Proyectos Institucionales</a></li>
-            </ul>
+    <div class="modal fixed inset-0 bg-black/80 backdrop-blur-sm z-50 items-center justify-content p-4" id="fundingModal" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+        <div class="modal-content glassmorphism rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8 relative">
         </div>
     </div>
 
     <script>
-        // Datos para la red D3.js
-        const categories = [
-            { id: "Startups", group: "category", size: 20 },
-            { id: "Investigación", group: "category", size: 20 },
-            { id: "Becas", group: "category", size: 20 },
-            { id: "Proyectos", group: "category", size: 20 }
+        const fundingData = [
+            { id: 1, name: "FONDECYT Regular", type: "publico", category: "Público nacional", focus: ["investigacion"], description: "Financiamiento para proyectos de investigación científica y tecnológica de excelencia.", amount: 57000000, amountText: "Hasta $57M CLP anuales", cofinancing: 0, requirements: ["Investigador con trayectoria", "Proyecto de 2 a 4 años"], link: "https://www.anid.cl/concursos/concurso-de-proyectos-fondecyt-regular-2025/", institution: "ANID", duration: "2-4 años", deadline: "Anual: Ej. Abr–Jun 2025" },
+            { id: 2, name: "FONDECYT Iniciación", type: "publico", category: "Público nacional", focus: ["investigacion"], description: "Fomenta y fortalece la investigación de nuevos investigadores.", amount: 65000000, amountText: "Hasta $65M CLP (total)", cofinancing: 0, requirements: ["Doctorado reciente", "Proyecto de 2 a 3 años"], link: "https://www.anid.cl/concursos/concurso-de-proyectos-fondecyt-de-iniciacion-en-investigacion-2025/", institution: "ANID", duration: "2-3 años", deadline: "Anual: Ej. Abr–Jul 2025" },
+            { id: 3, name: "FONDEF IDeA I+D", type: "publico", category: "Público nacional", focus: ["investigacion", "innovacion"], description: "Apoya proyectos de I+D con potencial de impacto económico y social.", amount: 237000000, amountText: "Hasta $237M CLP", cofinancing: 15, requirements: ["Colaboración con empresas", "TRL 4+"], link: "https://www.anid.cl/concursos/concurso-idea-id-2024/", institution: "ANID", duration: "24 meses", deadline: "Anual: Ej. Ene–Mar 2025" },
+            { id: 4, name: "FONDEQUIP Mediano", type: "publico", category: "Público nacional", focus: ["investigacion"], description: "Adquisición de equipamiento científico y tecnológico mediano.", amount: 400000000, amountText: "$50M-$400M CLP", cofinancing: 50, requirements: ["Uso compartido", "Instituciones acreditadas"], link: "https://anid.cl/concursos/", institution: "ANID", duration: "12 meses ejecución", deadline: "Anual" },
+            { id: 5, name: "FONDEQUIP Mayor", type: "publico", category: "Público nacional", focus: ["investigacion"], description: "Equipamiento científico mayor de alto impacto para consorcios.", amount: 950000000, amountText: "$400M-$950M CLP", cofinancing: 50, requirements: ["Consorcios institucionales", "Impacto nacional"], link: "https://anid.cl/concursos/", institution: "ANID", duration: "18 meses ejecución", deadline: "Anual" },
+            { id: 6, name: "Semilla Inicia", type: "publico", category: "Público nacional", focus: ["emprendimiento", "innovacion"], description: "Subsidio para nuevos emprendimientos innovadores.", amount: 15000000, amountText: "$15M CLP (+10% mujer)", cofinancing: 25, requirements: ["Emprendimiento sin ventas", "Plan de negocio"], link: "https://www.corfo.cl/sites/cpp/sala_de_prensa/semilla-inicia-2024", institution: "CORFO", duration: "12 meses", deadline: "Anual: Ej. Oct 2024–Ene 2025" },
+            { id: 7, name: "Semilla Expande", type: "publico", category: "Público nacional", focus: ["escalamiento"], description: "Subsidio para la expansión comercial de emprendimientos.", amount: 45000000, amountText: "$25M + $20M CLP", cofinancing: 25, requirements: ["Ventas iniciales", "Potencial de mercado"], link: "https://www.corfo.cl/sites/cpp/sala_de_prensa/semilla-expande-2024", institution: "CORFO", duration: "12 meses", deadline: "Anual: Ej. Nov 2024–Feb 2025" },
+            { id: 8, name: "Capital Semilla Emprende", type: "publico", category: "Público nacional", focus: ["emprendimiento"], description: "Fondo concursable para la creación de microempresas.", amount: 3500000, amountText: "$3.5M CLP", cofinancing: 15, requirements: ["Sin inicio de actividades", "Plan de negocio"], link: "https://www.sercotec.cl/capital-semilla-emprende/", institution: "SERCOTEC", duration: "6 meses", deadline: "Anual por regiones: Ej. Mar–May 2025" },
+            { id: 9, name: "Capital Abeja Emprende", type: "publico", category: "Público nacional", focus: ["emprendimiento"], description: "Fondo exclusivo para emprendedoras que inician un negocio.", amount: 3500000, amountText: "$3.5M CLP", cofinancing: 3, requirements: ["Liderado por mujer", "Idea de negocio"], link: "https://www.sercotec.cl/capital-abeja-emprende/", institution: "SERCOTEC", duration: "6 meses", deadline: "Anual por regiones: Ej. Mar–May 2025" },
+            { id: 10, name: "Capital Pioneras", type: "publico", category: "Público nacional", focus: ["emprendimiento"], description: "Fondo para emprendedoras en rubros tradicionalmente masculinizados.", amount: 3500000, amountText: "$3.5M CLP", cofinancing: 3, requirements: ["Liderado por mujer", "Rubros masculinizados"], link: "https://www.sercotec.cl/capital-pioneras/", institution: "SERCOTEC", duration: "6 meses", deadline: "Anual por regiones: Ej. Mar–May 2025" },
+            { id: 11, name: "Kit Digital", type: "publico", category: "Público nacional", focus: ["innovacion"], description: "Subsidio para la digitalización de micro y pequeñas empresas.", amount: 1200000, amountText: "Hasta $1.2M CLP", cofinancing: 0, requirements: ["Empresa formalizada", "Plan de digitalización"], link: "https://www.sercotec.cl/kit-digital/", institution: "SERCOTEC", duration: "6 meses", deadline: "Anual por regiones: Ej. Abr–Jun 2025" },
+            { id: 12, name: "FIC-R (Todas las Regiones)", type: "regional", category: "Público regional", focus: ["innovacion", "investigacion"], description: "Fondo de Innovación para la Competitividad, gestionado por cada Gobierno Regional.", amount: 100000000, amountText: "~$100M CLP/proyecto", cofinancing: 20, requirements: ["Pertinencia regional", "Alineado con Estrategia Regional de Innovación"], link: "https://www.subdere.gov.cl/fondo-de-innovacion-para-la-competitividad-fic", institution: "GORE (Varios)", duration: "12-24 meses", deadline: "Anual por región: Ej. Mar–Jun 2025" },
+            { id: 13, name: "Fondos ANID – Exploración", type: "publico", category: "Público nacional", focus: ["investigacion"], description: "Financiamiento para proyectos de investigación exploratoria de alto riesgo.", amount: 80000000, amountText: "Hasta $80M CLP/año", cofinancing: 0, requirements: ["Proyectos de alto riesgo", "Investigación innovadora"], link: "https://www.anid.cl/concursos/proyectos-de-exploracion/", institution: "ANID", duration: "1-2 años", deadline: "Anual: Ej. Abr–Ago 2025" },
+            { id: 14, name: "Fondo ALMA-ANID", type: "internacional", category: "Internacional", focus: ["investigacion"], description: "Financiamiento para investigación astronómica postdoctoral con el observatorio ALMA.", amount: 69800000, amountText: "~$69.8M CLP", cofinancing: 0, requirements: ["Investigadores postdoctorales", "Proyectos astronómicos"], link: "https://www.anid.cl/concursos/fondo-alma-anid/", institution: "ANID", duration: "2 años", deadline: "Anual: Ej. Mar–May 2025" },
+            { id: 15, name: "Fondo CAS-ANID (Chile–China)", type: "internacional", category: "Internacional", focus: ["investigacion"], description: "Apoyo a proyectos de investigación astronómica conjunta entre Chile y China.", amount: 73100000, amountText: "$73.1M CLP", cofinancing: 0, requirements: ["Colaboración con equipo chino", "Proyectos astronómicos"], link: "https://www.anid.cl/concursos/fondo-cas-anid/", institution: "ANID", duration: "2 años", deadline: "Anual: Ej. Feb–Abr 2025" },
+            { id: 16, name: "Fondo Gemini-ANID", type: "internacional", category: "Internacional", focus: ["investigacion"], description: "Financiamiento para investigación astronómica con el Telescopio Gemini.", amount: 70000000, amountText: "~$70M CLP", cofinancing: 0, requirements: ["Proyectos astronómicos", "Colaboración internacional"], link: "https://www.anid.cl/concursos/fondo-gemini-anid/", institution: "ANID", duration: "2 años", deadline: "Anual: Ej. Mar–May 2025" },
+            { id: 17, name: "Beca Magíster Nacional", type: "publico", category: "Público nacional", focus: ["investigacion"], description: "Beca para realizar estudios de magíster en universidades chilenas.", amount: 4800000, amountText: "$4.8M CLP/año + arancel", cofinancing: 0, requirements: ["Excelencia académica", "Aceptación en programa acreditado"], link: "https://www.anid.cl/concursos/beca-de-magister-nacional/", institution: "ANID", duration: "1-2 años", deadline: "Anual: Ej. Ago–Nov 2025" },
+            { id: 18, name: "Programas Erasmus Mundus", type: "internacional", category: "Internacional", focus: ["investigacion"], description: "Becas para másteres conjuntos en universidades europeas.", amount: 1400000, amountText: "~€1.4k/mes + matrícula", cofinancing: 0, requirements: ["Excelencia académica", "Aceptación en programa Erasmus"], link: "https://www.eacea.ec.europa.eu/scholarships/erasmus-mundus-catalogue_en", institution: "Unión Europea", duration: "1-2 años", deadline: "Anual: Ej. Oct 2024–Feb 2025" },
+            { id: 19, name: "Innova Región", type: "regional", category: "Público regional", focus: ["innovacion"], description: "Subsidio para proyectos de I+D con foco en sostenibilidad regional.", amount: 100000000, amountText: "~$100M CLP", cofinancing: 20, requirements: ["Pertinencia regional", "Proyectos de sostenibilidad"], link: "https://www.corfo.cl/sites/cpp/convocatorias/innova-region", institution: "CORFO", duration: "12-24 meses", deadline: "Anual por regiones: Ej. Feb–Abr 2025" },
+            { id: 20, name: "I+D para Innovar Copec-UC", type: "privado", category: "Privado filantrópico", focus: ["investigacion", "innovacion"], description: "I+D aplicada en recursos naturales, energía y bioeconomía.", amount: 150000000, amountText: "Hasta 4.000 UF", cofinancing: 25, requirements: ["TRL 3+", "Potencial de mercado"], link: "https://www.fcuc.cl", institution: "Fundación Copec-UC", duration: "24 meses", deadline: "Anual (Cerró 2024)" },
+            { id: 21, name: "Capital Humano para la Innovación", type: "publico", category: "Público nacional", focus: ["innovacion"], description: "Inserción de investigadores en empresas para proyectos de innovación.", amount: 50000000, amountText: "Variable (cofinancia salario)", cofinancing: 50, requirements: ["Empresa constituida", "Inserción de investigadores"], link: "https://www.corfo.cl/sites/cpp/convocatorias/capital-humano-para-la-innovacion", institution: "CORFO", duration: "Variable", deadline: "Ventanilla abierta: Todo 2025" },
+            { id: 22, name: "Centros Tecnológicos", type: "publico", category: "Público nacional", focus: ["investigacion", "innovacion"], description: "Creación de centros de I+D empresariales de alto impacto.", amount: 9250000000, amountText: "Hasta $9.25MM CLP", cofinancing: 30, requirements: ["Consorcios empresariales", "Proyectos de I+D"], link: "https://www.anid.cl/concursos/centros-tecnologicos/", institution: "ANID", duration: "Plurianual", deadline: "Periódica: Ej. cada 3-5 años" },
+            { id: 23, name: "Centros de Investigación Aplicada", type: "publico", category: "Público nacional", focus: ["investigacion"], description: "Financiamiento para centros de investigación aplicada de alto impacto.", amount: 5000000000, amountText: "Miles de millones CLP", cofinancing: 30, requirements: ["Centros de investigación", "Proyectos aplicados"], link: "https://www.anid.cl/concursos/centros-de-investigacion-aplicada/", institution: "ANID", duration: "Plurianual", deadline: "Periódica: Ej. cada 3-5 años" },
+            { id: 38, name: "Y Combinator", type: "internacional", category: "Privado internacional", focus: ["emprendimiento", "escalamiento"], description: "Aceleradora de startups tecnológicas de alto impacto a nivel mundial.", amount: 450000000, amountText: "US$500k standard deal", cofinancing: 0, requirements: ["Startups tecnológicas globales", "Equipo excepcional"], link: "https://www.ycombinator.com", institution: "Y Combinator", duration: "3 meses + long term", deadline: "2 batches anuales" },
+            { id: 39, name: "Beca Fulbright-ANID", type: "internacional", category: "Internacional", focus: ["investigacion"], description: "Beca para estudios de Doctorado en Estados Unidos.", amount: 50000000, amountText: "Cobertura completa", cofinancing: 0, requirements: ["Ciudadanía chilena", "Excelencia académica", "Dominio de inglés"], link: "https://www.fulbright.cl/programas/", institution: "Fulbright/ANID", duration: "3-4 años", deadline: "Anual: Ej. Oct 2024–Mar 2025" },
+            { id: 40, name: "Start-Up Chile – Build", type: "publico", category: "Público aceleradora", focus: ["emprendimiento"], description: "Pre-aceleración para startups en fase temprana (idea a prototipo).", amount: 10000000, amountText: "$10M CLP (equity-free)", cofinancing: 0, requirements: ["Equipo fundador", "Idea innovadora"], link: "https://www.startupchile.org/programs/build/", institution: "CORFO", duration: "4 meses", deadline: "Cohortes múltiples: Ej. Feb–Mar, Jun–Jul" },
+            { id: 41, name: "Start-Up Chile – Ignite", type: "publico", category: "Público aceleradora", focus: ["emprendimiento"], description: "Aceleración para startups con prototipo validado.", amount: 25000000, amountText: "$25M CLP (80% cofinanciamiento)", cofinancing: 20, requirements: ["Prototipo funcional", "Validación inicial"], link: "https://www.startupchile.org/programs/ignite/", institution: "CORFO", duration: "4 meses", deadline: "Cohortes múltiples: Ej. Feb–Mar, Jun–Jul" },
+            { id: 42, name: "Start-Up Chile – Growth", type: "publico", category: "Público aceleradora", focus: ["escalamiento"], description: "Escalamiento para startups con tracción, buscando expansión global.", amount: 75000000, amountText: "$75M CLP (50% cofinanciamiento)", cofinancing: 50, requirements: ["Ventas demostrables", "Plan de expansión"], link: "https://www.startupchile.org/programs/growth/", institution: "CORFO", duration: "8 meses", deadline: "Cohortes múltiples: Ej. Feb–Mar, Jun–Jul" },
+            { id: 44, name: "Crece", type: "publico", category: "Público nacional", focus: ["escalamiento"], description: "Subsidio para el crecimiento de micro y pequeñas empresas.", amount: 5000000, amountText: "$5M CLP", cofinancing: 20, requirements: ["Empresa formalizada", "Potencial de crecimiento"], link: "https://www.sercotec.cl/crece/", institution: "SERCOTEC", duration: "6 meses", deadline: "Anual por regiones: Ej. Feb–Abr 2025" },
+            { id: 46, name: "Emprendamos Semilla", type: "publico", category: "Público nacional", focus: ["emprendimiento"], description: "Apoyo a microemprendimientos de personas en situación de vulnerabilidad.", amount: 400000, amountText: "~$400k CLP + capacitación", cofinancing: 0, requirements: ["Registro Social de Hogares", "Idea de negocio"], link: "https://www.fosis.gob.cl/es/programa/emprendamos-semilla/", institution: "FOSIS", duration: "6 meses", deadline: "Anual por regiones: Ej. Ene–Mar 2025" },
+            { id: 47, name: "Fondecyt Postdoctorado", type: "publico", category: "Público nacional", focus: ["investigacion"], description: "Beca y proyecto para la inserción de investigadores postdoctorales.", amount: 31164000, amountText: "$31.1M CLP/año", cofinancing: 0, requirements: ["Grado de Doctor", "Proyecto de 2 a 3 años"], link: "https://www.anid.cl/concursos/concurso-fondecyt-de-postdoctorado-2025/", institution: "ANID", duration: "2-3 años", deadline: "Anual: Ej. Ene–Abr 2025" },
+            { id: 49, name: "FONIS (Invest. en Salud)", type: "publico", category: "Público nacional", focus: ["investigacion"], description: "Apoya investigación aplicada que contribuya a la salud pública.", amount: 70000000, amountText: "Hasta $70M CLP", cofinancing: 10, requirements: ["Pertinencia sanitaria", "Equipo multidisciplinario"], link: "https://www.anid.cl/concursos/fondo-de-investigacion-y-desarrollo-en-salud-fonis/", institution: "ANID/MINSAL", duration: "24 meses", deadline: "Anual: Ej. Feb–Abr 2025" },
+            { id: 50, name: "Anillos de Investigación", type: "publico", category: "Público nacional", focus: ["investigacion"], description: "Financiamiento para grupos de investigación científica de excelencia.", amount: 220000000, amountText: "Hasta $220M CLP/año", cofinancing: 0, requirements: ["Grupos de investigación consolidados", "Colaboración"], link: "https://www.anid.cl/concursos/anillos-de-investigacion/", institution: "ANID", duration: "3 años", deadline: "Periódica: Ej. cada 2-3 años" },
+            { id: 54, name: "Beca Doctorado Nacional", type: "publico", category: "Público nacional", focus: ["investigacion"], description: "Beca para realizar estudios de doctorado en universidades chilenas.", amount: 7800000, amountText: "$7.8M CLP/año + matrícula", cofinancing: 0, requirements: ["Excelencia académica", "Aceptación en programa acreditado"], link: "https://www.anid.cl/concursos/beca-de-doctorado-nacional/", institution: "ANID", duration: "Hasta 4 años", deadline: "Anual: Ej. Sep–Dic 2025" },
+            { id: 56, name: "Doctorado Becas Chile", type: "internacional", category: "Internacional", focus: ["investigacion"], description: "Beca para realizar estudios de doctorado en el extranjero.", amount: 62000000, amountText: "~USD 62k/año + estipendio", cofinancing: 0, requirements: ["Excelencia académica", "Aceptación en universidad extranjera"], link: "https://www.anid.cl/concursos/beca-de-doctorado-extranjero-becas-chile/", institution: "ANID", duration: "Hasta 4 años", deadline: "Anual: Ej. Abr–Jul 2025" },
+            { id: 57, name: "Beca Chevening", type: "internacional", category: "Internacional", focus: ["investigacion"], description: "Beca del gobierno británico para estudios de máster de un año en el Reino Unido.", amount: 40000000, amountText: "~£18k + estipendio", cofinancing: 0, requirements: ["Liderazgo", "Experiencia profesional"], link: "https://www.chevening.org/scholarship/chile/", institution: "Gobierno UK", duration: "1 año", deadline: "Anual: Ej. Ago–Nov 2025" },
+            { id: 59, name: "Crea y Valida I+D+i", type: "publico", category: "Público nacional", focus: ["innovacion"], description: "Subsidio para crear o mejorar productos/servicios, desde prototipo a validación.", amount: 120000000, amountText: "$100M-$120M CLP", cofinancing: 20, requirements: ["Empresa constituida", "Proyecto de I+D+i"], link: "https://www.corfo.cl/sites/cpp/convocatorias/crea-y-valida", institution: "CORFO", duration: "24 meses", deadline: "Anual: Ej. Ene–Mar 2025" },
+            { id: 60, name: "Consolida y Expande Innovación", type: "publico", category: "Público nacional", focus: ["escalamiento"], description: "Subsidio para el escalamiento y expansión de innovaciones ya validadas.", amount: 150000000, amountText: "$150M CLP", cofinancing: 40, requirements: ["Innovación validada", "Plan de escalamiento"], link: "https://www.corfo.cl/sites/cpp/convocatorias/consolida-y-expande", institution: "CORFO", duration: "18 meses", deadline: "Bianual: Ej. Dic 2024–Mar 2025" },
+            { id: 63, name: "Red Eureka", type: "internacional", category: "Internacional", focus: ["innovacion"], description: "Apoyo a proyectos de I+D colaborativos con entidades de la red Eureka.", amount: 100000000, amountText: "~70% costo pymes", cofinancing: 30, requirements: ["Colaboración internacional", "Proyecto de I+D"], link: "https://www.eurekanetwork.org/countries/chile/", institution: "CORFO", duration: "24 meses", deadline: "Convocatorias periódicas: Ej. Todo 2025" },
+            { id: 65, name: "Institutos Milenio", type: "publico", category: "Público nacional", focus: ["investigacion"], description: "Creación de centros de investigación científica de frontera y excelencia.", amount: 500000000, amountText: "$300M–$500M CLP/año", cofinancing: 0, requirements: ["Grupos de investigación de alto nivel", "Investigación de frontera"], link: "https://www.anid.cl/concursos/institutos-milenio/", institution: "ANID", duration: "10 años", deadline: "Periódica: Ej. cada 5-10 años" },
+            { id: 70, name: "FONIDE", type: "publico", category: "Público nacional", focus: ["investigacion", "educacion"], description: "Financia proyectos de investigación que aporten al mejoramiento de la educación en Chile.", amount: 32000000, amountText: "Hasta $32M CLP", cofinancing: 0, requirements: ["Proyectos de investigación educativa", "Pertinencia para políticas públicas"], link: "https://www.mineduc.cl/fonide-2025-convocatoria-para-proyectos-de-investigacion-educativa/", institution: "MINEDUC", duration: "12 meses", deadline: "Abierto (Cierra Jun 2025)" },
+            { id: 71, name: "Fondo Educación SENADIS", type: "publico", category: "Público nacional", focus: ["educacion"], description: "Apoya proyectos que promuevan la inclusión de estudiantes con discapacidad en la educación.", amount: 25000000, amountText: "Hasta $25M CLP", cofinancing: 0, requirements: ["Proyectos de inclusión educativa", "Foco en discapacidad"], link: "https://www.senadis.gob.cl/", institution: "SENADIS", duration: "Variable", deadline: "Anual" },
+            { id: 72, name: "Fondos Fundación Mustakis", type: "privado", category: "Privado filantrópico", focus: ["educacion", "innovacion"], description: "Financia iniciativas innovadoras en educación para el desarrollo integral de niños, niñas y jóvenes.", amount: 100000000, amountText: "Variable", cofinancing: 0, requirements: ["Proyectos educativos innovadores", "Foco en NNA"], link: "https://fundacionmustakis.org/", institution: "Fundación Mustakis", duration: "Variable", deadline: "Anual" },
+            { id: 73, name: "Fondos Santander", type: "privado", category: "Privado filantrópico", focus: ["educacion", "emprendimiento"], description: "Apoya proyectos de educación superior, emprendimiento e investigación a través de diversas convocatorias.", amount: 15000000, amountText: "Variable según programa", cofinancing: 0, requirements: ["Comunidad universitaria", "Emprendedores"], link: "https://www.bancosantander.cl/universidades", institution: "Banco Santander", duration: "Variable", deadline: "Múltiples convocatorias" },
+            { id: 74, name: "Escalamiento (Corfo)", type: "publico", category: "Público nacional", focus: ["escalamiento"], description: "Cofinancia hasta 70% del proyecto para expansión global de startups.", amount: 60000000, amountText: "Hasta $60M CLP", cofinancing: 30, requirements: ["Potencial de internacionalización", "Modelo de negocio validado"], link: "https://www.corfo.cl/", institution: "CORFO", duration: "Variable", deadline: "Cerró 2024" },
+            { id: 75, name: "GoGlobal", type: "publico", category: "Público nacional", focus: ["escalamiento"], description: "Programa de softlanding internacional para startups chilenas.", amount: 0, amountText: "Aceleración (sin capital)", cofinancing: 0, requirements: ["Startup con tracción", "Interés en mercados específicos"], link: "https://www.corfo.cl/", institution: "CORFO", duration: "Variable", deadline: "Cerró 2024" },
+            { id: 76, name: "Concurso VIU", type: "publico", category: "Público nacional", focus: ["emprendimiento", "innovacion"], description: "Subsidio para proyectos universitarios de I+D con potencial comercial.", amount: 36000000, amountText: "Hasta $36M CLP", cofinancing: 20, requirements: ["Proyecto universitario", "Potencial comercial"], link: "https://www.anid.cl/concursos/", institution: "ANID (Fondef)", duration: "12 meses", deadline: "Cerró May 2025" },
+            { id: 77, name: "Aplica tu Idea", type: "privado", category: "Privado filantrópico", focus: ["emprendimiento", "innovacion"], description: "Financiamiento para equipos de estudiantes universitarios con soluciones innovadoras.", amount: 3000000, amountText: "$3M CLP", cofinancing: 0, requirements: ["Estudiantes universitarios", "Soluciones en recursos naturales"], link: "https://www.fcuc.cl/", institution: "Fundación Copec-UC", duration: "Variable", deadline: "Cerró 2024" },
+            { id: 78, name: "Viraliza Formación", type: "publico", category: "Público nacional", focus: ["innovacion"], description: "Fondo a entidades expertas para formar emprendedores.", amount: 50000000, amountText: "Variable", cofinancing: 30, requirements: ["Entidades con experiencia", "Metodologías E+I"], link: "https://www.corfo.cl/", institution: "CORFO", duration: "Variable", deadline: "Cerró 2024" },
+            { id: 79, name: "Potencia (Incubadoras)", type: "publico", category: "Público nacional", focus: ["innovacion"], description: "Cofinancia operación de incubadoras, aceleradoras y redes de mentores.", amount: 100000000, amountText: "Variable", cofinancing: 30, requirements: ["Incubadoras/Aceleradoras", "Redes de mentores"], link: "https://www.corfo.cl/", institution: "CORFO", duration: "Variable", deadline: "Cerró 2025" },
+            { id: 80, name: "Fondef IDeA Tecnologías Avanzadas", type: "publico", category: "Público nacional", focus: ["investigacion", "innovacion"], description: "Subsidio para proyectos de I+D de mayor envergadura (TRL≥3).", amount: 660000000, amountText: "Hasta $660M CLP", cofinancing: 30, requirements: ["TRL≥3", "Proyectos de alto impacto"], link: "https://investigacion.uss.cl/oportunidad/concurso-idea-id-tecnologias-avanzadas-2025/", institution: "ANID (Fondef)", duration: "Hasta 4 años", deadline: "Cerró Nov 2024" },
+            { id: 81, name: "Fondo de Protección Ambiental (FPA)", type: "publico", category: "Público nacional", focus: ["medioambiente"], description: "Financiamiento para iniciativas comunitarias de educación y protección ambiental.", amount: 6000000, amountText: "Hasta $6M CLP", cofinancing: 0, requirements: ["Organizaciones sin fines de lucro", "Proyectos comunitarios"], link: "https://fondos.mma.gob.cl/", institution: "Min. Medio Ambiente", duration: "Variable", deadline: "Cerró Oct 2024" },
+            { id: 82, name: "Fondo para el Reciclaje (FPR)", type: "publico", category: "Público nacional", focus: ["medioambiente"], description: "Apoyo a municipalidades para proyectos de economía circular y reciclaje.", amount: 14000000, amountText: "Hasta $14M CLP", cofinancing: 10, requirements: ["Municipalidades", "Gestión de residuos"], link: "https://fondos.mma.gob.cl/", institution: "Min. Medio Ambiente", duration: "Hasta 24 meses", deadline: "Cerró Nov 2024" },
+            { id: 83, name: "FIA – Innovación Agraria", type: "publico", category: "Público nacional", focus: ["medioambiente", "innovacion"], description: "Concursos de innovación agroalimentaria, incluyendo líneas de interés público y privado.", amount: 150000000, amountText: "Hasta $150M CLP", cofinancing: 20, requirements: ["Proyectos agroalimentarios", "Sostenibilidad"], link: "https://www.fia.cl/", institution: "FIA", duration: "Variable", deadline: "Cerró Nov 2024" },
+            { id: 84, name: "Fondo “Somos Comunidad”", type: "privado", category: "Privado filantrópico", focus: ["medioambiente", "educacion"], description: "Fondo para organizaciones locales en zonas de operación de Anglo American.", amount: 2000000, amountText: "~$1.8M CLP promedio", cofinancing: 0, requirements: ["Organizaciones locales", "Zonas de operación minera"], link: "https://chile.angloamerican.com/es-es/programas-sociales/somos-comunidad", institution: "Anglo American", duration: "Variable", deadline: "Abierto (2024)" },
+            { id: 86, name: "Fondo de Desarrollo Institucional (FDI)", type: "publico", category: "Público nacional", focus: ["educacion"], description: "Financiamiento para proyectos de mejora e innovación en educación superior.", amount: 500000000, amountText: "Hasta ~$500M por institución", cofinancing: 10, requirements: ["Instituciones de educación superior", "Proyectos de mejora"], link: "https://fdi.mineduc.cl/", institution: "MINEDUC", duration: "Variable", deadline: "Cerró 2024" }
         ];
-        const nodes = categories.concat([
-            { id: "Start-Up Chile", group: "fondo", category: "Startups" },
-            { id: "Semilla Inicia", group: "fondo", category: "Startups" },
-            { id: "Fondecyt", group: "fondo", category: "Investigación" },
-            { id: "FONIS", group: "fondo", category: "Investigación" },
-            { id: "Beca ANID", group: "fondo", category: "Becas" },
-            { id: "Chevening", group: "fondo", category: "Becas" },
-            { id: "Crea y Valida", group: "fondo", category: "Proyectos" },
-            { id: "Red Eureka", group: "fondo", category: "Proyectos" }
-        ]);
-        const links = [
-            { source: "Startups", target: "Start-Up Chile" },
-            { source: "Startups", target: "Semilla Inicia" },
-            { source: "Investigación", target: "Fondecyt" },
-            { source: "Investigación", target: "FONIS" },
-            { source: "Becas", target: "Beca ANID" },
-            { source: "Becas", target: "Chevening" },
-            { source: "Proyectos", target: "Crea y Valida" },
-            { source: "Proyectos", target: "Red Eureka" },
-            { source: "Startups", target: "Investigación", distance: 200 },
-            { source: "Investigación", target: "Becas", distance: 200 },
-            { source: "Becas", target: "Proyectos", distance: 200 }
-        ];
 
-        // Configuración de la visualización D3.js
-        const width = 900, height = 600;
-        const svg = d3.select("#network-graph")
-            .append("svg")
-            .attr("width", width)
-            .attr("height", height);
+        let scene, camera, renderer, stars, starGeo;
 
-        const simulation = d3.forceSimulation(nodes)
-            .force("link", d3.forceLink(links).id(d => d.id).distance(d => d.distance || 150))
-            .force("charge", d3.forceManyBody().strength(-200))
-            .force("center", d3.forceCenter(width / 2, height / 2))
-            .force("collision", d3.forceCollide().radius(d => d.size + 10));
+        function initThreeJS() {
+            try {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+                camera.position.z = 1;
+                camera.rotation.x = Math.PI / 2;
 
-        const link = svg.append("g")
-            .selectAll("line")
-            .data(links)
-            .enter().append("line")
-            .attr("class", "link");
+                renderer = new THREE.WebGLRenderer({
+                    canvas: document.getElementById("bg-canvas"),
+                    alpha: true
+                });
+                renderer.setSize(window.innerWidth, window.innerHeight);
 
-        const node = svg.append("g")
-            .selectAll("g")
-            .data(nodes)
-            .enter().append("g")
-            .attr("class", d => d.group === "category" ? "node category" : "node")
-            .call(d3.drag()
-                .on("start", dragstarted)
-                .on("drag", dragged)
-                .on("end", dragended));
+                starGeo = new THREE.BufferGeometry();
+                const starVertices = [];
+                for (let i = 0; i < 6000; i++) {
+                    const x = (Math.random() - 0.5) * 2000;
+                    const y = (Math.random() - 0.5) * 2000;
+                    const z = (Math.random() - 0.5) * 2000;
+                    starVertices.push(x, y, z);
+                }
+                starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
 
-        node.append("circle")
-            .attr("r", d => d.size)
-            .on("click", (event, d) => {
-                if (d.group === "category") {
-                    window.location.hash = d.id.toLowerCase();
+                const spriteCanvas = document.createElement('canvas');
+                spriteCanvas.width = 32;
+                spriteCanvas.height = 32;
+                const ctx = spriteCanvas.getContext('2d');
+                ctx.beginPath();
+                ctx.arc(16, 16, 14, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                const sprite = new THREE.Texture(spriteCanvas);
+                sprite.needsUpdate = true;
+
+                const starMaterial = new THREE.PointsMaterial({
+                    color: 0xaaaaaa,
+                    size: 0.7,
+                    map: sprite,
+                    transparent: true
+                });
+
+                stars = new THREE.Points(starGeo, starMaterial);
+                scene.add(stars);
+
+                window.addEventListener("resize", onWindowResize, false);
+                document.addEventListener('mousemove', onMouseMove, false);
+
+                animate();
+            } catch (error) {
+                console.error('Error initializing Three.js:', error);
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        let mouseX = 0, mouseY = 0;
+        function onMouseMove(event) {
+            mouseX = (event.clientX - window.innerWidth / 2) / 100;
+            mouseY = (event.clientY - window.innerHeight / 2) / 100;
+        }
+
+        function animate() {
+            if (!stars || !starGeo) return;
+            const positions = starGeo.attributes.position.array;
+            for (let i = 0; i < positions.length; i += 3) {
+                positions[i + 1] += 0.05;
+                if (positions[i + 1] > 1000) {
+                    positions[i + 1] = -1000;
+                }
+            }
+            starGeo.attributes.position.needsUpdate = true;
+
+            stars.rotation.y += 0.0002;
+            camera.position.x += (mouseX - camera.position.x) * 0.01;
+            camera.position.y += (-mouseY - camera.position.y) * 0.01;
+            camera.lookAt(scene.position);
+
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initThreeJS();
+            updateStats();
+            renderFundingCards(fundingData);
+            setupEventListeners();
+            updateFilterCounts();
+            document.querySelector('#tab-navigation .tab-link[data-tab-filter="all"]').classList.add('active');
+            document.querySelector('#typeFilters .filter-btn[data-filter="all"]').classList.add('active');
+            document.querySelector('#focusFilters .filter-btn[data-filter="all"]').classList.add('active');
+        });
+
+        function setupEventListeners() {
+            document.getElementById('tab-navigation').addEventListener('click', (e) => {
+                const tabButton = e.target.closest('.tab-link');
+                if (tabButton) {
+                    document.querySelectorAll('#tab-navigation .tab-link').forEach(btn => {
+                        btn.classList.remove('active');
+                        btn.setAttribute('aria-selected', 'false');
+                    });
+                    tabButton.classList.add('active');
+                    tabButton.setAttribute('aria-selected', 'true');
+                    filterFunds();
                 }
             });
 
-        node.append("text")
-            .attr("dy", ".35em")
-            .attr("text-anchor", "middle")
-            .text(d => d.id);
-
-        simulation.on("tick", () => {
-            link
-                .attr("x1", d => d.source.x)
-                .attr("y1", d => d.source.y)
-                .attr("x2", d => d.target.x)
-                .attr("y2", d => d.target.y);
-
-            node
-                .attr("transform", d => `translate(${d.x},${d.y})`);
-        });
-
-        function dragstarted(event) {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-            event.subject.fx = event.subject.x;
-            event.subject.fy = event.subject.y;
+            document.getElementById('searchInput').addEventListener('input', debounce(filterFunds, 300));
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.addEventListener('click', function() {
+                const filterGroup = this.closest('.filter-group');
+                if (this.dataset.filter === 'all') {
+                    filterGroup.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                } else {
+                    filterGroup.querySelector('[data-filter="all"]').classList.remove('active');
+                    this.classList.toggle('active');
+                    const hasActive = filterGroup.querySelector('.filter-btn:not([data-filter="all"]).active');
+                    if (!hasActive) {
+                        filterGroup.querySelector('[data-filter="all"]').classList.add('active');
+                    }
+                }
+                filterFunds();
+            }));
+            document.getElementById('sortDropdown').addEventListener('change', filterFunds);
+            document.getElementById('fundingModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && document.getElementById('fundingModal').classList.contains('active')) {
+                    closeModal();
+                }
+            });
         }
 
-        function dragged(event) {
-            event.subject.fx = event.x;
-            event.subject.fy = event.y;
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
         }
 
-        function dragended(event) {
-            if (!event.active) simulation.alphaTarget(0);
-            event.subject.fx = null;
-            event.subject.fy = null;
+        function filterFunds() {
+            const activeTabFilter = document.querySelector('#tab-navigation .tab-link.active').dataset.tabFilter;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const activeTypeFilters = getActiveFilters('typeFilters');
+            const activeFocusFilters = getActiveFilters('focusFilters');
+
+            let filtered = fundingData.filter(fund => {
+                const matchesTab = activeTabFilter === 'all' || fund.type === activeTabFilter || (activeTabFilter === 'educacion' && fund.focus.includes('educacion')) || (activeTabFilter === 'medioambiente' && fund.focus.includes('medioambiente'));
+                const matchesSearch = fund.name.toLowerCase().includes(searchTerm) || fund.description.toLowerCase().includes(searchTerm);
+                const matchesType = activeTypeFilters.includes('all') || activeTypeFilters.includes(fund.type);
+                const matchesFocus = activeFocusFilters.includes('all') || fund.focus.some(f => activeFocusFilters.includes(f));
+                return matchesTab && matchesSearch && matchesType && matchesFocus;
+            });
+
+            const sortBy = document.getElementById('sortDropdown').value;
+            filtered = sortFunds(filtered, sortBy);
+            renderFundingCards(filtered);
+            updateFilterCounts();
+        }
+
+        function updateStats() {
+            document.getElementById('totalFunds').textContent = fundingData.length;
+            document.getElementById('publicFunds').textContent = fundingData.filter(f => f.type === 'publico' || f.type === 'regional').length;
+            document.getElementById('privateFunds').textContent = fundingData.filter(f => f.type === 'privado' || f.type === 'internacional').length;
+            const maxFund = Math.max(...fundingData.map(f => f.amount));
+            document.getElementById('maxAmount').textContent = '$' + (maxFund / 1000000000).toFixed(1) + 'MM';
+        }
+
+        function renderFundingCards(data) {
+            const grid = document.getElementById('fundingGrid');
+            const noResults = document.getElementById('noResults');
+            if (data.length === 0) {
+                grid.innerHTML = '';
+                noResults.style.display = 'block';
+                updateResultsCount(0);
+                return;
+            }
+            noResults.style.display = 'none';
+            grid.innerHTML = data.map(fund => createFundingCard(fund)).join('');
+            updateResultsCount(data.length);
+        }
+
+        function createFundingCard(fund) {
+            const typeClass = {
+                publico: 'bg-blue-500/20 text-blue-300',
+                regional: 'bg-indigo-500/20 text-indigo-300',
+                privado: 'bg-yellow-500/20 text-yellow-300',
+                internacional: 'bg-green-500/20 text-green-300'
+            }[fund.type] || 'bg-gray-500/20 text-gray-300';
+            return `
+                <div class="funding-card glassmorphism p-5 rounded-xl border border-white/10 cursor-pointer transition-all duration-300" onclick="openModal(${fund.id})" tabindex="0" role="button" aria-label="Ver detalles de ${fund.name}">
+                    <h3 class="font-bold text-lg text-white mb-2">${fund.name}</h3>
+                    <span class="text-xs font-semibold px-3 py-1 rounded-full ${typeClass}">${fund.category}</span>
+                    <p class="text-sm text-gray-400 mt-3 mb-4 h-20 overflow-hidden">${fund.description}</p>
+                    <div class="text-sm space-y-2">
+                        <p><i class="fas fa-dollar-sign w-5 text-[var(--primary)]"></i> <span class="font-semibold">${fund.amountText}</span></p>
+                        <p><i class="fas fa-handshake w-5 text-[var(--primary)]"></i> <span class="font-semibold">${fund.cofinancing}%</span> Cofinanciamiento</p>
+                        <p><i class="fas fa-building w-5 text-[var(--primary)]"></i> <span class="font-semibold">${fund.institution}</span></p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getActiveFilters(groupId) {
+            return Array.from(document.querySelectorAll(`#${groupId} .filter-btn.active`)).map(btn => btn.dataset.filter);
+        }
+
+        function sortFunds(data, sortBy) {
+            return data.sort((a, b) => {
+                if (sortBy === 'name') return a.name.localeCompare(b.name);
+                if (sortBy === 'amount') return b.amount - a.amount;
+                if (sortBy === 'type') return a.type.localeCompare(b.type);
+                if (sortBy === 'cofinance') return a.cofinancing - b.cofinancing;
+                return 0;
+            });
+        }
+
+        function updateFilterCounts() {
+            updateGroupCount('typeFilters', 'type');
+            const focusCounts = fundingData.reduce((acc, fund) => {
+                fund.focus.forEach(f => acc[f] = (acc[f] || 0) + 1);
+                return acc;
+            }, { all: fundingData.length });
+            document.querySelectorAll('#focusFilters .filter-btn').forEach(btn => {
+                const filter = btn.dataset.filter;
+                const count = focusCounts[filter] || 0;
+                btn.querySelector('.filter-count').textContent = count;
+            });
+        }
+
+        function updateGroupCount(groupId, field) {
+            const counts = fundingData.reduce((acc, fund) => {
+                acc[fund[field]] = (acc[fund[field]] || 0) + 1;
+                return acc;
+            }, { all: fundingData.length });
+            document.querySelectorAll(`#${groupId} .filter-btn`).forEach(btn => {
+                const filter = btn.dataset.filter;
+                const count = counts[filter] || 0;
+                btn.querySelector('.filter-count').textContent = count;
+            });
+        }
+
+        function updateResultsCount(count) {
+            document.getElementById('resultsCount').textContent = count;
+            document.getElementById('totalCount').textContent = fundingData.length;
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.querySelectorAll('.filter-group').forEach(group => {
+                group.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.filter === 'all') btn.classList.add('active');
+                });
+            });
+            document.getElementById('sortDropdown').value = 'name';
+            document.querySelectorAll('#tab-navigation .tab-link').forEach(btn => {
+                btn.classList.remove('active');
+                btn.setAttribute('aria-selected', 'false');
+            });
+            document.querySelector('#tab-navigation .tab-link[data-tab-filter="all"]').classList.add('active');
+            document.querySelector('#tab-navigation .tab-link[data-tab-filter="all"]').setAttribute('aria-selected', 'true');
+            filterFunds();
+        }
+
+        function openModal(fundId) {
+            const fund = fundingData.find(f => f.id === fundId);
+            if (!fund) return;
+            const modal = document.getElementById('fundingModal');
+            const modalContent = document.querySelector('.modal-content');
+            modalContent.innerHTML = `
+                <button class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-white transition-colors" onclick="closeModal()" aria-label="Cerrar modal">&times;</button>
+                <h2 class="text-3xl font-bold text-white mb-2" id="modalTitle">${fund.name}</h2>
+                <p class="text-gray-400 mb-6">${fund.institution}</p>
+                <p class="mb-6">${fund.description}</p>
+                <div class="grid grid-cols-2 gap-4 mb-6 text-center">
+                    <div class="bg-gray-900/50 p-3 rounded-lg"><strong class="block text-[var(--primary)] text-sm">Monto</strong>${fund.amountText}</div>
+                    <div class="bg-gray-900/50 p-3 rounded-lg"><strong class="block text-[var(--primary)] text-sm">Cofinanciamiento</strong>${fund.cofinancing}%</div>
+                    <div class="bg-gray-900/50 p-3 rounded-lg"><strong class="block text-[var(--primary)] text-sm">Duración</strong>${fund.duration}</div>
+                    <div class="bg-gray-900/50 p-3 rounded-lg"><strong class="block text-[var(--primary)] text-sm">Deadline Típico</strong>${fund.deadline}</div>
+                </div>
+                <h3 class="text-xl font-semibold text-white mb-3">Requisitos Clave</h3>
+                <ul class="list-disc list-inside text-gray-400 mb-6">
+                    ${fund.requirements.map(req => `<li>${req}</li>`).join('')}
+                </ul>
+                <a href="${fund.link}" target="_blank" class="inline-block bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300">
+                    <i class="fas fa-link mr-2"></i> Más Información
+                </a>
+            `;
+            modal.classList.add('active');
+            modal.setAttribute('aria-hidden', 'false');
+            modalContent.focus();
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('fundingModal');
+            modal.classList.remove('active');
+            modal.setAttribute('aria-hidden', 'true');
         }
     </script>
 </body>
