@@ -39,6 +39,7 @@
             width: 100%;
             height: 100%;
             z-index: -1;
+            cursor: crosshair;
         }
 
         .glassmorphism {
@@ -56,7 +57,8 @@
             position: fixed; top: 0; width: 100%; height: var(--nav-height);
             z-index: 1000;
             display: flex; justify-content: center; align-items: center;
-            padding: 0 5%; /* Use percentage for responsive padding */
+            padding: 0 5%;
+            pointer-events: auto; /* Ensure nav is always clickable */
         }
 
         .nav-content {
@@ -68,11 +70,14 @@
         }
         
         .nav-logo a {
-             font-size: 1.3em;
-             font-weight: 700;
-             color: #fff;
-             text-decoration: none;
-             text-shadow: 0 0 8px var(--primary-glow);
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            text-shadow: 0 0 8px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
         .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
@@ -107,12 +112,6 @@
             visibility: visible;
             transform: translateX(-50%) scale(1);
             transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0s;
-        }
-        
-        .mega-menu.mega-menu-single {
-            min-width: 280px;
-            max-width: 350px;
-            grid-template-columns: 1fr;
         }
         
         .mega-menu h3 {
@@ -169,18 +168,38 @@
             width: 100%;
             max-width: 1440px; 
             margin: 0 auto; 
-            padding: var(--nav-height) clamp(1rem, 5vw, 4rem) 1rem; /* Responsive padding */
+            padding: var(--nav-height) clamp(1rem, 5vw, 4rem) 1rem;
+            pointer-events: none; /* Let clicks pass through to the canvas */
         }
+        
+        main, .footer, .section, .hero-content {
+            pointer-events: auto; /* Re-enable pointer events for content */
+        }
+
+        main p, .footer p {
+            user-select: text; /* Allow text selection */
+            cursor: default; /* Use default cursor to avoid I-beam on click */
+        }
+
         .layout-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 2rem; }
         
         .section {
             padding: clamp(1.5rem, 5vw, 2.5rem);
             border-radius: 12px; margin-bottom: 2rem; position: relative;
-            transition: transform 0.4s ease, box-shadow 0.4s ease, opacity 0.5s ease;
-            opacity: 0; transform: translateY(30px);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
         }
-        .section.is-visible { opacity: 1; transform: translateY(0); }
         .section:hover { transform: translateY(-5px); box-shadow: 0 0 40px rgba(129, 140, 248, 0.2); }
+        
+        .section h2, .section h3, .section p, .section .visualization-container, .section iframe {
+             opacity: 0;
+             transform: translateY(20px);
+             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .section.is-visible h2, .section.is-visible h3, .section.is-visible p, .section.is-visible .visualization-container, .section.is-visible iframe {
+            opacity: 1;
+            transform: translateY(0);
+        }
         
         h2 {
             font-size: clamp(1.5rem, 5vw, 2.2rem); color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);
@@ -274,10 +293,6 @@
                 padding-left: 0;
             }
             
-            .mega-menu li {
-                position: relative;
-            }
-
             .mega-menu a {
                 font-size: 1.5em;
                 padding: 0.8rem 1rem 0.8rem 2.5rem;
@@ -327,7 +342,10 @@
     <nav class="glassmorphism">
         <div class="nav-content">
             <div class="nav-logo">
-                <a href="#inicio">O.C.V.M.</a>
+                <a href="#inicio">
+                    <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-8 w-8 md:h-10 md:w-10 rounded-full">
+                    <span>O.C.V.M.</span>
+                </a>
             </div>
             <ul class="nav-container" id="nav-menu">
                 <li><a href="#inicio">
@@ -408,10 +426,10 @@
                             </ul>
                         </div>
                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0l-1.07-1.07m15.482 0l1.07 1.07m-1.07-1.07l-1.07 1.07m1.07-1.07l-1.07 1.07m-1.07-1.07l-1.07 1.07m1.07-1.07l-1.07 1.07M12 6.873l-1.07 1.07m2.14 0l-1.07-1.07m-1.07 1.07l-1.07-1.07m2.14 0l-1.07 1.07m-1.07 1.07l-1.07-1.07m2.14 0l-1.07 1.07" /></svg>Reflexiones Culturales</h3>
-                             <ul>
-                                <li><a href="peliculas.html">Reflexiones en el Cine</a></li>
-                                <li><a href="MUSICA.HTML">Letras de Canciones</a></li>
-                            </ul>
+                                <ul>
+                                    <li><a href="peliculas.html">Reflexiones en el Cine</a></li>
+                                    <li><a href="MUSICA.HTML">Letras de Canciones</a></li>
+                                </ul>
                         </div>
                     </div>
                 </li>
@@ -420,7 +438,7 @@
                     <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" /></svg>
                     Cartografías del Saber</a>
                     <div class="mega-menu glassmorphism">
-                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 20.25h12A2.25 2.25 0 0020.25 18V5.75A2.25 2.25 0 0018 3.5H6A2.25 2.25 0 003.75 5.75v12.5A2.25 2.25 0 006 20.25z" /></svg>Visualización de Datos</h3>
+                        <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 20.25h12A2.25 2.25 0 0020.25 18V5.75A2.25 2.25 0 0018 3.5H6A2.25 2.25 0 003.75 5.75v12.5A2.25 2.25 0 006 20.25z" /></svg>Visualización de Datos</h3>
                             <ul>
                                 <li><a href="#analisis-redes">Introducción a las Redes</a></li>
                                 <li><a href="#elementos-comunes">Mapa Conceptual General</a></li>
@@ -439,7 +457,7 @@
                                 <li><a href="Explorando la Visualización Filosófica.HTML">Visualización Filosófica</a></li>
                             </ul>
                         </div>
-                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>Herramientas Digitales y IA</h3>
+                        <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>Herramientas Digitales y IA</h3>
                             <ul>
                                 <li><a href="Herramientas_Investigacion_definitiva.html">Guía de Herramientas</a></li>
                                 <li><a href="IAS_BUSQUEDA.HTML">Buscador de IAs</a></li>
@@ -449,7 +467,7 @@
                                 <li><a href="Paper_web.html">Plantilla Web para Papers</a></li>
                             </ul>
                         </div>
-                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>Recursos y Proyectos</h3>
+                        <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>Recursos y Proyectos</h3>
                             <ul>
                                 <li><a href="MI_BIBLIOTECA.HTML">Biblioteca Humanidades</a></li>
                                 <li><a href="BIBLIOTECA_CIENCIAS.HTML">Biblioteca Ciencias</a></li>
@@ -489,7 +507,7 @@
                             </ul>
                         </div>
                         <div>
-                             <h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0l-1.07-1.07m15.482 0l1.07 1.07m-1.07-1.07l-1.07 1.07m1.07-1.07l-1.07 1.07m-1.07-1.07l-1.07 1.07m1.07-1.07l-1.07 1.07M12 6.873l-1.07 1.07m2.14 0l-1.07-1.07m-1.07 1.07l-1.07-1.07m2.14 0l-1.07 1.07m-1.07 1.07l-1.07-1.07m2.14 0l-1.07 1.07" /></svg>Académico y Docencia</h3>
+                            <h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0l-1.07-1.07m15.482 0l1.07 1.07m-1.07-1.07l-1.07 1.07m1.07-1.07l-1.07 1.07m-1.07-1.07l-1.07 1.07m1.07-1.07l-1.07 1.07M12 6.873l-1.07 1.07m2.14 0l-1.07-1.07m-1.07 1.07l-1.07-1.07m2.14 0l-1.07 1.07m-1.07 1.07l-1.07-1.07m2.14 0l-1.07 1.07" /></svg>Académico y Docencia</h3>
                             <ul>
                                 <li><a href="horario_2025.html">Horario 2025</a></li>
                                 <li><a href="HORARIOS_LAB.HTML">Horarios Lab</a></li>
@@ -500,7 +518,7 @@
                             </ul>
                         </div>
                         <div>
-                             <h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z" /></svg>Desarrollo y Pruebas</h3>
+                            <h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z" /></svg>Desarrollo y Pruebas</h3>
                             <ul>
                                 <li><a href="fondosX2.html">Dashboard Fondos</a></li>
                                 <li><a href="web.moderna.html">Web Moderna (Test)</a></li>
@@ -575,7 +593,7 @@
             </main>
         </div>
         <footer class="footer" id="contacto">
-             <h2>Contacto</h2>
+            <h2>Contacto</h2>
             <p>Este espacio es una cartografía personal y una invitación al diálogo.</p>
             <p style="margin-top:1.5rem; font-size: 0.9em;">La vida es terriblemente bella cuando los jugadores juegan. | 2025</p>
         </footer>
@@ -614,6 +632,7 @@
 
         // --- THREE.JS BACKGROUND ---
         let scene, camera, renderer, points, lines;
+        
         function initThreeJS() {
             try {
                 scene = new THREE.Scene();
@@ -640,28 +659,11 @@
                 points = new THREE.Points(pointGeo, pointMaterial);
                 scene.add(points);
 
-                const lineGeo = new THREE.BufferGeometry();
-                const linePositions = [];
-                const pointPositions = pointGeo.attributes.position.array;
-                for (let i = 0; i < pointCount; i++) {
-                    for (let j = i + 1; j < pointCount; j++) {
-                        const dx = pointPositions[i * 3] - pointPositions[j * 3];
-                        const dy = pointPositions[i * 3 + 1] - pointPositions[j * 3 + 1];
-                        const dz = pointPositions[i * 3 + 2] - pointPositions[j * 3 + 2];
-                        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                        if (dist < 50) {
-                            linePositions.push(pointPositions[i * 3], pointPositions[i * 3 + 1], pointPositions[i * 3 + 2]);
-                            linePositions.push(pointPositions[j * 3], pointPositions[j * 3 + 1], pointPositions[j * 3 + 2]);
-                        }
-                    }
-                }
-                lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
-                const lineMaterial = new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.3, transparent: true });
-                lines = new THREE.LineSegments(lineGeo, lineMaterial);
-                scene.add(lines);
+                regenerateLines();
 
                 window.addEventListener("resize", onWindowResize, false);
                 document.addEventListener('mousemove', onMouseMove, false);
+                renderer.domElement.addEventListener('click', onCanvasClick, false);
                 animate();
             } catch (error) {
                 console.error('Error initializing Three.js:', error);
@@ -692,6 +694,56 @@
                 camera.lookAt(scene.position);
                 renderer.render(scene, camera);
             }
+        }
+
+        function onCanvasClick(event) {
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+            vector.unproject(camera);
+            const dir = vector.sub(camera.position).normalize();
+            const distance = -camera.position.z / dir.z;
+            const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+            addPoint(pos);
+        }
+
+        function addPoint(position) {
+            const oldPositions = points.geometry.attributes.position.array;
+            const newPointCount = oldPositions.length / 3 + 1;
+            const newPositions = new Float32Array(newPointCount * 3);
+            newPositions.set(oldPositions);
+            newPositions[oldPositions.length] = position.x;
+            newPositions[oldPositions.length + 1] = position.y;
+            newPositions[oldPositions.length + 2] = position.z;
+            points.geometry.setAttribute('position', new THREE.BufferAttribute(newPositions, 3));
+            points.geometry.attributes.position.needsUpdate = true;
+            regenerateLines();
+        }
+
+        function regenerateLines() {
+            if (lines) scene.remove(lines);
+            const pointPositions = points.geometry.attributes.position.array;
+            const pointCount = pointPositions.length / 3;
+            const linePositions = [];
+            for (let i = 0; i < pointCount; i++) {
+                for (let j = i + 1; j < pointCount; j++) {
+                    const dx = pointPositions[i * 3] - pointPositions[j * 3];
+                    const dy = pointPositions[i * 3 + 1] - pointPositions[j * 3 + 1];
+                    const dz = pointPositions[i * 3 + 2] - pointPositions[j * 3 + 2];
+                    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    if (dist < 50) {
+                        linePositions.push(pointPositions[i * 3], pointPositions[i * 3 + 1], pointPositions[i * 3 + 2]);
+                        linePositions.push(pointPositions[j * 3], pointPositions[j * 3 + 1], pointPositions[j * 3 + 2]);
+                    }
+                }
+            }
+            const lineGeo = new THREE.BufferGeometry();
+            lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.3, transparent: true });
+            lines = new THREE.LineSegments(lineGeo, lineMaterial);
+            scene.add(lines);
         }
 
         // --- NAVIGATION SCRIPTS ---
@@ -740,10 +792,16 @@
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         entry.target.classList.add('is-visible');
+                        
+                        const elementsToAnimate = entry.target.querySelectorAll('h2, h3, p, .visualization-container, iframe');
+                        elementsToAnimate.forEach((el, index) => {
+                           el.style.transitionDelay = `${index * 150}ms`;
+                        });
+
                         observer.unobserve(entry.target);
                     }
                 });
-            }, { threshold: 0.1 });
+            }, { threshold: 0.2 });
             animatedSections.forEach(section => observer.observe(section));
         }
 
