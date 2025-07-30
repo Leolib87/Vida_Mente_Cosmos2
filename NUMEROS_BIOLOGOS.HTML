@@ -8,7 +8,365 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script>
-…                        observer.unobserve(entry.target);
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']]
+        },
+        svg: {
+          fontCache: 'global'
+        }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+    <style>
+        :root {
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --primary-text: #e5e7eb;
+            --primary-glow: #818cf8;
+            --secondary-glow: #22d3ee;
+            --font-main: 'Inter', sans-serif;
+            --nav-height: 70px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: #000000;
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+        
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            cursor: crosshair;
+        }
+
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.menu-open {
+            overflow: hidden;
+        }
+        
+        nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            z-index: 1000;
+            pointer-events: auto;
+        }
+        
+        .hero-content { animation: fadeIn 2s ease-in; }
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .main-container { 
+            pointer-events: none;
+        }
+        main, .footer, .section, .hero-content {
+            pointer-events: auto;
+        }
+        
+        .section {
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        
+        .section h2, .section h3, .section p, .section .grid-container {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .section.is-visible h2, .section.is-visible h3, .section.is-visible p, .section.is-visible .grid-container {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .highlight { color: var(--primary-glow); font-weight: bold; }
+        
+        b { color: var(--secondary); font-weight: 600; }
+        .tooltip {
+            position: relative;
+            border-bottom: 1px dotted var(--secondary);
+            cursor: help;
+        }
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #2c2c2c;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            line-height: 1.4;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .tooltip:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        @media (max-width: 1024px) {
+            .menu-toggle { display: block; }
+            .icon-bar {
+                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
+                margin: 6px 0; transition: all 0.3s ease-in-out;
+                border-radius: 2px;
+            }
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+        }
+    </style>
+</head>
+<body class="bg-black">
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+    <nav class="glassmorphism flex justify-center items-center px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center w-full max-w-7xl">
+            <div class="nav-logo">
+                <a href="index.html" class="flex items-center gap-3">
+                    <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-8 w-8 md:h-10 md:w-10 rounded-full">
+                    <span class="text-lg font-bold text-white">O.C.V.M.</span>
+                </a>
+            </div>
+            <ul id="nav-menu" class="hidden lg:flex items-center justify-center list-none h-full gap-2">
+                 <li><a href="#inicio" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors">Inicio</a></li>
+                 <li><a href="#contacto" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors">Acerca de</a></li>
+            </ul>
+            <button class="menu-toggle lg:hidden relative z-50 w-8 h-8" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container w-full mx-auto px-4 sm:px-6 lg:px-8 pt-[var(--nav-height)]">
+        <div id="inicio" class="hero flex flex-col justify-center items-center text-center relative h-screen min-h-[400px] md:min-h-[500px]">
+            <div class="hero-content relative z-10">
+                <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white" style="animation: pulse-glow 3s infinite alternate;">Números Clave para Biólogos Celulares</h1>
+            </div>
+        </div>
+
+        <div class="layout-grid grid grid-cols-1 gap-8 mt-8">
+            <main class="content">
+                <section class="section glassmorphism rounded-xl mb-8 p-4 sm:p-6 lg:p-8" data-animate>
+                    <div class="grid-container grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                        
+                        <!-- Card 1 -->
+                        <div class="glassmorphism rounded-lg p-6 flex flex-col h-full hover:shadow-2xl hover:shadow-indigo-500/20 transition-shadow duration-300">
+                            <h3 class="text-xl font-bold text-indigo-400 border-b border-indigo-400/50 pb-2 mb-4">Tamaños Celulares</h3>
+                            <div class="space-y-4 text-sm flex-grow">
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Bacteria (E. coli):</span><span class="text-right"><b>$0.7\text{-}1.4 \ \mu m$</b> diám.</span></div>
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Levadura (S. cerevisiae):</span><span class="text-right"><b>$3\text{-}6 \ \mu m$</b> diám.</span></div>
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Célula de mamífero:</span><span class="text-right"><b>$100\text{-}10000 \ \mu m^3$</b></span></div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2 -->
+                        <div class="glassmorphism rounded-lg p-6 flex flex-col h-full hover:shadow-2xl hover:shadow-indigo-500/20 transition-shadow duration-300">
+                            <h3 class="text-xl font-bold text-indigo-400 border-b border-indigo-400/50 pb-2 mb-4">Escalas Intracelulares</h3>
+                            <div class="space-y-4 text-sm flex-grow">
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Volumen del núcleo:</span><span class="text-right"><b>$\approx$10%</b> celular</span></div>
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Grosor membrana:</span><span class="text-right"><b>4-10 nm</b></span></div>
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Proteína promedio:</span><span class="text-right"><b>3-6 nm</b> diám.</span></div>
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Molécula de agua:</span><span class="text-right"><b>$\approx$0.3 nm</b> diám.</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Card 3 -->
+                        <div class="glassmorphism rounded-lg p-6 flex flex-col h-full hover:shadow-2xl hover:shadow-indigo-500/20 transition-shadow duration-300">
+                            <h3 class="text-xl font-bold text-indigo-400 border-b border-indigo-400/50 pb-2 mb-4">Tasas de Procesos</h3>
+                            <div class="space-y-4 text-sm flex-grow">
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Ciclo E. coli:</span><span class="text-right"><b>20-40 min</b></span></div>
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Ciclo HeLa:</span><span class="text-right"><b>15-30 horas</b></span></div>
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Replicación ADN:</span><span class="text-right"><b>40-1000</b> bases/s</span></div>
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Traducción:</span><span class="text-right"><b>10-20</b> aa/s</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Card 4 -->
+                        <div class="glassmorphism rounded-lg p-6 flex flex-col h-full hover:shadow-2xl hover:shadow-indigo-500/20 transition-shadow duration-300">
+                            <h3 class="text-xl font-bold text-indigo-400 border-b border-indigo-400/50 pb-2 mb-4">Concentraciones</h3>
+                            <div class="space-y-4 text-sm flex-grow">
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">1 nM en E. coli:</span><span class="text-right"><b>1</b> moléc./célula</span></div>
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">1 nM en HeLa:</span><span class="text-right"><b>1,000</b> moléc./célula</span></div>
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Proteína señalización:</span><span class="text-right"><b>10 nM-1µM</b></span></div>
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Contenido de agua:</span><span class="text-right"><b>>70%</b> masa</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Card 5 -->
+                        <div class="glassmorphism rounded-lg p-6 flex flex-col h-full hover:shadow-2xl hover:shadow-indigo-500/20 transition-shadow duration-300">
+                            <h3 class="text-xl font-bold text-indigo-400 border-b border-indigo-400/50 pb-2 mb-4">Energética</h3>
+                            <div class="space-y-4 text-sm flex-grow">
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Potencial de membrana:</span><span class="text-right"><b>70-200 mV</b></span></div>
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Hidrólisis de <span class="tooltip" data-tooltip="Adenosín trifosfato">ATP</span>:</span><span class="text-right"><b>20 $k_B T$</b>/moléc.</span></div>
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">ATP para una E. coli:</span><span class="text-right"><b>$\approx$$10-50 \times 10^8$</b></span></div>
+                            </div>
+                        </div>
+
+                        <!-- Card 6 -->
+                        <div class="glassmorphism rounded-lg p-6 flex flex-col h-full hover:shadow-2xl hover:shadow-indigo-500/20 transition-shadow duration-300">
+                            <h3 class="text-xl font-bold text-indigo-400 border-b border-indigo-400/50 pb-2 mb-4">Difusión y Catálisis</h3>
+                            <div class="space-y-4 text-sm flex-grow">
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Difusión (proteína):</span><span class="text-right"><b>5-15 $\mu$m$^2$/s</b></span></div>
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Tiempo cruce E. coli:</span><span class="text-right"><b>$\approx$10 ms</b></span></div>
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Tasa entrada difusión:</span><span class="text-right"><b>$10^8\text{-}10^9$ s$^{-1}$M$^{-1}$</b></span></div>
+                            </div>
+                        </div>
+
+                        <!-- Card 7 -->
+                        <div class="glassmorphism rounded-lg p-6 flex flex-col h-full hover:shadow-2xl hover:shadow-indigo-500/20 transition-shadow duration-300">
+                            <h3 class="text-xl font-bold text-indigo-400 border-b border-indigo-400/50 pb-2 mb-4">Genomas y Mutación</h3>
+                            <div class="space-y-4 text-sm flex-grow">
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Genoma E. coli:</span><span class="text-right"><b>$\approx$4x10⁶ pb</b></span></div>
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Genoma Humano:</span><span class="text-right"><b>$\approx$3,000x10⁶ pb</b></span></div>
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Tasa mutación (ADN):</span><span class="text-right"><b>$\approx$10⁻¹⁰</b> por pb</span></div>
+                                <div class="flex flex-col sm:flex-row justify-between"><span class="font-semibold text-gray-300">Error transcripción:</span><span class="text-right"><b>$\approx$10⁻⁴</b></span></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+            </main>
+        </div>
+        <footer id="contacto" class="footer text-center py-10 mt-8 border-t border-gray-700">
+            <h2 class="text-2xl font-bold text-indigo-400">Fuente de Datos</h2>
+            <p class="mt-2 text-gray-400">Números biológicos útiles extraídos de la literatura. Los valores son aproximaciones.</p>
+            <p class="mt-4"><a href="https://www.bionumbers.org/" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:text-white transition-colors">Visita BioNumbers.org para referencias detalladas.</a></p>
+        </footer>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            setupNavigation();
+            setupScrollAnimations();
+            if (typeof THREE !== 'undefined') {
+                initThreeJSBackground();
+            }
+        });
+
+        function initThreeJSBackground() {
+            let scene, camera, renderer, points, lines, mouseX = 0, mouseY = 0;
+            try {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+                camera.position.z = 50;
+
+                renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("bg-canvas"), alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+                const pointCount = 200;
+                const positions = new Float32Array(pointCount * 3);
+                const pointGeo = new THREE.BufferGeometry();
+                for (let i = 0; i < pointCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 400;
+                }
+                pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+                const pointMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.5, transparent: true, opacity: 0.8 });
+                points = new THREE.Points(pointGeo, pointMaterial);
+                scene.add(points);
+
+                regenerateLines();
+
+                window.addEventListener("resize", onWindowResize, false);
+                document.addEventListener('mousemove', onMouseMove, false);
+                animate();
+            } catch (error) { console.error('Error initializing Three.js background:', error); }
+
+            function onWindowResize() {
+                if(camera && renderer) {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                }
+            }
+
+            function onMouseMove(event) {
+                mouseX = (event.clientX - window.innerWidth / 2) / 100;
+                mouseY = (event.clientY - window.innerHeight / 2) / 100;
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                if(scene && camera && renderer && points && lines) {
+                    points.rotation.y += 0.0005;
+                    lines.rotation.y += 0.0005;
+                    camera.position.x += (mouseX - camera.position.x) * 0.05;
+                    camera.position.y += (-mouseY - camera.position.y) * 0.05;
+                    camera.lookAt(scene.position);
+                    renderer.render(scene, camera);
+                }
+            }
+            
+            function regenerateLines() {
+                if (lines) scene.remove(lines);
+                const pointPositions = points.geometry.attributes.position.array;
+                const pointCount = pointPositions.length / 3;
+                const linePositions = [];
+                for (let i = 0; i < pointCount; i++) {
+                    for (let j = i + 1; j < pointCount; j++) {
+                        const dx = pointPositions[i*3] - pointPositions[j*3];
+                        const dy = pointPositions[i*3+1] - pointPositions[j*3+1];
+                        const dz = pointPositions[i*3+2] - pointPositions[j*3+2];
+                        if (Math.sqrt(dx*dx+dy*dy+dz*dz) < 50) {
+                            linePositions.push(pointPositions[i*3], pointPositions[i*3+1], pointPositions[i*3+2]);
+                            linePositions.push(pointPositions[j*3], pointPositions[j*3+1], pointPositions[j*3+2]);
+                        }
+                    }
+                }
+                const lineGeo = new THREE.BufferGeometry();
+                lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+                const lineMaterial = new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.3, transparent: true });
+                lines = new THREE.LineSegments(lineGeo, lineMaterial);
+                scene.add(lines);
+            }
+        }
+
+        function setupNavigation() {
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            menuToggleBtn.addEventListener('click', () => {
+                document.body.classList.toggle('menu-open');
+            });
+        }
+
+        function setupScrollAnimations() {
+            const animatedSections = document.querySelectorAll('[data-animate]');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        const elementsToAnimate = entry.target.querySelectorAll('h2, h3, p, .grid-container');
+                        elementsToAnimate.forEach((el, index) => {
+                           el.style.transitionDelay = `${index * 100}ms`;
+                        });
+                        observer.unobserve(entry.target);
                     }
                 });
             }, { threshold: 0.1 });
