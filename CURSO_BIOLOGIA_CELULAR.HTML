@@ -3,428 +3,409 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pedagogías en Ciencias Naturales y Biología - Análisis 2025</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <title>Pedagogías en Biología | Análisis 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <style>
         :root {
-            --neon-green: #00FF00;
-            --neon-cyan: #00FFFF;
-            --black-bg: #000000;
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --primary-text: #e5e7eb;
+            --primary-glow: #818cf8;
+            --secondary-glow: #22d3ee;
+            --font-main: 'Inter', sans-serif;
+            --nav-height: 70px;
         }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
         body {
-            background-color: var(--black-bg);
-            color: var(--neon-green);
-            font-family: 'Orbitron', sans-serif;
-            line-height: 1.6;
+            background-color: #000000;
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
             overflow-x: hidden;
         }
-        nav {
+        
+        #bg-canvas {
             position: fixed;
             top: 0;
+            left: 0;
             width: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            height: 100%;
+            z-index: -1;
+            cursor: crosshair;
+        }
+
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.menu-open {
+            overflow: hidden;
+        }
+        
+        nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
             z-index: 1000;
-            padding: 15px 0;
-            border-bottom: 2px solid var(--neon-cyan);
-            box-shadow: 0 0 15px var(--neon-cyan);
+            pointer-events: auto;
         }
-        nav ul {
-            display: flex;
-            justify-content: center;
-            list-style: none;
-            flex-wrap: wrap;
-        }
-        nav ul li {
-            position: relative;
-            margin: 0 20px;
-        }
-        nav ul li a {
-            color: var(--neon-green);
-            text-decoration: none;
-            font-size: 1.1em;
-            transition: color 0.3s ease, text-shadow 0.3s ease;
-        }
-        nav ul li a:hover {
-            color: #FFFFFF;
-            text-shadow: 0 0 10px var(--neon-cyan);
-        }
+        
+        .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; }
+
         .mega-menu {
-            position: absolute;
-            top: 100%;
+            position: fixed;
+            top: var(--nav-height);
             left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.95);
-            border: 2px solid var(--neon-cyan);
-            box-shadow: 0 0 20px var(--neon-cyan);
-            width: 800px;
-            max-width: 90vw;
-            padding: 20px;
+            transform: translateX(-50%) scale(0.95);
+            border-radius: 0.5rem;
+            width: auto;
+            min-width: clamp(300px, 80vw, 950px);
+            max-width: 95vw;
+            padding: 2rem; 
             display: none;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            z-index: 1000;
+            gap: 2rem; 
             opacity: 0;
-            transition: opacity 0.3s ease;
+            visibility: hidden;
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0.3s;
+            transform-origin: top center;
         }
-        nav ul li:hover .mega-menu {
+        
+        .mega-menu.is-active { 
             display: grid;
             opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) scale(1);
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0s;
         }
+        
         .mega-menu h3 {
-            color: var(--neon-cyan);
+            color: var(--primary-glow);
+            text-shadow: 0 0 5px var(--primary-glow);
+            border-bottom: 1px solid rgba(129, 140, 248, 0.3);
+        }
+        
+        .mega-menu a::before {
+            content: '›';
+            color: var(--primary-glow);
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
             font-size: 1.2em;
-            margin-bottom: 10px;
-            text-shadow: 0 0 5px var(--neon-cyan);
+            transition: color 0.3s;
         }
-        .mega-menu ul {
-            display: block;
-            padding: 0;
+        .mega-menu a:hover { color: #000; background-color: var(--primary-glow); }
+        .mega-menu a:hover::before { color: #000; }
+        
+        .hero-content { animation: fadeIn 2s ease-in; }
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
         }
-        .mega-menu ul li {
-            margin: 5px 0;
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .main-container { 
+            pointer-events: none;
         }
-        .mega-menu a {
-            font-size: 0.9em;
-            color: var(--neon-green);
-            transition: color 0.3s ease;
+        main, .footer, .section, .hero-content {
+            pointer-events: auto;
         }
-        .mega-menu a:hover {
-            color: #FFFFFF;
+
+        main p, .footer p, main li {
+            user-select: text;
+            cursor: default;
+            text-align: justify;
         }
-        .main-container {
-            max-width: 1400px;
-            margin: 80px auto 0;
-            padding: 20px;
-            text-align: center;
+        
+        .section {
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
         }
-        .intro {
-            margin-bottom: 40px;
+        .section:hover { transform: translateY(-5px); box-shadow: 0 0 40px rgba(129, 140, 248, 0.2); }
+        
+        .section h2, .section h3, .section p, .section .table-container, .section iframe, .section .controls-container, .section .equation, .section ol, .section ul, .section .select-container {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
-        .intro h1 {
-            color: var(--neon-cyan);
-            font-size: 2.5em;
-            text-shadow: 0 0 10px var(--neon-green);
-            margin-bottom: 20px;
+
+        .section.is-visible h2, .section.is-visible h3, .section.is-visible p, .section.is-visible .table-container, .section.is-visible iframe, .section.is-visible .controls-container, .section.is-visible .equation, .section.is-visible ol, .section.is-visible ul, .section.is-visible .select-container {
+            opacity: 1;
+            transform: translateY(0);
         }
-        .intro p {
-            font-size: 1.1em;
-            max-width: 1000px;
-            margin: 0 auto 15px;
-        }
-        .highlight {
-            color: var(--neon-cyan);
-            font-weight: bold;
-        }
-        .table-container {
-            overflow-x: auto;
-            margin-bottom: 40px;
-        }
+        
+        .highlight { color: var(--primary-glow); font-weight: bold; }
+        
         table {
-            width: 100%;
             border-collapse: collapse;
-            background: rgba(0, 255, 255, 0.05);
-            border: 2px solid var(--neon-cyan);
-            box-shadow: 0 0 20px var(--neon-cyan);
+            background: rgba(17, 24, 39, 0.5);
         }
         th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid var(--neon-cyan);
+            border: 1px solid rgba(129, 140, 248, 0.3);
         }
         th {
-            background: rgba(0, 0, 0, 0.9);
-            color: var(--neon-cyan);
-            text-shadow: 0 0 5px var(--neon-cyan);
-            position: sticky;
-            top: 0;
+            background: rgba(17, 24, 39, 0.9);
+            color: var(--secondary);
         }
         tr:hover {
-            background: rgba(0, 255, 255, 0.1);
+            background: rgba(129, 140, 248, 0.1);
         }
-        a {
-            color: var(--neon-green);
-            text-decoration: none;
-        }
-        a:hover {
-            color: #FFFFFF;
-            text-shadow: 0 0 10px var(--neon-cyan);
-        }
-        .course-details, .malla-container, .ppt-container {
-            margin: 40px 0;
-        }
-        .course-details h2, .malla-container h3, .ppt-container h3 {
-            color: var(--neon-cyan);
-            font-size: 1.5em;
-            text-shadow: 0 0 10px var(--neon-green);
-            margin-bottom: 15px;
-        }
-        .course-details p {
-            font-size: 1em;
-            margin-bottom: 10px;
-        }
-        .ppt-iframe, .malla-iframe {
-            width: 100%;
-            height: 600px;
-            border: 2px solid var(--neon-cyan);
-            box-shadow: 0 0 20px var(--neon-cyan);
-            border-radius: 5px;
-        }
-        .select-container {
-            margin-bottom: 20px;
-        }
-        .select-container select {
-            padding: 10px;
-            font-size: 1em;
-            font-family: 'Orbitron', sans-serif;
-            background: rgba(0, 0, 0, 0.8);
-            color: var(--neon-green);
-            border: 2px solid var(--neon-cyan);
-            box-shadow: 0 0 10px var(--neon-cyan);
-            border-radius: 5px;
-            outline: none;
-            width: 300px;
-            transition: box-shadow 0.3s ease;
-        }
-        .select-container select:focus {
-            box-shadow: 0 0 15px var(--neon-cyan);
-        }
-        @media (max-width: 900px) {
-            nav ul {
-                flex-direction: column;
-                align-items: center;
-                padding: 10px 0;
-            }
-            nav ul li {
-                margin: 10px 0;
-            }
+        
+        @media (max-width: 1024px) {
             .mega-menu {
-                position: static;
-                transform: none;
-                width: 100%;
-                grid-template-columns: 1fr;
+                position: static; display: grid; opacity: 1; transform: none; visibility: visible; width: 100%; box-shadow: none; 
+                border: none; padding: 1rem 0 1.5rem 0; background: none; backdrop-filter: none;
+                grid-template-columns: 1fr; border-top: 1px solid rgba(129, 140, 248, 0.2); margin-top: 1rem;
             }
-            .intro h1 {
-                font-size: 2em;
+            .mega-menu a::before {
+                content: '■';
+                left: 0.5rem;
+                transform: translateY(-50%) scale(0.6);
             }
-            .ppt-iframe, .malla-iframe {
-                height: 400px;
+            .menu-toggle {
+                display: block;
             }
+            .icon-bar {
+                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
+                margin: 6px 0; transition: all 0.3s ease-in-out;
+                border-radius: 2px;
+            }
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
         }
     </style>
 </head>
-<body>
-    <!-- Navegación -->
-    <nav>
-        <ul>
-            <li><a href="#inicio">Inicio</a></li>
-            <li>
-                <a href="#">Exploración Conceptual</a>
-                <div class="mega-menu">
-                    <div>
-                        <h3>Ideas y Preguntas</h3>
-                        <ul>
-                            <li><a href="#trazado-vida">Origen y Fin de la Vida</a></li>
-                            <li><a href="#biologia">Determinismo vs. Libertad</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </li>
-            <li><a href="#contacto">Acerca de / Contacto</a></li>
-        </ul>
+<body class="bg-black">
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+    <nav class="glassmorphism flex justify-center items-center px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center w-full max-w-7xl">
+            <div class="nav-logo">
+                <a href="index.html" class="flex items-center gap-3">
+                    <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-8 w-8 md:h-10 md:w-10 rounded-full">
+                    <span class="text-lg font-bold text-white">O.C.V.M.</span>
+                </a>
+            </div>
+            <ul id="nav-menu" class="hidden lg:flex items-center justify-center list-none h-full gap-2">
+                 <li><a href="#inicio" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors">Inicio</a></li>
+                 <li><a href="#contacto" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors">Acerca de / Contacto</a></li>
+            </ul>
+            <button class="menu-toggle lg:hidden relative z-50 w-8 h-8" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
     </nav>
 
-    <!-- Contenedor principal -->
-    <div class="main-container" id="inicio">
-        <!-- Introducción -->
-        <div class="intro">
-            <h1>Biología Celular - Pedagogía en Biología 2025</h1>
-            <p>Programa formativo <span class="highlight">CPB 1533</span> de la Universidad de Playa Ancha, diseñado para comprender los fundamentos de la célula como unidad de vida. Este curso, con <span class="highlight">6 créditos</span>, abarca desde la estructura atómica hasta los procesos celulares en organismos uni y pluricelulares.</p>
-        </div>
-
-        <!-- Detalles del curso -->
-        <div class="course-details">
-            <h2>Especificaciones del Curso</h2>
-            <p><strong>Nombre:</strong> Biología Celular (CPB 1533)</p>
-            <p><strong>Créditos:</strong> 6</p>
-            <p><strong>Docentes:</strong> Sergio Tapia Murúa / Héctor A. Levipan (hector.levipan@upla.cl, +56 9 9768 55 49)</p>
-            <p><strong>Competencia General:</strong> Comprender los conceptos fundamentales relacionados con la célula como unidad de los seres vivos, con énfasis en estructura, función y procesos celulares.</p>
-            <p><strong>Duración:</strong> 18 semanas (17 de marzo al 18 de julio de 2025)</p>
-        </div>
-
-        <!-- Cronograma -->
-        <div class="table-container">
-            <h2>Cronograma Primer Semestre 2025</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Semana</th>
-                        <th>Fechas</th>
-                        <th>Tema o Contenido</th>
-                        <th>Bibliografía</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Semana 1</td>
-                        <td>17 al 21 de marzo</td>
-                        <td>Niveles de organización de la materia viva</td>
-                        <td><a href="https://molecularcellbiologyLodish.com" target="_blank">Molecular Cell Biology 5th ed - Lodish et al.</a></td>
-                    </tr>
-                    <tr>
-                        <td>Semana 2</td>
-                        <td>24 al 28 de marzo</td>
-                        <td>Átomos, moléculas y macromoléculas</td>
-                        <td><a href="https://lehningerbioquimica.com" target="_blank">LEHNINGER: Principios de Bioquímica (6ª Ed.) - Nelson, Cox</a></td>
-                    </tr>
-                    <tr>
-                        <td>Semana 3</td>
-                        <td>31 de marzo al 4 de abril</td>
-                        <td>Química prebiótica, origen y evolución de la célula. Laboratorio: aislamiento de macromoléculas (ADN/ARN, electroforesis)</td>
-                        <td><a href="https://doi.org/10.3390/books978-3-03921-607-9" target="_blank">DOI: 10.3390/books978-3-03921-607-9</a></td>
-                    </tr>
-                    <tr>
-                        <td>Semana 4</td>
-                        <td>7 al 11 de abril</td>
-                        <td>Teoría celular (Oparin-Haldane; Miller-Urey)</td>
-                        <td><a href="https://lacelulaCooper.com" target="_blank">La Célula 6ª Ed. - Cooper & Hausman</a></td>
-                    </tr>
-                    <tr>
-                        <td>Semana 5</td>
-                        <td>14 al 17 de abril</td>
-                        <td>Métodos de estudio de la célula (microscopía; métodos histológicos)</td>
-                        <td><a href="https://histologiaJunqueira.com" target="_blank">Histología básica: texto y atlas - Junqueira, Carneiro (12ª ed.)</a></td>
-                    </tr>
-                    <tr>
-                        <td>Semana 6</td>
-                        <td>21 al 25 de abril</td>
-                        <td>INTEGRAL I</td>
-                        <td>-</td>
-                    </tr>
-                    <tr>
-                        <td>Semana 7</td>
-                        <td>28 al 30 de abril</td>
-                        <td>Estructura y función de la pared celular y membrana plasmática</td>
-                        <td><a href="https://molecularcellbiologyLodish.com" target="_blank">Molecular Cell Biology 5th ed - Lodish et al.</a></td>
-                    </tr>
-                    <tr>
-                        <td>Semana 8</td>
-                        <td>5 al 9 de mayo</td>
-                        <td>Citoesqueleto. Laboratorio: microscopía, trabajo experimental con unicelulares procariotas y eucariotas</td>
-                        <td><a href="https://doi.org/10.1007/978-3-319-53047-5" target="_blank">Prokaryotic Cytoskeletons</a>, <a href="https://molecularcellbiologyLodish.com" target="_blank">Lodish et al.</a></td>
-                    </tr>
-                    <tr>
-                        <td>Semana 9</td>
-                        <td>12 al 16 de mayo</td>
-                        <td>Estructura y función de los organelos celulares y transporte vesicular</td>
-                        <td><a href="https://lacelulaCooper.com" target="_blank">La Célula 6ª Ed. - Cooper & Hausman</a></td>
-                    </tr>
-                    <tr>
-                        <td>Semana 10</td>
-                        <td>19 al 20 de mayo</td>
-                        <td>Núcleo celular y material genético</td>
-                        <td><a href="https://biologiamolecularAlbert.com" target="_blank">Biología Molecular de la Célula - Albert et al. (2004)</a></td>
-                    </tr>
-                    <tr>
-                        <td>Semana 11</td>
-                        <td>26 al 30 de mayo</td>
-                        <td>INTEGRAL II</td>
-                        <td>-</td>
-                    </tr>
-                    <tr>
-                        <td>Semana 12</td>
-                        <td>9 al 13 de junio</td>
-                        <td>Conversión Energética</td>
-                        <td><a href="https://molecularcellbiologyLodish.com" target="_blank">Molecular Cell Biology 5th ed - Lodish et al.</a></td>
-                    </tr>
-                    <tr>
-                        <td>Semana 13</td>
-                        <td>16 al 19 de junio</td>
-                        <td>Transmisión de señales entre células</td>
-                        <td>-</td>
-                    </tr>
-                    <tr>
-                        <td>Semana 14</td>
-                        <td>23 al 27 de junio</td>
-                        <td>Adhesión Celular. Laboratorio: microscopía para observación de preparaciones histológicas</td>
-                        <td><a href="https://lacelulaCooper.com" target="_blank">La Célula 6ª Ed. - Cooper & Hausman</a>, <a href="https://biologiacelularKarp.com" target="_blank">Biología Celular - Karp (1987)</a></td>
-                    </tr>
-                    <tr>
-                        <td>Semana 15</td>
-                        <td>30 de junio al 4 de julio</td>
-                        <td>Crecimiento y división celular (ciclo celular)</td>
-                        <td><a href="https://biologiacelularPaniagua.com" target="_blank">Biología Celular - Paniagua et al. (1999)</a>, <a href="https://molecularcellbiologyLodish.com" target="_blank">Lodish et al.</a></td>
-                    </tr>
-                    <tr>
-                        <td>Semana 16</td>
-                        <td>7 al 11 de julio</td>
-                        <td>Envejecimiento y muerte celular</td>
-                        <td><a href="https://molecularcellbiologyLodish.com" target="_blank">Molecular Cell Biology 5th ed - Lodish et al.</a>, <a href="https://lacelulaCooper.com" target="_blank">Cooper & Hausman</a></td>
-                    </tr>
-                    <tr>
-                        <td>Semana 17</td>
-                        <td>14 al 18 de julio</td>
-                        <td>INTEGRAL III</td>
-                        <td>-</td>
-                    </tr>
-                    <tr>
-                        <td>Semana 18</td>
-                        <td>14 al 18 de julio</td>
-                        <td>Pruebas Especiales y Examen</td>
-                        <td>-</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Malla Curricular -->
-        <div class="malla-container">
-            <h3>Malla Curricular</h3>
-            <iframe class="malla-iframe" src="https://www.upla.cl/portal/wp-content/uploads/2023/05/Malla-Pedagogia-en-Biologia.pdf" frameborder="0"></iframe>
-        </div>
-
-        <!-- Presentaciones por semana -->
-        <div class="ppt-container">
-            <h3>Presentaciones del Curso</h3>
-            <div class="select-container">
-                <select id="ppt-select" onchange="updatePPT()">
-                    <option value="">Selecciona una semana</option>
-                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 1: Niveles de organización</option>
-                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 2: Átomos y macromoléculas</option>
-                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 3: Química prebiótica</option>
-                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 4: Teoría celular</option>
-                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 5: Métodos de estudio</option>
-                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 7: Pared celular y membrana</option>
-                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 8: Citoesqueleto</option>
-                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 9: Organelos celulares</option>
-                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 10: Núcleo celular</option>
-                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 12: Conversión energética</option>
-                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 13: Transmisión de señales</option>
-                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 14: Adhesión celular</option>
-                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 15: Crecimiento y división</option>
-                    <option value="https://docs.google.com/presentation/d/e/[ID]/embed">Semana 16: Envejecimiento y muerte</option>
-                </select>
+    <div class="main-container w-full mx-auto px-4 sm:px-6 lg:px-8 pt-[var(--nav-height)]">
+        <div id="inicio" class="hero flex flex-col justify-center items-center text-center relative h-screen min-h-[400px] md:min-h-[500px]">
+            <div class="hero-content relative z-10">
+                <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white" style="animation: pulse-glow 3s infinite alternate;">Biología Celular - Pedagogía 2025</h1>
+                <p class="mt-4 text-lg sm:text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto">Análisis del programa formativo <span class="highlight">CPB 1533</span> de la Universidad de Playa Ancha.</p>
             </div>
-            <iframe class="ppt-iframe" id="ppt-iframe" src="" frameborder="0"></iframe>
         </div>
 
-        <!-- Acerca de -->
-        <div class="about-container" id="contacto">
-            <h3>Acerca de</h3>
-            <p>Desarrollado por Leandro Torres Díaz, PhD.</p>
+        <div class="layout-grid grid grid-cols-1 gap-8 mt-8">
+            <main class="content">
+                
+                <section class="section glassmorphism rounded-xl mb-8 p-4 sm:p-6 lg:p-8" data-animate>
+                    <h2 class="text-2xl sm:text-3xl font-bold border-b border-indigo-400 pb-4 mb-6">Especificaciones del Curso</h2>
+                    <div class="space-y-2 text-base text-gray-300">
+                        <p><strong>Nombre:</strong> Biología Celular (CPB 1533)</p>
+                        <p><strong>Créditos:</strong> 6</p>
+                        <p><strong>Docentes:</strong> Sergio Tapia Murúa / Héctor A. Levipan (hector.levipan@upla.cl, +56 9 9768 55 49)</p>
+                        <p><strong>Competencia General:</strong> Comprender los conceptos fundamentales relacionados con la célula como unidad de los seres vivos, con énfasis en estructura, función y procesos celulares.</p>
+                        <p><strong>Duración:</strong> 18 semanas (17 de marzo al 18 de julio de 2025)</p>
+                    </div>
+                </section>
+
+                <section class="section glassmorphism rounded-xl mb-8 p-4 sm:p-6 lg:p-8" data-animate>
+                    <h2 class="text-2xl sm:text-3xl font-bold border-b border-indigo-400 pb-4 mb-6">Cronograma Primer Semestre 2025</h2>
+                    <div class="table-container overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="sticky top-0">
+                                <tr>
+                                    <th class="p-3">Semana</th>
+                                    <th class="p-3">Fechas</th>
+                                    <th class="p-3">Tema o Contenido</th>
+                                    <th class="p-3">Bibliografía</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-300">
+                                <tr><td class="p-3">1</td><td class="p-3">17-21 Mar</td><td>Niveles de organización de la materia viva</td><td><a href="#" class="hover:text-white">Lodish et al.</a></td></tr>
+                                <tr><td class="p-3">2</td><td class="p-3">24-28 Mar</td><td>Átomos, moléculas y macromoléculas</td><td><a href="#" class="hover:text-white">Nelson, Cox</a></td></tr>
+                                <tr><td class="p-3">3</td><td class="p-3">31 Mar-4 Abr</td><td>Química prebiótica, origen y evolución celular. Lab: aislamiento macromoléculas</td><td><a href="#" class="hover:text-white">DOI: 10.3390...</a></td></tr>
+                                <tr><td class="p-3">4</td><td class="p-3">7-11 Abr</td><td>Teoría celular (Oparin-Haldane; Miller-Urey)</td><td><a href="#" class="hover:text-white">Cooper & Hausman</a></td></tr>
+                                <tr><td class="p-3">5</td><td class="p-3">14-17 Abr</td><td>Métodos de estudio de la célula (microscopía; histología)</td><td><a href="#" class="hover:text-white">Junqueira, Carneiro</a></td></tr>
+                                <tr class="bg-indigo-900/50"><td class="p-3 font-bold">6</td><td class="p-3 font-bold">21-25 Abr</td><td class="font-bold">INTEGRAL I</td><td>-</td></tr>
+                                <tr><td class="p-3">7</td><td class="p-3">28-30 Abr</td><td>Pared celular y membrana plasmática</td><td><a href="#" class="hover:text-white">Lodish et al.</a></td></tr>
+                                <tr><td class="p-3">8</td><td class="p-3">5-9 May</td><td>Citoesqueleto. Lab: microscopía unicelulares</td><td><a href="#" class="hover:text-white">Prokaryotic Cytoskeletons</a></td></tr>
+                                <tr><td class="p-3">9</td><td class="p-3">12-16 May</td><td>Organelos celulares y transporte vesicular</td><td><a href="#" class="hover:text-white">Cooper & Hausman</a></td></tr>
+                                <tr><td class="p-3">10</td><td class="p-3">19-20 May</td><td>Núcleo celular y material genético</td><td><a href="#" class="hover:text-white">Albert et al.</a></td></tr>
+                                <tr class="bg-indigo-900/50"><td class="p-3 font-bold">11</td><td class="p-3 font-bold">26-30 May</td><td class="font-bold">INTEGRAL II</td><td>-</td></tr>
+                                <tr><td class="p-3">12</td><td class="p-3">9-13 Jun</td><td>Conversión Energética</td><td><a href="#" class="hover:text-white">Lodish et al.</a></td></tr>
+                                <tr><td class="p-3">13</td><td class="p-3">16-19 Jun</td><td>Transmisión de señales entre células</td><td>-</td></tr>
+                                <tr><td class="p-3">14</td><td class="p-3">23-27 Jun</td><td>Adhesión Celular. Lab: microscopía histológica</td><td><a href="#" class="hover:text-white">Cooper & Hausman, Karp</a></td></tr>
+                                <tr><td class="p-3">15</td><td class="p-3">30 Jun-4 Jul</td><td>Crecimiento y división celular (ciclo celular)</td><td><a href="#" class="hover:text-white">Paniagua et al., Lodish et al.</a></td></tr>
+                                <tr><td class="p-3">16</td><td class="p-3">7-11 Jul</td><td>Envejecimiento y muerte celular</td><td><a href="#" class="hover:text-white">Lodish et al., Cooper & Hausman</a></td></tr>
+                                <tr class="bg-indigo-900/50"><td class="p-3 font-bold">17</td><td class="p-3 font-bold">14-18 Jul</td><td class="font-bold">INTEGRAL III</td><td>-</td></tr>
+                                <tr class="bg-red-900/50"><td class="p-3 font-bold">18</td><td class="p-3 font-bold">14-18 Jul</td><td class="font-bold">Pruebas Especiales y Examen</td><td>-</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="section glassmorphism rounded-xl mb-8 p-4 sm:p-6 lg:p-8" data-animate>
+                    <h3 class="text-2xl sm:text-3xl font-bold border-b border-indigo-400 pb-4 mb-6">Malla Curricular</h3>
+                    <div class="w-full h-[600px] rounded-lg overflow-hidden border-2 border-indigo-400/50">
+                        <iframe class="w-full h-full" src="https://www.upla.cl/portal/wp-content/uploads/2023/05/Malla-Pedagogia-en-Biologia.pdf" frameborder="0"></iframe>
+                    </div>
+                </section>
+
+                <section class="section glassmorphism rounded-xl mb-8 p-4 sm:p-6 lg:p-8" data-animate>
+                    <h3 class="text-2xl sm:text-3xl font-bold border-b border-indigo-400 pb-4 mb-6">Presentaciones del Curso</h3>
+                    <div class="select-container text-center mb-6">
+                        <select id="ppt-select" onchange="updatePPT()" class="w-full max-w-sm mx-auto p-3 text-base font-sans bg-gray-900/80 text-white border-2 border-indigo-400 rounded-lg shadow-lg focus:ring-2 focus:ring-cyan-400 focus:outline-none">
+                            <option value="">Selecciona una semana</option>
+                            <option value="https://docs.google.com/presentation/d/e/2PACX-1vQ.../embed">Semana 1: Niveles de organización</option>
+                            <option value="https://docs.google.com/presentation/d/e/2PACX-1vR.../embed">Semana 2: Átomos y macromoléculas</option>
+                            <!-- Add other options here -->
+                        </select>
+                    </div>
+                    <div class="w-full h-[600px] rounded-lg overflow-hidden border-2 border-indigo-400/50">
+                        <iframe class="w-full h-full" id="ppt-iframe" src="" frameborder="0"></iframe>
+                    </div>
+                </section>
+            </main>
         </div>
+        <footer id="contacto" class="footer text-center py-10 mt-8 border-t border-gray-700">
+            <h2 class="text-2xl font-bold text-indigo-400">Acerca de</h2>
+            <p class="mt-2 text-gray-400">Desarrollado por Leandro Torres Díaz, PhD.</p>
+        </footer>
     </div>
-
-    <!-- Script -->
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            setupNavigation();
+            setupScrollAnimations();
+            if (typeof THREE !== 'undefined') {
+                initThreeJSBackground();
+            }
+        });
+
         function updatePPT() {
             const select = document.getElementById('ppt-select');
             const iframe = document.getElementById('ppt-iframe');
             iframe.src = select.value;
+        }
+
+        function initThreeJSBackground() {
+            let scene, camera, renderer, points, lines, mouseX = 0, mouseY = 0;
+            try {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+                camera.position.z = 50;
+
+                renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("bg-canvas"), alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+                const pointCount = 200;
+                const positions = new Float32Array(pointCount * 3);
+                const pointGeo = new THREE.BufferGeometry();
+                for (let i = 0; i < pointCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 400;
+                }
+                pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+                const pointMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.5, transparent: true, opacity: 0.8 });
+                points = new THREE.Points(pointGeo, pointMaterial);
+                scene.add(points);
+
+                regenerateLines();
+
+                window.addEventListener("resize", onWindowResize, false);
+                document.addEventListener('mousemove', onMouseMove, false);
+                animate();
+            } catch (error) { console.error('Error initializing Three.js background:', error); }
+
+            function onWindowResize() {
+                if(camera && renderer) {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                }
+            }
+
+            function onMouseMove(event) {
+                mouseX = (event.clientX - window.innerWidth / 2) / 100;
+                mouseY = (event.clientY - window.innerHeight / 2) / 100;
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                if(scene && camera && renderer && points && lines) {
+                    points.rotation.y += 0.0005;
+                    lines.rotation.y += 0.0005;
+                    camera.position.x += (mouseX - camera.position.x) * 0.05;
+                    camera.position.y += (-mouseY - camera.position.y) * 0.05;
+                    camera.lookAt(scene.position);
+                    renderer.render(scene, camera);
+                }
+            }
+            
+            function regenerateLines() {
+                if (lines) scene.remove(lines);
+                const pointPositions = points.geometry.attributes.position.array;
+                const pointCount = pointPositions.length / 3;
+                const linePositions = [];
+                for (let i = 0; i < pointCount; i++) {
+                    for (let j = i + 1; j < pointCount; j++) {
+                        const dx = pointPositions[i*3] - pointPositions[j*3];
+                        const dy = pointPositions[i*3+1] - pointPositions[j*3+1];
+                        const dz = pointPositions[i*3+2] - pointPositions[j*3+2];
+                        if (Math.sqrt(dx*dx+dy*dy+dz*dz) < 50) {
+                            linePositions.push(pointPositions[i*3], pointPositions[i*3+1], pointPositions[i*3+2]);
+                            linePositions.push(pointPositions[j*3], pointPositions[j*3+1], pointPositions[j*3+2]);
+                        }
+                    }
+                }
+                const lineGeo = new THREE.BufferGeometry();
+                lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+                const lineMaterial = new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.3, transparent: true });
+                lines = new THREE.LineSegments(lineGeo, lineMaterial);
+                scene.add(lines);
+            }
+        }
+
+        function setupNavigation() {
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            menuToggleBtn.addEventListener('click', () => {
+                document.body.classList.toggle('menu-open');
+            });
+        }
+
+        function setupScrollAnimations() {
+            const animatedSections = document.querySelectorAll('[data-animate]');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        const elementsToAnimate = entry.target.querySelectorAll('h2, h3, p, .table-container, iframe, .select-container');
+                        elementsToAnimate.forEach((el, index) => {
+                           el.style.transitionDelay = `${index * 100}ms`;
+                        });
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            animatedSections.forEach(section => observer.observe(section));
         }
     </script>
 </body>
