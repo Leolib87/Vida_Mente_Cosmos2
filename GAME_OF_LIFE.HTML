@@ -223,6 +223,7 @@
             color: var(--primary-glow);
             margin: 1rem 0;
             font-size: 1.2rem; /* Adjusted for better visibility */
+            overflow-x: auto;
         }
 
         #visualization {
@@ -328,6 +329,68 @@
             body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
             body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
         }
+
+        /* Added for better mobile responsiveness */
+        @media (max-width: 768px) {
+            .hero {
+                min-height: 350px;
+                height: 60vh;
+            }
+            .hero h1 {
+                font-size: clamp(2rem, 12vw, 3.5rem);
+            }
+            h2 {
+                font-size: clamp(1.4rem, 6vw, 1.8rem);
+            }
+            h3 {
+                font-size: clamp(1.1rem, 5vw, 1.3rem);
+            }
+            .main-container {
+                padding: var(--nav-height) clamp(0.8rem, 4vw, 2rem) 1rem;
+            }
+            .section {
+                padding: clamp(1rem, 4vw, 2rem);
+            }
+            .equation {
+                font-size: 1rem;
+                padding: 0.8rem;
+            }
+            #visualization {
+                height: 50vh;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero {
+                min-height: 300px;
+                height: 50vh;
+            }
+            .hero h1 {
+                font-size: clamp(1.8rem, 10vw, 2.5rem);
+            }
+            .hero p {
+                font-size: clamp(0.9rem, 4vw, 1rem);
+            }
+            .main-container {
+                padding: var(--nav-height) 1rem 1rem;
+            }
+            .section {
+                padding: 1rem;
+            }
+            h2 {
+                font-size: clamp(1.2rem, 5vw, 1.5rem);
+            }
+            h3 {
+                font-size: clamp(1rem, 4vw, 1.2rem);
+            }
+            .equation {
+                font-size: 0.9rem;
+            }
+            #visualization {
+                height: 45vh;
+                min-height: 250px;
+            }
+        }
     </style>
 </head>
 <body class="bg-black">
@@ -394,7 +457,7 @@
                             <input type="range" id="speed" min="100" max="1000" step="100" value="500" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" style="accent-color: var(--primary);">
                         </div>
                         <p class="text-gray-400">Estado: <span id="status" class="font-semibold text-gray-200">Generación: 0, Células vivas: 0</span></p>
-                        <div class="flex justify-center gap-4">
+                        <div class="flex flex-col sm:flex-row justify-center gap-4">
                             <button onclick="resetSimulation()" class="px-5 py-2 font-semibold text-white bg-indigo-500 rounded-md hover:bg-indigo-600 transition-colors">Reiniciar</button>
                             <button onclick="toggleSimulation()" class="px-5 py-2 font-semibold text-white bg-cyan-500 rounded-md hover:bg-cyan-600 transition-colors">Pausar/Reanudar</button>
                         </div>
