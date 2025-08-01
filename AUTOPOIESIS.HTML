@@ -145,20 +145,24 @@
             <main class="content">
                 <section class="section glassmorphism rounded-xl mb-8 p-4 sm:p-6 lg:p-8" data-animate>
                     <h2 class="text-2xl sm:text-3xl font-bold border-b border-indigo-400 pb-4 mb-6 text-center">Controles de Simulación</h2>
-                    <div class="controls-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-center">
+                    <div class="controls-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 items-center">
                         <div>
-                            <label for="enzymeCount" class="block text-sm font-medium text-gray-300">Enzimas: <span id="enzymeCountValue" class="font-bold text-white">10</span></label>
-                            <input type="range" id="enzymeCount" min="1" max="50" value="10" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" style="accent-color: var(--primary);">
+                            <label for="substrateDensity" class="block text-sm font-medium text-gray-300">Densidad Sustrato (%): <span id="substrateDensityValue" class="font-bold text-white">50</span></label>
+                            <input type="range" id="substrateDensity" min="10" max="70" value="50" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" style="accent-color: var(--primary);">
                         </div>
                         <div>
-                            <label for="substrateSpeed" class="block text-sm font-medium text-gray-300">Velocidad de Sustrato: <span id="substrateSpeedValue" class="font-bold text-white">5</span></label>
-                            <input type="range" id="substrateSpeed" min="1" max="10" value="5" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" style="accent-color: var(--primary);">
+                            <label for="enzymeCount" class="block text-sm font-medium text-gray-300">Enzimas: <span id="enzymeCountValue" class="font-bold text-white">20</span></label>
+                            <input type="range" id="enzymeCount" min="1" max="100" value="20" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" style="accent-color: var(--primary);">
                         </div>
                         <div>
-                            <label for="decayRate" class="block text-sm font-medium text-gray-300">Tasa de Decaimiento: <span id="decayRateValue" class="font-bold text-white">0.001</span></label>
-                            <input type="range" id="decayRate" min="0" max="0.01" step="0.0001" value="0.001" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" style="accent-color: var(--primary);">
+                            <label for="substrateSpeed" class="block text-sm font-medium text-gray-300">Velocidad Sustrato: <span id="substrateSpeedValue" class="font-bold text-white">10</span></label>
+                            <input type="range" id="substrateSpeed" min="1" max="20" value="10" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" style="accent-color: var(--primary);">
                         </div>
-                        <div class="text-center">
+                        <div>
+                            <label for="decayRate" class="block text-sm font-medium text-gray-300">Tasa Decaimiento: <span id="decayRateValue" class="font-bold text-white">0.0010</span></label>
+                            <input type="range" id="decayRate" min="0" max="0.05" step="0.001" value="0.001" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" style="accent-color: var(--primary);">
+                        </div>
+                        <div class="text-center md:col-span-2 lg:col-span-3 xl:col-span-1">
                              <p class="text-gray-400 text-sm mb-2">Estado: <span id="status" class="font-semibold text-gray-200"></span></p>
                             <button onclick="resetSimulation()" class="w-full px-5 py-2 font-semibold text-white bg-indigo-500 rounded-md hover:bg-indigo-600 transition-colors">Reiniciar</button>
                         </div>
@@ -221,11 +225,16 @@
                 .attr("preserveAspectRatio", "xMidYMid meet");
 
             let grid, substrates, enzymes, links;
-            let enzymeCount = 10;
-            let substrateSpeed = 5;
+            let substrateDensity = 0.5;
+            let enzymeCount = 20;
+            let substrateSpeed = 10;
             let decayRate = 0.001;
             let animationFrameId;
 
+            d3.select("#substrateDensity").on("input", function() {
+                substrateDensity = +this.value / 100;
+                d3.select("#substrateDensityValue").text(this.value);
+            });
             d3.select("#enzymeCount").on("input", function() {
                 enzymeCount = +this.value;
                 d3.select("#enzymeCountValue").text(enzymeCount);
@@ -257,7 +266,7 @@
                 enzymes = [];
                 links = [];
 
-                const substrateCount = Math.min(1000, Math.floor(cols * rows * 0.3));
+                const substrateCount = Math.floor(cols * rows * substrateDensity);
                 for (let i = 0; i < substrateCount; i++) {
                     let x, y;
                     do {
