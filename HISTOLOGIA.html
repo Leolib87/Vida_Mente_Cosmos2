@@ -3,383 +3,313 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tejidos Histológicos</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <title>Tejidos Histológicos | Exploración Transdisciplinaria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --primary-text: #e5e7eb;
+            --primary-glow: #818cf8;
+            --secondary-glow: #22d3ee;
+            --font-main: 'Inter', sans-serif;
+            --nav-height: 70px;
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
         body {
             background-color: #000000;
-            color: #00FF00;
-            font-family: 'Orbitron', sans-serif;
-            line-height: 1.6;
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
             overflow-x: hidden;
         }
-        /* Navegación con Mega Menú */
-        nav {
+        
+        #bg-canvas {
             position: fixed;
             top: 0;
+            left: 0;
             width: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            height: 100%;
+            z-index: -1;
+            cursor: crosshair;
+        }
+
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.menu-open {
+            overflow: hidden;
+        }
+        
+        nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
             z-index: 1000;
-            padding: 15px 0;
-            border-bottom: 2px solid #00FFFF;
-            box-shadow: 0 0 15px #00FFFF;
+            pointer-events: auto;
         }
-        nav ul {
-            display: flex;
-            justify-content: center;
-            list-style: none;
-            flex-wrap: wrap;
+        
+        .hero-content { animation: fadeIn 2s ease-in; }
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
         }
-        nav ul li {
-            position: relative;
-            margin: 0 20px;
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .main-container { 
+            pointer-events: none;
         }
-        nav ul li a {
-            color: #00FF00;
-            text-decoration: none;
-            font-size: 1.1em;
-            transition: all 0.3s ease;
+        main, .footer, .section, .hero-content {
+            pointer-events: auto;
         }
-        nav ul li a:hover {
-            color: #FFFFFF;
-            text-shadow: 0 0 10px #00FFFF;
+        
+        .section {
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
         }
-        .mega-menu {
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.95);
-            border: 2px solid #00FFFF;
-            box-shadow: 0 0 20px #00FFFF;
-            width: 800px;
-            max-width: 90vw;
-            padding: 20px;
-            display: none;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            z-index: 1000;
+        
+        .section h2, .section h3, .section p, .section .grid-container, .section .image-container, .section .button-group {
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
-        nav ul li:hover .mega-menu {
-            display: grid;
+
+        .section.is-visible h2, .section.is-visible h3, .section.is-visible p, .section.is-visible .grid-container, .section.is-visible .image-container, .section.is-visible .button-group {
             opacity: 1;
+            transform: translateY(0);
         }
-        .mega-menu h3 {
-            color: #00FFFF;
-            font-size: 1.2em;
-            margin-bottom: 10px;
-            text-shadow: 0 0 5px #00FFFF;
-        }
-        .mega-menu ul {
-            display: block;
-            padding: 0;
-        }
-        .mega-menu ul li {
-            margin: 5px 0;
-        }
-        .mega-menu a {
-            font-size: 0.9em;
-            color: #00FF00;
-        }
-        .mega-menu a:hover {
-            color: #FFFFFF;
-        }
-        /* Contenedor principal */
-        .main-container {
-            max-width: 1400px;
-            margin: 80px auto 0;
-            padding: 20px;
-            text-align: center;
-        }
-        h1 {
-            color: #00FFFF;
-            font-size: 4em;
-            text-shadow: 0 0 15px #00FF00;
-            margin-bottom: 20px;
-        }
-        #menu {
-            background: rgba(0, 0, 0, 0.9);
-            padding: 15px;
-            border: 2px solid #00FFFF;
-            box-shadow: 0 0 15px #00FFFF;
-            margin-bottom: 30px;
-        }
-        #menu a {
-            color: #00FF00;
-            text-decoration: none;
-            margin: 0 20px;
-            font-size: 1.1em;
-            transition: all 0.3s ease;
-        }
-        #menu a:hover {
-            color: #FFFFFF;
-            text-shadow: 0 0 10px #00FFFF;
-        }
-        .tejido {
-            display: none;
-            padding: 30px;
-            margin: 20px 0;
-            border: 2px solid #00FFFF;
-            box-shadow: 0 0 20px #00FFFF;
-            background: rgba(0, 255, 255, 0.05);
-            border-radius: 10px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .tejido:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0 30px #00FFFF;
-        }
-        .tejido h2 {
-            color: #00FF00;
-            text-shadow: 0 0 8px #00FF00;
-            border-bottom: 1px solid #00FFFF;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-        .tejido p {
-            font-size: 1.1em;
-        }
-        img {
-            max-width: 100%;
-            height: auto;
-            border: 1px solid #00FFFF;
-            box-shadow: 0 0 10px #00FFFF;
-        }
-        /* Responsive Design */
-        @media (max-width: 900px) {
-            nav ul {
-                flex-direction: column;
-                align-items: center;
-                padding: 10px 0;
+        
+        .highlight { color: var(--primary-glow); font-weight: bold; }
+        
+        @media (max-width: 1024px) {
+            .menu-toggle { display: block; }
+            .icon-bar {
+                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
+                margin: 6px 0; transition: all 0.3s ease-in-out;
+                border-radius: 2px;
             }
-            nav ul li {
-                margin: 10px 0;
-                width: 100%;
-                text-align: center;
-            }
-            .mega-menu {
-                position: static;
-                transform: none;
-                width: 100%;
-                max-width: 100%;
-                grid-template-columns: 1fr;
-                padding: 15px;
-                box-shadow: none;
-                border: 1px solid #00FFFF;
-            }
-            nav ul li:hover .mega-menu {
-                display: block;
-            }
-            h1 {
-                font-size: 2.5em;
-            }
-            #menu a {
-                display: block;
-                margin: 10px 0;
-            }
-            .tejido {
-                padding: 20px;
-                margin: 15px 0;
-            }
-        }
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 2em;
-            }
-            h2 {
-                font-size: 1.5em;
-            }
-            p {
-                font-size: 1em;
-            }
-            nav ul li a, #menu a {
-                font-size: 1em;
-            }
-            .mega-menu h3 {
-                font-size: 1.1em;
-            }
-            .mega-menu a {
-                font-size: 0.85em;
-            }
-        }
-        @media (max-width: 400px) {
-            h1 {
-                font-size: 1.5em;
-            }
-            h2 {
-                font-size: 1.3em;
-            }
-            p {
-                font-size: 0.9em;
-            }
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
         }
     </style>
 </head>
-<body>
-    <!-- Navegación con Mega Menú -->
-    <nav>
-        <ul>
-            <li><a href="#inicio">Inicio</a></li>
-            <li>
-                <a href="#">Exploración Conceptual</a>
-                <div class="mega-menu">
-                    <div>
-                        <h3>Ideas y Preguntas Existenciales</h3>
-                        <ul>
-                            <li><a href="#trazado-vida">Origen y Fin de la Vida</a></li>
-                            <li><a href="#biologia">Determinismo vs. Libertad</a></li>
-                            <li><a href="#filosofia-mente">Conducta y Creatividad</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>Fundamentos Teóricos</h3>
-                        <ul>
-                            <li><a href="#biologia">Filosofía de la Biología</a></li>
-                            <li><a href="#ciencias-cognitivas">Filosofía de las Ciencias Cognitivas</a></li>
-                            <li><a href="#filosofia-mente">Mente y Lenguaje</a></li>
-                            <li><a href="Explorando la Visualización Filosófica.HTML">Visualización Filosófica</a></li>
-                            <li><a href="MAPEO_FILO_MENTE_CHILE.HTML">Mapeo Filosofía de la Mente Chile</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </li>
-            <li>
-                <a href="#">Perspectivas Disciplinarias</a>
-                <div class="mega-menu">
-                    <div>
-                        <h3>Biología y Ciencias Naturales</h3>
-                        <ul>
-                            <li><a href="#biologia">Histología y Biología Celular</a></li>
-                            <li><a href="HISTOLOGIA.html">Histología</a></li>
-                            <li><a href="https://leolib87.github.io/herbario/">Herbario</a></li>
-                            <li><a href="cuerpo humano completo plantilla Lt.html">Cuerpo Humano Desplegable</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>Economía y Política</h3>
-                        <ul>
-                            <li><a href="#economia-politica">Teorías Colectivistas y Liberales</a></li>
-                            <li><a href="#economia-politica">Análisis de Corrientes Ideológicas</a></li>
-                            <li><a href="RED POLITICOS.html">Red de Políticos FA</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>Educación y Filosofía</h3>
-                        <ul>
-                            <li><a href="red 2.html">Filosofía de la Educación</a></li>
-                            <li><a href="#trazado-vida">Autoconocimiento y Sentido Humano</a></li>
-                            <li><a href="red3.html">Red Tesis de Magíster Ejemplos</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </li>
-            <li>
-                <a href="#">Metodología y Datos</a>
-                <div class="mega-menu">
-                    <div>
-                        <h3>Recolección y Procesamiento</h3>
-                        <ul>
-                            <li><a href="#redes-palabras">Visualización y Análisis de Datos</a></li>
-                            <li><a href="#voyant-tools">Herramientas Digitales (Gephi, D3.js)</a></li>
-                            <li><a href="varios graficos.html">Varios Gráficos</a></li>
-                            <li><a href="GRAFICO DE LINEAS Y TREEMAP.html">Gráfico de Líneas y Treemap</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </li>
-            <li>
-                <a href="#">Proyectos & Mapas</a>
-                <div class="mega-menu">
-                    <div>
-                        <h3>Mapas de Conocimiento</h3>
-                        <ul>
-                            <li><a href="#elementos-comunes">Filosofía de la Mente</a></li>
-                            <li><a href="#economia-politica">Política Chilena</a></li>
-                            <li><a href="VARELA_CARTOGRAFIA.HTML">Cartografía Varela</a></li>
-                            <li><a href="AUTOPOIESIS.HTML">Simulación Autopoiesis Maturana y Varela 1974</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </li>
-            <li>
-                <a href="#">Recursos</a>
-                <div class="mega-menu">
-                    <div>
-                        <h3>Lecturas y Bibliografía</h3>
-                        <ul>
-                            <li><a href="MI_BIBLIOTECA.HTML">Mi Biblioteca de Humanidades</a></li>
-                            <li><a href="BIBLIOTECA_CIENCIAS.HTML">Mi Biblioteca de Ciencias</a></li>
-                            <li><a href="BIBLIOECAS_DIGITALES_SOMBRA.HTML">Bibliotecas Sombra</a></li>
-                            <li><a href="CITAS.HTML">Fragmentos de Mentes</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>Enlaces de Interés</h3>
-                        <ul>
-                            <li><a href="LEOLIB NEWS BLACK.HTML">Leolib News</a></li>
-                            <li><a href="https://leolib87.github.io/herbario/">Herbario</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </li>
-            <li><a href="#contacto">Acerca de / Contacto</a></li>
-        </ul>
+<body class="bg-black">
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+    <nav class="glassmorphism flex justify-center items-center px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center w-full max-w-7xl">
+            <div class="nav-logo">
+                <a href="index.html" class="flex items-center gap-3">
+                    <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-8 w-8 md:h-10 md:w-10 rounded-full">
+                    <span class="text-lg font-bold text-white">O.C.V.M.</span>
+                </a>
+            </div>
+            <ul id="nav-menu" class="hidden lg:flex items-center justify-center list-none h-full gap-2">
+                 <li><a href="#inicio" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors">Inicio</a></li>
+            </ul>
+            <button class="menu-toggle lg:hidden relative z-50 w-8 h-8" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
     </nav>
 
-    <!-- Contenedor principal -->
-    <div class="main-container">
-        <h1>Tejidos Histológicos Fundamentales</h1>
-        <div id="menu">
-            <a href="javascript:void(0);" onclick="mostrarTejido('tejido_epitelial');">Tejido Epitelial</a>
-            <a href="javascript:void(0);" onclick="mostrarTejido('tejido_muscular');">Tejido Muscular</a>
-            <a href="javascript:void(0);" onclick="mostrarTejido('tejido_nervioso');">Tejido Nervioso</a>
-            <a href="javascript:void(0);" onclick="mostrarTejido('tejido_conectivo');">Tejido Conectivo</a>
+    <div class="main-container w-full mx-auto px-4 sm:px-6 lg:px-8 pt-[var(--nav-height)]">
+        <div id="inicio" class="hero flex flex-col justify-center items-center text-center relative h-screen min-h-[400px] md:min-h-[500px]">
+            <div class="hero-content relative z-10">
+                <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white" style="animation: pulse-glow 3s infinite alternate;">Tejidos Histológicos Fundamentales</h1>
+            </div>
         </div>
 
-        <!-- Tejido Epitelial -->
-        <div class="tejido" id="tejido_epitelial">
-            <h2>Tejido Epitelial</h2>
-            <p>Figura 1. Micrografía del tejido epitelial que cubre las superficies del cuerpo y las cavidades internas.</p>
-            <img src="tejido_epitelial.jpg" alt="Tejido Epitelial">
-        </div>
+        <div class="layout-grid grid grid-cols-1 gap-8 mt-8">
+            <main class="content">
+                <section class="section glassmorphism rounded-xl mb-8 p-4 sm:p-6 lg:p-8 text-center" data-animate>
+                    <h2 class="text-2xl sm:text-3xl font-bold border-b border-indigo-400 pb-4 mb-6">Seleccionar Tejido</h2>
+                    <div class="button-group flex flex-wrap justify-center gap-4">
+                        <button onclick="mostrarTejido('tejido_epitelial')" class="px-5 py-2 font-semibold text-white bg-indigo-500 rounded-md hover:bg-indigo-600 transition-colors">Tejido Epitelial</button>
+                        <button onclick="mostrarTejido('tejido_muscular')" class="px-5 py-2 font-semibold text-white bg-cyan-500 rounded-md hover:bg-cyan-600 transition-colors">Tejido Muscular</button>
+                        <button onclick="mostrarTejido('tejido_nervioso')" class="px-5 py-2 font-semibold text-white bg-indigo-500 rounded-md hover:bg-indigo-600 transition-colors">Tejido Nervioso</button>
+                        <button onclick="mostrarTejido('tejido_conectivo')" class="px-5 py-2 font-semibold text-white bg-cyan-500 rounded-md hover:bg-cyan-600 transition-colors">Tejido Conectivo</button>
+                    </div>
+                </section>
 
-        <!-- Tejido Muscular -->
-        <div class="tejido" id="tejido_muscular">
-            <h2>Tejido Muscular</h2>
-            <p>Figura 2. Micrografía del tejido muscular compuesto por células especializadas en la contracción.</p>
-            <img src="tejido_muscular.jpg" alt="Tejido Muscular">
-        </div>
+                <!-- Tejido Epitelial -->
+                <section class="tejido section glassmorphism rounded-xl mb-8 p-4 sm:p-6 lg:p-8" id="tejido_epitelial" data-animate>
+                    <h2 class="text-2xl sm:text-3xl font-bold border-b border-indigo-400 pb-4 mb-6 text-center">Tejido Epitelial</h2>
+                    <p class="text-center text-gray-300 mb-6">Figura 1. Micrografía del tejido epitelial que cubre las superficies del cuerpo y las cavidades internas.</p>
+                    <div class="image-container max-w-3xl mx-auto">
+                        <img src="https://placehold.co/800x600/111827/818cf8?text=Tejido+Epitelial" alt="Tejido Epitelial" class="w-full h-auto rounded-lg border-2 border-indigo-400/50 shadow-lg">
+                    </div>
+                </section>
 
-        <!-- Tejido Nervioso -->
-        <div class="tejido" id="tejido_nervioso">
-            <h2>Tejido Nervioso</h2>
-            <p>Figura 3. Micrografía del tejido nervioso que coordina y controla las funciones del cuerpo.</p>
-            <img src="tejido_nervioso.jpg" alt="Tejido Nervioso">
-        </div>
+                <!-- Tejido Muscular -->
+                <section class="tejido section glassmorphism rounded-xl mb-8 p-4 sm:p-6 lg:p-8" id="tejido_muscular" style="display: none;" data-animate>
+                    <h2 class="text-2xl sm:text-3xl font-bold border-b border-indigo-400 pb-4 mb-6 text-center">Tejido Muscular</h2>
+                    <p class="text-center text-gray-300 mb-6">Figura 2. Micrografía del tejido muscular compuesto por células especializadas en la contracción.</p>
+                    <div class="image-container max-w-3xl mx-auto">
+                        <img src="https://placehold.co/800x600/111827/22d3ee?text=Tejido+Muscular" alt="Tejido Muscular" class="w-full h-auto rounded-lg border-2 border-cyan-400/50 shadow-lg">
+                    </div>
+                </section>
 
-        <!-- Tejido Conectivo -->
-        <div class="tejido" id="tejido_conectivo">
-            <h2>Tejido Conectivo</h2>
-            <p>Figura 4. Micrografía del tejido conectivo que proporciona soporte estructural y conecta diferentes tejidos.</p>
-            <img src="tejido_conectivo.jpg" alt="Tejido Conectivo">
+                <!-- Tejido Nervioso -->
+                <section class="tejido section glassmorphism rounded-xl mb-8 p-4 sm:p-6 lg:p-8" id="tejido_nervioso" style="display: none;" data-animate>
+                    <h2 class="text-2xl sm:text-3xl font-bold border-b border-indigo-400 pb-4 mb-6 text-center">Tejido Nervioso</h2>
+                    <p class="text-center text-gray-300 mb-6">Figura 3. Micrografía del tejido nervioso que coordina y controla las funciones del cuerpo.</p>
+                    <div class="image-container max-w-3xl mx-auto">
+                        <img src="https://placehold.co/800x600/111827/818cf8?text=Tejido+Nervioso" alt="Tejido Nervioso" class="w-full h-auto rounded-lg border-2 border-indigo-400/50 shadow-lg">
+                    </div>
+                </section>
+
+                <!-- Tejido Conectivo -->
+                <section class="tejido section glassmorphism rounded-xl mb-8 p-4 sm:p-6 lg:p-8" id="tejido_conectivo" style="display: none;" data-animate>
+                    <h2 class="text-2xl sm:text-3xl font-bold border-b border-indigo-400 pb-4 mb-6 text-center">Tejido Conectivo</h2>
+                    <p class="text-center text-gray-300 mb-6">Figura 4. Micrografía del tejido conectivo que proporciona soporte estructural y conecta diferentes tejidos.</p>
+                    <div class="image-container max-w-3xl mx-auto">
+                        <img src="https://placehold.co/800x600/111827/22d3ee?text=Tejido+Conectivo" alt="Tejido Conectivo" class="w-full h-auto rounded-lg border-2 border-cyan-400/50 shadow-lg">
+                    </div>
+                </section>
+            </main>
         </div>
+        <footer class="footer text-center py-10 mt-8 border-t border-gray-700">
+            <p class="mt-2 text-gray-400">Exploración visual de los cuatro tipos de tejidos fundamentales.</p>
+        </footer>
     </div>
-
-    <!-- Script para mostrar/ocultar tejidos -->
     <script>
-        function mostrarTejido(tejidoId) {
-            var tejidos = document.querySelectorAll('.tejido');
-            for (var i = 0; i < tejidos.length; i++) {
-                tejidos[i].style.display = 'none';
+        document.addEventListener('DOMContentLoaded', () => {
+            setupNavigation();
+            setupScrollAnimations();
+            if (typeof THREE !== 'undefined') {
+                initThreeJSBackground();
             }
-            document.getElementById(tejidoId).style.display = 'block';
+            // Show the first tissue by default
+            mostrarTejido('tejido_epitelial');
+        });
+
+        function mostrarTejido(tejidoId) {
+            const tejidos = document.querySelectorAll('.tejido');
+            tejidos.forEach(tejido => {
+                tejido.style.display = 'none';
+                tejido.classList.remove('is-visible');
+            });
+            const tejidoSeleccionado = document.getElementById(tejidoId);
+            if (tejidoSeleccionado) {
+                tejidoSeleccionado.style.display = 'block';
+                // Trigger animation
+                setTimeout(() => {
+                    tejidoSeleccionado.classList.add('is-visible');
+                }, 10);
+            }
+        }
+
+        function initThreeJSBackground() {
+            let scene, camera, renderer, points, lines, mouseX = 0, mouseY = 0;
+            try {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+                camera.position.z = 50;
+
+                renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("bg-canvas"), alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+                const pointCount = 200;
+                const positions = new Float32Array(pointCount * 3);
+                const pointGeo = new THREE.BufferGeometry();
+                for (let i = 0; i < pointCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 400;
+                }
+                pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+                const pointMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.5, transparent: true, opacity: 0.8 });
+                points = new THREE.Points(pointGeo, pointMaterial);
+                scene.add(points);
+
+                regenerateLines();
+
+                window.addEventListener("resize", onWindowResize, false);
+                document.addEventListener('mousemove', onMouseMove, false);
+                animate();
+            } catch (error) { console.error('Error initializing Three.js background:', error); }
+
+            function onWindowResize() {
+                if(camera && renderer) {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                }
+            }
+
+            function onMouseMove(event) {
+                mouseX = (event.clientX - window.innerWidth / 2) / 100;
+                mouseY = (event.clientY - window.innerHeight / 2) / 100;
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                if(scene && camera && renderer && points && lines) {
+                    points.rotation.y += 0.0005;
+                    lines.rotation.y += 0.0005;
+                    camera.position.x += (mouseX - camera.position.x) * 0.05;
+                    camera.position.y += (-mouseY - camera.position.y) * 0.05;
+                    camera.lookAt(scene.position);
+                    renderer.render(scene, camera);
+                }
+            }
+            
+            function regenerateLines() {
+                if (lines) scene.remove(lines);
+                const pointPositions = points.geometry.attributes.position.array;
+                const pointCount = pointPositions.length / 3;
+                const linePositions = [];
+                for (let i = 0; i < pointCount; i++) {
+                    for (let j = i + 1; j < pointCount; j++) {
+                        const dx = pointPositions[i*3] - pointPositions[j*3];
+                        const dy = pointPositions[i*3+1] - pointPositions[j*3+1];
+                        const dz = pointPositions[i*3+2] - pointPositions[j*3+2];
+                        if (Math.sqrt(dx*dx+dy*dy+dz*dz) < 50) {
+                            linePositions.push(pointPositions[i*3], pointPositions[i*3+1], pointPositions[i*3+2]);
+                            linePositions.push(pointPositions[j*3], pointPositions[j*3+1], pointPositions[j*3+2]);
+                        }
+                    }
+                }
+                const lineGeo = new THREE.BufferGeometry();
+                lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+                const lineMaterial = new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.3, transparent: true });
+                lines = new THREE.LineSegments(lineGeo, lineMaterial);
+                scene.add(lines);
+            }
+        }
+
+        function setupNavigation() {
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            menuToggleBtn.addEventListener('click', () => {
+                document.body.classList.toggle('menu-open');
+            });
+        }
+
+        function setupScrollAnimations() {
+            const animatedSections = document.querySelectorAll('[data-animate]');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        const elementsToAnimate = entry.target.querySelectorAll('h2, h3, p, .image-container, .button-group');
+                        elementsToAnimate.forEach((el, index) => {
+                           el.style.transitionDelay = `${index * 100}ms`;
+                        });
+                        // We don't unobserve because we want the animation to re-trigger
+                    }
+                });
+            }, { threshold: 0.1 });
+            animatedSections.forEach(section => observer.observe(section));
         }
     </script>
 </body>
