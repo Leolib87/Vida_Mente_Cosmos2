@@ -1,466 +1,345 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-8">
-    <title>Figura Humana Interactiva</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Figura Humana Interactiva | Exploración Anatómica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --primary-text: #e5e7eb;
+            --primary-glow: #818cf8;
+            --secondary-glow: #22d3ee;
+            --font-main: 'Inter', sans-serif;
+            --nav-height: 70px;
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
         body {
             background-color: #000000;
-            color: #00FF00;
-            font-family: 'Orbitron', sans-serif;
-            line-height: 1.6;
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
             overflow-x: hidden;
         }
-        /* Navegación con Mega Menú */
-        nav {
+        
+        #bg-canvas {
             position: fixed;
             top: 0;
+            left: 0;
             width: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            height: 100%;
+            z-index: -1;
+            cursor: crosshair;
+        }
+
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.menu-open {
+            overflow: hidden;
+        }
+        
+        nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
             z-index: 1000;
-            padding: 15px 0;
-            border-bottom: 2px solid #00FFFF;
-            box-shadow: 0 0 15px #00FFFF;
+            pointer-events: auto;
         }
-        nav ul {
-            display: flex;
-            justify-content: center;
-            list-style: none;
-            flex-wrap: wrap;
+        
+        .hero-content { animation: fadeIn 2s ease-in; }
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
         }
-        nav ul li {
-            position: relative;
-            margin: 0 20px;
-        }
-        nav ul li a {
-            color: #00FF00;
-            text-decoration: none;
-            font-size: 1.1em;
-            transition: all 0.3s ease;
-        }
-        nav ul li a:hover {
-            color: #FFFFFF;
-            text-shadow: 0 0 10px #00FFFF;
-        }
-        .mega-menu {
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.95);
-            border: 2px solid #00FFFF;
-            box-shadow: 0 0 20px #00FFFF;
-            width: 800px;
-            max-width: 90vw;
-            padding: 20px;
-            display: none;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        nav ul li:hover .mega-menu {
-            display: grid;
-            opacity: 1;
-        }
-        .mega-menu h3 {
-            color: #00FFFF;
-            font-size: 1.2em;
-            margin-bottom: 10px;
-            text-shadow: 0 0 5px #00FFFF;
-        }
-        .mega-menu ul {
-            display: block;
-            padding: 0;
-        }
-        .mega-menu ul li {
-            margin: 5px 0;
-        }
-        .mega-menu a {
-            font-size: 0.9em;
-            color: #00FF00;
-        }
-        .mega-menu a:hover {
-            color: #FFFFFF;
-        }
-        /* Contenedor principal */
-        .main-container {
-            max-width: 1400px;
-            margin: 80px auto 0;
-            padding: 20px;
-            text-align: center;
-            position: relative;
-        }
-        #container {
-            position: relative;
-            width: 400px;
-            height: 600px;
-            margin: 0 auto;
-        }
-        #figure {
-            border: 2px solid #00FFFF;
-            box-shadow: 0 0 20px #00FFFF;
-            background: rgba(0, 255, 255, 0.05);
-        }
-        .menu {
-            display: none;
-            position: absolute;
-            width: 200px;
-            background: rgba(0, 0, 0, 0.9);
-            border: 2px solid #00FFFF;
-            box-shadow: 0 0 15px #00FFFF;
-            padding: 10px;
-            z-index: 10;
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .main-container { 
             pointer-events: none;
-            color: #00FF00;
-            text-shadow: 0 0 5px #00FF00;
-            border-radius: 5px;
+        }
+        main, .footer, .section, .hero-content {
+            pointer-events: auto;
+        }
+        
+        .section {
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        
+        .section h2, .section .figure-container {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .section.is-visible h2, .section.is-visible .figure-container {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        #figure-container {
+            position: relative;
+        }
+
+        #human-figure rect {
+            fill: rgba(129, 140, 248, 0.0);
+            stroke: rgba(129, 140, 248, 0.0);
+            stroke-width: 2;
+            transition: fill 0.3s ease, stroke 0.3s ease;
+            cursor: pointer;
+        }
+
+        #human-figure rect:hover {
+            fill: rgba(34, 211, 238, 0.3);
+            stroke: var(--secondary);
+        }
+
+        .info-modal {
+            display: none;
+            position: absolute;
+            width: 250px;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            pointer-events: none;
+            z-index: 20;
             transition: opacity 0.3s ease;
         }
-        .menu h2 {
-            color: #00FFFF;
-            font-size: 1.2em;
-            text-shadow: 0 0 8px #00FFFF;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #00FF00;
+        
+        .info-modal.active {
+            display: block;
         }
-        .menu div {
-            margin: 5px 0;
-        }
-        .menu img {
-            max-width: 100%;
-            height: auto;
-            border: 1px solid #00FFFF;
-            box-shadow: 0 0 10px #00FFFF;
-        }
-        rect {
-            fill-opacity: 0;
-            cursor: pointer;
-            transition: fill-opacity 0.3s ease;
-        }
-        rect:hover {
-            fill: rgba(0, 255, 255, 0.2);
-        }
-        /* Responsive Design */
-        @media (max-width: 900px) {
-            nav ul {
-                flex-direction: column;
-                align-items: center;
-                padding: 10px 0;
+
+        @media (max-width: 1024px) {
+            .menu-toggle { display: block; }
+            .icon-bar {
+                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
+                margin: 6px 0; transition: all 0.3s ease-in-out;
+                border-radius: 2px;
             }
-            nav ul li {
-                margin: 10px 0;
-                width: 100%;
-                text-align: center;
-            }
-            .mega-menu {
-                position: static;
-                transform: none;
-                width: 100%;
-                max-width: 100%;
-                grid-template-columns: 1fr;
-                padding: 15px;
-                box-shadow: none;
-                border: 1px solid #00FFFF;
-            }
-            nav ul li:hover .mega-menu {
-                display: block;
-            }
-            #container {
-                width: 300px;
-                height: 450px;
-            }
-            #figure {
-                width: 300px;
-                height: 450px;
-            }
-            .menu {
-                width: 150px;
-            }
-        }
-        @media (max-width: 600px) {
-            nav ul li a {
-                font-size: 1em;
-            }
-            .mega-menu h3 {
-                font-size: 1.1em;
-            }
-            .mega-menu a {
-                font-size: 0.85em;
-            }
-            #container {
-                width: 250px;
-                height: 375px;
-            }
-            #figure {
-                width: 250px;
-                height: 375px;
-            }
-            .menu {
-                width: 120px;
-                padding: 8px;
-            }
-            .menu h2 {
-                font-size: 1em;
-            }
-        }
-        @media (max-width: 400px) {
-            #container {
-                width: 200px;
-                height: 300px;
-            }
-            #figure {
-                width: 200px;
-                height: 300px;
-            }
-            .menu {
-                width: 100px;
-            }
-            .menu h2 {
-                font-size: 0.9em;
-            }
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
         }
     </style>
 </head>
-<body>
-    <!-- Navegación con Mega Menú -->
-    <nav>
-        <ul>
-            <li><a href="#inicio">Inicio</a></li>
-            <li>
-                <a href="#">Exploración Conceptual</a>
-                <div class="mega-menu">
-                    <div>
-                        <h3>Ideas y Preguntas Existenciales</h3>
-                        <ul>
-                            <li><a href="#trazado-vida">Origen y Fin de la Vida</a></li>
-                            <li><a href="#biologia">Determinismo vs. Libertad</a></li>
-                            <li><a href="#filosofia-mente">Conducta y Creatividad</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>Fundamentos Teóricos</h3>
-                        <ul>
-                            <li><a href="#biologia">Filosofía de la Biología</a></li>
-                            <li><a href="#ciencias-cognitivas">Filosofía de las Ciencias Cognitivas</a></li>
-                            <li><a href="#filosofia-mente">Mente y Lenguaje</a></li>
-                            <li><a href="Explorando la Visualización Filosófica.HTML">Visualización Filosófica</a></li>
-                            <li><a href="MAPEO_FILO_MENTE_CHILE.HTML">Mapeo Filosofía de la Mente Chile</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </li>
-            <li>
-                <a href="#">Perspectivas Disciplinarias</a>
-                <div class="mega-menu">
-                    <div>
-                        <h3>Biología y Ciencias Naturales</h3>
-                        <ul>
-                            <li><a href="#biologia">Histología y Biología Celular</a></li>
-                            <li><a href="HISTOLOGIA.html">Histología</a></li>
-                            <li><a href="https://leolib87.github.io/herbario/">Herbario</a></li>
-                            <li><a href="cuerpo humano completo plantilla Lt.html">Cuerpo Humano Desplegable</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>Economía y Política</h3>
-                        <ul>
-                            <li><a href="#economia-politica">Teorías Colectivistas y Liberales</a></li>
-                            <li><a href="#economia-politica">Análisis de Corrientes Ideológicas</a></li>
-                            <li><a href="RED POLITICOS.html">Red de Políticos FA</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>Educación y Filosofía</h3>
-                        <ul>
-                            <li><a href="red 2.html">Filosofía de la Educación</a></li>
-                            <li><a href="#trazado-vida">Autoconocimiento y Sentido Humano</a></li>
-                            <li><a href="red3.html">Red Tesis de Magíster Ejemplos</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </li>
-            <li>
-                <a href="#">Metodología y Datos</a>
-                <div class="mega-menu">
-                    <div>
-                        <h3>Recolección y Procesamiento</h3>
-                        <ul>
-                            <li><a href="#redes-palabras">Visualización y Análisis de Datos</a></li>
-                            <li><a href="#voyant-tools">Herramientas Digitales (Gephi, D3.js)</a></li>
-                            <li><a href="varios graficos.html">Varios Gráficos</a></li>
-                            <li><a href="GRAFICO DE LINEAS Y TREEMAP.html">Gráfico de Líneas y Treemap</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </li>
-            <li>
-                <a href="#">Proyectos & Mapas</a>
-                <div class="mega-menu">
-                    <div>
-                        <h3>Mapas de Conocimiento</h3>
-                        <ul>
-                            <li><a href="#elementos-comunes">Filosofía de la Mente</a></li>
-                            <li><a href="#economia-politica">Política Chilena</a></li>
-                            <li><a href="VARELA_CARTOGRAFIA.HTML">Cartografía Varela</a></li>
-                            <li><a href="AUTOPOIESIS.HTML">Simulación Autopoiesis Maturana y Varela 1974</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </li>
-            <li>
-                <a href="#">Recursos</a>
-                <div class="mega-menu">
-                    <div>
-                        <h3>Lecturas y Bibliografía</h3>
-                        <ul>
-                            <li><a href="MI_BIBLIOTECA.HTML">Mi Biblioteca de Humanidades</a></li>
-                            <li><a href="BIBLIOTECA_CIENCIAS.HTML">Mi Biblioteca de Ciencias</a></li>
-                            <li><a href="BIBLIOECAS_DIGITALES_SOMBRA.HTML">Bibliotecas Sombra</a></li>
-                            <li><a href="CITAS.HTML">Fragmentos de Mentes</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>Enlaces de Interés</h3>
-                        <ul>
-                            <li><a href="LEOLIB NEWS BLACK.HTML">Leolib News</a></li>
-                            <li><a href="https://leolib87.github.io/herbario/">Herbario</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </li>
-            <li><a href="#contacto">Acerca de / Contacto</a></li>
-        </ul>
+<body class="bg-black">
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+    <nav class="glassmorphism flex justify-center items-center px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center w-full max-w-7xl">
+            <div class="nav-logo">
+                <a href="index.html" class="flex items-center gap-3">
+                    <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-8 w-8 md:h-10 md:w-10 rounded-full">
+                    <span class="text-lg font-bold text-white">O.C.V.M.</span>
+                </a>
+            </div>
+            <ul id="nav-menu" class="hidden lg:flex items-center justify-center list-none h-full gap-2">
+                 <li><a href="#inicio" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors">Inicio</a></li>
+            </ul>
+            <button class="menu-toggle lg:hidden relative z-50 w-8 h-8" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
     </nav>
 
-    <!-- Contenedor principal -->
-    <div class="main-container" id="inicio">
-        <div id="container">
-            <svg id="figure" width="400" height="600">
-                <!-- Cuerpo humano -->
-                <image xlink:href="https://img.freepik.com/foto-gratis/cuerpo-humano-frontal_1048-5345.jpg?w=360&t=st=1688700891~exp=1688701491~hmac=4f6138d6b5301ac59e26f6b8b0cc278ea69c18e6e2525f0c471168f7d08ef3fa" x="0" y="0" width="400" height="600" />
-
-                <!-- Extremidades -->
-                <rect id="extremidades" x="20" y="160" width="100" height="100" />
-                <rect id="torso" x="150" y="150" width="90" height="80" />
-                <rect id="cabeza" x="150" y="20" width="100" height="100" />
-                <rect id="genitales" x="150" y="250" width="100" height="50" />
-                <!-- Piernas izquierda y derecha -->
-                <rect id="pierna-izquierda" x="150" y="400" width="50" height="100" />
-                <rect id="pierna-derecha" x="250" y="400" width="50" height="100" />
-                <!-- Brazos izquierdo y derecho -->
-                <rect id="brazo-izquierdo" x="25" y="200" width="50" height="150" />
-                <rect id="brazo-derecho" x="325" y="200" width="50" height="150" />
-            </svg>
-            <div id="extremidades-menu" class="menu"></div>
-            <div id="torso-menu" class="menu"></div>
-            <div id="cabeza-menu" class="menu"></div>
-            <div id="genitales-menu" class="menu"></div>
-            <div id="pierna-izquierda-menu" class="menu"></div>
-            <div id="pierna-derecha-menu" class="menu"></div>
-            <div id="brazo-izquierdo-menu" class="menu"></div>
-            <div id="brazo-derecho-menu" class="menu"></div>
+    <div class="main-container w-full mx-auto px-4 sm:px-6 lg:px-8 pt-[var(--nav-height)]">
+        <div id="inicio" class="hero flex flex-col justify-center items-center text-center relative h-screen min-h-[500px] md:min-h-[600px]">
+            <div class="hero-content relative z-10">
+                <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white" style="animation: pulse-glow 3s infinite alternate;">Figura Humana Interactiva</h1>
+                <p class="mt-4 text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto">Una exploración visual de la anatomía humana. Pasa el cursor sobre las diferentes partes del cuerpo para ver más información.</p>
+            </div>
         </div>
+
+        <div class="layout-grid grid grid-cols-1 gap-8 mt-8">
+            <main class="content">
+                <section class="section glassmorphism rounded-xl mb-8 p-4 sm:p-6 lg:p-8" data-animate>
+                    <h2 class="text-2xl sm:text-3xl font-bold border-b border-indigo-400 pb-4 mb-6 text-center">Anatomía Humana</h2>
+                    <div id="figure-container" class="figure-container flex justify-center items-center w-full max-w-lg mx-auto">
+                        <svg id="human-figure" viewBox="0 0 400 600" class="w-full h-auto max-h-[70vh]">
+                            <image href="https://img.freepik.com/foto-gratis/cuerpo-humano-frontal_1048-5345.jpg?w=360&t=st=1688700891~exp=1688701491~hmac=4f6138d6b5301ac59e26f6b8b0cc278ea69c18e6e2525f0c471168f7d08ef3fa" x="0" y="0" width="400" height="600" />
+                            <rect id="cabeza" data-title="Cabeza" data-info='{"Dato 1": 3, "Dato 2": 6, "Dato 3": 9}' data-img="https://thumbs.gfycat.com/InconsequentialThoughtfulBighornsheep-size_restricted.gif" x="155" y="30" width="90" height="95" />
+                            <rect id="torso" data-title="Torso" data-info='{"Dato 1": 5, "Dato 2": 8, "Dato 3": 12}' data-img="https://placehold.co/150x100/111827/22d3ee?text=Torso" x="135" y="125" width="130" height="150" />
+                            <rect id="brazo-izquierdo" data-title="Brazo Izquierdo" data-info='{"Dato 1": 4, "Dato 2": 7, "Dato 3": 9}' data-img="https://placehold.co/150x100/111827/818cf8?text=Brazo+Izq." x="75" y="130" width="60" height="200" />
+                            <rect id="brazo-derecho" data-title="Brazo Derecho" data-info='{"Dato 1": 3, "Dato 2": 5, "Dato 3": 8}' data-img="https://placehold.co/150x100/111827/818cf8?text=Brazo+Der." x="265" y="130" width="60" height="200" />
+                            <rect id="pierna-izquierda" data-title="Pierna Izquierda" data-info='{"Dato 1": 7, "Dato 2": 9, "Dato 3": 11}' data-img="https://placehold.co/150x100/111827/22d3ee?text=Pierna+Izq." x="135" y="275" width="65" height="250" />
+                            <rect id="pierna-derecha" data-title="Pierna Derecha" data-info='{"Dato 1": 6, "Dato 2": 8, "Dato 3": 10}' data-img="https://placehold.co/150x100/111827/22d3ee?text=Pierna+Der." x="200" y="275" width="65" height="250" />
+                        </svg>
+                        <div id="info-modal" class="info-modal glassmorphism"></div>
+                    </div>
+                </section>
+            </main>
+        </div>
+        <footer class="footer text-center py-10 mt-8 border-t border-gray-700">
+            <p class="mt-2 text-gray-400">Una visualización interactiva de la anatomía básica.</p>
+        </footer>
     </div>
-
-    <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
-        // Datos simulados
-        const extremidadesData = {
-            resultado1: { valor: 10, imagen: 'imagen1.jpg' },
-            resultado2: { valor: 15, imagen: 'imagen2.jpg' },
-            resultado3: { valor: 20, imagen: 'imagen3.jpg' }
-        };
-
-        const torsoData = {
-            resultado1: { valor: 5, imagen: 'imagen4.jpg' },
-            resultado2: { valor: 8, imagen: 'imagen5.jpg' },
-            resultado3: { valor: 12, imagen: 'imagen6.jpg' }
-        };
-
-        const cabezaData = {
-            resultado1: { valor: 3, imagen: 'https://thumbs.gfycat.com/InconsequentialThoughtfulBighornsheep-size_restricted.gif' },
-            resultado2: { valor: 6, imagen: 'imagen8.jpg' },
-            resultado3: { valor: 9, imagen: 'imagen9.jpg' }
-        };
-
-        const genitalesData = {
-            resultado1: { valor: 2, imagen: 'imagen10.jpg' },
-            resultado2: { valor: 4, imagen: 'imagen11.jpg' },
-            resultado3: { valor: 6, imagen: 'imagen12.jpg' }
-        };
-
-        const piernaIzquierdaData = {
-            resultado1: { valor: 7, imagen: 'imagen13.jpg' },
-            resultado2: { valor: 9, imagen: 'imagen14.jpg' },
-            resultado3: { valor: 11, imagen: 'imagen15.jpg' }
-        };
-
-        const piernaDerechaData = {
-            resultado1: { valor: 6, imagen: 'imagen16.jpg' },
-            resultado2: { valor: 8, imagen: 'imagen17.jpg' },
-            resultado3: { valor: 10, imagen: 'imagen18.jpg' }
-        };
-
-        const brazoIzquierdoData = {
-            resultado1: { valor: 4, imagen: 'imagen19.jpg' },
-            resultado2: { valor: 7, imagen: 'imagen20.jpg' },
-            resultado3: { valor: 9, imagen: 'imagen21.jpg' }
-        };
-
-        const brazoDerechoData = {
-            resultado1: { valor: 3, imagen: 'imagen22.jpg' },
-            resultado2: { valor: 5, imagen: 'imagen23.jpg' },
-            resultado3: { valor: 8, imagen: 'imagen24.jpg' }
-        };
-
-        // Configuración de menús desplegables
-        const menus = [
-            { id: 'extremidades', data: extremidadesData, x: 100, y: 100 },
-            { id: 'torso', data: torsoData, x: 150, y: 200 },
-            { id: 'cabeza', data: cabezaData, x: 150, y: 100 },
-            { id: 'genitales', data: genitalesData, x: 150, y: 350 },
-            { id: 'pierna-izquierda', data: piernaIzquierdaData, x: 75, y: 400 },
-            { id: 'pierna-derecha', data: piernaDerechaData, x: 275, y: 400 },
-            { id: 'brazo-izquierdo', data: brazoIzquierdoData, x: 25, y: 200 },
-            { id: 'brazo-derecho', data: brazoDerechoData, x: 325, y: 200 }
-        ];
-
-        menus.forEach(menu => {
-            const menuElement = d3.select(`#${menu.id}-menu`)
-                .style('left', `${menu.x}px`)
-                .style('top', `${menu.y}px`);
-
-            menuElement.append('h2').text(menu.id.toUpperCase());
-
-            Object.entries(menu.data).forEach(([key, value]) => {
-                const item = menuElement.append('div');
-                item.append('span').text(`${key}: `);
-                item.append('span').text(value.valor);
-                item.append('br');
-                item.append('img').attr('src', value.imagen);
-            });
+        document.addEventListener('DOMContentLoaded', () => {
+            setupNavigation();
+            setupScrollAnimations();
+            if (typeof THREE !== 'undefined') {
+                initThreeJSBackground();
+            }
+            setupInteractiveFigure();
         });
 
-        // Mostrar menús al pasar el cursor sobre las partes del cuerpo
-        const figure = d3.select('#figure');
+        function setupInteractiveFigure() {
+            const figureContainer = document.getElementById('figure-container');
+            const modal = document.getElementById('info-modal');
+            const bodyParts = document.querySelectorAll('#human-figure rect');
 
-        menus.forEach(menu => {
-            figure.select(`#${menu.id}`)
-                .on('mouseover', () => {
-                    d3.select(`#${menu.id}-menu`).style('display', 'block');
-                })
-                .on('mouseout', () => {
-                    d3.select(`#${menu.id}-menu`).style('display', 'none');
+            bodyParts.forEach(part => {
+                part.addEventListener('mouseenter', (e) => {
+                    const title = e.currentTarget.dataset.title;
+                    const info = JSON.parse(e.currentTarget.dataset.info);
+                    const img = e.currentTarget.dataset.img;
+
+                    let infoHtml = `<h3 class="text-lg font-bold text-indigo-400 mb-2">${title}</h3>`;
+                    infoHtml += '<div class="space-y-1 text-sm">';
+                    for (const [key, value] of Object.entries(info)) {
+                        infoHtml += `<div class="flex justify-between"><span>${key}:</span><span class="font-semibold text-cyan-400">${value}</span></div>`;
+                    }
+                    infoHtml += '</div>';
+                    infoHtml += `<img src="${img}" alt="${title}" class="w-full h-auto rounded-md mt-4 border border-cyan-400/50">`;
+                    
+                    modal.innerHTML = infoHtml;
+                    modal.classList.add('active');
                 });
-        });
+
+                part.addEventListener('mousemove', (e) => {
+                    const rect = figureContainer.getBoundingClientRect();
+                    let x = e.clientX - rect.left + 20;
+                    let y = e.clientY - rect.top;
+
+                    if (x + modal.offsetWidth > figureContainer.clientWidth) {
+                        x -= modal.offsetWidth + 40;
+                    }
+                    if (y + modal.offsetHeight > figureContainer.clientHeight) {
+                        y = figureContainer.clientHeight - modal.offsetHeight;
+                    }
+
+                    modal.style.left = `${x}px`;
+                    modal.style.top = `${y}px`;
+                });
+
+                part.addEventListener('mouseleave', () => {
+                    modal.classList.remove('active');
+                });
+            });
+        }
+
+        function initThreeJSBackground() {
+            let scene, camera, renderer, points, lines, mouseX = 0, mouseY = 0;
+            try {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+                camera.position.z = 50;
+
+                renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("bg-canvas"), alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+                const pointCount = 200;
+                const positions = new Float32Array(pointCount * 3);
+                const pointGeo = new THREE.BufferGeometry();
+                for (let i = 0; i < pointCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 400;
+                }
+                pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+                const pointMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.5, transparent: true, opacity: 0.8 });
+                points = new THREE.Points(pointGeo, pointMaterial);
+                scene.add(points);
+
+                regenerateLines();
+
+                window.addEventListener("resize", onWindowResize, false);
+                document.addEventListener('mousemove', onMouseMove, false);
+                animate();
+            } catch (error) { console.error('Error initializing Three.js background:', error); }
+
+            function onWindowResize() {
+                if(camera && renderer) {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                }
+            }
+
+            function onMouseMove(event) {
+                mouseX = (event.clientX - window.innerWidth / 2) / 100;
+                mouseY = (event.clientY - window.innerHeight / 2) / 100;
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                if(scene && camera && renderer && points && lines) {
+                    points.rotation.y += 0.0005;
+                    lines.rotation.y += 0.0005;
+                    camera.position.x += (mouseX - camera.position.x) * 0.05;
+                    camera.position.y += (-mouseY - camera.position.y) * 0.05;
+                    camera.lookAt(scene.position);
+                    renderer.render(scene, camera);
+                }
+            }
+            
+            function regenerateLines() {
+                if (lines) scene.remove(lines);
+                const pointPositions = points.geometry.attributes.position.array;
+                const pointCount = pointPositions.length / 3;
+                const linePositions = [];
+                for (let i = 0; i < pointCount; i++) {
+                    for (let j = i + 1; j < pointCount; j++) {
+                        const dx = pointPositions[i*3] - pointPositions[j*3];
+                        const dy = pointPositions[i*3+1] - pointPositions[j*3+1];
+                        const dz = pointPositions[i*3+2] - pointPositions[j*3+2];
+                        if (Math.sqrt(dx*dx+dy*dy+dz*dz) < 50) {
+                            linePositions.push(pointPositions[i*3], pointPositions[i*3+1], pointPositions[i*3+2]);
+                            linePositions.push(pointPositions[j*3], pointPositions[j*3+1], pointPositions[j*3+2]);
+                        }
+                    }
+                }
+                const lineGeo = new THREE.BufferGeometry();
+                lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+                const lineMaterial = new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.3, transparent: true });
+                lines = new THREE.LineSegments(lineGeo, lineMaterial);
+                scene.add(lines);
+            }
+        }
+
+        function setupNavigation() {
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            menuToggleBtn.addEventListener('click', () => {
+                document.body.classList.toggle('menu-open');
+            });
+        }
+
+        function setupScrollAnimations() {
+            const animatedSections = document.querySelectorAll('[data-animate]');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        const elementsToAnimate = entry.target.querySelectorAll('h2, .figure-container');
+                        elementsToAnimate.forEach((el, index) => {
+                           el.style.transitionDelay = `${index * 100}ms`;
+                        });
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            animatedSections.forEach(section => observer.observe(section));
+        }
     </script>
 </body>
 </html>
