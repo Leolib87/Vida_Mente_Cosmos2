@@ -1,57 +1,22 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulación de Autopoiesis | Origen, Mente y Cosmos</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         :root {
-            --bg-color: #000508;
-            --primary-text: #00FFC2;
-            --primary-glow: #00FFFF;
-            --secondary-glow: #00FF00;
-            --font-main: 'Orbitron', sans-serif;
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --primary-text: #e5e7eb;
+            --primary-glow: #818cf8;
+            --secondary-glow: #22d3ee;
+            --font-main: 'Inter', sans-serif;
             --nav-height: 70px;
         }
 
@@ -60,946 +25,234 @@
         html { scroll-behavior: smooth; }
 
         body {
-            background-color: var(--bg-color);
+            background-color: #000000;
             color: var(--primary-text);
             font-family: var(--font-main);
             line-height: 1.8;
             overflow-x: hidden;
-            transition: overflow 0.3s ease;
         }
         
-        body.menu-open {
-            overflow: hidden;
-        }
-        
-        /* --- NAVEGACIÓN --- */
-        nav {
+        #bg-canvas {
             position: fixed;
-            top: 0;
-            width: 100%;
-            height: var(--nav-height);
-            background: rgba(0, 10, 15, 0.6);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            z-index: 1000;
-            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 0 2rem;
-        }
-
-        .nav-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 1440px;
-        }
-        
-        .nav-logo a {
-            font-size: 1.3em;
-            font-weight: 700;
-            color: #fff;
-            text-decoration: none;
-            text-shadow: 0 0 8px var(--primary-glow);
-        }
-
-        .nav-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            list-style: none;
-            height: 100%;
-            gap: 0.5rem;
-        }
-
-        nav .nav-container > li {
-            position: relative;
-            height: 100%;
-            display: flex;
-            align-items: center;
-        }
-
-        nav .nav-container > li > a {
-            color: var(--primary-text);
-            text-decoration: none;
-            font-size: clamp(0.9em, 1.2vw, 1.05em);
-            font-weight: 500;
-            transition: color 0.3s ease, text-shadow 0.3s ease;
-            padding: 0 1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        nav .nav-container > li > a:hover,
-        nav .nav-container > li:hover > a {
-            color: #FFFFFF;
-            text-shadow: 0 0 12px var(--primary-glow);
-        }
-        
-        .nav-icon {
-            width: 20px;
-            height: 20px;
-            stroke-width: 1.5;
-        }
-        
-        /* --- MEGA MENÚ --- */
-        .mega-menu {
-            position: fixed;
-            top: var(--nav-height);
-            left: 50%;
-            transform: translateX(-50%) scale(0.95);
-            background: rgba(0, 15, 20, 0.9);
-            backdrop-filter: blur(15px);
-            border: 1px solid var(--primary-glow);
-            box-shadow: 0 10px 40px rgba(0, 255, 255, 0.25);
-            border-radius: 10px;
-            width: auto;
-            min-width: clamp(300px, 80vw, 950px);
-            max-width: 95vw;
-            padding: 2rem;
-            display: none;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 2rem;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0.3s;
-            transform-origin: top center;
-        }
-        
-        .mega-menu.is-active {
-            display: grid;
-            opacity: 1;
-            visibility: visible;
-            transform: translateX(-50%) scale(1);
-            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0s;
-        }
-        
-        .mega-menu.mega-menu-single {
-            min-width: 280px;
-            max-width: 350px;
-            grid-template-columns: 1fr;
-        }
-
-        .mega-menu h3 {
-            color: var(--primary-glow);
-            font-size: 1.1em;
-            margin-bottom: 1rem;
-            text-shadow: 0 0 5px var(--primary-glow);
-            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
-            padding-bottom: 0.75rem;
-            text-align: justify;
-        }
-
-        .mega-menu ul {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            list-style: none;
-        }
-
-        .mega-menu a {
-            font-size: 0.9em;
-            color: var(--primary-text);
-            text-decoration: none;
-            transition: color 0.3s, padding-left 0.3s, background-color 0.3s;
-            padding: 0.5rem 0.75rem;
-            border-radius: 4px;
-            text-align: justify;
-        }
-
-        .mega-menu a:hover {
-            color: #000;
-            background-color: var(--primary-glow);
-            padding-left: 1.25rem;
-        }
-        
-        /* --- ESTILOS DE PÁGINA DE AUTOPOIESIS --- */
-        .page-header {
-            position: relative;
-            text-align: center;
-            padding: 6rem 1rem;
-            margin-bottom: 2rem;
-            min-height: 40vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #particles-js {
-            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 1;
+            z-index: -1;
+            cursor: crosshair;
         }
 
-        .header-content {
-            position: relative;
-            z-index: 2;
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.menu-open {
+            overflow: hidden;
         }
         
-        .header-content h1 {
-            font-size: clamp(2.5rem, 6vw, 4.5rem);
-            font-weight: 700;
-            color: #fff;
-            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(0, 255, 255, 0.7);
-            animation: pulse-glow 3s infinite alternate;
+        nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            z-index: 1000;
+            pointer-events: auto;
         }
-
+        
+        .hero-content { animation: fadeIn 2s ease-in; }
         @keyframes pulse-glow {
             from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
             to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
         }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .main-container {
-            max-width: 1440px;
-            margin: 0 auto;
-            padding: 1rem;
-            padding-top: var(--nav-height);
+        .main-container { 
+            pointer-events: none;
         }
-
-        .layout-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2rem;
-            margin-top: 0;
+        main, .footer, .section, .hero-content {
+            pointer-events: auto;
         }
         
         .section {
-            padding: clamp(1.5rem, 5vw, 2.5rem);
-            background: linear-gradient(145deg, rgba(0, 40, 40, 0.3), rgba(0, 20, 20, 0.2));
-            border: 1px solid rgba(0, 255, 255, 0.2);
-            border-radius: 12px;
-            margin-bottom: 2rem;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
         }
         
-        h2 {
-            font-size: clamp(1.8rem, 5vw, 2.5rem);
-            color: var(--primary-text);
-            text-shadow: 0 0 8px var(--secondary-glow);
-            border-bottom: 1px solid var(--primary-glow);
-            padding-bottom: 1rem;
-            margin-bottom: 1.5rem;
-            text-align: center;
+        .section h2, .section h3, .section p, .section .controls-grid, .section #visualization, .section ul, .section ol {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
 
-        h3 {
-            font-size: clamp(1.2rem, 4vw, 1.5rem);
-            color: var(--primary-glow);
-            margin: 2rem 0 1rem 0;
-            text-align: justify;
-        }
-
-        p, li {
-            font-size: clamp(1rem, 1.5vw, 1.1rem);
-            text-align: justify;
-        }
-
-        ul, ol {
-            padding-left: 2rem;
-            margin-bottom: 1rem;
-        }
-
-        .highlight {
-            color: var(--primary-glow);
-            font-weight: bold;
-        }
-
-        .substrate {
-            color: var(--primary-text);
-            font-weight: bold;
-        }
-
-        .catalyst {
-            color: #FF00FF;
-            font-weight: bold;
-        }
-
-        .link {
-            color: #00FFFF;
-            font-weight: bold;
+        .section.is-visible h2, .section.is-visible h3, .section.is-visible p, .section.is-visible .controls-grid, .section.is-visible #visualization, .section.is-visible ul, .section.is-visible ol {
+            opacity: 1;
+            transform: translateY(0);
         }
         
-        .controls-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            align-items: center;
-        }
-
-        button {
-            background: none;
-            border: 1px solid var(--primary-glow);
-            color: var(--primary-glow);
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-family: var(--font-main);
-            transition: all 0.3s ease;
-            text-shadow: 0 0 5px var(--primary-glow);
-            text-align: center;
-        }
-
-        button:hover {
-            background: var(--primary-glow);
-            color: #000;
-            box-shadow: 0 0 15px var(--primary-glow);
-        }
-
-        input[type="range"] {
-            width: 100%;
-            accent-color: var(--primary-glow);
-        }
-
+        .highlight, .substrate, .catalyst, .link { font-weight: bold; }
+        .highlight { color: var(--primary-glow); }
+        .substrate { color: var(--secondary-glow); }
+        .catalyst { color: #f472b6; }
+        .link { color: var(--primary-glow); }
+        
         #visualization {
-            width: 100%;
-            height: 600px;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(0, 255, 255, 0.2);
-            border-radius: 8px;
-            margin-top: 2rem;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(129, 140, 248, 0.2);
         }
-
-        .circle-substrate {
-            fill: var(--primary-text);
-        }
-
-        .circle-enzyme {
-            fill: #FF00FF;
-        }
-
-        .circle-link {
-            fill: var(--primary-glow);
-        }
-        
-        .footer {
-            text-align: center;
-            padding: 2.5rem 1rem;
-            color: var(--primary-glow);
-            border-top: 1px solid var(--primary-text);
-            margin-top: 2rem;
-        }
-
-        .footer p {
-            text-align: justify;
-        }
-        
-        /* --- MEDIA QUERIES --- */
-        @media (min-width: 1025px) {
-            .nav-logo {
-                display: none;
-            }
-
-            .menu-toggle {
-                display: none;
-            }
-
-            .nav-container {
-                display: flex;
-            }
-        }
+        .circle-substrate { fill: var(--secondary-glow); }
+        .circle-enzyme { fill: #f472b6; }
+        .circle-link { fill: var(--primary-glow); }
 
         @media (max-width: 1024px) {
-            .nav-content {
-                justify-content: space-between;
-            }
-
-            .nav-container {
-                position: fixed;
-                top: var(--nav-height);
-                left: 0;
-                width: 100%;
-                max-width: 100%;
-                height: calc(100vh - var(--nav-height));
-                background: rgba(0, 5, 8, 0.98);
-                backdrop-filter: blur(15px);
-                flex-direction: column;
-                justify-content: flex-start;
-                align-items: center;
-                transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-                transform: translateY(-110%);
-                overflow-y: auto;
-                padding: 2rem;
-            }
-
-            body.menu-open .nav-container {
-                transform: translateY(0);
-            }
-
-            nav .nav-container > li {
-                width: 100%;
-                height: auto;
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-            }
-
-            nav .nav-container > li > a {
-                padding: 1rem;
-                width: 100%;
-                font-size: 1.5em;
-            }
-            
-            .mega-menu {
-                position: static;
-                display: grid;
-                opacity: 1;
-                transform: none;
-                visibility: visible;
-                width: 100%;
-                box-shadow: none;
-                border: none;
-                padding: 1rem 0 1.5rem 0;
-                background: none;
-                backdrop-filter: none;
-                grid-template-columns: 1fr;
-                border-top: 1px solid rgba(0, 255, 255, 0.2);
-                margin-top: 1rem;
-            }
-            
-            .mega-menu h3 {
-                font-size: 1.8em;
-                text-align: justify;
-            }
-
-            .mega-menu ul {
-                align-items: stretch;
-                text-align: left;
-                list-style: none;
-                padding-left: 0;
-            }
-
-            .mega-menu li {
-                position: relative;
-            }
-
-            .mega-menu a {
-                font-size: 1.5em;
-                padding: 0.8rem 1rem 0.8rem 2.5rem;
-                transition: color 0.3s, background-color 0.3s;
-                display: block;
-                text-align: justify;
-                position: relative;
-            }
-
-            .mega-menu a::before {
-                content: '■';
-                color: var(--primary-glow);
-                position: absolute;
-                left: 0.5rem;
-                top: 50%;
-                transform: translateY(-50%) scale(0.6);
-                font-size: 1.5em;
-            }
-
-            .mega-menu a:hover {
-                padding-left: 2.5rem;
-                color: #000;
-                background-color: var(--primary-glow);
-            }
-
-            .mega-menu a:hover::before {
-                color: #000;
-            }
-            
-            .menu-toggle {
-                display: block;
-                position: relative;
-                z-index: 1001;
-                width: 30px;
-                height: 22px;
-                background: none;
-                border: none;
-                cursor: pointer;
-            }
-
+            .menu-toggle { display: block; }
             .icon-bar {
-                display: block;
-                width: 100%;
-                height: 3px;
-                background-color: var(--primary-text);
-                margin: 6px 0;
-                transition: all 0.3s ease-in-out;
+                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
+                margin: 6px 0; transition: all 0.3s ease-in-out;
                 border-radius: 2px;
             }
-
-            body.menu-open .menu-toggle .icon-bar:nth-child(1) {
-                transform: rotate(45deg) translate(7px, 7px);
-            }
-
-            body.menu-open .menu-toggle .icon-bar:nth-child(2) {
-                opacity: 0;
-            }
-
-            body.menu-open .menu-toggle .icon-bar:nth-child(3) {
-                transform: rotate(-45deg) translate(7px, -7px);
-            }
-
-            #visualization {
-                height: 400px;
-            }
-
-            p, li {
-                font-size: clamp(0.9rem, 3vw, 1rem);
-                text-align: justify;
-            }
-
-            h3 {
-                font-size: clamp(1.1rem, 3.5vw, 1.3rem);
-                text-align: justify;
-            }
-
-            .section {
-                padding: clamp(1rem, 4vw, 2rem);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .page-header {
-                min-height: 30vh;
-                padding: 4rem 1rem;
-            }
-
-            .header-content h1 {
-                font-size: clamp(2rem, 5vw, 3.5rem);
-            }
-
-            p, li {
-                font-size: clamp(0.85rem, 2.8vw, 0.95rem);
-                text-align: justify;
-            }
-
-            h3 {
-                font-size: clamp(1rem, 3vw, 1.2rem);
-                text-align: justify;
-            }
-
-            #visualization {
-                height: 350px;
-            }
-
-            .controls-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .page-header {
-                min-height: 25vh;
-                padding: 3rem 0.5rem;
-            }
-
-            .header-content h1 {
-                font-size: clamp(1.5rem, 4vw, 2.5rem);
-            }
-
-            p, li {
-                font-size: clamp(0.8rem, 2.5vw, 0.9rem);
-                text-align: justify;
-            }
-
-            h3 {
-                font-size: clamp(0.9rem, 2.5vw, 1.1rem);
-                text-align: justify;
-            }
-
-            .section {
-                padding: clamp(0.8rem, 3vw, 1.5rem);
-            }
-
-            #visualization {
-                height: 300px;
-            }
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
         }
     </style>
 </head>
-<body>
-    <nav>
-        <div class="nav-content">
+<body class="bg-black">
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+    <nav class="glassmorphism flex justify-center items-center px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center w-full max-w-7xl">
             <div class="nav-logo">
-                <a href="index.html">O.M.C.</a>
+                <a href="index.html" class="flex items-center gap-3">
+                    <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-8 w-8 md:h-10 md:w-10 rounded-full">
+                    <span class="text-lg font-bold text-white">O.C.V.M.</span>
+                </a>
             </div>
-            <ul class="nav-container" id="nav-menu">
-                <li><a href="index.html">
-                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                    Inicio</a></li>
-    
-                <li><a href="#">
-                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
-                    Origen del Cosmos</a>
-                    <div class="mega-menu">
-                        <div><h3>Sistemas Complejos a Gran Escala</h3>
-                            <ul>
-                                <li><a href="GAME_OF_LIFE.HTML">Juego de la Vida (Conway)</a></li>
-                                <li><a href="GAME_OF_LIFE3D.HTML">Juego de la Vida (3D)</a></li>
-                            </ul>
-                        </div>
-                        <div><h3>Principios Fundamentales</h3>
-                            <ul>
-                                <li><a href="#">(Próximamente: Física)</a></li>
-                                <li><a href="#">(Próximamente: Cosmología)</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </li>
-                
-                <li><a href="#">
-                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v4.586a1 1 0 01-.293.707l-2 2a1 1 0 01-1.414 0l-2-2A1 1 0 018 9.586V5l-1-1z" /></svg>
-                    Origen de la Vida</a>
-                    <div class="mega-menu">
-                        <div><h3>Fundamentos de Biología</h3>
-                            <ul>
-                                <li><a href="#biologia-celular">Introducción a la Célula</a></li>
-                                <li><a href="CURSO_BIOLOGIA_CELULAR.HTML">Curso Biología Celular</a></li>
-                                <li><a href="HISTOLOGIA.html">Histología y Tejidos</a></li>
-                                <li><a href="cuerpo humano completo plantilla Lt.html">Anatomía Humana</a></li>
-                            </ul>
-                        </div>
-                        <div><h3>Autopoiesis y Sistemas Vivos</h3>
-                            <ul>
-                                <li><a href="AUTOPOIESIS.HTML">Simulación Autopoiesis</a></li>
-                                <li><a href="AUTOPOIESIS_3D.HTML">Simulación Autopoiesis (3D)</a></li>
-                                <li><a href="Autopoiesis_Fractal00.html">Simulación Autopoiesis (Fractal)</a></li>
-                                <li><a href="Paper_Varela_1974.html">Paper de Varela (1974)</a></li>
-                            </ul>
-                        </div>
-                        <div><h3>Herramientas de Investigación</h3>
-                            <ul>
-                                <li><a href="https://leolib87.github.io/herbario/">Herbario Digital</a></li>
-                                <li><a href="WESTERNCHILE.HTML">Proveedores Western Blot</a></li>
-                                <li><a href="histologychile.html">Proveedores Histología</a></li>
-                                <li><a href="proveedores_biologia.html">Proveedores Biología</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </li>
-                
-                <li><a href="#">
-                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-                    Origen de la Mente</a>
-                    <div class="mega-menu">
-                        <div><h3>Filosofía y Ciencias Cognitivas</h3>
-                            <ul>
-                                <li><a href="#filosofia-mente">Mente, Lenguaje y Realidad</a></li>
-                                <li><a href="#ciencias-cognitivas">Mente Encarnada y Cognición</a></li>
-                                <li><a href="#inteligencia-artificial">IA y Sistemas Complejos</a></li>
-                                <li><a href="Feno_style.html">Aproximación Fenomenológica</a></li>
-                                <li><a href="#epistemologia">Epistemología del Conocer</a></li>
-                                <li><a href="#trazado-vida">Sentido de Vida y Muerte</a></li>
-                            </ul>
-                        </div>
-                        <div><h3>Autores y Referentes</h3>
-                            <ul>
-                                <li><a href="PAPERS_VARELA.HTML">Publicaciones de Varela</a></li>
-                                <li><a href="CITAS.HTML">Fragmentos de Mentes</a></li>
-                                <li><a href="MAPEO_FILO_MENTE_CHILE.HTML">Mapeo Filosofía Mente (Chile)</a></li>
-                            </ul>
-                        </div>
-                        <div><h3>Reflexiones Culturales</h3>
-                            <ul>
-                                <li><a href="peliculas.html">Reflexiones en el Cine</a></li>
-                                <li><a href="MUSICA.HTML">Letras de Canciones</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </li>
-    
-                <li><a href="#">
-                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                    Cartografías del Saber</a>
-                    <div class="mega-menu">
-                        <div><h3>Visualización de Redes y Datos</h3>
-                            <ul>
-                                <li><a href="#analisis-redes">Introducción a las Redes</a></li>
-                                <li><a href="#elementos-comunes">Mapa Conceptual General</a></li>
-                                <li><a href="RED POLITICOS.html">Red de Políticos</a></li>
-                                <li><a href="varios graficos.html">Colección de Gráficos</a></li>
-                                <li><a href="GRAFICO DE LINEAS Y TREEMAP.html">Líneas y Treemaps</a></li>
-                                <li><a href="treemap_ias.html">Treemap de IAs</a></li>
-                            </ul>
-                        </div>
-                        <div><h3>Mapas Conceptuales</h3>
-                            <ul>
-                                <li><a href="MAPA_MENTAL_TRABAJO.HTML">Mapa Mental "Trabajo"</a></li>
-                                <li><a href="VARELA_CARTOGRAFIA.HTML">Cartografía Varela (3D)</a></li>
-                                <li><a href="cartografia_varela_01.html">Cartografía Varela (2D)</a></li>
-                                <li><a href="Explorando la Visualización Filosófica.HTML">Visualización Filosófica</a></li>
-                            </ul>
-                        </div>
-                        <div><h3>Herramientas Digitales y IA</h3>
-                            <ul>
-                                <li><a href="Herramientas_Investigacion_definitiva.html">Guía de Herramientas</a></li>
-                                <li><a href="IAS_BUSQUEDA.HTML">Buscador de IAs</a></li>
-                                <li><a href="googleias.html">IAs de Google</a></li>
-                                <li><a href="IAs.html">Red de IAs</a></li>
-                                <li><a href="#voyant-tools">Análisis con Voyant Tools</a></li>
-                                <li><a href="Paper_web.html">Plantilla Web para Papers</a></li>
-                            </ul>
-                        </div>
-                        <div><h3>Recursos y Proyectos</h3>
-                            <ul>
-                                <li><a href="MI_BIBLIOTECA.HTML">Biblioteca Humanidades</a></li>
-                                <li><a href="BIBLIOTECA_CIENCIAS.HTML">Biblioteca Ciencias</a></li>
-                                <li><a href="BIBLIOECAS_DIGITALES_SOMBRA.HTML">Bibliotecas Sombra</a></li>
-                                <li><a href="FUENTES_FINANCIAMIENTO.HTML">Fuentes de Financiamiento</a></li>
-                                <li><a href="FONDOS.HTML">DEEP Financiamiento</a></li>
-                                <li><a href="FONDECYT.HTML">Análisis Proyectos Fondecyt</a></li>
-                                <li><a href="Empleos_IES.html">Empleos en Educación Superior</a></li>
-                                <li><a href="Pedagogia-Biologia.html">Pedagogías en Biología (Chile)</a></li>
-                                <li><a href="QF.HTML">Química y Farmacia (Chile)</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </li>
-
-                <li><a href="#">
-                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v4.586a1 1 0 01-.293.707l-2 2a1 1 0 01-1.414 0l-2-2A1 1 0 018 9.586V5l-1-1z" /></svg>
-                    Laboratorio</a>
-                    <div class="mega-menu mega-menu-single">
-                        <div>
-                            <h3>Laboratorio Experimental</h3>
-                            <ul>
-                                <li><a href="LEOLIB NEWS BLACK.HTML">Leolib News</a></li>
-                                <li><a href="CHAT_LEO.HTML">Chat Leo</a></li>
-                                <li><a href="horario_2025.html">Horario 2025</a></li>
-                                <li><a href="HORARIOS_LAB.HTML">Horarios Lab</a></li>
-                                <li><a href="INTEGRAL1sd.HTML">Integral 1</a></li>
-                                <li><a href="red 2.html">Red Tesis Enseñanza Cs.</a></li>
-                                <li><a href="red3.html">Red Tesis Ejemplos</a></li>
-                                <li><a href="web.moderna.html">Web Moderna (Test)</a></li>
-                                <li><a href="web.three.html">Web Three.js (Test)</a></li>
-                                <li><a href="totem.html">Totem 1</a></li>
-                                <li><a href="totem2.html">Totem 2</a></li>
-                                <li><a href="PROBANDO.HTML">Probando 1</a></li>
-                                <li><a href="probando2gemini.html">Probando 2</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </li>
-                
-                <li><a href="#contacto">
-                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                    Contacto</a></li>
+            <ul id="nav-menu" class="hidden lg:flex items-center justify-center list-none h-full gap-2">
+                 <li><a href="#inicio" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors">Inicio</a></li>
             </ul>
-            <button class="menu-toggle" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+            <button class="menu-toggle lg:hidden relative z-50 w-8 h-8" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
                 <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
             </button>
         </div>
     </nav>
 
-    <div class="main-container">
-        <div class="page-header">
-            <div id="particles-js"></div>
-            <div class="header-content">
-                <h1>Modelo de Autopoiesis</h1>
+    <div class="main-container w-full mx-auto px-4 sm:px-6 lg:px-8 pt-[var(--nav-height)]">
+        <div id="inicio" class="hero flex flex-col justify-center items-center text-center relative h-screen min-h-[500px] md:min-h-[600px]">
+            <div class="hero-content relative z-10">
+                <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white" style="animation: pulse-glow 3s infinite alternate;">Modelo de Autopoiesis</h1>
             </div>
         </div>
 
-        <div class="layout-grid">
-            <div class="section" id="controls">
-                <h2>Controles de Simulación</h2>
-                <div class="controls-grid">
-                    <div>
-                        <p>Enzimas: <span id="enzymeCountValue">10</span></p>
-                        <input type="range" id="enzymeCount" min="1" max="50" value="10">
+        <div class="layout-grid grid grid-cols-1 gap-8 mt-8">
+            <main class="content">
+                <section class="section glassmorphism rounded-xl mb-8 p-4 sm:p-6 lg:p-8" data-animate>
+                    <h2 class="text-2xl sm:text-3xl font-bold border-b border-indigo-400 pb-4 mb-6 text-center">Controles de Simulación</h2>
+                    <div class="controls-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-center">
+                        <div>
+                            <label for="enzymeCount" class="block text-sm font-medium text-gray-300">Enzimas: <span id="enzymeCountValue" class="font-bold text-white">10</span></label>
+                            <input type="range" id="enzymeCount" min="1" max="50" value="10" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" style="accent-color: var(--primary);">
+                        </div>
+                        <div>
+                            <label for="substrateSpeed" class="block text-sm font-medium text-gray-300">Velocidad de Sustrato: <span id="substrateSpeedValue" class="font-bold text-white">5</span></label>
+                            <input type="range" id="substrateSpeed" min="1" max="10" value="5" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" style="accent-color: var(--primary);">
+                        </div>
+                        <div>
+                            <label for="decayRate" class="block text-sm font-medium text-gray-300">Tasa de Decaimiento: <span id="decayRateValue" class="font-bold text-white">0.001</span></label>
+                            <input type="range" id="decayRate" min="0" max="0.01" step="0.0001" value="0.001" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" style="accent-color: var(--primary);">
+                        </div>
+                        <div class="text-center">
+                             <p class="text-gray-400 text-sm mb-2">Estado: <span id="status" class="font-semibold text-gray-200"></span></p>
+                            <button onclick="resetSimulation()" class="w-full px-5 py-2 font-semibold text-white bg-indigo-500 rounded-md hover:bg-indigo-600 transition-colors">Reiniciar</button>
+                        </div>
                     </div>
-                    <div>
-                        <p>Velocidad de Sustrato: <span id="substrateSpeedValue">5</span></p>
-                        <input type="range" id="substrateSpeed" min="1" max="10" value="5">
-                    </div>
-                    <div>
-                        <p>Tasa de Decaimiento: <span id="decayRateValue">0.001</span></p>
-                        <input type="range" id="decayRate" min="0" max="0.01" step="0.0001" value="0.001">
-                    </div>
-                    <div>
-                        <p>Estado: <span id="status">Sustratos: 0, Enlaces: 0, Enzimas: 0</span></p>
-                        <button onclick="resetSimulation()">Reiniciar</button>
-                    </div>
-                </div>
-                <div id="visualization"></div>
-            </div>
+                    <div id="visualization" class="w-full h-[60vh] min-h-[400px] max-h-[600px] rounded-lg mt-6"></div>
+                </section>
 
-            <div class="section" id="intro">
-                <h2>Introducción a la Autopoiesis</h2>
-                <p>Imagina un sistema que se construye desde dentro, una entidad viva que desafía el caos tejiendo su propia existencia. La <span class="highlight">autopoiesis</span>, un concepto revolucionario de los biólogos Humberto Maturana y Francisco Varela, captura esta esencia de la vida. Describe sistemas que se automantienen al producir y regenerar sus propios componentes mediante una red cerrada de procesos. Visualiza una célula: su danza química sostiene su forma frente a la entropía. En esta simulación, los <span class="substrate">sustratos</span> (verde) se desplazan sin rumbo, los <span class="catalyst">enzimas</span> (magenta) desencadenan la creación de <span class="link">enlaces</span> (cian), y estos enlaces se descomponen de nuevo en sustratos: un eco digital del equilibrio dinámico de la vida.</p>
-            </div>
-
-            <div class="section" id="concepts">
-                <h2>Síntesis de "Autopoiesis: La Organización de los Sistemas Vivos" (Varela y Maturana, 1974)</h2>
-                <h3>1. Introducción</h3>
-                <p>Este trabajo seminal redefine la vida, alejándose de la reproducción y la evolución como rasgos definitorios. En su lugar, centra la atención en la <span class="highlight">unidad</span> de los sistemas vivos y su organización intrínseca.</p>
-                <h3>2. Organización</h3>
-                <p>Todo sistema puede verse como una <span class="highlight">unidad</span> singular o como una red compleja de componentes. Su <span class="highlight">organización</span>—la trama relacional que une estas partes—lo convierte en un todo funcional.</p>
-                <h3>3. Organización Autopoiética</h3>
-                <p>Un sistema autopoiético se caracteriza por:</p>
-                <ul>
-                    <li>Una <span class="highlight">red de producción</span> donde los componentes se generan recursivamente a sí mismos.</li>
-                    <li>Una unidad que se sostiene gracias a esta red.</li>
-                </ul>
-                <p><strong>Ejemplo:</strong> Una célula, con sus reacciones químicas renovando constantemente su estructura, encarna la autopoiesis.</p>
-                <h3>4. Autopoiesis vs. Alopoiesis</h3>
-                <p>Los <span class="highlight">sistemas autopoiéticos</span> crean sus propios componentes, preservando su identidad. Los <span class="highlight">sistemas alopoiéticos</span>, como un ribosoma, producen algo externo a sí mismos.</p>
-                <h3>5. La Autopoiesis como Núcleo de la Vida</h3>
-                <p>Los seres vivos son inherentemente autopoiéticos. La reproducción y la evolución son secundarias; el corazón de la vida reside en esta unidad autoconstruida.</p>
-                <h3>6. Modelo de Simulación</h3>
-                <p>La simulación bidimensional del artículo, reflejada aquí, incluye:</p>
-                <ul>
-                    <li><span class="substrate">Sustratos (O)</span>: Materias primas que se mueven en el espacio.</li>
-                    <li><span class="catalyst">Catalizadores (*)</span>: Agentes que forman <span class="link">enlaces</span> entre sustratos, creando estructuras cerradas (membranas).</li>
-                    <li><strong>Autoreparación:</strong> Un catalizador atrapado en una membrana puede generar nuevos elementos, manteniendo la estructura y logrando autopoiesis.</li>
-                </ul>
-                <h3>7. Implicaciones y Aplicaciones</h3>
-                <p>La autopoiesis depende de dinámicas relacionales, no de materiales específicos. Esto abre caminos hacia:</p>
-                <ul>
-                    <li><span class="highlight">Origen de la Vida:</span> Ejemplo: liposomas con reacciones internas.</li>
-                    <li><span class="highlight">Vida Artificial:</span> Desafíos para sintetizar sistemas autopoiéticos.</li>
-                </ul>
-                <h3>8. Conclusión</h3>
-                <p>Un sistema autopoiético:</p>
-                <ol>
-                    <li>Tiene <span class="highlight">límites</span> definidos.</li>
-                    <li>Contiene <span class="highlight">componentes</span> internos.</li>
-                    <li>Opera mecánicamente con interacciones precisas.</li>
-                    <li>Genera sus propios <span class="highlight">límites</span> mediante interacciones.</li>
-                    <li>Produce todos sus <span class="highlight">componentes</span> internamente.</li>
-                    <li>Mantiene su <span class="highlight">organización</span> mientras sus procesos internos permanezcan activos.</li>
-                </ol>
-                <p>Este marco afina nuestra comprensión de lo vivo, conectando biología, inteligencia artificial y filosofía de la mente.</p>
-            </div>
-            <footer class="footer">
-                <p>Explorando la Autopoiesis | 2025</p>
-            </footer>
+                <section class="section glassmorphism rounded-xl mb-8 p-4 sm:p-6 lg:p-8" data-animate>
+                    <h2 class="text-2xl sm:text-3xl font-bold border-b border-indigo-400 pb-4 mb-6 text-center">Introducción a la Autopoiesis</h2>
+                    <p class="text-gray-300 text-justify">Imagina un sistema que se construye desde dentro, una entidad viva que desafía el caos tejiendo su propia existencia. La <span class="highlight">autopoiesis</span>, un concepto revolucionario de los biólogos Humberto Maturana y Francisco Varela, captura esta esencia de la vida. Describe sistemas que se automantienen al producir y regenerar sus propios componentes mediante una red cerrada de procesos. Visualiza una célula: su danza química sostiene su forma frente a la entropía. En esta simulación, los <span class="substrate">sustratos</span> (cian) se desplazan sin rumbo, los <span class="catalyst">enzimas</span> (magenta) desencadenan la creación de <span class="link">enlaces</span> (índigo), y estos enlaces se descomponen de nuevo en sustratos: un eco digital del equilibrio dinámico de la vida.</p>
+                </section>
+                
+                <section class="section glassmorphism rounded-xl mb-8 p-4 sm:p-6 lg:p-8" data-animate>
+                    <h2 class="text-2xl sm:text-3xl font-bold border-b border-indigo-400 pb-4 mb-6 text-center">Síntesis de "Autopoiesis" (Varela y Maturana, 1974)</h2>
+                    <div class="text-gray-300 text-justify">
+                        <h3 class="text-xl sm:text-2xl font-semibold mt-6 mb-3 text-indigo-400">1. Organización vs. Estructura</h3>
+                        <p>Todo sistema puede verse como una <span class="highlight">unidad</span> singular o como una red compleja de componentes. Su <span class="highlight">organización</span>—la trama relacional que une estas partes—lo convierte en un todo funcional y define su identidad. La <span class="highlight">estructura</span> son los componentes físicos que realizan esa organización.</p>
+                        
+                        <h3 class="text-xl sm:text-2xl font-semibold mt-6 mb-3 text-indigo-400">2. Organización Autopoiética</h3>
+                        <p>Un sistema autopoiético se caracteriza por una <span class="highlight">red de producción</span> donde los componentes se generan recursivamente a sí mismos, manteniendo la integridad de la red y estableciendo sus propios límites. <strong>Ejemplo:</strong> Una célula, con sus reacciones químicas renovando constantemente su estructura, encarna la autopoiesis.</p>
+                        
+                        <h3 class="text-xl sm:text-2xl font-semibold mt-6 mb-3 text-indigo-400">3. Modelo de Simulación</h3>
+                        <p>La simulación bidimensional del artículo, reflejada aquí, incluye:</p>
+                        <ul class="list-disc list-inside space-y-2 my-4">
+                            <li><span class="substrate">Sustratos (O)</span>: Materias primas que se mueven en el espacio.</li>
+                            <li><span class="catalyst">Catalizadores (*)</span>: Agentes que forman <span class="link">enlaces</span> entre sustratos, creando estructuras cerradas (membranas).</li>
+                            <li><strong>Autoreparación:</strong> Un catalizador atrapado en una membrana puede generar nuevos elementos, manteniendo la estructura y logrando autopoiesis.</li>
+                        </ul>
+                        
+                        <h3 class="text-xl sm:text-2xl font-semibold mt-6 mb-3 text-indigo-400">4. Conclusión</h3>
+                        <p>Un sistema autopoiético tiene límites definidos, contiene componentes internos, opera mecánicamente, y genera tanto sus propios límites como sus componentes. Este marco afina nuestra comprensión de lo vivo, conectando biología, IA y filosofía de la mente.</p>
+                    </div>
+                </section>
+            </main>
         </div>
+        <footer class="footer text-center py-10 mt-8 border-t border-gray-700">
+            <p class="mt-2 text-gray-400">Explorando la Autopoiesis | 2025</p>
+        </footer>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <script>
-        // --- INICIALIZACIÓN DE PARTICLES.JS ---
-        if (document.getElementById('particles-js')) {
-            particlesJS("particles-js", {
-                "particles": {
-                    "number": { "value": 60, "density": { "enable": true, "value_area": 800 } },
-                    "color": { "value": "#00ffff" },
-                    "shape": { "type": "circle" },
-                    "opacity": { "value": 0.5, "random": true },
-                    "size": { "value": 2, "random": true },
-                    "line_linked": { "enable": true, "distance": 150, "color": "#00ffc2", "opacity": 0.3, "width": 1 },
-                    "move": { "enable": true, "speed": 1, "direction": "none", "random": true, "straight": false, "out_mode": "out" }
-                },
-                "interactivity": {
-                    "detect_on": "canvas",
-                    "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": true, "mode": "push" }, "resize": true },
-                    "modes": { "grab": { "distance": 140, "line_linked": { "opacity": 0.7 } }, "push": { "particles_nb": 4 } }
-                },
-                "retina_detect": true
-            });
-        }
-
-        // --- SCRIPTS DE NAVEGACIÓN ---
         document.addEventListener('DOMContentLoaded', () => {
-            const menuToggleBtn = document.getElementById('menu-toggle-btn');
-            const navMenu = document.getElementById('nav-menu');
-
-            const toggleMenu = (e) => {
-                e.stopPropagation();
-                document.body.classList.toggle('menu-open');
-            };
-
-            const closeMenu = () => {
-                if (document.body.classList.contains('menu-open')) {
-                    document.body.classList.remove('menu-open');
-                }
-            };
-            
-            menuToggleBtn.addEventListener('click', toggleMenu);
-            navMenu.addEventListener('click', (e) => {
-                if (e.target.tagName === 'A') {
-                    closeMenu();
-                }
-            });
-            document.addEventListener('click', (e) => {
-                if (document.body.classList.contains('menu-open') && !navMenu.contains(e.target) && !menuToggleBtn.contains(e.target)) {
-                    closeMenu();
-                }
-            });
-
-            if (window.matchMedia('(min-width: 1025px)').matches) {
-                const menuItems = document.querySelectorAll('.nav-container > li');
-                menuItems.forEach(item => {
-                    const megaMenu = item.querySelector('.mega-menu');
-                    if (megaMenu) {
-                        let leaveTimeout;
-                        const showMenu = () => {
-                            clearTimeout(leaveTimeout);
-                            document.querySelectorAll('.mega-menu.is-active').forEach(m => {
-                                if (m !== megaMenu) m.classList.remove('is-active');
-                            });
-                            megaMenu.classList.add('is-active');
-                        };
-                        const startHideTimer = () => {
-                            leaveTimeout = setTimeout(() => megaMenu.classList.remove('is-active'), 250);
-                        };
-                        item.addEventListener('mouseenter', showMenu);
-                        item.addEventListener('mouseleave', startHideTimer);
-                        megaMenu.addEventListener('mouseenter', () => clearTimeout(leaveTimeout));
-                        megaMenu.addEventListener('mouseleave', startHideTimer);
-                    }
-                });
+            setupNavigation();
+            setupScrollAnimations();
+            if (typeof THREE !== 'undefined') {
+                initThreeJSBackground();
             }
+            initAutopoiesisSimulation();
         });
 
-        // --- SCRIPT DE SIMULACIÓN DE AUTOPOIESIS ---
-        const vizContainer = document.getElementById('visualization');
-        if (vizContainer) {
-            let width = vizContainer.clientWidth;
-            let height = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 350) : 600;
-            const cellSize = 10;
-            let cols = Math.floor(width / cellSize);
-            let rows = Math.floor(height / cellSize);
+        function initAutopoiesisSimulation() {
+            const vizContainer = document.getElementById('visualization');
+            if (!vizContainer) return;
 
+            let width, height, cols, rows;
+            const cellSize = 10;
             const svg = d3.select("#visualization")
                 .append("svg")
                 .attr("width", "100%")
                 .attr("height", "100%")
-                .attr("viewBox", `0 0 ${width} ${height}`)
-                .style("background", "rgba(0, 0, 0, 0.9)")
                 .attr("preserveAspectRatio", "xMidYMid meet");
 
             let grid, substrates, enzymes, links;
             let enzymeCount = 10;
             let substrateSpeed = 5;
             let decayRate = 0.001;
+            let animationFrameId;
 
             d3.select("#enzymeCount").on("input", function() {
                 enzymeCount = +this.value;
                 d3.select("#enzymeCountValue").text(enzymeCount);
             });
-
             d3.select("#substrateSpeed").on("input", function() {
                 substrateSpeed = +this.value;
                 d3.select("#substrateSpeedValue").text(substrateSpeed);
             });
-
             d3.select("#decayRate").on("input", function() {
                 decayRate = +this.value;
                 d3.select("#decayRateValue").text(decayRate.toFixed(4));
             });
-
-            function resetSimulation() {
+            
+            window.resetSimulation = function() {
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                
                 width = vizContainer.clientWidth;
-                if (width < cellSize) {
+                height = vizContainer.clientHeight;
+                if (width < cellSize || height < cellSize) {
                     svg.selectAll("*").remove();
                     return;
                 }
-                height = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 350) : 600;
                 cols = Math.floor(width / cellSize);
                 rows = Math.floor(height / cellSize);
                 svg.attr("viewBox", `0 0 ${width} ${height}`);
 
-                grid = Array(cols).fill().map(() => Array(rows).fill(0));
+                grid = Array(cols).fill(null).map(() => Array(rows).fill(0));
                 substrates = [];
                 enzymes = [];
                 links = [];
@@ -1024,7 +277,7 @@
                     grid[x][y] = 2;
                     enzymes.push({ x, y });
                 }
-                updateVisualization();
+                animate();
             }
 
             function moveSubstrates() {
@@ -1035,8 +288,7 @@
                         const newY = s.y + [0, 1, 0, -1][dir];
                         if (isValid(newX, newY) && grid[newX][newY] === 0) {
                             grid[s.x][s.y] = 0;
-                            s.x = newX;
-                            s.y = newY;
+                            s.x = newX; s.y = newY;
                             grid[s.x][s.y] = 1;
                         }
                     }
@@ -1072,18 +324,24 @@
 
             function updateVisualization() {
                 const data = [
-                    ...substrates.map(d => ({ type: "substrate", x: d.x * cellSize + cellSize / 2, y: d.y * cellSize + cellSize / 2 })),
-                    ...enzymes.map(d => ({ type: "enzyme", x: d.x * cellSize + cellSize / 2, y: d.y * cellSize + cellSize / 2 })),
-                    ...links.map(d => ({ type: "link", x: d.x * cellSize + cellSize / 2, y: d.y * cellSize + cellSize / 2 }))
+                    ...substrates.map(d => ({ type: "substrate", id: `s-${d.x}-${d.y}`, x: d.x, y: d.y })),
+                    ...enzymes.map(d => ({ type: "enzyme", id: `e-${d.x}-${d.y}`, x: d.x, y: d.y })),
+                    ...links.map(d => ({ type: "link", id: `l-${d.x}-${d.y}`, x: d.x, y: d.y }))
                 ];
-                const circles = svg.selectAll("circle").data(data, d => `${d.type}-${d.x}-${d.y}`);
+                const circles = svg.selectAll("circle").data(data, d => d.id);
+                
                 circles.exit().remove();
+                
                 circles.enter().append("circle")
-                    .attr("r", cellSize / 2)
+                    .attr("r", cellSize / 2.5)
                     .attr("class", d => `circle-${d.type}`)
-                    .merge(circles)
-                    .attr("cx", d => d.x)
-                    .attr("cy", d => d.y);
+                    .attr("cx", d => d.x * cellSize + cellSize / 2)
+                    .attr("cy", d => d.y * cellSize + cellSize / 2);
+                
+                circles
+                    .attr("cx", d => d.x * cellSize + cellSize / 2)
+                    .attr("cy", d => d.y * cellSize + cellSize / 2);
+
                 d3.select("#status").text(`Sustratos: ${substrates.length}, Enlaces: ${links.length}, Enzimas: ${enzymes.length}`);
             }
 
@@ -1092,8 +350,7 @@
                 for (let dx of [-1, 0, 1]) {
                     for (let dy of [-1, 0, 1]) {
                         if (dx === 0 && dy === 0) continue;
-                        const nx = x + dx;
-                        const ny = y + dy;
+                        const nx = x + dx; const ny = y + dy;
                         if (isValid(nx, ny)) neighbors.push({ x: nx, y: ny });
                     }
                 }
@@ -1105,21 +362,118 @@
             }
 
             function animate() {
-                if (cols > 0 && rows > 0) {
-                    moveSubstrates();
-                    interact();
-                    updateVisualization();
-                }
-                requestAnimationFrame(animate);
+                moveSubstrates();
+                interact();
+                updateVisualization();
+                animationFrameId = requestAnimationFrame(animate);
             }
 
-            function resize() {
-                resetSimulation();
-            }
-
-            window.addEventListener("resize", resize);
+            window.addEventListener("resize", resetSimulation);
             resetSimulation();
-            animate();
+        }
+
+        function initThreeJSBackground() {
+            let scene, camera, renderer, points, lines, mouseX = 0, mouseY = 0;
+            try {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+                camera.position.z = 50;
+
+                renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("bg-canvas"), alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+                const pointCount = 200;
+                const positions = new Float32Array(pointCount * 3);
+                const pointGeo = new THREE.BufferGeometry();
+                for (let i = 0; i < pointCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 400;
+                }
+                pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+                const pointMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.5, transparent: true, opacity: 0.8 });
+                points = new THREE.Points(pointGeo, pointMaterial);
+                scene.add(points);
+
+                regenerateLines();
+
+                window.addEventListener("resize", onWindowResize, false);
+                document.addEventListener('mousemove', onMouseMove, false);
+                animate();
+            } catch (error) { console.error('Error initializing Three.js background:', error); }
+
+            function onWindowResize() {
+                if(camera && renderer) {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                }
+            }
+
+            function onMouseMove(event) {
+                mouseX = (event.clientX - window.innerWidth / 2) / 100;
+                mouseY = (event.clientY - window.innerHeight / 2) / 100;
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                if(scene && camera && renderer && points && lines) {
+                    points.rotation.y += 0.0005;
+                    lines.rotation.y += 0.0005;
+                    camera.position.x += (mouseX - camera.position.x) * 0.05;
+                    camera.position.y += (-mouseY - camera.position.y) * 0.05;
+                    camera.lookAt(scene.position);
+                    renderer.render(scene, camera);
+                }
+            }
+            
+            function regenerateLines() {
+                if (lines) scene.remove(lines);
+                const pointPositions = points.geometry.attributes.position.array;
+                const pointCount = pointPositions.length / 3;
+                const linePositions = [];
+                for (let i = 0; i < pointCount; i++) {
+                    for (let j = i + 1; j < pointCount; j++) {
+                        const dx = pointPositions[i*3] - pointPositions[j*3];
+                        const dy = pointPositions[i*3+1] - pointPositions[j*3+1];
+                        const dz = pointPositions[i*3+2] - pointPositions[j*3+2];
+                        if (Math.sqrt(dx*dx+dy*dy+dz*dz) < 50) {
+                            linePositions.push(pointPositions[i*3], pointPositions[i*3+1], pointPositions[i*3+2]);
+                            linePositions.push(pointPositions[j*3], pointPositions[j*3+1], pointPositions[j*3+2]);
+                        }
+                    }
+                }
+                const lineGeo = new THREE.BufferGeometry();
+                lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+                const lineMaterial = new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.3, transparent: true });
+                lines = new THREE.LineSegments(lineGeo, lineMaterial);
+                scene.add(lines);
+            }
+        }
+
+        function setupNavigation() {
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            menuToggleBtn.addEventListener('click', () => {
+                document.body.classList.toggle('menu-open');
+            });
+        }
+
+        function setupScrollAnimations() {
+            const animatedSections = document.querySelectorAll('[data-animate]');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        const elementsToAnimate = entry.target.querySelectorAll('h2, h3, p, .controls-grid, #visualization, ul, ol');
+                        elementsToAnimate.forEach((el, index) => {
+                           el.style.transitionDelay = `${index * 100}ms`;
+                        });
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            animatedSections.forEach(section => observer.observe(section));
         }
     </script>
 </body>
