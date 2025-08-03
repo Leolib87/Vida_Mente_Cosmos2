@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filosofía de la Mente | Exploración Transdisciplinaria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Script de Mermaid para los diagramas conceptuales -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --primary-text: #e5e7eb;
+            --primary-glow: #818cf8;
+            --secondary-glow: #22d3ee;
+            --font-main: 'Inter', sans-serif;
+            --nav-height: 70px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: #000000;
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+        
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            cursor: crosshair;
+        }
+
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.menu-open {
+            overflow: hidden;
+        }
+        
+        nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+            padding: 0 5%;
+            pointer-events: auto;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .nav-logo a {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            text-shadow: 0 0 8px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
+        nav .nav-container > li { position: relative; height: 100%; display: flex; align-items: center; }
+        nav .nav-container > li > a {
+            color: var(--primary-text); text-decoration: none; font-size: clamp(0.9em, 1.2vw, 1.05em); font-weight: 500;
+            transition: color 0.3s ease, text-shadow 0.3s ease; padding: 0 1rem; display: flex; align-items: center; gap: 8px;
+        }
+        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a { color: #FFFFFF; text-shadow: 0 0 12px var(--primary-glow); }
+        
+        .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; }
+        
+        .mega-menu { /* Kept for mobile menu responsiveness even if not used for desktop */
+            position: fixed;
+            top: var(--nav-height);
+            left: 50%;
+            transform: translateX(-50%) scale(0.95);
+            border-radius: 10px; width: auto;
+            min-width: clamp(300px, 80vw, 950px); max-width: 95vw;
+            padding: 2rem; 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem; 
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0.3s;
+            transform-origin: top center;
+        }
+        
+        .mega-menu.is-active { 
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) scale(1);
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0s;
+        }
+        
+        .mega-menu h3 {
+            color: var(--primary-glow); font-size: 1.1em; margin-bottom: 1rem;
+            text-shadow: 0 0 5px var(--primary-glow);
+            border-bottom: 1px solid rgba(129, 140, 248, 0.3);
+            padding-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .mega-menu ul { display: flex; flex-direction: column; gap: 0.75rem; list-style: none; }
+        .mega-menu li { position: relative; }
+        .mega-menu a {
+            font-size: 0.9em; color: var(--primary-text); text-decoration: none;
+            transition: color 0.3s, padding-left 0.3s, background-color 0.3s;
+            padding: 0.5rem 0.75rem 0.5rem 2rem; border-radius: 4px;
+            display: block;
+            position: relative;
+        }
+        .mega-menu a::before {
+            content: '›';
+            color: var(--primary-glow);
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+            transition: color 0.3s;
+        }
+        .mega-menu a:hover { color: #000; background-color: var(--primary-glow); padding-left: 2.5rem; }
+        .mega-menu a:hover::before { color: #000; }
+        
+        .hero {
+            height: 100vh; min-height: 500px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; position: relative;
+            padding: 1rem;
+        }
+        .hero-content { position: relative; z-index: 2; animation: fadeIn 2s ease-in; }
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 5.5rem); font-weight: 700; color: #fff;
+            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(129, 140, 248, 0.7);
+            animation: pulse-glow 3s infinite alternate;
+        }
+        .hero p { font-size: clamp(1rem, 2.5vw, 1.3rem); max-width: 800px; margin: 1.5rem auto 0; text-shadow: 0 0 5px #000; }
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .main-container { 
+            width: 100%;
+            margin: 0 auto; 
+            padding: var(--nav-height) clamp(1rem, 5vw, 4rem) 1rem;
+            pointer-events: none;
+        }
+        
+        main, .footer, .section, .hero-content {
+            pointer-events: auto;
+        }
+
+        main p, .footer p, main li {
+            user-select: text;
+            cursor: default;
+        }
+
+        /* Estilo para justificar el texto de los párrafos */
+        main p {
+            text-align: justify;
+            line-height: 1.9; /* Ajuste para mejor legibilidad */
+        }
+
+        .layout-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 2rem; }
+        
+        .section {
+            padding: clamp(1.5rem, 5vw, 2.5rem);
+            border-radius: 12px; margin-bottom: 2rem; position: relative;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .section:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 0 40px rgba(129, 140, 248, 0.2), 0 0 80px rgba(34, 211, 238, 0.1); /* Doble brillo */
+        }
+        
+        .section h2, .section h3, .section p, .section .visualization-container, .section iframe, .section ul, .section ol, .section li, .section .mermaid {
+              opacity: 0;
+              transform: translateY(20px);
+              transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .section.is-visible h2, .section.is-visible h3, .section.is-visible p, .section.is-visible .visualization-container, .section.is-visible iframe, .section.is-visible ul, .section.is-visible ol, .section.is-visible li, .section.is-visible .mermaid {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        h2 {
+            font-size: clamp(1.5rem, 5vw, 2.2rem); 
+            color: var(--primary-text); 
+            text-shadow: 0 0 8px var(--secondary-glow);
+            border-bottom: 1px solid var(--primary-glow); 
+            padding-bottom: 1rem; 
+            margin-bottom: 1.5rem;
+        }
+        /* Nuevo estilo para h3 con color secundario */
+        h3 { 
+            font-size: clamp(1.2rem, 4vw, 1.5rem); 
+            color: var(--secondary); /* Usando el color secundario */
+            text-shadow: 0 0 8px var(--secondary-glow), 0 0 15px rgba(34, 211, 238, 0.5); /* Añadiendo un brillo más pronunciado */
+            margin: 2rem 0 1rem 0; 
+        }
+        .highlight { 
+            color: var(--primary-glow); 
+            font-weight: bold; 
+            text-shadow: 0 0 5px rgba(129, 140, 248, 0.5); /* Sutil brillo para destacados */
+        }
+        
+        .footer { text-align: center; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
+        
+        /* Estilos para Mermaid */
+        .mermaid {
+            background-color: rgba(17, 24, 39, 0.5); /* Fondo semitransparente para el diagrama */
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1.5rem auto;
+            max-width: 100%;
+            overflow-x: auto; /* Permite el desplazamiento horizontal si el diagrama es muy ancho */
+            color: var(--primary-text); /* Color de texto para el diagrama */
+        }
+        .mermaid svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Estilo para el botón "Volver Arriba" */
+        #back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: var(--primary-dark);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 9999px; /* Fully rounded */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+            z-index: 999;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        #back-to-top:hover {
+            background-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        #back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        @media (min-width: 1025px) {
+            .menu-toggle { display: none; }
+            .nav-container { display: flex; }
+        }
+
+        @media (max-width: 1024px) {
+            .nav-content { justify-content: space-between; }
+            .nav-container {
+                position: fixed;
+                top: var(--nav-height);
+                left: 0;
+                width: 100%;
+                height: calc(100vh - var(--nav-height));
+                background: rgba(17, 24, 39, 0.95);
+                backdrop-filter: blur(15px);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+                transform: translateY(-110%);
+                overflow-y: auto;
+                padding: 2rem;
+            }
+            body.menu-open .nav-container {
+                transform: translateY(0);
+            }
+
+            nav .nav-container > li { width: 100%; height: auto; flex-direction: column; align-items: center; text-align: center; }
+            nav .nav-container > li > a { padding: 1rem; width: 100%; font-size: 1.5em;}
+            
+            .mega-menu {
+                position: static; display: grid; opacity: 1; transform: none; visibility: visible; width: 100%; box-shadow: none; 
+                border: none; padding: 1rem 0 1.5rem 0; background: none; backdrop-filter: none;
+                grid-template-columns: 1fr; border-top: 1px solid rgba(129, 140, 248, 0.2); margin-top: 1rem;
+            }
+            
+            .mega-menu h3 { 
+                text-align: center; 
+                font-size: 1.8em;
+            }
+            .mega-menu ul { 
+                align-items: stretch;
+                text-align: left;
+                list-style: none;
+                padding-left: 0;
+            }
+            
+            .mega-menu a {
+                font-size: 1.5em;
+                padding: 0.8rem 1rem 0.8rem 2.5rem;
+                display: block;
+                text-align: left;
+                position: relative;
+            }
+
+            .mega-menu a::before {
+                content: '■';
+                color: var(--primary-glow);
+                position: absolute;
+                left: 0.5rem;
+                top: 50%;
+                transform: translateY(-50%) scale(0.6);
+                font-size: 1.5em;
+            }
+
+            .mega-menu a:hover {
+                padding-left: 2.5rem;
+                color: #000;
+                background-color: var(--primary-glow);
+            }
+            .mega-menu a:hover::before {
+                color: #000;
+            }
+            
+            .menu-toggle {
+                display: block; position: relative; z-index: 1001;
+                width: 30px; height: 22px;
+                background: none; border: none; cursor: pointer;
+            }
+            .icon-bar {
+                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
+                margin: 6px 0; transition: all 0.3s ease-in-out;
+                border-radius: 2px;
+            }
+
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+    <nav class="glassmorphism">
+        <div class="nav-content">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-8 w-8 md:h-10 md:w-10 rounded-full">
+                    <span>O.C.V.M.</span>
+                </a>
+            </div>
+            
+            <ul class="nav-container" id="nav-menu">
+                <li><a href="#inicio">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+                    Inicio</a></li>
+                
+                <li><a href="#contacto">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                    Contacto</a></li>
+            </ul>
+            <button class="menu-toggle" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container" id="inicio">
+        <div class="hero">
+            <div class="hero-content">
+                <h1>Filosofía de la Mente</h1>
+                <p>Una rama de la filosofía que explora la naturaleza de la mente y su relación con el cuerpo y el mundo externo.</p>
+            </div>
+        </div>
+
+        <div class="layout-grid">
+            <main class="content">
+                
+                <section id="introduccion" class="glassmorphism" data-animate>
+                    <h2>Introducción</h2>
+                    <p>La <span class="highlight">filosofía de la mente</span> explora la naturaleza de la <span class="highlight">mente</span> y su relación con el <span class="highlight">cuerpo</span> y el <span class="highlight">mundo externo</span>. Su tema central es el <span class="highlight">problema mente-cuerpo</span>, abarcando la <span class="highlight">conciencia</span>, los <span class="highlight">estados y propiedades mentales</span>, la <span class="highlight">cognición</span> y el <span class="highlight">pensamiento</span>. Las dos corrientes principales son el <span class="highlight">dualismo</span> y el <span class="highlight">monismo</span>.</p>
+                    <p>El dualismo, popularizado por <span class="highlight">René Descartes</span> en el siglo XVII, postula que la mente es una sustancia independiente (<span class="highlight">dualismo de sustancia</span>) o que sus propiedades son irreducibles a lo físico (<span class="highlight">dualismo de propiedad</span>).</p>
+                    <p>El monismo, defendido por <span class="highlight">Baruch Spinoza</span>, considera mente y cuerpo ontológicamente indiscernibles. El <span class="highlight">fisicalismo</span>, la forma más común de monismo moderno, sostiene que solo existen entidades físicas, buscando explicar los procesos mentales en esos términos. Variantes incluyen el <span class="highlight">conductismo</span>, la <span class="highlight">teoría de la identidad de tipo</span>, el <span class="highlight">monismo anómalo</span> y el <span class="highlight">funcionalismo</span>. Otros monismos son el <span class="highlight">idealismo</span> (solo la mente existe) y el <span class="highlight">monismo neutral</span> (una sustancia subyacente a mente y materia).</p>
+                    <p>La mayoría de los filósofos modernos son <span class="highlight">fisicalistas reductivos</span> o <span class="highlight">no reductivos</span>. Los primeros buscan explicar los estados mentales fisiológicamente; los segundos, aunque aceptan la base física, argumentan que las propiedades mentales <span class="highlight">supervienen</span> y son indispensables. La <span class="highlight">neurociencia</span> avanza, pero la explicación de las <span class="highlight">cualidades subjetivas</span> y la <span class="highlight">intencionalidad</span> sigue siendo un desafío.</p>
+                    <div class="mermaid">
+                        graph TD
+                            A[Filosofía de la Mente] --> B{Problema Mente-Cuerpo}
+                            B --> C[Dualismo]
+                            B --> D[Monismo]
+                            C --> C1[Dualismo de Sustancia]
+                            C --> C2[Dualismo de Propiedad]
+                            D --> D1[Fisicalismo]
+                            D --> D2[Idealismo]
+                            D --> D3[Monismo Neutral]
+                            D1 --> D1a[Conductismo]
+                            D1 --> D1b[Teoría de la Identidad]
+                            D1 --> D1c[Funcionalismo]
+                            D1 --> D1d[Fisicalismo No Reductivo]
+                            D1 --> D1e[Materialismo Eliminativo]
+                            D1 --> D1f[Misterianismo]
+                    </div>
+                </section>
+
+                <section id="mind-body-problem" class="glassmorphism" data-animate>
+                    <h2>El Problema Mente-Cuerpo</h2>
+                    <p>Este problema central explora la relación entre <span class="highlight">mentes</span> (procesos mentales) y estados/procesos corporales. Busca definir la naturaleza de la mente y cómo interactúa con el cuerpo. Las experiencias <span class="highlight">perceptuales</span>, causadas por <span class="highlight">estímulos</span> sensoriales, generan cambios mentales. La cuestión es cómo la conciencia emerge de la materia electroquímica del cerebro y cómo las <span class="highlight">actitudes proposicionales</span> (creencias, deseos) causan la activación neuronal y la contracción muscular.</p>
+                </section>
+                
+                <section id="dualist-solutions" class="glassmorphism" data-animate>
+                    <h2>Soluciones Dualistas</h2>
+                    <p>El <span class="highlight">dualismo</span> postula que los fenómenos mentales son, en algún aspecto, no físicos. <span class="highlight">Platón</span> ya sugería una distinción entre inteligencia y cuerpo. La versión más influyente es la de <span class="highlight">René Descartes</span> (1641), quien identificó la mente con la <span class="highlight">conciencia</span> y la <span class="highlight">autoconciencia</span>, diferenciándola del cerebro.</p>
+
+                    <h3>Argumentos a favor del Dualismo</h3>
+                    <p>Se apela a la intuición de que la experiencia consciente es distinta de la materia inanimada. Los eventos mentales poseen una cualidad subjetiva, los "<span class="highlight">qualia</span>" o "sensaciones crudas", difíciles de reducir a lo físico. <span class="highlight">David Chalmers</span> lo ilustra: conocer todo sobre el cerebro no es igual a 'saber lo que se siente' al ver el rojo. <span class="highlight">C. S. Lewis</span> propone el <span class="highlight">Argumento de la Razón</span>: si los pensamientos son solo efectos físicos, ¿cómo podemos confiar en su razonabilidad? El <span class="highlight">argumento del zombie</span> (<span class="highlight">David Chalmers</span>) sugiere la concebibilidad de un cuerpo sin conciencia, implicando una distinción. <span class="highlight">Avshalom Elitzur</span> y <span class="highlight">Christian List</span> también presentan argumentos basados en la perplejidad y las perspectivas en primera persona.</p>
+
+                    <h3>Dualismo Interaccionista</h3>
+                    <p>Defendido por <span class="highlight">Descartes</span>, <span class="highlight">Karl Popper</span> y <span class="highlight">John Carew Eccles</span>, sostiene que estados mentales y físicos interactúan causalmente. Sin embargo, la premisa cartesiana de ideas "claras y distintas" es cuestionada por filósofos como <span class="highlight">Joseph Agassi</span>, quien señala que el conocimiento externo a veces supera la introspección.</p>
+
+                    <h3>Otras formas de Dualismo</h3>
+                    <ul>
+                        <li><span class="highlight">Paralelismo Psicofísico</span> (<span class="highlight">Gottfried Leibniz</span>): Mente y cuerpo no se influyen, sino que corren en caminos paralelos, en "armonía preestablecida" por Dios.</li>
+                        <li><span class="highlight">Ocasionalismo</span> (<span class="highlight">Nicholas Malebranche</span>): Toda causalidad es una intervención divina directa.</li>
+                        <li><span class="highlight">Dualismo de Propiedades</span>: Un solo tipo de sustancia (física), pero dos tipos de propiedades (físicas y mentales). Incluye:
+                            <ul>
+                                <li><span class="highlight">Materialismo Emergente</span>: Propiedades mentales emergen de la materia organizada de forma compleja, siendo ontológicamente independientes.</li>
+                                <li><span class="highlight">Epifenomenalismo</span> (<span class="highlight">Thomas Henry Huxley</span>, <span class="highlight">Frank Jackson</span>): Los fenómenos mentales son efectos, pero no causas, de lo físico.</li>
+                                <li><span class="highlight">Fisicalismo no Reductivo</span>: Propiedades mentales no son reducibles a lo físico, pero no son causalmente inertes.</li>
+                                <li><span class="highlight">Panpsiquismo</span>: Toda materia tiene un aspecto mental primitivo.</li>
+                            </ul>
+                        </li>
+                        <li><span class="highlight">Teoría del Doble Aspecto</span>: Lo mental y lo físico son dos aspectos de la misma sustancia subyacente.</li>
+                        <li><span class="highlight">Dualismo Experiencial</span> (<span class="highlight">Allan Wallace</span>): Reconoce la diferencia cualitativa entre experiencias mentales y físicas, sin postular dos sustancias fundamentales. Aceptado en el <span class="highlight">Budismo Madhyamaka</span>, que rechaza tanto el dualismo cartesiano como el monismo fisicalista.</li>
+                    </ul>
+                    <div class="mermaid">
+                        graph TD
+                            A[Dualismo] --> B[Dualismo de Sustancia]
+                            A --> C[Dualismo de Propiedad]
+                            A --> D[Dualismo Experiencial]
+                            B --> B1[Interaccionismo]
+                            B --> B2[Paralelismo Psicofísico]
+                            B --> B3[Ocasionalismo]
+                            C --> C1[Materialismo Emergente]
+                            C --> C2[Epifenomenalismo]
+                            C --> C3[Fisicalismo No Reductivo]
+                            C --> C4[Panpsiquismo]
+                            C --> C5[Teoría del Doble Aspecto]
+                    </div>
+                </section>
+
+                <section id="monist-solutions" class="glassmorphism" data-animate>
+                    <h2>Soluciones Monistas</h2>
+                    <p>El <span class="highlight">monismo</span> no acepta divisiones fundamentales. En Occidente, las formas más comunes son <span class="highlight">fisicalistas</span>: la única sustancia existente es física. Otras formas incluyen el <span class="highlight">idealismo</span> (<span class="highlight">George Berkeley</span>), donde solo lo mental existe, y el <span class="highlight">monismo neutral</span> (<span class="highlight">Ernst Mach</span>), que postula una sustancia básica ni física ni mental.</p>
+
+                    <h3>Monismos Fisicalistas</h3>
+                    <ul>
+                        <li><span class="highlight">Conductismo</span>: Dominó la psicología del siglo XX. El conductismo filosófico (<span class="highlight">verificacionismo</span>) ve los estados mentales como descripciones de <span class="highlight">comportamiento observable</span> o <span class="highlight">disposiciones</span>, rechazando la vida mental interior.</li>
+                        <li><span class="highlight">Teoría de la Identidad</span> (<span class="highlight">Jack Smart</span>, <span class="highlight">Ullin Place</span>): Los estados mentales son idénticos a estados cerebrales internos. La <span class="highlight">identidad de token</span> permite que ocurrencias particulares de eventos mentales sean idénticas a ocurrencias físicas, sin una correlación absoluta entre tipos.</li>
+                        <li><span class="highlight">Funcionalismo</span> (<span class="highlight">Hilary Putnam</span>, <span class="highlight">Jerry Fodor</span>): Caracteriza los estados mentales por sus relaciones causales con otros estados mentales, entradas sensoriales y salidas conductuales, abstrayéndose de la implementación física.</li>
+                        <li><span class="highlight">Fisicalismo no Reductivo</span> (<span class="highlight">Donald Davidson</span> - <span class="highlight">monismo anómalo</span>): El fisicalismo es verdadero, pero los estados mentales no son reducibles a lo físico. Los estados mentales <span class="highlight">supervienen</span> sobre los físicos, implicando dependencia funcional sin reducibilidad ontológica.</li>
+                        <li><span class="highlight">Emergentismo Débil</span>: Una forma de fisicalismo no reductivo donde las propiedades emergentes (mentales) surgen de la complejidad, superponiéndose a niveles inferiores sin interacción causal directa.</li>
+                        <li><span class="highlight">Materialismo Eliminativo</span> (<span class="highlight">Patricia</span> y <span class="highlight">Paul Churchland</span>): Postula que la "psicología popular" es errónea y será eliminada por una <span class="highlight">neurociencia cognitiva</span> madura, que explicará la cognición a través de modelos no lingüísticos como las redes neuronales.</li>
+                        <li><span class="highlight">Misterianismo</span> (<span class="highlight">Colin McGinn</span>, <span class="highlight">Thomas Nagel</span>): Argumenta que el problema mente-cuerpo es irresoluble para los humanos debido a limitaciones cognitivas inherentes (McGinn) o a la etapa actual del desarrollo científico (Nagel).</li>
+                    </ul>
+                    <div class="mermaid">
+                        graph TD
+                            A[Monismo] --> B[Fisicalismo]
+                            A --> C[Idealismo]
+                            A --> D[Monismo Neutral]
+                            B --> B1[Conductismo]
+                            B --> B2[Teoría de la Identidad]
+                            B --> B3[Funcionalismo]
+                            B --> B4[Fisicalismo No Reductivo]
+                            B --> B5[Materialismo Eliminativo]
+                            B --> B6[Misterianismo]
+                            B4 --> B4a[Emergentismo Débil]
+                    </div>
+                </section>
+
+                <section id="linguistic-criticism" class="glassmorphism" data-animate>
+                    <h2>Crítica Lingüística del Problema Mente-Cuerpo</h2>
+                    <p>Filósofos como <span class="highlight">Ludwig Wittgenstein</span> y <span class="highlight">Peter Hacker</span> argumentan que el problema mente-cuerpo es una <span class="highlight">confusión conceptual</span> o un "<span class="highlight">error de categoría</span>". Sostienen que es un error intentar describir estados mentales con vocabulario biológico o viceversa, ya que cada uno opera en contextos lingüísticos distintos. <span class="highlight">Hilary Putnam</span> también ha adoptado esta postura.</p>
+                </section>
+
+                <section id="naturalism-problems" class="glassmorphism" data-animate>
+                    <h2>Naturalismo y sus Problemas</h2>
+                    <p>El <span class="highlight">fisicalismo</span> enfrenta el desafío de explicar cómo propiedades mentales únicas emergen de lo material. La "<span class="highlight">naturalización de lo mental</span>" busca resolver esto, abordando principalmente los <span class="highlight">qualia</span> y la <span class="highlight">intencionalidad</span>.</p>
+
+                    <h3>Qualia</h3>
+                    <p>Son las cualidades subjetivas de las experiencias (ej. el 'dolor' de un quemadura). Su existencia y cómo surgen de eventos cerebrales es un enigma, conocido como la <span class="highlight">brecha explicativa</span>. Filósofos como <span class="highlight">David Chalmers</span> y <span class="highlight">Frank Jackson</span> la ven como ontológica (el fisicalismo es falso), mientras que <span class="highlight">Thomas Nagel</span> y <span class="highlight">Colin McGinn</span> la consideran epistemológica (limitaciones del conocimiento humano). <span class="highlight">Martin Heidegger</span> criticó la incoherencia de entender la experiencia subjetiva en términos de sustancias y propiedades cartesianas.</p>
+
+                    <h3>Intencionalidad</h3>
+                    <p>Es la capacidad de los estados mentales de estar "dirigidos hacia" algo en el mundo externo, poseyendo <span class="highlight">contenidos</span> y <span class="highlight">valores de verdad</span>. El problema surge al intentar reducir estos estados a procesos naturales, que por sí mismos no son verdaderos ni falsos. ¿Cómo un proceso electroquímico en el cerebro puede "referirse" a algo externo como Heródoto?</p>
+                </section>
+
+                <section id="philosophy-perception" class="glassmorphism" data-animate>
+                    <h2>Filosofía de la Percepción</h2>
+                    <p>Se enfoca en la naturaleza de la <span class="highlight">experiencia perceptual</span> y cómo se relaciona con las apariencias y creencias sobre el mundo. Las visiones principales incluyen el <span class="highlight">realismo ingenuo</span>, el <span class="highlight">enactivismo</span> y las perspectivas <span class="highlight">representacionales</span>.</p>
+                </section>
+
+                <section id="mind-science" class="glassmorphism" data-animate>
+                    <h2>Filosofía de la Mente y Ciencia</h2>
+                    <p>La mente se estudia a través de diversas disciplinas científicas, dadas sus íntimas conexiones con los procesos corporales (<span class="highlight">cognición encarnada</span>). Incluyen <span class="highlight">biología</span>, <span class="highlight">informática</span>, <span class="highlight">ciencia cognitiva</span>, <span class="highlight">cibernética</span>, <span class="highlight">lingüística</span>, <span class="highlight">medicina</span>, <span class="highlight">farmacología</span> y <span class="highlight">psicología</span>.</p>
+
+                    <h3>Neurobiología</h3>
+                    <p>Su trasfondo materialista estudia procesos físicos como base de la actividad mental, con la premisa de que todo cambio mental implica un cambio cerebral. Subdisciplinas como la <span class="highlight">neurofisiología sensorial</span>, la <span class="highlight">neurociencia cognitiva</span> y la <span class="highlight">neuropsicología</span> investigan las correlaciones. La <span class="highlight">biología evolutiva</span> contextualiza el desarrollo del sistema nervioso y los fenómenos mentales, imponiendo límites a las teorías filosóficas. Los avances en <span class="highlight">neuroimagen</span> buscan comprender los <span class="highlight">correlatos neurales</span> de las funciones mentales.</p>
+
+                    <h3>Neurofilosofía</h3>
+                    <p>Campo interdisciplinario que examina cómo los hallazgos neurocientíficos informan la filosofía de la mente. <span class="highlight">Patricia Churchland</span> aboga por fundamentar las preguntas filosóficas en la evidencia empírica del cerebro. El <span class="highlight">problema de la unión</span> (cómo se integran las características en una experiencia unificada) y el <span class="highlight">problema del límite</span> (cómo se definen los límites de las perspectivas en primera persona) son desafíos clave.</p>
+
+                    <h3>Informática</h3>
+                    <p>Explora el procesamiento automático de información y la posibilidad de que las computadoras desarrollen una mente. La <span class="highlight">inteligencia artificial</span> (IA) distingue entre <span class="highlight">IA débil</span> (simulación de estados mentales) e <span class="highlight">IA fuerte</span> (computadoras con conciencia). La <span class="highlight">prueba de Turing</span> evalúa la capacidad de "pensar" de una máquina, aunque el <span class="highlight">experimento mental de la habitación china</span> de <span class="highlight">John Searle</span> la critica. La cuestión de la sensibilidad (qualia) en IA sigue abierta.</p>
+
+                    <h3>Psicología</h3>
+                    <p>Investiga directamente estados mentales como la <span class="highlight">alegría</span>, el <span class="highlight">miedo</span> y las <span class="highlight">obsesiones</span>, buscando leyes que los vinculen con entradas y salidas del organismo. La <span class="highlight">psicología de la percepción</span>, por ejemplo, describe principios de la <span class="highlight">percepción de formas</span>, compatibles con diversas soluciones al problema mente-cuerpo.</p>
+
+                    <h3>Ciencia Cognitiva</h3>
+                    <p>Estudio interdisciplinario de la mente y sus procesos, incluyendo <span class="highlight">psicología</span>, <span class="highlight">IA</span>, <span class="highlight">filosofía</span>, <span class="highlight">neurociencia</span>, <span class="highlight">lingüística</span>, <span class="highlight">antropología</span>, <span class="highlight">sociología</span> y <span class="highlight">educación</span>. Ha evolucionado hacia una perspectiva <span class="highlight">encarnada</span>, donde los procesos corporales son cruciales para la cognición. <span class="highlight">Rowlands</span> (2012) describe la cognición como enactiva, encarnada, incrustada, afectiva y extendida.</p>
+
+                    <h3>Investigación de Experiencias Cercanas a la Muerte</h3>
+                    <p>Estudia fenómenos como la percepción consciente reportada por pacientes con actividad cerebral deactivada o durante paro cardíaco, lo que plantea preguntas sobre la relación entre conciencia y función cerebral.</p>
+                </section>
+
+                <section id="continental-philosophy" class="glassmorphism" data-animate>
+                    <h2>Filosofía de la Mente en la Tradición Continental</h2>
+                    <p>A diferencia de la <span class="highlight">filosofía analítica</span>, la <span class="highlight">filosofía continental</span> (fenomenología, existencialismo) se centra menos en el análisis lingüístico y más en la comprensión de la existencia y la experiencia humana. <span class="highlight">Immanuel Kant</span>, con su <span class="highlight">Crítica de la Razón Pura</span>, exploró la <span class="highlight">conciencia trascendental</span>. <span class="highlight">Georg Wilhelm Friedrich Hegel</span>, en su <span class="highlight">Filosofía de la Mente</span>, distinguió la mente subjetiva, objetiva y Absoluta.</p>
+                    <p><span class="highlight">Henri Bergson</span>, en <span class="highlight">Materia y Memoria</span>, argumentó la diferencia ontológica entre cuerpo y mente a través del problema de la memoria y la <span class="highlight">afasia</span>. Las escuelas modernas clave son la <span class="highlight">fenomenología</span> (<span class="highlight">Edmund Husserl</span>), centrada en los contenidos de la mente (<span class="highlight">noema</span>) y la experiencia, y el <span class="highlight">existencialismo</span> (<span class="highlight">Søren Kierkegaard</span>), que aborda la condición humana. La <span class="highlight">fenomenología existencial</span>, con figuras como <span class="highlight">Martin Heidegger</span> (<span class="highlight">Ser y Tiempo</span>), <span class="highlight">Jean-Paul Sartre</span> (<span class="highlight">El Ser y la Nada</span>), <span class="highlight">Simone de Beauvoir</span> (<span class="highlight">El Segundo Sexo</span>) y <span class="highlight">Maurice Merleau-Ponty</span> (<span class="highlight">Fenomenología de la Percepción</span>), es una rama importante.</p>
+                </section>
+
+                <section id="related-topics" class="glassmorphism" data-animate>
+                    <h2>Temas Relacionados con la Filosofía de la Mente</h2>
+                    <p>La filosofía de la mente impacta temas como la <span class="highlight">muerte</span>, la <span class="highlight">emoción</span>, la <span class="highlight">percepción</span> y la <span class="highlight">memoria</span>. También es crucial para entender qué es una <span class="highlight">persona</span> y su <span class="highlight">identidad</span>, destacando el <span class="highlight">libre albedrío</span> y el <span class="highlight">yo</span>.</p>
+
+                    <h3>Libre Albedrío</h3>
+                    <p>El problema del <span class="highlight">libre albedrío</span> se intensifica con el <span class="highlight">determinismo materialista</span>, que sugiere que las decisiones humanas están predeterminadas. Los <span class="highlight">compatibilistas</span> (<span class="highlight">David Hume</span>, <span class="highlight">Daniel Dennett</span>) argumentan que la libertad no es indeterminación, sino la ausencia de coerción. Los <span class="highlight">incompatibilistas</span>, por otro lado, defienden el <span class="highlight">libertarianismo</span>, una libertad más fuerte, donde la voluntad no está completamente determinada por leyes naturales, aunque esto plantea el desafío de explicar la causalidad de las decisiones.</p>
+
+                    <h3>El Yo</h3>
+                    <p>Algunos filósofos como <span class="highlight">Daniel Dennett</span> ven el "yo" como una ilusión, no un núcleo inmutable. Esta visión se opone a la idea de un <span class="highlight">alma inmaterial</span> y se alinea con el escepticismo de <span class="highlight">David Hume</span>. Sin embargo, hallazgos en <span class="highlight">psicología del desarrollo</span>, <span class="highlight">biología del desarrollo</span> y <span class="highlight">neurociencia</span> sugieren un núcleo material inconstante, un sistema representacional integrado. La <span class="highlight">pregunta vertiginosa</span> de <span class="highlight">Benj Hellie</span> ("¿Por qué soy yo y no otra persona?") y los conceptos de <span class="highlight">presentismo egocéntrico</span> y <span class="highlight">realismo perspectivista</span> de <span class="highlight">Caspar Hare</span> exploran la subjetividad. <span class="highlight">Daniel Kolak</span> propone el <span class="highlight">individualismo abierto</span> (todas las mentes son el mismo ser, similar al <span class="highlight">anattā</span> budista), contrastándolo con el individualismo cerrado y el vacío. <span class="highlight">Derek Parfit</span> también aborda la identidad personal con experimentos como la <span class="highlight">paradoja del teletransporte</span>. <span class="highlight">Thomas Nagel</span>, en <span class="highlight">La visión desde ninguna parte</span>, contrasta las perspectivas subjetiva y objetiva del yo.</p>
+                </section>
+
+                <section id="problems-list" class="glassmorphism" data-animate>
+                    <h2>Problemas en la Filosofía de la Mente</h2>
+                    <ol>
+                        <li>¿Es el nivel emergente autónomo?</li>
+                        <li>¿Pueden la restricción y la constitución ser relaciones causales para la causalidad mental?</li>
+                        <li>¿Viola la causalidad descendente la explicación fundamental a nivel micro?</li>
+                        <li>¿Puede generalizarse la causalidad descendente entre dos niveles a otros niveles?</li>
+                        <li>¿Es la autoorganización una respuesta al debate reduccionismo – antirreduccionismo? ¿Es un cambio de paradigma de la filosofía de la sustancia y el proceso?</li>
+                        <li>¿Qué significa la causalidad en la Causalidad Descendente?</li>
+                        <li>Identidad sincrónica y diacrónica del yo individual, problema de la identidad - Barco de Teseo.</li>
+                        <li>¿Es el debate reduccionismo – antirreduccionismo lo mismo que el fisicalismo – fisicalismo no reductivo?</li>
+                        <li>¿Cómo puede el nivel superior de organización, que depende del nivel inferior para su existencia, tener algún impacto causal sobre el inferior?</li>
+                        <li>¿Se viola la asimetría causal en la causalidad mental?</li>
+                        <li>¿Es la Inteligencia Artificial psicología teórica?</li>
+                        <li>¿Son las ciencias especiales como la psicología autónomas en su explicación o reducibles a niveles inferiores?</li>
+                        <li>¿Es la percepción una forma controlada de alucinación?</li>
+                        <li>¿Por qué hay una sensación subjetiva cuando el cerebro está procesando información?</li>
+                        <li>¿Qué es la causalidad epifenoménica?</li>
+                    </ol>
+                </section>
+
+                <section id="see-also" class="glassmorphism" data-animate>
+                    <h2>Véase también</h2>
+                    <ul>
+                        <li>Filosofía artificial</li>
+                        <li>Conciencia animal</li>
+                        <li>Conciencia artificial</li>
+                        <li>Habitación China</li>
+                        <li>Intencionalidad colectiva</li>
+                        <li>Teoría computacional de la mente</li>
+                        <li>Cognición encarnada</li>
+                        <li>Intensión</li>
+                        <li>Intención</li>
+                        <li>Mente</li>
+                        <li>Esquema de la inteligencia humana</li>
+                        <li>Esquema del pensamiento</li>
+                        <li>Filosofía de la inteligencia artificial</li>
+                        <li>Teoría de la mente</li>
+                        <li>Teoría de la mente en animales</li>
+                    </ul>
+                </section>
+
+                <section id="references" class="glassmorphism" data-animate>
+                    <h2>Referencias</h2>
+                    <ol>
+                        <li>Kim, Jaegwan (1995). "Emergent properties". In Honderich, Ted (ed.). Oxford Companion to Philosophy. Oxford: Oxford University Press. p. 240. ISBN 978-0-19-866132-0.</li>
+                        <li>Siegel, S.: The Contents of Visual Experience. New York: Oxford University Press. 2010.</li>
+                        <li>Macpherson, F. & Haddock, A., editors, Disjunctivism: Perception, Action, Knowledge, Oxford: Oxford University Press, 2008.</li>
+                        <li>Descartes, René (1998). Discourse on Method and Meditations on First Philosophy. Hacket Publishing Company. ISBN 978-0-87220-421-8.</li>
+                        <li>Hart, W.D. (1996) "Dualism", in Samuel Guttenplan (org) A Companion to the Philosophy of Mind, Blackwell, Oxford, 265–7.</li>
+                        <li>Spinoza, Baruch (1670) Tractatus Theologico-Politicus (A Theologico-Political Treatise).</li>
+                        <li>Schneider, Susan (2013). "Non-Reductive Physicalism and the Mind Problem1". Noûs. 47 (1): 135–153. doi:10.1111/j.1468-0068.2011.00847.x. ISSN 0029-4624.</li>
+                        <li>DePaul, Michael; Baltimore, Joseph A. (2013). "Type Physicalism and Causal Exclusion". Journal of Philosophical Research. 38: 405–418. doi:10.5840/jpr20133821. ISSN 1053-8364.</li>
+                        <li>S. C. Gibb; E. J. Lowe; R. D. Ingthorsson (21 March 2013). Mental Causation and Ontology. OUP Oxford. p. 58. ISBN 978-0-19-165255-4.</li>
+                        <li>Demircioglu, Erhan (2011). "Supervenience And Reductive Physicalism". European Journal of Analytic Philosophy. 7 (1): 25–35.</li>
+                        <li>Francescotti, Robert. "Supervenience and Mind". The Internet Encyclopedia of Philosophy. ISSN 2161-0002. Archived from the original on 2014-07-17. Retrieved 2014-08-10.</li>
+                        <li>Gibb, Sophie (2010). "Closure Principles and the Laws of Conservation of Energy and Momentum". Dialectica. 64 (3): 363–384. doi:10.1111/j.1746-8361.2010.01237.x. S2CID 55120533. See also Dempsey, L. P. (2012). "Consciousness, Supervenience, and Identity: Marras and Kim on the Efficacy of Conscious Experience". Dialogue. 51 (3): 373–395. doi:10.1017/s0012217312000662. S2CID 147060838. See also Baltimore, J. A. (2010). "Defending the piggyback principle against Shapiro and Sober's empirical approach". Dialectica. 175 (2): 151–168. doi:10.1007/s11229-009-9467-2. S2CID 13314992.</li>
+                        <li>McLaughlin, Brian; Bennett, Karen (2014). Edward N. Zalta (ed.). "Supervenience". The Stanford Encyclopedia of Philosophy (Spring 2014 Edition). Retrieved 2014-08-10.</li>
+                        <li>Megill, Jason (2012). "A Defense of Emergence". Axiomathes. 23 (4): 597–615. doi:10.1007/s10516-012-9203-2. ISSN 1122-1151. S2CID 170226477.</li>
+                        <li>Kim, J., "Mind–Body Problem", Oxford Companion to Philosophy. Ted Honderich (ed.). Oxford:Oxford University Press. 1995.</li>
+                        <li>Pinel, J. Psychobiology, (1990) Prentice Hall, Inc. ISBN 88-15-07174-1</li>
+                        <li>LeDoux, J. (2002) The Synaptic Self: How Our Brains Become Who We Are, New York:Viking Penguin. ISBN 88-7078-795-8</li>
+                        <li>Russell, S. and Norvig, P. Artificial Intelligence: A Modern Approach, New Jersey:Prentice Hall. ISBN 0-13-103805-2</li>
+                        <li>Dawkins, R. The Selfish Gene (1976) Oxford:Oxford University Press. ISBN</li>
+                        <li>Churchland, Patricia (1986). Neurophilosophy: Toward a Unified Science of the Mind–Brain. MIT Press. ISBN 978-0-262-03116-5.</li>
+                        <li>Churchland, Paul (1981). "Eliminative Materialism and the Propositional Attitudes". Journal of Philosophy. 78 (2): 67–90. doi:10.2307/2025900. JSTOR 2025900.</li>
+                        <li>Smart, J.J.C. (1956). "Sensations and Brain Processes". Philosophical Review.</li>
+                        <li>Donald Davidson (1980). Essays on Actions and Events. Oxford University Press. ISBN 978-0-19-924627-4.</li>
+                        <li>Putnam, Hilary (1967). "Psychological Predicates", in W. H. Capitan and D. D. Merrill, eds., Art, Mind and Religion (Pittsburgh: University of Pittsburgh Press.)</li>
+                        <li>Dennett, Daniel (1998). The intentional stance. Cambridge, Mass.: MIT Press. ISBN 978-0-262-54053-7.</li>
+                        <li>Searle, John (2001). Intentionality. A Paper on the Philosophy of Mind. Frankfurt a. M.: Nachdr. Suhrkamp. ISBN 978-3-518-28556-5.</li>
+                        <li>Mousavirad, Seyyed Jaaber (2023-11-29). "Coherence of Substance Dualism". International Philosophical Quarterly. 63 (1): 33–42. doi:10.5840/ipq20231114214.</li>
+                        <li>Swami Sivananda (1947). All About Hinduism. THE DIVINE LIFE SOCIETY. ISBN 81-7052-047-9.</li>
+                        <li>Plato (1995). E.A. Duke; W.F. Hicken; W.S.M. Nicoll; D.B. Robinson; J.C.G. Strachan (eds.). Phaedo. Clarendon Press. ISBN 978-1-4065-4150-2.</li>
+                        <li>Robinson, H. (1983): "Aristotelian dualism", Oxford Studies in Ancient Philosophy 1, 123–44.</li>
+                        <li>Jackson, F. (1982) "Epiphenomenal Qualia." Reprinted in Chalmers, David ed. :2002. Philosophy of Mind: Classical and Contemporary Readings. Oxford University Press.</li>
+                        <li>Nagel, T. (1974). "What is it like to be a bat?" (PDF). Philosophical Review. 83 (4): 435–456. doi:10.2307/2183914. JSTOR 2183914.</li>
+                        <li>Lewis, C.S (1999) [1947]. Miracles. New York: W. Morrow & Co. ISBN 978-0-688-17369-2.</li>
+                        <li>Chalmers, David (1997). The Conscious Mind. Oxford University Press. ISBN 978-0-19-511789-9.</li>
+                        <li>Dennett, Daniel (1995). "The unimagined preposterousness of zombies". Journal of Consciousness Studies. 2: 322–6. Archived from the original on 2017-05-15. Retrieved 2017-04-27.</li>
+                        <li>Dennett, Daniel (1991). Consciousness Explained. Little, Brown and Co. p. 95. ISBN 978-0-316-18065-8.</li>
+                        <li>Elitzur, Avshalom (2009). "Consciousness makes a difference: A reluctant dualist's confession". Irreducibly Conscious. Selected Papers on Consciousness. Retrieved 15 February 2025.</li>
+                        <li>List, Christian (2023). "The first-personal argument against physicalism". Retrieved 15 February 2025.</li>
+                        <li>List, Christian (2023). "The many-worlds theory of consciousness". The Philosophical Quarterly. Retrieved 15 February 2025.</li>
+                        <li>Popper, Karl & Eccles, John (2002). The Self and Its Brain. Springer Verlag. ISBN 978-3-492-21096-6.</li>
+                        <li>Dennett D., (1991), Consciousness Explained, Boston: Little, Brown & Company</li>
+                        <li>Stich, S., (1983), From Folk Psychology to Cognitive Science. Cambridge, MA: MIT Press (Bradford)</li>
+                        <li>Ryle, G., 1949, The Concept of Mind, New York: Barnes and Noble</li>
+                        <li>Agassi, J. (1975). Privileged Access; Science in Flux, Boston Stidues in the Philosophy of Science, 80. Dordrecht: Reidel.</li>
+                        <li>Agassi, J. (1997). La Scienza in Divenire. Rome: Armando.</li>
+                        <li>Robinson, Howard (2003-08-19). "Dualism". The Stanford Encyclopedia of Philosophy (Fall 2003 Edition). Center for the Study of Language and Information, Stanford University. Retrieved 2006-09-25.</li>
+                        <li>Leibniz, Gottfried Wilhelm (1980) [1714]. The Discourse on Metaphysics: Correspondence with Arnauld/Monadology. Open Court. ISBN 978-0-87548-030-5.</li>
+                        <li>Schmaltz, Tad (2002). "Nicolas Malebranche". The Stanford Encyclopedia of Philosophy (Summer 2002 Edition). Center for the Study of Language and Information, Stanford University. Retrieved 2006-09-25.</li>
+                        <li>Chalmers, David (1996). The Conscious Mind. Oxford University Press. ISBN 978-0-19-511789-9.</li>
+                        <li>Huxley, T. H. [1874] "On the Hypothesis that Animals are Automata, and its History", The Fortnightly Review, n.s.16:555–580. Reprinted in Method and Results: Essays by Thomas H. Huxley (New York: D. Appleton and Company, 1898).</li>
+                        <li>Jackson, Frank (1986). "What Mary didn't know". Journal of Philosophy. 83 (5): 291–295. doi:10.2307/2026143. JSTOR 2026143. S2CID 19000667.</li>
+                        <li>Atmanspacher, H (2012). "Dual-aspect monism a la Pauli and Jung". Journal of Consciousness Studies. 19 (9–10): 96–120.</li>
+                        <li>Velmans, M (2012). "Reflexive Monism: psychophysical relations among mind, matter and consciousness". Journal of Consciousness Studies. 19 (9–10): 143–165. Archived from the original on 2017-11-11.</li>
+                        <li>Leopold Stubenberg. "Neutral Monism and the Dual Aspect Theory". Stanford Encyclopedia of Philosophy.</li>
+                        <li>Wallace, Allen (1999). Consciousness At The Crossroads: Conversations With The Dalai Lama On Brain Science And Buddhism. Snow Lion. ISBN 978-0-545-22720-9.</li>
+                        <li>Stoljar, Daniel (2005). "Physicalism". The Stanford Encyclopedia of Philosophy (Winter 2005 Edition). Center for the Study of Language and Information, Stanford University. Retrieved 2006-09-24.</li>
+                        <li>Cf. Michel Weber and Anderson Weekes (eds.), Process Approaches to Consciousness in Psychology, Neuroscience, and Philosophy of Mind (Whitehead Psychology Nexus Studies II) Archived 2015-04-08 at the Wayback Machine, Albany, New York, State University of New York Press, 2009.</li>
+                        <li>Russell, Bertrand (1918) Mysticism and Logic and Other Essays, London: Longmans, Green.</li>
+                        <li>Mach, Ernst (1959) [1886]. Die Analyse der Empfindungen und das Verhältnis des Physischen zum Psychischen [The Analysis of Sensations and the Relation of Physical to the Psychical] (Fifth ed.). New York: Dover.</li>
+                        <li>Skinner, B.F. (1972). Beyond Freedom & Dignity. New York: Bantam/Vintage Books. ISBN 978-0-553-14372-0.</li>
+                        <li>Ryle, Gilbert (1984) [1949]. The Concept of Mind. Chicago: Chicago University Press. ISBN 978-0-226-73295-4.</li>
+                        <li>Smart, J.J.C, "Identity Theory", The Stanford Encyclopedia of Philosophy (Summer 2002 Edition), Edward N. Zalta (ed.)</li>
+                        <li>Davidson, D. (2001). Subjective, Intersubjective, Objective. Oxford: Oxford University Press. ISBN 978-88-7078-832-7.</li>
+                        <li>Block, Ned. "What is functionalism" in Readings in Philosophy of Psychology, 2 vols. Vol 1. (Cambridge: Harvard, 1980).</li>
+                        <li>Armstrong, D., 1968, A Materialist Theory of the Mind, Routledge.</li>
+                        <li>Di Francesco M. & Marraffa M. (2013). "The Unconscious, consciousness, and the Self illusion" (PDF). Dialogues in Philosophy, Mental and Neuro Sciences. 6 (1): 10–22. Archived (PDF) from the original on 2017-03-03.</li>
+                        <li>Stanton, W.L. (1983). "Supervenience and Psychological Law in Anomalous Monism". Pacific Philosophical Quarterly. 64: 72–9. doi:10.1111/j.1468-0114.1983.tb00185.x.</li>
+                        <li>Jaegwon Kim, Philosophy of Mind, Westview Press; 2 edition (July 8, 2005) ISBN 0-8133-4269-4</li>
+                        <li>Anthis, Jacy (2022). "Consciousness Semanticism: A Precise Eliminativist Theory of Consciousness". Biologically Inspired Cognitive Architectures 2021. Studies in Computational Intelligence. Vol. 1032. pp. 20–41. doi:10.1007/978-3-030-96993-6_3. ISBN 978-3-030-96992-9. Retrieved 7 August 2022.</li>
+                        <li>McGinn, Colin. "Can We Solve the Mind–Body Problem?" Archived 2016-12-26 at the Wayback Machine, Mind, New Series, Vol. 98, No. 391, July 1989 (pp. 349–366), p. 350.Reprinted in O'Connor, Timothy and Robb, David. "Colin McGinn, Can We Solve the Mind–Body Problem?", Philosophy of Mind: Contemporary Readings. Routledge, 2003, p. 438ff.</li>
+                        <li>"Hard problem of Consciousness" Archived 2015-04-20 at the Wayback Machine, The Internet Encyclopedia of Philosophy, Josh Weisberg</li>
+                        <li>Hacker, Peter (2003). Philosophical Foundations of Neuroscience. Blackwel Pub. ISBN 978-1-4051-0838-6.</li>
+                        <li>Wittgenstein, Ludwig (1974) [1954]. Philosophical Investigations. New York: Macmillan. ISBN 978-0-631-14660-5.</li>
+                        <li>Putnam, Hilary (2000). The Threefold Cord: Mind, Body, and World. New York: Columbia University Press. ISBN 978-0-231-10286-5.</li>
+                        <li>Hubert Dreyfus, "Critique of Descartes I" (recorded lecture), University of California at Berkeley, Sept. 18, 2007.</li>
+                        <li>Joseph Levine, Materialism and Qualia: The Explanatory Gap, in: Pacific Philosophical Quarterly, vol. 64, no. 4, October, 1983, 354–361</li>
+                        <li>Jackson, F. (1986) "What Mary didn't Know", Journal of Philosophy, 83, 5, pp. 291–295.</li>
+                        <li>McGinn, C. "Can the Mind-Body Problem Be Solved", Mind, New Series, Volume 98, Issue 391, pp. 349–366. a (online) Archived 2007-09-28 at the Wayback Machine</li>
+                        <li>Fodor, Jerry (1993). Psychosemantics. The problem of meaning in the philosophy of mind. Cambridge: MIT Press. ISBN 978-0-262-06106-3.</li>
+                        <li>Siegel, S. (2011). "The Contents of Perception", Stanford Encyclopedia of Philosophy (Winter 2011 Edition), Edward N. Zalta (ed.).</li>
+                        <li>Pinker, S. (1997) How the Mind Works. tr. It: Come Funziona la Mente. Milan:Mondadori, 2000. ISBN 88-04-49908-7</li>
+                        <li>Bear, M. F. et al. Eds. (1995). Neuroscience: Exploring The Brain. Baltimore, Maryland, Williams and Wilkins. ISBN 0-7817-3944-6</li>
+                        <li>Pinel, J.P.J (1997). Psychobiology. Prentice Hall. ISBN 978-88-15-07174-3.</li>
+                        <li>Metzinger, Thomas (2003). Being No One – The Self Model Theory of Subjectivity. Cambridge: MIT Press. pp. 349–366. ISBN 978-0-262-13417-0.</li>
+                        <li>Churchland, Patricia (1989). Neurophilosophy : Toward a Unified Science of the Mind-Brain. Cambridge, MA: MIT Press. ISBN 978-0-262-53085-9.</li>
+                        <li>Revonsuo, A.; Newman, J. (Jun 1999). "Binding and consciousness". Conscious Cogn. 8 (2): 123–7. doi:10.1006/ccog.1999.0393. PMID 10447994. S2CID 32430180.</li>
+                        <li>Feldman, Jerome (2012). "The neural binding problem". Cognitive Neurodynamics. 7 (1): 1–11. doi:10.1007/s11571-012-9219-8. PMC 3538094. PMID 24427186.</li>
+                        <li>Gómez-Emilsson, Andrés; Percy, Chris (3 August 2023). "Don't forget the boundary problem! How EM field topology can address the overlooked cousin to the binding problem for consciousness". Front Hum Neurosci. 17. doi:10.3389/fnhum.2023.1233119. PMC 10435742. PMID 37600559.</li>
+                        <li>Sipser, M. (1998). Introduction to the Theory of Computation. Boston, Mass.: PWS Publishing Co. ISBN 978-0-534-94728-6.</li>
+                        <li>Searle, John (1980). "Minds, Brains and Programs" (PDF). The Behavioral and Brain Sciences. 3 (3): 417–424. doi:10.1017/S0140525X00005756. S2CID 55303721.</li>
+                        <li>Turing, Alan (October 1950). "Computing Machinery and Intelligence". Mind. 59 (236): 433–460. doi:10.1093/mind/LIX.236.433. ISSN 1460-2113. JSTOR 2251299. S2CID 14636783.</li>
+                        <li>Russell, S. & Norvig, R. (1995). Artificial Intelligence:A Modern Approach. New Jersey: Prentice Hall, Inc. ISBN 978-0-13-103805-9.</li>
+                        <li>"Encyclopedia of Psychology". 2019-03-07. Archived from the original on 2008-05-13.</li>
+                        <li>Thagard, Paul, Cognitive Science, The Stanford Encyclopedia of Philosophy (Fall 2008 Edition), Edward N. Zalta (ed.).</li>
+                        <li>Calvo, Paco; Gomila, Toni (2008). Handbook of Cognitive Science: An Embodied Approach. Elsevier. ISBN 978-0-08-091487-9.</li>
+                        <li>Mark Rowlands (2010). "Chapter 3: The mind embedded". The new science of the mind: From extended mind to embodied phenomenology. MIT Press. pp. 51 ff. ISBN 978-0-262-01455-7.</li>
+                        <li>Dave Ward; Mog Stapleton (2012). "Es are good. Cognition as enacted, embodied, embedded, affective and extended". In Fabio Paglieri (ed.). Consciousness in Interaction: The role of the natural and social context in shaping consciousness. John Benjamins Publishing. pp. 89 ff. ISBN 978-90-272-1352-5. On-line version here Archived 2014-04-10 at the Wayback Machine.</li>
+                        <li>J. M. Luce: Chronic disorders of consciousness following coma: Part one: medical issues. In: Chest. Band 144, Nummer 4, Oktober 2013, S. 1381–1387, doi:10.1378/chest.13-0395, PMID 24081351 (Review).</li>
+                        <li>Dummett, M. (2001). Origini della Filosofia Analitica. Einaudi. ISBN 978-88-06-15286-4.</li>
+                        <li>Hegel, G.W.F (1983). Phenomenology of Spirit. Oxford University Press. ISBN 978-0-19-503169-0., translated by A.V. Miller with analysis of the text and foreword by J. N. Findlay (Oxford: Clarendon Press, 1977) ISBN 0-19-824597-1 .</li>
+                        <li>Husserl, Edmund (2008). Logische Untersuchungen. Akademie Verlag Berlin. ISBN 978-3-05-004391-3. trans.: Giovanni Piana. Milan: EST. ISBN 88-428-0949-7</li>
+                        <li>"Philosopher Ted Honderich's Determinism web resource". Archived from the original on 2008-05-16.</li>
+                        <li>Russell, Paul, Freedom and Moral Sentiment: Hume's Way of Naturalizing Responsibility Oxford University Press: New York & Oxford, 1995.</li>
+                        <li>Dennett, Daniel (1984). The Varieties of Free Will Worth Wanting. Cambridge MA: Bradford Books–MIT Press. ISBN 978-0-262-54042-1.</li>
+                        <li>Descartes, René (1989) [1649]. Passions of the Soul. Translated by S. H. Voss. Hackett Publishing Company. ISBN 978-0-87220-035-7.</li>
+                        <li>Kane, Robert (2009). "Libertarianism". Philosophical Studies. 144 (1): 39. doi:10.1007/s11098-009-9365-y. S2CID 262782420.</li>
+                        <li>Dennett, C. & Hofstadter, D.R. (1981). The Mind's I. Bantam Books. ISBN 978-0-553-01412-9.</li>
+                        <li>Searle, John (1 November 2004). Mind: A Brief Introduction. Oxford University Press Inc, USA. ISBN 978-0-19-515733-8.</li>
+                        <li>LeDoux, Joseph (2002). The Synaptic Self. New York: Viking Penguin. ISBN 978-88-7078-795-5.</li>
+                        <li>Hellie, Benj (2013). "Against Egalitarianism". Analysis. 73 (2): 304–320. doi:10.1093/analys/ans101.</li>
+                        <li>Hare, Caspar (July 2007). "Self-Bias, Time-Bias, and the Metaphysics of Self and Time" (PDF). The Journal of Philosophy. 104 (7): 350–373. doi:10.5840/jphil2007104717.</li>
+                        <li>Hare, Caspar (2009). On Myself, and Other, Less Important Subjects. Princeton University Press. ISBN 9780691135311.</li>
+                        <li>Hare, Caspar (September 2010). "Realism About Tense and Perspective" (PDF). Philosophy Compass. 5 (9): 760–769. doi:10.1111/j.1747-9991.2010.00325.x. hdl:1721.1/115229.</li>
+                        <li>Kolak, Daniel (2007-11-03). I Am You: The Metaphysical Foundations for Global Ethics (PDF). Springer Science & Business Media. ISBN 978-1-4020-3014-7. Archived (PDF) from the original on 2024-09-06.</li>
+                        <li>Parfit, Derek (1984). Reasons and persons. Oxford [Oxfordshire]: Clarendon Press. ISBN 0-19-824615-3. OCLC 9827659.</li>
+                        <li>McGinn, Colin (1997). Minds and Bodies: Philosophers and Their Ideas. Oxford University Press. ISBN 978-0-19-511355-6.[page needed]</li>
+                        <li>Thomas, Alan (2015). Thomas Nagel. Routledge. ISBN 978-1-317-49418-8.[page needed]</li>
+                    </ol>
+                </section>
+
+                <section id="further-reading" class="glassmorphism" data-animate>
+                    <h2>Lectura Adicional</h2>
+                    <ul>
+                        <li>The London Philosophy Study Guide Archived 2009-09-23 at the Wayback Machine offers many suggestions on what to read, depending on the student's familiarity with the subject: Philosophy of Mind Archived 2020-06-15 at the Wayback Machine</li>
+                        <li>Richard Rorty, Philosophy and the Mirror of Nature (Princeton, 1980), p. 120, 125.</li>
+                        <li>Pedro Jesús Teruel, Mente, cerebro y antropología en Kant (Madrid, 2008). ISBN 978-84-309-4688-4.</li>
+                        <li>David J. Ungs, Better than one; how we each have two minds (London, 2004). ISBN 978-1-78220-173-1</li>
+                        <li>Alfred North Whitehead Science and the Modern World (1925; reprinted London, 1985), pp. 68–70.</li>
+                        <li>Edwin Burtt The Metaphysical Foundations of Modern Physical Science, 2nd ed. (London, 1932), pp. 318–19.</li>
+                        <li>Felix Deutsch (ed.) On the Mysterious Leap from the Mind to the Body (New York, 1959).</li>
+                        <li>Herbert Feigl The "Mental" and the "Physical": The Essay and a Postscript (1967), in H. Feigl et al., (eds.), Minnesota Studies in the Philosophy of Science (Minneapolis, 1958), Vol. 2, pp. 370–497, at p. 373.</li>
+                        <li>Nap Mabaquiao, Jr., Mind, Science and Computation (with foreword by Tim Crane). Manila: De La Salle University Publishing House, 2012.</li>
+                        <li>Celia Green The Lost Cause: Causation and the Mind–Body Problem. (Oxford: Oxford Forum, 2003). Applies a sceptical view on causality to the problems of interactionism.</li>
+                        <li>Gyatso, Geshe Kelsang Gyatso, Understanding the Mind: The Nature and Power of the Mind, Tharpa Publications (2nd. ed., 1997) ISBN 978-0-948006-78-4</li>
+                        <li>Gerhard Medicus. Being Human – Bridging the Gap between the Sciences of Body and Mind. Berlin (2015): VWB</li>
+                        <li>Gerhard Medicus (2017). Being Human – Bridging the Gap between the Sciences of Body and Mind, Berlin VWB</li>
+                        <li>Scott Robert Sehon, Teleological Realism: Mind, Agency and Explanation. Cambridge: MIT University Press, 2005.</li>
+                    </ul>
+                </section>
+
+                <section id="external-links" class="glassmorphism" data-animate>
+                    <h2>Enlaces Externos</h2>
+                    <ul>
+                        <li>Wikibooks has a book on the topic of: Consciousness Studies</li>
+                        <li>Look up philosophy of mind in Wiktionary, the free dictionary.</li>
+                        <li>Wikimedia Commons has media related to Philosophy of mind.</li>
+                        <li>Wikiquote has quotations related to Philosophy of mind.</li>
+                        <li>Library resources about Philosophy of mind: Resources in your library, Resources in other libraries</li>
+                        <li>Philosophy of mind at PhilPapers</li>
+                        <li>Philosophy of mind at the Indiana Philosophy Ontology Project</li>
+                        <li>"Theory of Mind". Internet Encyclopedia of Philosophy.</li>
+                        <li>Guide to Philosophy of Mind, compiled by David Chalmers.</li>
+                        <li>MindPapers: A Bibliography of the Philosophy of Mind and the Science of Consciousness, compiled by David Chalmers (Editor) & David Bourget (Assistant Editor).</li>
+                        <li>Dictionary of Philosophy of Mind, edited by Chris Eliasmith.</li>
+                        <li>An Introduction to the Philosophy of Mind, by Paul Newall, aimed at beginners.</li>
+                        <li>A list of online papers on consciousness and philosophy of mind, compiled by David Chalmers</li>
+                    </ul>
+                </section>
+
+            </main>
+        </div>
+        <footer class="footer" id="contacto">
+            <h2>Contacto</h2>
+            <p>Este espacio es una cartografía personal y una invitación al diálogo.</p>
+            <p style="margin-top:1.5rem; font-size: 0.9em;">"La vida es terriblemente bella cuando los jugadores juegan." | 2025</p>
+        </footer>
+    </div>
+
+    <!-- Botón "Volver Arriba" -->
+    <a href="#inicio" id="back-to-top" class="hidden md:flex flex-col items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" />
+        </svg>
+        <span class="text-xs mt-1">Arriba</span>
+    </a>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Three.js Background
+            if (typeof THREE !== 'undefined') {
+                initThreeJS();
+            } else {
+                console.error("Three.js not loaded");
+            }
+
+            // Setup Navigation and other event listeners
+            setupNavigation();
+            setupScrollAnimations();
+            
+            // Initialize Mermaid
+            mermaid.initialize({ startOnLoad: true, theme: 'dark' }); // Explicitly set dark theme for Mermaid
+
+            // Handle window resizing
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    // No hay gráficos D3 en la plantilla base
+                }, 250);
+            });
+
+            // Back to Top Button Logic
+            const backToTopButton = document.getElementById('back-to-top');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) { // Show button after scrolling 300px
+                    backToTopButton.classList.add('show');
+                } else {
+                    backToTopButton.classList.remove('show');
+                }
+            });
+        });
+
+        // --- THREE.JS BACKGROUND ---
+        let scene, camera, renderer, points, lines;
+        
+        function initThreeJS() {
+            try {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+                camera.position.z = 50;
+
+                renderer = new THREE.WebGLRenderer({
+                    canvas: document.getElementById("bg-canvas"),
+                    alpha: true
+                });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+                const pointCount = 250; // Aumentar ligeramente el número de puntos
+                const positions = new Float32Array(pointCount * 3);
+                const pointGeo = new THREE.BufferGeometry();
+                for (let i = 0; i < pointCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 450; // Mayor dispersión
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 450;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 450;
+                }
+                pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+                const pointMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.8, transparent: true, opacity: 0.9 }); // Puntos ligeramente más grandes y opacos
+                points = new THREE.Points(pointGeo, pointMaterial);
+                scene.add(points);
+
+                regenerateLines();
+
+                window.addEventListener("resize", onWindowResize, false);
+                document.addEventListener('mousemove', onMouseMove, false);
+                renderer.domElement.addEventListener('click', onCanvasClick, false);
+                animate();
+            } catch (error) {
+                console.error('Error initializing Three.js:', error);
+            }
+        }
+
+        function onWindowResize() {
+            if(camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+
+        let mouseX = 0, mouseY = 0;
+        function onMouseMove(event) {
+            mouseX = (event.clientX - window.innerWidth / 2) / 100;
+            mouseY = (event.clientY - window.innerHeight / 2) / 100;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if(scene && camera && renderer && points && lines) {
+                points.rotation.y += 0.0007; // Ligeramente más rápido
+                lines.rotation.y += 0.0007; // Ligeramente más rápido
+                camera.position.x += (mouseX - camera.position.x) * 0.03; // Menos reactivo al ratón para suavidad
+                camera.position.y += (-mouseY - camera.position.y) * 0.03;
+                camera.lookAt(scene.position);
+                renderer.render(scene, camera);
+            }
+        }
+
+        function onCanvasClick(event) {
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+            vector.unproject(camera);
+            const dir = vector.sub(camera.position).normalize();
+            const distance = -camera.position.z / dir.z;
+            const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+            addPoint(pos);
+        }
+
+        function addPoint(position) {
+            const oldPositions = points.geometry.attributes.position.array;
+            const newPointCount = oldPositions.length / 3 + 1;
+            const newPositions = new Float32Array(newPointCount * 3);
+            newPositions.set(oldPositions);
+            newPositions[oldPositions.length] = position.x;
+            newPositions[oldPositions.length + 1] = position.y;
+            newPositions[oldPositions.length + 2] = position.z;
+            points.geometry.setAttribute('position', new THREE.BufferAttribute(newPositions, 3));
+            points.geometry.attributes.position.needsUpdate = true;
+            regenerateLines();
+        }
+
+        function regenerateLines() {
+            if (lines) scene.remove(lines);
+            const pointPositions = points.geometry.attributes.position.array;
+            const pointCount = pointPositions.length / 3;
+            const linePositions = [];
+            for (let i = 0; i < pointCount; i++) {
+                for (let j = i + 1; j < pointCount; j++) {
+                    const dx = pointPositions[i * 3] - pointPositions[j * 3];
+                    const dy = pointPositions[i * 3 + 1] - pointPositions[j * 3 + 1];
+                    const dz = pointPositions[i * 3 + 2] - pointPositions[j * 3 + 2];
+                    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    if (dist < 60) { /* Mayor distancia para líneas, más conexiones */
+                        linePositions.push(pointPositions[i * 3], pointPositions[i * 3 + 1], pointPositions[i * 3 + 2]);
+                        linePositions.push(pointPositions[j * 3], pointPositions[j * 3 + 1], pointPositions[j * 3 + 2]);
+                    }
+                }
+            }
+            const lineGeo = new THREE.BufferGeometry();
+            lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.25, transparent: true }); /* Ligeramente menos opaco */
+            lines = new THREE.LineSegments(lineGeo, lineMaterial);
+            scene.add(lines);
+        }
+
+        // --- NAVIGATION SCRIPTS ---
+        function setupNavigation() {
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            const navMenu = document.getElementById('nav-menu');
+
+            menuToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.body.classList.toggle('menu-open');
+            });
+
+            navMenu.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A' && window.innerWidth <= 1024) {
+                   document.body.classList.remove('menu-open');
+                }
+            });
+
+            if (window.matchMedia('(min-width: 1025px)').matches) {
+                const menuItems = document.querySelectorAll('.nav-container > li');
+                menuItems.forEach(item => {
+                    const megaMenu = item.querySelector('.mega-menu');
+                    if (megaMenu) {
+                        let leaveTimeout;
+                        const showMenu = () => {
+                            clearTimeout(leaveTimeout);
+                            document.querySelectorAll('.mega-menu.is-active').forEach(m => {
+                                if (m !== megaMenu) m.classList.remove('is-active');
+                            });
+                            megaMenu.classList.add('is-active');
+                        };
+                        const startHideTimer = () => {
+                            leaveTimeout = setTimeout(() => megaMenu.classList.remove('is-active'), 250);
+                        };
+                        item.addEventListener('mouseenter', showMenu);
+                        item.addEventListener('mouseleave', startHideTimer);
+                    }
+                });
+            }
+        }
+
+        // --- SCROLL ANIMATION ---
+        function setupScrollAnimations() {
+            const animatedSections = document.querySelectorAll('[data-animate]');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        
+                        const elementsToAnimate = entry.target.querySelectorAll('h2, h3, p, .visualization-container, iframe, ul, ol, li, .mermaid');
+                        elementsToAnimate.forEach((el, index) => {
+                           el.style.transitionDelay = `${index * 150}ms`;
+                        });
+
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.2 });
+            animatedSections.forEach(section => observer.observe(section));
+        }
+    </script>
+</body>
+</html>
