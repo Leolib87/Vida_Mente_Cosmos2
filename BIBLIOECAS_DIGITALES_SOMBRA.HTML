@@ -3,313 +3,550 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Biblioteca Digital</title>
-    <!-- Fuente Orbitron para el estilo cyberpunk -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Librería D3.js para visualización dinámica -->
+    <title>Mi Biblioteca Digital | Exploración Transdisciplinaria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        /* Estilo base del cuerpo */
+        :root {
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --primary-text: #e5e7eb;
+            --primary-glow: #818cf8;
+            --secondary-glow: #22d3ee;
+            --font-main: 'Inter', sans-serif;
+            --nav-height: 70px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
         body {
-            background-color: #000000; /* Fondo negro */
-            color: #00FF00; /* Verde neón */
-            font-family: 'Orbitron', sans-serif; /* Fuente futurista */
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
+            background-color: #000000;
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
             overflow-x: hidden;
         }
-        /* Contenedor principal */
-        .main-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        /* Encabezado */
-        .header {
-            position: relative;
-            height: 50vh;
-            background: url('https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center/cover;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            color: #00FFFF; /* Cian neón */
-            text-shadow: 0 0 15px #00FF00; /* Sombra verde */
-            animation: fadeIn 2s ease-in;
-        }
-        .header::before {
-            content: '';
-            position: absolute;
+        
+        #bg-canvas {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7); /* Capa oscura */
-            z-index: 1;
+            z-index: -1;
+            cursor: crosshair;
         }
-        .header h1, .header p {
-            position: relative;
-            z-index: 2;
+
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .header h1 {
-            font-size: clamp(2em, 4vw, 4em); /* Tamaño adaptable */
-            animation: glow 2s infinite alternate;
-        }
-        @keyframes glow {
-            from { text-shadow: 0 0 5px #00FF00; }
-            to { text-shadow: 0 0 20px #00FFFF; }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        /* Secciones */
-        .section {
-            margin: 40px 0;
-            padding: 25px;
-            border: 2px solid #00FFFF; /* Borde cian */
-            box-shadow: 0 0 20px #00FFFF; /* Sombra brillante */
-            background: rgba(0, 255, 255, 0.05); /* Fondo traslúcido */
-            border-radius: 10px;
-            box-sizing: border-box;
-            overflow-x: auto; /* Scroll horizontal para tablas en móviles */
-        }
-        h2 {
-            color: #00FF00;
-            text-shadow: 0 0 8px #00FF00;
-            border-bottom: 1px solid #00FFFF;
-            padding-bottom: 10px;
-            margin: 0 0 15px 0;
-            font-size: 1.5em;
-            text-align: center;
-        }
-        /* Filtros */
-        .filters {
-            margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-        }
-        select {
-            background: #000000;
-            border: 2px solid #00FFFF;
-            color: #00FF00;
-            padding: 8px;
-            font-family: 'Orbitron', sans-serif;
-            border-radius: 5px;
-            transition: all 0.3s ease;
-        }
-        select:hover, select:focus {
-            background: #00FFFF;
-            color: #000000;
-            outline: none;
-        }
-        /* Tabla */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.95em;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid #00FFFF;
-            text-align: left;
-        }
-        th {
-            background: rgba(0, 255, 255, 0.1); /* Fondo cian traslúcido */
-            color: #00FFFF;
-        }
-        tr:nth-child(even) {
-            background: rgba(0, 255, 255, 0.03); /* Fondo alternado */
-        }
-        tr:hover {
-            background: rgba(0, 255, 255, 0.2); /* Hover brillante */
-        }
-        /* Red D3.js */
-        #network {
-            width: 100%;
-            height: 500px;
-            background: rgba(0, 0, 0, 0.9);
-            border-radius: 5px;
+
+        body.menu-open {
             overflow: hidden;
         }
+        
+        nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+            padding: 0 5%;
+            pointer-events: auto;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .nav-logo a {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            text-shadow: 0 0 8px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
+        nav .nav-container > li { position: relative; height: 100%; display: flex; align-items: center; }
+        nav .nav-container > li > a {
+            color: var(--primary-text); text-decoration: none; font-size: clamp(0.9em, 1.2vw, 1.05em); font-weight: 500;
+            transition: color 0.3s ease, text-shadow 0.3s ease; padding: 0 1rem; display: flex; align-items: center; gap: 8px;
+        }
+        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a { color: #FFFFFF; text-shadow: 0 0 12px var(--primary-glow); }
+        
+        .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; }
+        
+        .mega-menu {
+            position: fixed;
+            top: var(--nav-height);
+            left: 50%;
+            transform: translateX(-50%) scale(0.95);
+            border-radius: 10px; width: auto;
+            min-width: clamp(300px, 80vw, 950px); max-width: 95vw;
+            padding: 2rem; 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem; 
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0.3s;
+            transform-origin: top center;
+        }
+        
+        .mega-menu.is-active { 
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) scale(1);
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0s;
+        }
+        
+        .mega-menu h3 {
+            color: var(--primary-glow); font-size: 1.1em; margin-bottom: 1rem;
+            text-shadow: 0 0 5px var(--primary-glow);
+            border-bottom: 1px solid rgba(129, 140, 248, 0.3);
+            padding-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .mega-menu ul { display: flex; flex-direction: column; gap: 0.75rem; list-style: none; }
+        .mega-menu li { position: relative; }
+        .mega-menu a {
+            font-size: 0.9em; color: var(--primary-text); text-decoration: none;
+            transition: color 0.3s, padding-left 0.3s, background-color 0.3s;
+            padding: 0.5rem 0.75rem 0.5rem 2rem; border-radius: 4px;
+            display: block;
+            position: relative;
+        }
+        .mega-menu a::before {
+            content: '›';
+            color: var(--primary-glow);
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+            transition: color 0.3s;
+        }
+        .mega-menu a:hover { color: #000; background-color: var(--primary-glow); padding-left: 2.5rem; }
+        .mega-menu a:hover::before { color: #000; }
+        
+        .hero {
+            height: 100vh; min-height: 500px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; position: relative;
+            padding: 1rem;
+        }
+        .hero-content { position: relative; z-index: 2; animation: fadeIn 2s ease-in; }
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 5.5rem); font-weight: 700; color: #fff;
+            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(129, 140, 248, 0.7);
+            animation: pulse-glow 3s infinite alternate;
+        }
+        .hero p { font-size: clamp(1rem, 2.5vw, 1.3rem); max-width: 800px; margin: 1.5rem auto 0; text-shadow: 0 0 5px #000; }
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .main-container { 
+            width: 100%;
+            margin: 0 auto; 
+            padding: var(--nav-height) clamp(1rem, 5vw, 4rem) 1rem;
+            pointer-events: none;
+        }
+        
+        main, .footer, .section, .hero-content {
+            pointer-events: auto;
+        }
+
+        main p, .footer p {
+            user-select: text;
+            cursor: default;
+        }
+
+        .layout-grid { 
+            display: grid; 
+            grid-template-columns: 1fr;
+            gap: 2rem; 
+            margin-top: 2rem; 
+        }
+        
+        .section {
+            padding: clamp(1.5rem, 5vw, 2.5rem);
+            border-radius: 12px; margin-bottom: 2rem; position: relative;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .section:hover { transform: translateY(-5px); box-shadow: 0 0 40px rgba(129, 140, 248, 0.2); }
+        
+        .section h2, .section h3, .section p, .section .visualization-container, .section iframe, .section table, .section .search-bar, .section .filters, .section .ia-cards-container, .section .chart-container {
+             opacity: 0;
+             transform: translateY(20px);
+             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .section.is-visible h2, .section.is-visible h3, .section.is-visible p, .section.is-visible .visualization-container, .section.is-visible iframe, .section.is-visible table, .section.is-visible .search-bar, .section.is-visible .filters, .section.is-visible .ia-cards-container, .section.is-visible .chart-container {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        h2 {
+            font-size: clamp(1.5rem, 5vw, 2.2rem); color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);
+            border-bottom: 1px solid var(--primary-glow); padding-bottom: 1rem; margin-bottom: 1.5rem;
+            text-align: center; /* Centered for O.C.V.M. style */
+        }
+        h3 { font-size: clamp(1.2rem, 4vw, 1.5rem); color: var(--primary-glow); margin: 2rem 0 1rem 0; }
+        .highlight { color: var(--primary-glow); font-weight: bold; }
+        
+        .footer { text-align: center; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
+        
+        /* Specific styles for the Library page */
+
+        #network-graph { /* Renamed from #network */
+            width: 100%;
+            height: 500px;
+            margin: 2rem 0;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        #network-graph svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* D3.js specific styles, adapted for OCVM theme */
         .node circle {
-            stroke: #00FFFF;
+            stroke: var(--secondary-glow);
             stroke-width: 2px;
             transition: all 0.3s ease;
         }
         .node.resource circle {
-            fill: #00FF00; /* Verde para recursos */
+            fill: var(--primary-glow); /* Purple for resources */
             r: 5;
         }
         .node.category circle {
-            fill: #FF00FF; /* Magenta para categorías */
+            fill: #ff00c8; /* Pink for categories */
             r: 10;
         }
         .node:hover circle {
-            fill: #FFFFFF;
+            fill: var(--secondary); /* Brighter cyan on hover */
+            stroke: #fff;
             r: 12;
-            filter: drop-shadow(0 0 8px #00FFFF);
+            filter: drop-shadow(0 0 8px var(--secondary-glow));
         }
         .node.selected circle {
-            fill: #FFFF00; /* Amarillo neón para nodos seleccionados */
-            stroke: #000000; /* Borde negro para contraste */
+            fill: #FFFF00; /* Yellow neon for selected nodes */
+            stroke: #000000; /* Black border for contrast */
             stroke-width: 3px;
-            r: 15; /* Tamaño mayor para destacar */
-            filter: drop-shadow(0 0 10px #FFFF00); /* Brillo amarillo */
+            r: 15;
+            filter: drop-shadow(0 0 10px #FFFF00);
         }
         .node text {
-            fill: #00FFFF;
-            font-family: 'Orbitron', sans-serif;
-            text-shadow: 0 0 5px #00FF00;
-            font-size: 10px;
+            fill: var(--primary-text);
+            font-family: var(--font-main);
+            text-shadow: 0 0 10px var(--secondary-glow);
+            font-size: 9px;
             pointer-events: none;
+            opacity: 0.8;
+            transition: all 0.3s ease; /* Added transition for text changes */
+        }
+        .node.category text {
+            fill: #fff; /* White for category text */
+            text-shadow: 0 0 15px #ff00c8; /* Pink glow for categories */
+        }
+        /* Updated hover styles for text */
+        .node:hover text {
+            opacity: 1;
+            font-size: 14px; /* Enlarge text on hover */
+            fill: #fff; /* Change text color to white on hover */
+            text-shadow: 0 0 15px var(--secondary-glow), 0 0 25px var(--secondary-glow); /* Stronger glow on hover */
         }
         .node.selected text {
-            fill: #FFFFFF; /* Blanco para texto de nodos seleccionados */
-            text-shadow: 0 0 5px #000000; /* Sombra negra para contraste */
-            font-size: 12px; /* Ligeramente más grande */
+            fill: #FFFFFF;
+            text-shadow: 0 0 5px #000000;
+            font-size: 12px;
         }
         .link {
-            stroke: #00FF00;
-            stroke-opacity: 0.7;
-            stroke-width: 1px;
+            stroke: var(--secondary); /* Cyan links */
+            stroke-opacity: 0.4;
+            stroke-width: 1.5px;
         }
         .link.category-link {
-            stroke: #FF00FF; /* Magenta para conexiones entre categorías */
+            stroke: #ff00c8; /* Magenta for category-category connections */
             stroke-width: 2px;
             stroke-opacity: 0.9;
         }
-        .footer {
-            text-align: center;
-            padding: 30px;
-            color: #00FFFF;
-            border-top: 2px solid #00FF00;
-            margin-top: 40px;
+
+        /* Filter and Table styles */
+        .filters {
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
         }
+        select {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--secondary);
+            color: var(--primary-text);
+            padding: 0.75rem 1rem;
+            font-family: var(--font-main);
+            font-size: 1em;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 250px; /* Adjusted max-width for better fit */
+            transition: all 0.3s ease;
+            box-shadow: 0 0 5px var(--secondary-glow);
+        }
+        select:hover, select:focus {
+            background: rgba(34, 211, 238, 0.2);
+            color: #fff;
+            box-shadow: 0 0 15px var(--secondary-glow);
+            outline: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+            margin-top: 1.5rem;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 0.8rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: left;
+        }
+        th {
+            background: rgba(34, 211, 238, 0.1);
+            color: var(--secondary);
+            text-shadow: 0 0 5px var(--secondary-glow);
+        }
+        tr:nth-child(even) {
+            background: rgba(129, 140, 248, 0.03);
+        }
+        tr:hover {
+            background: rgba(129, 140, 248, 0.1);
+        }
+        table a {
+            color: var(--secondary);
+            text-decoration: none;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        table a:hover {
+            color: #fff;
+            text-shadow: 0 0 8px var(--secondary-glow);
+        }
+
+        /* Chart container styles */
         .chart-container {
-            margin: 20px 0;
-            padding: 20px;
-            border: 2px solid #00FFFF;
-            border-radius: 5px;
-            background: rgba(0, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .chart-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 40px rgba(129, 140, 248, 0.2);
         }
         .chart-container h3 {
-            color: #00FF00;
-            text-shadow: 0 0 8px #00FF00;
-            margin-bottom: 15px;
+            color: var(--secondary-glow);
+            text-shadow: 0 0 8px var(--secondary-glow);
+            margin-bottom: 1rem;
             text-align: center;
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
         }
         #bar-chart, #pie-chart, #type-bar-chart, #treemap {
             width: 100%;
-            max-width: 1200px;
+            max-width: 100%; /* Ensure charts fit within container */
             margin: 0 auto;
         }
+        /* D3.js chart specific styles */
         .bar {
-            fill: #00FF00;
+            fill: var(--primary-glow);
             transition: fill 0.3s ease;
         }
         .bar:hover {
-            fill: #FFFF00;
+            fill: var(--secondary);
         }
         .bar-text {
-            fill: #00FFFF;
+            fill: var(--primary-text);
             font-size: 10px;
             text-shadow: 0 0 5px #000000;
             text-anchor: middle;
+            font-family: var(--font-main);
         }
         .arc path {
-            stroke: #00FF00; /* Verde neón para bordes */
-            stroke-width: 4px; /* Borde grueso */
-            fill: #000000; /* Interior negro */
-            transition: opacity 0.3s ease;
+            stroke: var(--primary-glow);
+            stroke-width: 4px;
+            fill: rgba(0, 0, 0, 0.5); /* Semi-transparent black fill */
+            transition: opacity 0.3s ease, fill 0.3s ease;
         }
         .arc path:hover {
             opacity: 0.8;
+            fill: var(--secondary); /* Change fill on hover */
         }
         .arc text {
-            fill: #00FFFF;
+            fill: var(--primary-text);
             font-size: 10px;
             text-shadow: 0 0 5px #000000;
             pointer-events: none;
+            font-family: var(--font-main);
+        }
+        .arc polyline {
+            stroke: var(--secondary);
+            stroke-width: 1px;
+            fill: none;
+            opacity: 0.6;
         }
         .treemap-rect {
-            stroke: #00FF00; /* Verde neón para bordes */
-            stroke-width: 4px; /* Borde grueso */
-            fill: #000000; /* Interior negro */
+            stroke: var(--primary-glow);
+            stroke-width: 2px; /* Slightly thinner border for treemap */
+            fill: var(--primary-dark); /* Darker primary for fill */
             fill-opacity: 0.8;
-            transition: fill-opacity 0.3s ease;
+            transition: fill-opacity 0.3s ease, stroke 0.3s ease;
         }
         .treemap-rect:hover {
             fill-opacity: 1;
+            stroke: var(--secondary);
         }
         #treemap-info {
-            color: #00FF00;
-            text-shadow: 0 0 8px #00FF00;
+            color: var(--primary-text);
+            text-shadow: 0 0 8px var(--primary-glow);
             font-size: 14px;
             margin-top: 10px;
             text-align: center;
+            font-family: var(--font-main);
         }
-        /* Media Queries para diseño responsivo */
-        @media (max-width: 768px) {
-            .main-container {
-                padding: 10px;
-            }
-            .header {
-                height: 40vh;
-            }
-            .header h1 {
-                font-size: clamp(1.5em, 3vw, 2.5em);
-            }
-            .header p {
-                font-size: 0.9em;
-            }
-            .section {
-                margin: 20px 0;
-                padding: 15px;
-            }
-            h2 {
-                font-size: 1.2em;
-            }
-            table {
-                font-size: 0.85em;
-            }
-            th, td {
-                padding: 8px;
-            }
-            #network {
-                height: 400px; /* Reducir altura en tablets */
-            }
-            .chart-container {
-                padding: 15px;
+
+        /* Media Queries for responsive design */
+        @media (min-width: 1025px) {
+            .menu-toggle { display: none; }
+            .nav-container { display: flex; }
+            .layout-grid { 
+                grid-template-columns: 1fr;
             }
         }
-        @media (max-width: 480px) {
-            .header {
-                height: 30vh;
+
+        @media (max-width: 1024px) {
+            .nav-content { justify-content: space-between; }
+            .nav-container {
+                position: fixed;
+                top: var(--nav-height);
+                left: 0;
+                width: 100%;
+                height: calc(100vh - var(--nav-height));
+                background: rgba(17, 24, 39, 0.95);
+                backdrop-filter: blur(15px);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+                transform: translateY(-110%);
+                overflow-y: auto;
+                padding: 2rem;
             }
-            .header h1 {
-                font-size: clamp(1.2em, 2.5vw, 2em);
+            body.menu-open .nav-container {
+                transform: translateY(0);
             }
-            .header p {
-                font-size: 0.8em;
+
+            nav .nav-container > li { width: 100%; height: auto; flex-direction: column; align-items: center; text-align: center; }
+            nav .nav-container > li > a { padding: 1rem; width: 100%; font-size: 1.5em;}
+            
+            .mega-menu {
+                position: static; display: grid; opacity: 1; transform: none; visibility: visible; width: 100%; box-shadow: none; 
+                border: none; padding: 1rem 0 1.5rem 0; background: none; backdrop-filter: none;
+                grid-template-columns: 1fr; border-top: 1px solid rgba(129, 140, 248, 0.2); margin-top: 1rem;
             }
+            
+            .mega-menu h3 { 
+                text-align: center; 
+                font-size: 1.8em;
+            }
+            .mega-menu ul { 
+                align-items: stretch;
+                text-align: left;
+                list-style: none;
+                padding-left: 0;
+            }
+            
+            .mega-menu a {
+                font-size: 1.5em;
+                padding: 0.8rem 1rem 0.8rem 2.5rem;
+                display: block;
+                text-align: left;
+                position: relative;
+            }
+
+            .mega-menu a::before {
+                content: '■';
+                color: var(--primary-glow);
+                position: absolute;
+                left: 0.5rem;
+                top: 50%;
+                transform: translateY(-50%) scale(0.6);
+                font-size: 1.5em;
+            }
+
+            .mega-menu a:hover {
+                padding-left: 2.5rem;
+                color: #000;
+                background-color: var(--primary-glow);
+            }
+            .mega-menu a:hover::before {
+                color: #000;
+            }
+            
+            .menu-toggle {
+                display: block; position: relative; z-index: 1001;
+                width: 30px; height: 22px;
+                background: none; border: none; cursor: pointer;
+            }
+            .icon-bar {
+                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
+                margin: 6px 0; transition: all 0.3s ease-in-out;
+                border-radius: 2px;
+            }
+
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+
+            .layout-grid {
+                grid-template-columns: 1fr;
+            }
+            #network-graph {
+                height: 400px;
+            }
+        }
+        @media (max-width: 600px) {
             .section {
-                margin: 15px 0;
-                padding: 10px;
+                padding: 1.5rem;
             }
-            h2 {
-                font-size: 1em;
+            #network-graph {
+                height: 300px;
             }
-            table {
-                font-size: 0.75em;
-            }
-            th, td {
-                padding: 6px;
+            .node text {
+                font-size: 8px;
             }
             .filters {
                 flex-direction: column;
@@ -319,20 +556,17 @@
                 width: 100%;
                 max-width: 200px;
             }
-            #network {
-                height: 300px; /* Reducir altura en móviles */
+            table {
+                font-size: 0.8em;
             }
-            .node text {
-                font-size: 8px; /* Texto más pequeño en móviles */
-            }
-            .node.selected text {
-                font-size: 10px; /* Ajuste para móviles */
+            th, td {
+                padding: 0.6rem 0.8rem;
             }
             .chart-container {
-                padding: 10px;
+                padding: 1rem;
             }
             .bar-text, .arc text {
-                font-size: 8px; /* Texto más pequeño en móviles */
+                font-size: 8px;
             }
             #treemap-info {
                 font-size: 12px;
@@ -341,67 +575,123 @@
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <!-- Encabezado -->
-        <div class="header">
-            <h1>Mi Biblioteca Digital</h1>
-            <p>Explorando Recursos Digitales</p>
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+    <nav class="glassmorphism">
+        <div class="nav-content">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-8 w-8 md:h-10 md:w-10 rounded-full">
+                    <span>O.C.V.M.</span>
+                </a>
+            </div>
+            <ul class="nav-container" id="nav-menu">
+                <li><a href="index.html">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+                    Inicio</a></li>
+        
+                <li><a href="#">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" /></svg>
+                    Cartografías del Saber</a>
+                    <div class="mega-menu glassmorphism">
+                        <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>Recursos y Proyectos</h3>
+                            <ul>
+                                <li><a href="MI_BIBLIOTECA.HTML">Biblioteca Humanidades</a></li>
+                                <li><a href="BIBLIOTECA_CIENCIAS.HTML">Biblioteca Ciencias</a></li>
+                                <li><a href="BIBLIOTECA SHADOW.html">Bibliotecas Sombra</a></li>
+                            </ul>
+                        </div>
+                        <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>Herramientas Digitales y IA</h3>
+                            <ul>
+                                <li><a href="IAs.html">Red de IAs</a></li>
+                                <li><a href="IAS_BUSQUEDA.HTML">Buscador de IAs</a></li>
+                                <li><a href="googleias.html">IAs de Google</a></li>
+                                <li><a href="treemap_ias.html">Treemap de IAs</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+                
+                <li><a href="#contacto">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                    Contacto</a></li>
+            </ul>
+            <button class="menu-toggle" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container" id="inicio">
+        <div class="hero">
+            <div class="hero-content">
+                <h1>Mi Biblioteca Digital</h1>
+                <p>Explorando Recursos Digitales y sus Conexiones</p>
+            </div>
         </div>
 
-        <!-- Sección de la biblioteca -->
-        <div class="section" id="library">
-            <h2>Red de Conexiones por Categoría</h2>
-            <div id="network"></div>
-            <h2>Catálogo de Recursos Digitales</h2>
-            <div class="filters">
-                <select id="categoryFilter">
-                    <option value="">Todas las Categorías</option>
-                    <!-- Opciones se llenarán dinámicamente -->
-                </select>
-                <select id="typeFilter">
-                    <option value="">Todos los Tipos</option>
-                    <!-- Opciones se llenarán dinámicamente -->
-                </select>
-            </div>
-            <table id="resourceTable">
-                <thead>
-                    <tr>
-                        <th>Título</th>
-                        <th>Enlace</th>
-                        <th>Comentarios</th>
-                        <th>Categoría</th>
-                        <th>Tipo de Contenido</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
+        <div class="layout-grid">
+            <main class="content col-span-full">
+                <section id="network-section" class="glassmorphism" data-animate>
+                    <h2>Red de Conexiones por Categoría</h2>
+                    <p>Haz clic en los nodos para filtrar la tabla de recursos. Arrastra los nodos para reorganizar la red.</p>
+                    <div id="network-graph" class="visualization-container"></div> <!-- Renamed ID to network-graph -->
+                </section>
+                
+                <section id="catalog-section" class="glassmorphism" data-animate>
+                    <h2>Catálogo de Recursos Digitales</h2>
+                    <div class="filters">
+                        <select id="categoryFilter">
+                            <option value="">Todas las Categorías</option>
+                        </select>
+                        <select id="typeFilter">
+                            <option value="">Todos los Tipos</option>
+                        </select>
+                    </div>
+                    <table id="resourceTable">
+                        <thead>
+                            <tr>
+                                <th>Título</th>
+                                <th>Enlace</th>
+                                <th>Comentarios</th>
+                                <th>Categoría</th>
+                                <th>Tipo de Contenido</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </section>
 
-        <!-- Pie de página con gráficos -->
-        <div class="footer">
-            <p>Explorando el Conocimiento Digital | Marzo 2025</p>
-            <div class="chart-container">
-                <h3>Distribución por Categoría (Barras)</h3>
-                <div id="bar-chart"></div>
-            </div>
-            <div class="chart-container">
-                <h3>Distribución por Categoría (Torta)</h3>
-                <div id="pie-chart"></div>
-            </div>
-            <div class="chart-container">
-                <h3>Distribución por Tipo de Contenido (Barras)</h3>
-                <div id="type-bar-chart"></div>
-            </div>
-            <div class="chart-container">
-                <h3>Recursos por Cantidad de Archivos (Treemap)</h3>
-                <div id="treemap"></div>
-                <div id="treemap-info"></div>
-            </div>
+                <section id="charts-section" class="glassmorphism" data-animate>
+                    <h2>Análisis de la Biblioteca</h2>
+                    <div class="chart-container">
+                        <h3>Distribución por Categoría (Barras)</h3>
+                        <div id="bar-chart"></div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Distribución por Categoría (Torta)</h3>
+                        <div id="pie-chart"></div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Distribución por Tipo de Contenido (Barras)</h3>
+                        <div id="type-bar-chart"></div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Recursos por Cantidad de Archivos (Treemap)</h3>
+                        <div id="treemap"></div>
+                        <div id="treemap-info"></div>
+                    </div>
+                </section>
+            </main>
         </div>
+        <footer class="footer" id="contacto">
+            <h2>Contacto</h2>
+            <p>Este espacio es una cartografía personal y una invitación al diálogo.</p>
+            <p style="margin-top:1.5rem; font-size: 0.9em;">La vida es terriblemente bella cuando los jugadores juegan. | 2025</p>
+        </footer>
     </div>
 
     <script>
-        // Datos de los recursos digitales (con Observatorio de Bibliotecas Sombra como primero)
+        // Datos de los recursos digitales
         const resources = [
             { title: "Observatorio de Bibliotecas Sombra", link: "https://open-slum.org/", comments: "Recursos y análisis de bibliotecas alternativas", category: "Archivo", type: "eBooks/Papers" },
             { title: "Planet eBook", link: "https://www.planetebook.com/", comments: "Clásicos gratuitos en PDF", category: "Literatura", type: "eBooks" },
@@ -446,7 +736,7 @@
             { title: "Standard Ebooks", link: "https://standardebooks.org/", comments: "eBooks bien formateados", category: "Literatura", type: "eBooks" }
         ];
 
-        // Preparar datos para la red: nodos de recursos y categorías
+        // Prepare data for the network: resource nodes and category nodes
         const categories = [...new Set(resources.map(resource => resource.category))].sort();
         const categoryNodes = categories.map((category, index) => ({
             id: `category-${index}`,
@@ -458,18 +748,18 @@
             title: resource.title,
             category: resource.category,
             type: resource.type,
-            type: "resource"
+            nodeType: "resource" // Renamed 'type' to 'nodeType' to avoid conflict with resource.type
         }));
         const nodes = [...categoryNodes, ...resourceNodes];
 
-        // Enlaces entre recursos y sus categorías
+        // Links between resources and their categories
         const resourceLinks = resourceNodes.map(resourceNode => ({
             source: resourceNode.id,
             target: categoryNodes.find(categoryNode => categoryNode.name === resourceNode.category).id,
             type: "resource-category"
         }));
 
-        // Enlaces entre categorías (conexiones basadas en tipos de contenido compartidos)
+        // Links between categories (connections based on shared content types)
         const categoryLinks = [];
         for (let i = 0; i < categoryNodes.length; i++) {
             for (let j = i + 1; j < categoryNodes.length; j++) {
@@ -492,36 +782,212 @@
 
         const links = [...resourceLinks, ...categoryLinks];
 
-        // Configuración de la red D3.js
-        const width = document.getElementById('network').clientWidth;
-        const height = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 500;
+        // --- THREE.JS BACKGROUND ---
+        let scene, camera, renderer, points, lines;
+        
+        function initThreeJS() {
+            try {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+                camera.position.z = 50;
 
-        const svg = d3.select("#network")
+                renderer = new THREE.WebGLRenderer({
+                    canvas: document.getElementById("bg-canvas"),
+                    alpha: true
+                });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+                const pointCount = 200;
+                const positions = new Float32Array(pointCount * 3);
+                const pointGeo = new THREE.BufferGeometry();
+                for (let i = 0; i < pointCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 400;
+                }
+                pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+                const pointMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.5, transparent: true, opacity: 0.8 });
+                points = new THREE.Points(pointGeo, pointMaterial);
+                scene.add(points);
+
+                regenerateLines();
+
+                window.addEventListener("resize", onWindowResize, false);
+                document.addEventListener('mousemove', onMouseMove, false);
+                renderer.domElement.addEventListener('click', onCanvasClick, false);
+                animate();
+            } catch (error) {
+                console.error('Error initializing Three.js:', error);
+            }
+        }
+
+        function onWindowResize() {
+            if(camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+
+        let mouseX = 0, mouseY = 0;
+        function onMouseMove(event) {
+            mouseX = (event.clientX - window.innerWidth / 2) / 100;
+            mouseY = (event.clientY - window.innerHeight / 2) / 100;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if(scene && camera && renderer && points && lines) {
+                points.rotation.y += 0.0005;
+                lines.rotation.y += 0.0005;
+                camera.position.x += (mouseX - camera.position.x) * 0.05;
+                camera.position.y += (-mouseY - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+                renderer.render(scene, camera);
+            }
+        }
+
+        function onCanvasClick(event) {
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+            vector.unproject(camera);
+            const dir = vector.sub(camera.position).normalize();
+            const distance = -camera.position.z / dir.z;
+            const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+            addPoint(pos);
+        }
+
+        function addPoint(position) {
+            const oldPositions = points.geometry.attributes.position.array;
+            const newPointCount = oldPositions.length / 3 + 1;
+            const newPositions = new Float32Array(newPointCount * 3);
+            newPositions.set(oldPositions);
+            newPositions[oldPositions.length] = position.x;
+            newPositions[oldPositions.length + 1] = position.y;
+            newPositions[oldPositions.length + 2] = position.z;
+            points.geometry.setAttribute('position', new THREE.BufferAttribute(newPositions, 3));
+            points.geometry.attributes.position.needsUpdate = true;
+            regenerateLines();
+        }
+
+        function regenerateLines() {
+            if (lines) scene.remove(lines);
+            const pointPositions = points.geometry.attributes.position.array;
+            const pointCount = pointPositions.length / 3;
+            const linePositions = [];
+            for (let i = 0; i < pointCount; i++) {
+                for (let j = i + 1; j < pointCount; j++) {
+                    const dx = pointPositions[i * 3] - pointPositions[j * 3];
+                    const dy = pointPositions[i * 3 + 1] - pointPositions[j * 3 + 1];
+                    const dz = pointPositions[i * 3 + 2] - pointPositions[j * 3 + 2];
+                    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    if (dist < 50) {
+                        linePositions.push(pointPositions[i * 3], pointPositions[i * 3 + 1], pointPositions[i * 3 + 2]);
+                        linePositions.push(pointPositions[j * 3], pointPositions[j * 3 + 1], pointPositions[j * 3 + 2]);
+                    }
+                }
+            }
+            const lineGeo = new THREE.BufferGeometry();
+            lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.3, transparent: true });
+            lines = new THREE.LineSegments(lineGeo, lineMaterial);
+            scene.add(lines);
+        }
+
+        // --- NAVIGATION SCRIPTS ---
+        function setupNavigation() {
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            const navMenu = document.getElementById('nav-menu');
+
+            menuToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.body.classList.toggle('menu-open');
+            });
+
+            navMenu.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A' && window.innerWidth <= 1024) {
+                   document.body.classList.remove('menu-open');
+                }
+            });
+
+            if (window.matchMedia('(min-width: 1025px)').matches) {
+                const menuItems = document.querySelectorAll('.nav-container > li');
+                menuItems.forEach(item => {
+                    const megaMenu = item.querySelector('.mega-menu');
+                    if (megaMenu) {
+                        let leaveTimeout;
+                        const showMenu = () => {
+                            clearTimeout(leaveTimeout);
+                            document.querySelectorAll('.mega-menu.is-active').forEach(m => {
+                                if (m !== megaMenu) m.classList.remove('is-active');
+                            });
+                            megaMenu.classList.add('is-active');
+                        };
+                        const startHideTimer = () => {
+                            leaveTimeout = setTimeout(() => megaMenu.classList.remove('is-active'), 250);
+                        };
+                        item.addEventListener('mouseenter', showMenu);
+                        item.addEventListener('mouseleave', startHideTimer);
+                    }
+                });
+            }
+        }
+
+        // --- SCROLL ANIMATION ---
+        function setupScrollAnimations() {
+            const animatedSections = document.querySelectorAll('[data-animate]');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        
+                        const elementsToAnimate = entry.target.querySelectorAll('h2, h3, p, .visualization-container, iframe, table, .search-bar, .filters, .ia-cards-container, .chart-container');
+                        elementsToAnimate.forEach((el, index) => {
+                           el.style.transitionDelay = `${index * 150}ms`;
+                        });
+
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.2 });
+            animatedSections.forEach(section => observer.observe(section));
+        }
+
+        // --- D3.js Network Graph ---
+        const networkGraphContainer = document.getElementById('network-graph');
+        let networkWidth = networkGraphContainer.clientWidth;
+        let networkHeight = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 500;
+
+        const networkSvg = d3.select("#network-graph")
             .append("svg")
-            .attr("width", width)
-            .attr("height", height);
+            .attr("width", networkWidth)
+            .attr("height", networkHeight);
 
         const simulation = d3.forceSimulation(nodes)
             .force("link", d3.forceLink(links).id(d => d.id).distance(d => d.type === "category-category" ? 150 : 100).strength(0.5))
             .force("charge", d3.forceManyBody().strength(-200))
-            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("center", d3.forceCenter(networkWidth / 2, networkHeight / 2))
             .force("collide", d3.forceCollide(20))
-            .force("x", d3.forceX(width / 2).strength(0.1))
-            .force("y", d3.forceY(height / 2).strength(0.1));
+            .force("x", d3.forceX(networkWidth / 2).strength(0.1))
+            .force("y", d3.forceY(networkHeight / 2).strength(0.1));
 
-        const link = svg.append("g")
+        const link = networkSvg.append("g")
             .attr("class", "links")
             .selectAll("line")
             .data(links)
             .join("line")
             .attr("class", d => `link ${d.type === "category-category" ? "category-link" : ""}`);
 
-        const node = svg.append("g")
+        const node = networkSvg.append("g")
             .attr("class", "nodes")
             .selectAll("g")
             .data(nodes)
             .join("g")
-            .attr("class", d => `node ${d.type}`)
+            .attr("class", d => `node ${d.nodeType}`)
             .call(d3.drag()
                 .on("start", dragStarted)
                 .on("drag", dragged)
@@ -529,7 +995,7 @@
             .on("click", (event, d) => {
                 d3.selectAll(".node").classed("selected", false);
                 d3.select(event.currentTarget).classed("selected", true);
-                if (d.type === "category") {
+                if (d.nodeType === "category") {
                     const categoryFilter = document.getElementById('categoryFilter');
                     categoryFilter.value = d.name;
                     const changeEvent = new Event('change');
@@ -538,20 +1004,20 @@
             });
 
         node.append("circle")
-            .attr("r", d => d.type === "category" ? 10 : 5)
-            .attr("fill", d => d.type === "category" ? "#FF00FF" : "#00FF00");
+            .attr("r", d => d.nodeType === "category" ? 10 : 5)
+            .attr("fill", d => d.nodeType === "category" ? "#ff00c8" : "var(--primary-glow)");
 
         node.append("text")
             .attr("dy", -25)
             .attr("text-anchor", "middle")
-            .text(d => d.type === "category" ? d.name : d.title);
+            .text(d => d.nodeType === "category" ? d.name : d.title);
 
         simulation.on("tick", () => {
-            link.attr("x1", d => Math.max(10, Math.min(width - 10, d.source.x)))
-                .attr("y1", d => Math.max(10, Math.min(height - 10, d.source.y)))
-                .attr("x2", d => Math.max(10, Math.min(width - 10, d.target.x)))
-                .attr("y2", d => Math.max(10, Math.min(height - 10, d.target.y)));
-            node.attr("transform", d => `translate(${Math.max(10, Math.min(width - 10, d.x))},${Math.max(10, Math.min(height - 10, d.y))})`);
+            link.attr("x1", d => Math.max(10, Math.min(networkWidth - 10, d.source.x)))
+                .attr("y1", d => Math.max(10, Math.min(networkHeight - 10, d.source.y)))
+                .attr("x2", d => Math.max(10, Math.min(networkWidth - 10, d.target.x)))
+                .attr("y2", d => Math.max(10, Math.min(networkHeight - 10, d.target.y)));
+            node.attr("transform", d => `translate(${Math.max(10, Math.min(networkWidth - 10, d.x))},${Math.max(10, Math.min(networkHeight - 10, d.y))})`);
         });
 
         function dragStarted(event) {
@@ -561,8 +1027,8 @@
         }
 
         function dragged(event) {
-            event.subject.fx = Math.max(10, Math.min(width - 10, event.x));
-            event.subject.fy = Math.max(10, Math.min(height - 10, event.y));
+            event.subject.fx = Math.max(10, Math.min(networkWidth - 10, event.x));
+            event.subject.fy = Math.max(10, Math.min(networkHeight - 10, event.y));
         }
 
         function dragEnded(event) {
@@ -571,7 +1037,18 @@
             event.subject.fy = null;
         }
 
-        // Llenar filtros dinámicamente
+        function resizeNetwork() {
+            networkWidth = networkGraphContainer.clientWidth;
+            networkHeight = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 500;
+            networkSvg.attr("width", networkWidth).attr("height", networkHeight);
+            simulation.force("center", d3.forceCenter(networkWidth / 2, networkHeight / 2));
+            simulation.force("x", d3.forceX(networkWidth / 2).strength(0.1));
+            simulation.force("y", d3.forceY(networkHeight / 2).strength(0.1));
+            simulation.alpha(1).restart();
+        }
+        window.addEventListener("resize", resizeNetwork);
+
+        // --- Table and Filter Logic ---
         const categoriesList = [...new Set(resources.map(resource => resource.category))].sort();
         const types = [...new Set(resources.map(resource => resource.type))].sort();
         
@@ -607,7 +1084,7 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${resource.title}</td>
-                    <td><a href="${resource.link}" target="_blank" style="color: #00FFFF">${resource.link}</a></td>
+                    <td><a href="${resource.link}" target="_blank" style="color: var(--secondary)">${resource.link}</a></td>
                     <td>${resource.comments}</td>
                     <td>${resource.category}</td>
                     <td>${resource.type}</td>
@@ -619,29 +1096,6 @@
         categoryFilter.addEventListener('change', renderTable);
         typeFilter.addEventListener('change', renderTable);
         renderTable();
-
-        function resize() {
-            const newWidth = document.getElementById('network').clientWidth;
-            const newHeight = window.innerWidth <= 768 ? (window.innerWidth <= 480 ? 300 : 400) : 500;
-            svg.attr("width", newWidth).attr("height", newHeight);
-            simulation.force("center", d3.forceCenter(newWidth / 2, newHeight / 2));
-            simulation.force("x", d3.forceX(newWidth / 2).strength(0.1));
-            simulation.force("y", d3.forceY(newHeight / 2).strength(0.1));
-            simulation.alpha(1).restart();
-        }
-        window.addEventListener("resize", resize);
-
-        // Preparar datos para los gráficos
-        const categoryCounts = d3.rollup(resources, v => v.length, d => d.category);
-        const categoryData = Array.from(categoryCounts, ([category, count]) => ({ category, count }));
-        const totalResources = resources.length;
-        const typeCounts = d3.rollup(resources, v => v.length, d => d.type);
-        const typeData = Array.from(typeCounts, ([type, count]) => ({ type, count }));
-        // Datos ficticios para treemap (número estimado de archivos por recurso)
-        const resourceCounts = resources.map(r => ({
-            name: r.title,
-            value: Math.floor(Math.random() * 10000) + 100 // Valores entre 100 y 10100
-        }));
 
         function updateCategoryFilter(category) {
             const categoryFilter = document.getElementById('categoryFilter');
@@ -657,7 +1111,20 @@
             typeFilter.dispatchEvent(changeEvent);
         }
 
-        // Gráfico de barras por categoría
+        // --- D3.js Charts ---
+        // Prepare data for charts
+        const categoryCounts = d3.rollup(resources, v => v.length, d => d.category);
+        const categoryData = Array.from(categoryCounts, ([category, count]) => ({ category, count }));
+        const totalResources = resources.length;
+        const typeCounts = d3.rollup(resources, v => v.length, d => d.type);
+        const typeData = Array.from(typeCounts, ([type, count]) => ({ type, count }));
+        // Fictitious data for treemap (estimated number of files per resource)
+        const resourceCounts = resources.map(r => ({
+            name: r.title,
+            value: Math.floor(Math.random() * 10000) + 100 // Values between 100 and 10100
+        }));
+
+        // Bar Chart by Category
         const barSvg = d3.select("#bar-chart")
             .append("svg")
             .attr("width", "100%")
@@ -684,8 +1151,8 @@
             .attr("transform", `translate(0,${barHeight})`)
             .call(d3.axisBottom(barX))
             .selectAll("text")
-            .attr("fill", "#00FFFF")
-            .attr("text-shadow", "0 0 5px #00FF00")
+            .attr("fill", "var(--secondary)")
+            .attr("text-shadow", "0 0 5px var(--secondary-glow)")
             .attr("transform", "rotate(-45)")
             .style("text-anchor", "end");
 
@@ -693,7 +1160,7 @@
             .attr("class", "y-axis")
             .call(d3.axisLeft(barY))
             .selectAll("text")
-            .attr("fill", "#00FFFF");
+            .attr("fill", "var(--secondary)");
 
         barG.selectAll(".bar")
             .data(categoryData)
@@ -718,7 +1185,7 @@
                 return Math.min(12, Math.max(8, barHeightPx / 4));
             });
 
-        // Gráfico de torta por categoría
+        // Pie Chart by Category
         const pieSvg = d3.select("#pie-chart")
             .append("svg")
             .attr("width", "100%")
@@ -776,7 +1243,7 @@
             .attr("transform", d => `translate(${d.adjustedPos})`)
             .attr("dy", ".35em")
             .style("text-anchor", d => {
-                const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+                const midAngle = d.startAngle + (d.endAngle - d.endAngle) / 2;
                 return midAngle < Math.PI ? "start" : "end";
             })
             .text(d => `${d.data.category} (${((d.data.count / totalResources) * 100).toFixed(1)}%)`)
@@ -794,10 +1261,10 @@
                 const offset = pieRadius * (midAngle < Math.PI ? 1.2 : -1.2);
                 return [arc.centroid(d), outerArc.centroid(d), [offset, d.adjustedPos[1]]];
             })
-            .attr("stroke", "#00FFFF")
+            .attr("stroke", "var(--secondary)")
             .attr("fill", "none");
 
-        // Gráfico de barras por tipo de contenido
+        // Bar Chart by Content Type
         const typeBarSvg = d3.select("#type-bar-chart")
             .append("svg")
             .attr("width", "100%")
@@ -823,8 +1290,8 @@
             .attr("transform", `translate(0,${typeBarHeight})`)
             .call(d3.axisBottom(typeBarX))
             .selectAll("text")
-            .attr("fill", "#00FFFF")
-            .attr("text-shadow", "0 0 5px #00FF00")
+            .attr("fill", "var(--secondary)")
+            .attr("text-shadow", "0 0 5px var(--secondary-glow)")
             .attr("transform", "rotate(-45)")
             .style("text-anchor", "end");
 
@@ -832,7 +1299,7 @@
             .attr("class", "y-axis")
             .call(d3.axisLeft(typeBarY))
             .selectAll("text")
-            .attr("fill", "#00FFFF");
+            .attr("fill", "var(--secondary)");
 
         typeBarG.selectAll(".bar")
             .data(typeData)
@@ -857,7 +1324,7 @@
                 return Math.min(12, Math.max(8, barHeightPx / 4));
             });
 
-        // Gráfico de treemap por cantidad de archivos
+        // Treemap by File Count
         const treemapSvg = d3.select("#treemap")
             .append("svg")
             .attr("width", "100%")
