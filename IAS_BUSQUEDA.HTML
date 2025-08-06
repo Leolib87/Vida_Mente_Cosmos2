@@ -3,377 +3,623 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Red Interactiva de IAs</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <title>Red Interactiva de IAs | Exploración Transdisciplinaria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --primary-text: #e5e7eb;
+            --primary-glow: #818cf8;
+            --secondary-glow: #22d3ee;
+            --font-main: 'Inter', sans-serif;
+            --nav-height: 70px;
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
         body {
             background-color: #000000;
-            color: #00FF00;
-            font-family: 'Orbitron', sans-serif;
-            line-height: 1.6;
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
             overflow-x: hidden;
         }
-        nav {
+        
+        #bg-canvas {
             position: fixed;
             top: 0;
+            left: 0;
             width: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 1000;
-            padding: 15px 0;
-            border-bottom: 2px solid #00FFFF;
-            box-shadow: 0 0 15px #00FFFF;
+            height: 100%;
+            z-index: -1;
+            cursor: crosshair;
         }
-        nav ul {
+
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.menu-open {
+            overflow: hidden;
+        }
+        
+        nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+            padding: 0 5%;
+            pointer-events: auto;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .nav-logo a {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            text-shadow: 0 0 8px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
+        nav .nav-container > li { position: relative; height: 100%; display: flex; align-items: center; }
+        nav .nav-container > li > a {
+            color: var(--primary-text); text-decoration: none; font-size: clamp(0.9em, 1.2vw, 1.05em); font-weight: 500;
+            transition: color 0.3s ease, text-shadow 0.3s ease; padding: 0 1rem; display: flex; align-items: center; gap: 8px;
+        }
+        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a { color: #FFFFFF; text-shadow: 0 0 12px var(--primary-glow); }
+        
+        .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; }
+        
+        .mega-menu {
+            position: fixed;
+            top: var(--nav-height);
+            left: 50%;
+            transform: translateX(-50%) scale(0.95);
+            border-radius: 10px; width: auto;
+            min-width: clamp(300px, 80vw, 950px); max-width: 95vw;
+            padding: 2rem; 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem; 
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0.3s;
+            transform-origin: top center;
+        }
+        
+        .mega-menu.is-active { 
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) scale(1);
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0s;
+        }
+        
+        .mega-menu h3 {
+            color: var(--primary-glow); font-size: 1.1em; margin-bottom: 1rem;
+            text-shadow: 0 0 5px var(--primary-glow);
+            border-bottom: 1px solid rgba(129, 140, 248, 0.3);
+            padding-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .mega-menu ul { display: flex; flex-direction: column; gap: 0.75rem; list-style: none; }
+        .mega-menu li { position: relative; }
+        .mega-menu a {
+            font-size: 0.9em; color: var(--primary-text); text-decoration: none;
+            transition: color 0.3s, padding-left 0.3s, background-color 0.3s;
+            padding: 0.5rem 0.75rem 0.5rem 2rem; border-radius: 4px;
+            display: block;
+            position: relative;
+        }
+        .mega-menu a::before {
+            content: '›';
+            color: var(--primary-glow);
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+            transition: color 0.3s;
+        }
+        .mega-menu a:hover { color: #000; background-color: var(--primary-glow); padding-left: 2.5rem; }
+        .mega-menu a:hover::before { color: #000; }
+        
+        .hero {
+            height: 100vh; min-height: 500px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; position: relative;
+            padding: 1rem;
+        }
+        .hero-content { position: relative; z-index: 2; animation: fadeIn 2s ease-in; }
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 5.5rem); font-weight: 700; color: #fff;
+            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(129, 140, 248, 0.7);
+            animation: pulse-glow 3s infinite alternate;
+        }
+        .hero p { font-size: clamp(1rem, 2.5vw, 1.3rem); max-width: 800px; margin: 1.5rem auto 0; text-shadow: 0 0 5px #000; }
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .main-container { 
+            width: 100%;
+            margin: 0 auto; 
+            padding: var(--nav-height) clamp(1rem, 5vw, 4rem) 1rem;
+            pointer-events: none;
+        }
+        
+        main, .footer, .section, .hero-content {
+            pointer-events: auto;
+        }
+
+        main p, .footer p {
+            user-select: text;
+            cursor: default;
+        }
+
+        .layout-grid { 
+            display: grid; 
+            grid-template-columns: 1fr; /* Changed to single column for all sizes */
+            gap: 2rem; 
+            margin-top: 2rem; 
+        }
+        
+        .section {
+            padding: clamp(1.5rem, 5vw, 2.5rem);
+            border-radius: 12px; margin-bottom: 2rem; position: relative;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .section:hover { transform: translateY(-5px); box-shadow: 0 0 40px rgba(129, 140, 248, 0.2); }
+        
+        .section h2, .section h3, .section p, .section .visualization-container, .section iframe, .section table, .section .search-bar, .section .filters, .section .ia-cards-container {
+             opacity: 0;
+             transform: translateY(20px);
+             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .section.is-visible h2, .section.is-visible h3, .section.is-visible p, .section.is-visible .visualization-container, .section.is-visible iframe, .section.is-visible table, .section.is-visible .search-bar, .section.is-visible .filters, .section.is-visible .ia-cards-container {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        h2 {
+            font-size: clamp(1.5rem, 5vw, 2.2rem); color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);
+            border-bottom: 1px solid var(--primary-glow); padding-bottom: 1rem; margin-bottom: 1.5rem;
+        }
+        h3 { font-size: clamp(1.2rem, 4vw, 1.5rem); color: var(--primary-glow); margin: 2rem 0 1rem 0; }
+        .highlight { color: var(--primary-glow); font-weight: bold; }
+        
+        .footer { text-align: center; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
+        
+        /* Specific styles for the AI Network page */
+        /* Removed .sidebar styles as it's no longer a fixed sidebar */
+
+        #network-graph {
+            width: 100%;
+            height: 700px; /* Adjusted height for better fit */
+            margin: 2rem 0;
+            background: rgba(0, 0, 0, 0.2); /* Slightly darker background for the graph */
+            border-radius: 8px;
+            overflow: hidden; /* Hide overflow from D3 */
+        }
+        #network-graph svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* D3.js specific styles, adapted for OCVM theme */
+        .node circle {
+            stroke: var(--secondary-glow); /* Cyan border */
+            stroke-width: 2px;
+            fill: var(--primary-glow); /* Purple fill */
+            transition: all 0.3s ease;
+        }
+        .node.category circle {
+            fill: #ff00c8; /* Pink for categories */
+            stroke: #ff00c8;
+        }
+        .node:hover circle {
+            fill: var(--secondary); /* Brighter cyan on hover */
+            stroke: #fff;
+            r: 100; /* Increased radius on hover */
+        }
+        .node text {
+            fill: var(--primary-text);
+            font-family: var(--font-main);
+            text-shadow: 0 0 10px var(--secondary-glow);
+            font-size: 9px; /* Slightly larger font */
+            pointer-events: none;
+            opacity: 0.8; /* Slightly transparent by default */
+            transition: all 0.3s ease; /* Added transition for text changes */
+        }
+        .node.category text {
+            fill: #fff; /* White for category text */
+            text-shadow: 0 0 15px #ff00c8; /* Pink glow for categories */
+        }
+        /* Updated hover styles for text */
+        .node:hover text {
+            opacity: 1;
+            font-size: 14px; /* Enlarge text on hover */
+            fill: #fff; /* Change text color to white on hover */
+            text-shadow: 0 0 15px var(--secondary-glow), 0 0 25px var(--secondary-glow); /* Stronger glow on hover */
+        }
+        .link {
+            stroke: var(--secondary); /* Cyan links */
+            stroke-opacity: 0.4; /* More subtle */
+            stroke-width: 1.5px;
+        }
+
+        .search-bar {
+            margin-bottom: 1.5rem;
             display: flex;
             justify-content: center;
-            list-style: none;
+            gap: 1rem;
             flex-wrap: wrap;
         }
-        nav ul li {
-            position: relative;
-            margin: 0 20px;
-        }
-        nav ul li a {
-            color: #00FF00;
-            text-decoration: none;
-            font-size: 1.1em;
-            transition: all 0.3s ease;
-        }
-        nav ul li a:hover {
-            color: #FFFFFF;
-            text-shadow: 0 0 10px #00FFFF;
-        }
-        .mega-menu {
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.95);
-            border: 2px solid #00FFFF;
-            box-shadow: 0 0 20px #00FFFF;
-            width: 800px;
-            max-width: 90vw;
-            padding: 20px;
-            display: none;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        nav ul li:nth-child(2) .mega-menu {
-            left: 0;
-            right: 0;
-            transform: none;
-            margin-left: auto;
-            margin-right: auto;
-            width: 600px;
-            max-width: 85vw;
-        }
-        nav ul li:hover .mega-menu {
-            display: grid;
-            opacity: 1;
-        }
-        .mega-menu h3 {
-            color: #00FFFF;
-            font-size: 1.2em;
-            margin-bottom: 10px;
-            text-shadow: 0 0 5px #00FFFF;
-        }
-        .mega-menu ul {
-            display: block;
-            padding: 0;
-        }
-        .mega-menu ul li {
-            margin: 5px 0;
-        }
-        .mega-menu a {
-            font-size: 0.9em;
-            color: #00FF00;
-        }
-        .mega-menu a:hover {
-            color: #FFFFFF;
-        }
-        .main-container {
-            max-width: 1400px;
-            margin: 80px auto 0;
-            padding: 20px;
-            display: grid;
-            grid-template-columns: 3fr 1fr;
-            gap: 20px;
-        }
-        .content {
-            grid-column: 1 / 2;
-        }
-        .sidebar {
-            grid-column: 2 / 3;
-            position: sticky;
-            top: 100px;
-            max-height: calc(100vh - 120px);
-            overflow-y: auto;
-            background: rgba(0, 255, 255, 0.1);
-            padding: 20px;
-            border: 2px solid #00FFFF;
-            box-shadow: 0 0 20px #00FFFF;
-        }
-        .section {
-            margin: 50px 0;
-            padding: 30px;
-            border: 2px solid #00FFFF;
-            box-shadow: 0 0 20px #00FFFF;
-            background: rgba(0, 255, 255, 0.05);
-            border-radius: 10px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .section:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0 30px #00FFFF;
-        }
-        h2 {
-            color: #00FF00;
-            text-shadow: 0 0 8px #00FF00;
-            border-bottom: 1px solid #00FFFF;
-            padding-bottom: 10px;
-        }
-        .search-bar {
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
         .search-bar input {
-            background: #000000;
-            border: 2px solid #00FFFF;
-            color: #00FF00;
-            padding: 10px;
-            font-family: 'Orbitron', sans-serif;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--secondary);
+            color: var(--primary-text);
+            padding: 0.75rem 1rem;
+            font-family: var(--font-main);
             font-size: 1em;
-            border-radius: 5px;
+            border-radius: 8px;
             width: 100%;
-            max-width: 350px;
+            max-width: 400px;
             transition: all 0.3s ease;
-            box-shadow: 0 0 5px #00FFFF;
+            box-shadow: 0 0 5px var(--secondary-glow);
         }
         .search-bar input:hover, .search-bar input:focus {
-            background: #00FFFF;
-            color: #000000;
-            box-shadow: 0 0 15px #00FFFF;
+            background: rgba(34, 211, 238, 0.2);
+            color: #fff;
+            box-shadow: 0 0 15px var(--secondary-glow);
             outline: none;
         }
         .filters {
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 1rem;
             justify-content: center;
         }
         select {
-            background: #000000;
-            border: 2px solid #00FFFF;
-            color: #00FF00;
-            padding: 8px;
-            font-family: 'Orbitron', sans-serif;
-            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--secondary);
+            color: var(--primary-text);
+            padding: 0.75rem 1rem;
+            font-family: var(--font-main);
+            border-radius: 8px;
             transition: all 0.3s ease;
+            box-shadow: 0 0 5px var(--secondary-glow);
         }
         select:hover, select:focus {
-            background: #00FFFF;
-            color: #000000;
+            background: rgba(34, 211, 238, 0.2);
+            color: #fff;
             outline: none;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.95em;
+            font-size: 0.9em;
+            margin-top: 1.5rem;
+            border-radius: 8px;
+            overflow: hidden; /* Ensures rounded corners apply to table */
         }
         th, td {
-            padding: 10px;
-            border: 1px solid #00FFFF;
+            padding: 0.8rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
             text-align: left;
         }
         th {
-            background: rgba(0, 255, 255, 0.1);
-            color: #00FFFF;
+            background: rgba(34, 211, 238, 0.1);
+            color: var(--secondary);
+            text-shadow: 0 0 5px var(--secondary-glow);
         }
         tr:nth-child(even) {
-            background: rgba(0, 255, 255, 0.03);
+            background: rgba(129, 140, 248, 0.03);
         }
         tr:hover {
-            background: rgba(0, 255, 255, 0.2);
+            background: rgba(129, 140, 248, 0.1);
         }
-        a {
-            color: #00FFFF;
+        table a {
+            color: var(--secondary);
             text-decoration: none;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
         }
-        a:hover {
-            text-shadow: 0 0 5px #00FFFF;
+        table a:hover {
+            color: #fff;
+            text-shadow: 0 0 8px var(--secondary-glow);
         }
-        #network-graph {
-            width: 500%;
-            height: 800px;
-            margin: 30px 0;
+
+        /* New styles for interactive category cards */
+        .ia-category-card {
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer; /* Indicate interactivity */
         }
-        .node circle {
-            stroke: #00FFFF;
-            stroke-width: 2px;
-            fill: #00FF00;
-            transition: all 0.3s ease;
+        .ia-category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 40px rgba(129, 140, 248, 0.2);
         }
-        .node.category circle {
-            fill: #ff00c8;
+        .ia-category-card h3 {
+            color: var(--secondary-glow);
+            text-shadow: 0 0 8px var(--secondary-glow);
+            border-bottom: 1px solid var(--secondary-glow);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: clamp(1.2rem, 3vw, 1.8rem); /* Larger font for card titles */
         }
-        .node:hover circle {
-            fill: #0408ff;
-            stroke: #00FFFF;
-            r: 100;
+        .ia-category-card ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
-        .node text {
-            fill: #00FFFF;
-            font-family: 'Orbitron', sans-serif;
-            text-shadow: 0 0 10px #73ff00;
-            font-size: 8px;
-            pointer-events: none;
-            opacity: 1.0;
-            transition: opacity 0.9s ease;
-        }
-        .node.category text {
-            fill: #fffb00;
-            text-shadow: #ff04ff;
-        }
-        .node:hover text {
-            opacity: 1;
-        }
-        .link {
-            stroke: #00FF00;
-            stroke-opacity: 0.6;
-            stroke-width: 1.5px;
-        }
-        .sidebar a {
-            color: #00FF00;
+        .ia-category-card ul li a {
+            color: var(--primary-text);
             text-decoration: none;
             display: block;
-            margin: 10px 0;
-            transition: all 0.3s ease;
+            padding: 0.3rem 0;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+            font-size: 0.95em;
         }
-        .sidebar a:hover {
-            color: #FFFFFF;
-            text-shadow: 0 0 10px #00FFFF;
+        .ia-category-card ul li a:hover {
+            color: var(--secondary);
+            text-shadow: 0 0 10px var(--secondary);
         }
-        @media (max-width: 1200px) {
-            .main-container {
-                grid-template-columns: 2fr 1fr;
+
+
+        @media (min-width: 1025px) {
+            .menu-toggle { display: none; }
+            .nav-container { display: flex; }
+            .layout-grid { 
+                grid-template-columns: 1fr; /* Single column for desktop as sidebar is now cards at bottom */
             }
+            /* .sidebar styles are removed, no need to adjust margin-top */
         }
-        @media (max-width: 900px) {
-            .main-container {
-                grid-template-columns: 1fr;
-                margin-top: 120px;
+
+        @media (max-width: 1024px) {
+            .nav-content { justify-content: space-between; }
+            .nav-container {
+                position: fixed;
+                top: var(--nav-height);
+                left: 0;
+                width: 100%;
+                height: calc(100vh - var(--nav-height));
+                background: rgba(17, 24, 39, 0.95);
+                backdrop-filter: blur(15px);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+                transform: translateY(-110%);
+                overflow-y: auto;
+                padding: 2rem;
             }
-            .sidebar {
-                position: static;
-                max-height: none;
+            body.menu-open .nav-container {
+                transform: translateY(0);
             }
+
+            nav .nav-container > li { width: 100%; height: auto; flex-direction: column; align-items: center; text-align: center; }
+            nav .nav-container > li > a { padding: 1rem; width: 100%; font-size: 1.5em;}
+            
+            .mega-menu {
+                position: static; display: grid; opacity: 1; transform: none; visibility: visible; width: 100%; box-shadow: none; 
+                border: none; padding: 1rem 0 1.5rem 0; background: none; backdrop-filter: none;
+                grid-template-columns: 1fr; border-top: 1px solid rgba(129, 140, 248, 0.2); margin-top: 1rem;
+            }
+            
+            .mega-menu h3 { 
+                text-align: center; 
+                font-size: 1.8em;
+            }
+            .mega-menu ul { 
+                align-items: stretch;
+                text-align: left;
+                list-style: none;
+                padding-left: 0;
+            }
+            
+            .mega-menu a {
+                font-size: 1.5em;
+                padding: 0.8rem 1rem 0.8rem 2.5rem;
+                display: block;
+                text-align: left;
+                position: relative;
+            }
+
+            .mega-menu a::before {
+                content: '■';
+                color: var(--primary-glow);
+                position: absolute;
+                left: 0.5rem;
+                top: 50%;
+                transform: translateY(-50%) scale(0.6);
+                font-size: 1.5em;
+            }
+
+            .mega-menu a:hover {
+                padding-left: 2.5rem;
+                color: #000;
+                background-color: var(--primary-glow);
+            }
+            .mega-menu a:hover::before {
+                color: #000;
+            }
+            
+            .menu-toggle {
+                display: block; position: relative; z-index: 1001;
+                width: 30px; height: 22px;
+                background: none; border: none; cursor: pointer;
+            }
+            .icon-bar {
+                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
+                margin: 6px 0; transition: all 0.3s ease-in-out;
+                border-radius: 2px;
+            }
+
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+
+            .layout-grid {
+                grid-template-columns: 1fr; /* Single column for mobile */
+            }
+            /* .sidebar styles are removed, no need to adjust margin-top */
             #network-graph {
-                height: 600px;
+                height: 500px; /* Adjust height for smaller screens */
             }
         }
         @media (max-width: 600px) {
             .section {
-                padding: 20px;
-                margin: 30px 0;
+                padding: 1.5rem;
             }
             #network-graph {
-                height: 500px;
+                height: 400px;
             }
             .node text {
-                font-size: 9px;
+                font-size: 8px;
             }
-            .filters, .search-bar {
+            .search-bar, .filters {
                 flex-direction: column;
                 align-items: center;
             }
             select, .search-bar input {
                 width: 100%;
-                max-width: 200px;
-            }
-        }
-        @media (max-width: 400px) {
-            #network-graph {
-                height: 400px;
+                max-width: 250px;
             }
         }
     </style>
 </head>
 <body>
-    <nav>
-        <ul>
-            <li><a href="#inicio">Inicio</a></li>
-            <li>
-                <a href="#">Exploración de IAs</a>
-                <div class="mega-menu">
-                    <div>
-                        <h3>Categorías de IA</h3>
-                        <ul>
-                            <li><a href="#asistentes">Asistentes Virtuales y Automatización</a></li>
-                            <li><a href="#creacion">Creación, Edición de Contenidos y Ventas</a></li>
-                            <li><a href="#desarrollo">Desarrollo de Software y Modelos IA</a></li>
-                            <li><a href="#educacion">Educación y Aprendizaje</a></li>
-                            <li><a href="#investigacion">Investigación y Ciencia</a></li>
-                        </ul>
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+    <nav class="glassmorphism">
+        <div class="nav-content">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-8 w-8 md:h-10 md:w-10 rounded-full">
+                    <span>O.C.V.M.</span>
+                </a>
+            </div>
+            <ul class="nav-container" id="nav-menu">
+                <li><a href="index.html">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+                    Inicio</a></li>
+        
+                <li><a href="#">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" /></svg>
+                    Cartografías del Saber</a>
+                    <div class="mega-menu glassmorphism">
+                        <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>Herramientas Digitales y IA</h3>
+                            <ul>
+                                <li><a href="IAs.html">Red de IAs</a></li>
+                                <li><a href="IAS_BUSQUEDA.HTML">Buscador de IAs</a></li>
+                                <li><a href="googleias.html">IAs de Google</a></li>
+                                <li><a href="treemap_ias.html">Treemap de IAs</a></li>
+                            </ul>
+                        </div>
                     </div>
-                </div>
-            </li>
-            <li><a href="#contacto">Acerca de / Contacto</a></li>
-        </ul>
+                </li>
+                
+                <li><a href="#contacto">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                    Contacto</a></li>
+            </ul>
+            <button class="menu-toggle" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
     </nav>
 
     <div class="main-container" id="inicio">
-        <div class="content">
-            <div class="section">
-                <h2>Red Interactiva de IAs por Categoría</h2>
-                <div id="network-graph"></div>
-            </div>
-            <div class="section">
-                <h2>Catálogo de IAs</h2>
-                <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="Busca por nombre, categoría, función, propósito...">
-                </div>
-                <div class="filters">
-                    <select id="categoryFilter">
-                        <option value="">Todas las Categorías</option>
-                    </select>
-                </div>
-                <table id="iaTable">
-                    <thead>
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Enlace</th>
-                            <th>Categoría</th>
-                            <th>Propósito</th> <!-- Added Purpose column -->
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+        <div class="hero">
+            <div class="hero-content">
+                <h1>Red Interactiva de IAs</h1>
+                <p>Explora las conexiones entre las herramientas de Inteligencia Artificial por categoría y propósito.</p>
             </div>
         </div>
 
-        <div class="sidebar">
-            <h2>Categorías</h2>
-            <ul id="category-list"></ul>
+        <div class="layout-grid"> <!-- Removed grid-cols-md-4 etc. as sidebar is no longer a column -->
+            <main class="content col-span-full"> <!-- Main content takes full width -->
+                <section id="network-section" class="glassmorphism" data-animate>
+                    <h2>Visualización de la Red de IAs</h2>
+                    <p>Haz clic en los nodos para explorar los enlaces de las IAs. Arrastra los nodos para reorganizar la red y observa cómo se agrupan por categoría.</p>
+                    <div id="network-graph" class="visualization-container"></div>
+                </section>
+                
+                <section id="catalog-section" class="glassmorphism" data-animate>
+                    <h2>Catálogo de IAs</h2>
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="Busca por nombre, categoría, función, propósito...">
+                    </div>
+                    <div class="filters">
+                        <select id="categoryFilter">
+                            <option value="">Todas las Categorías</option>
+                        </select>
+                    </div>
+                    <table id="iaTable">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Enlace</th>
+                                <th>Categoría</th>
+                                <th>Propósito</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </section>
+
+                <!-- New section for interactive category cards -->
+                <section id="ia-categories-cards" class="glassmorphism" data-animate>
+                    <h2>Explorar IAs por Categoría</h2>
+                    <p>Haz clic en el título de una categoría para filtrar la tabla de IAs y ver solo las herramientas de esa área.</p>
+                    <div id="ia-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+                        <!-- Category cards will be dynamically populated here by JavaScript -->
+                    </div>
+                </section>
+            </main>
+
+            <!-- Removed the sidebar div from here -->
         </div>
+        <footer class="footer" id="contacto">
+            <h2>Contacto</h2>
+            <p>Este espacio es una cartografía personal y una invitación al diálogo.</p>
+            <p style="margin-top:1.5rem; font-size: 0.9em;">La vida es terriblemente bella cuando los jugadores juegan. | 2025</p>
+        </footer>
     </div>
-
     <script>
-        // Pegar datos aquí
-        // Assuming your const data is already defined with your list of AIs
-        // Example structure expected:
-        const data =  {
+        // Data for AIs
+        const data = {
             "Asistentes Virtuales y Automatización": [
                 { "name": "Gemini", "url": "https://gemini.openai.com/", "keywords": ["chatbot", "automation", "virtual assistant"], "purpose": "Proporcionar respuestas conversacionales y automatizar tareas diarias para mejorar la productividad." },
                 { "name": "Learn Prompting", "url": "https://learnprompting.org/", "keywords": ["prompting", "automation", "learning"], "purpose": "Enseñar técnicas de prompting para optimizar interacciones con modelos de IA." },
@@ -503,76 +749,235 @@
             ]
         };
 
-        // Enhanced Data Preparation with Purpose
+        // Flatten AI data for table and search
         const ias = Object.entries(data).flatMap(([category, apps]) =>
             apps.map(app => ({
                 name: app.name,
                 url: app.url,
                 category: category,
                 keywords: app.keywords,
-                purpose: app.purpose || 'No especificado' // Fallback if purpose is missing
+                purpose: app.purpose || 'No especificado'
             }))
         );
         const categories = Object.keys(data).sort();
 
-        // Enhanced Search Functionality
-        function renderTable() {
-            const selectedCategory = document.getElementById('categoryFilter').value;
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
-            let filteredIAs = ias;
-
-            // Filter by selected category if one is chosen
-            if (selectedCategory) {
-                filteredIAs = filteredIAs.filter(ia => ia.category === selectedCategory);
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Three.js Background
+            if (typeof THREE !== 'undefined') {
+                initThreeJS();
+            } else {
+                console.error("Three.js not loaded");
             }
 
-            // Filter by search term across name, category, keywords, and purpose
-            if (searchTerm) {
-                filteredIAs = filteredIAs.filter(ia => {
-                    const nameMatch = ia.name.toLowerCase().includes(searchTerm);
-                    const categoryMatch = ia.category.toLowerCase().includes(searchTerm);
-                    const keywordMatch = ia.keywords.some(keyword => keyword.toLowerCase().includes(searchTerm));
-                    const purposeMatch = ia.purpose.toLowerCase().includes(searchTerm); // Search by purpose
-                    return nameMatch || categoryMatch || keywordMatch || purposeMatch;
-                });
-            }
+            // Setup Navigation and other event listeners
+            setupNavigation();
+            setupScrollAnimations();
+            
+            // Populate category filter and interactive cards
+            populateCategoryFilter();
+            populateInteractiveCards(); // Changed to populateInteractiveCards
+            renderTable(); // Initial table render
 
-            // Render the filtered results into the table
-            const tbody = document.querySelector('#iaTable tbody');
-            tbody.innerHTML = ''; // Clear previous content
-
-            filteredIAs.forEach(ia => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${ia.name}</td>
-                    <td><a href="${ia.url}" target="_blank">Enlace</a></td>
-                    <td>${ia.category}</td>
-                    <td>${ia.purpose}</td> <!-- Display purpose -->
-                `;
-                tbody.appendChild(row);
+            // Handle window resizing
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    // No D3.js redraw needed here as it's handled by CSS width/height 100%
+                }, 250);
             });
-        }
-
-        // Event Listeners for Real-Time Filtering
-        document.getElementById('categoryFilter').addEventListener('change', renderTable);
-        document.getElementById('searchInput').addEventListener('input', () => {
-            renderTable(); // Re-render table on every input change
-            console.log(`Buscando: ${document.getElementById('searchInput').value}`); // Debug log
         });
 
-        // Initial render
-        renderTable();
+        // --- THREE.JS BACKGROUND ---
+        let scene, camera, renderer, points, lines;
+        
+        function initThreeJS() {
+            try {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+                camera.position.z = 50;
 
-        // Red D3.js (unchanged)
-        const width = 900, height = 800;
+                renderer = new THREE.WebGLRenderer({
+                    canvas: document.getElementById("bg-canvas"),
+                    alpha: true
+                });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+                const pointCount = 200;
+                const positions = new Float32Array(pointCount * 3);
+                const pointGeo = new THREE.BufferGeometry();
+                for (let i = 0; i < pointCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 400;
+                }
+                pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+                const pointMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.5, transparent: true, opacity: 0.8 });
+                points = new THREE.Points(pointGeo, pointMaterial);
+                scene.add(points);
+
+                regenerateLines();
+
+                window.addEventListener("resize", onWindowResize, false);
+                document.addEventListener('mousemove', onMouseMove, false);
+                renderer.domElement.addEventListener('click', onCanvasClick, false);
+                animate();
+            } catch (error) {
+                console.error('Error initializing Three.js:', error);
+            }
+        }
+
+        function onWindowResize() {
+            if(camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+
+        let mouseX = 0, mouseY = 0;
+        function onMouseMove(event) {
+            mouseX = (event.clientX - window.innerWidth / 2) / 100;
+            mouseY = (event.clientY - window.innerHeight / 2) / 100;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if(scene && camera && renderer && points && lines) {
+                points.rotation.y += 0.0005;
+                lines.rotation.y += 0.0005;
+                camera.position.x += (mouseX - camera.position.x) * 0.05;
+                camera.position.y += (-mouseY - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+                renderer.render(scene, camera);
+            }
+        }
+
+        function onCanvasClick(event) {
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+            vector.unproject(camera);
+            const dir = vector.sub(camera.position).normalize();
+            const distance = -camera.position.z / dir.z;
+            const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+            addPoint(pos);
+        }
+
+        function addPoint(position) {
+            const oldPositions = points.geometry.attributes.position.array;
+            const newPointCount = oldPositions.length / 3 + 1;
+            const newPositions = new Float32Array(newPointCount * 3);
+            newPositions.set(oldPositions);
+            newPositions[oldPositions.length] = position.x;
+            newPositions[oldPositions.length + 1] = position.y;
+            newPositions[oldPositions.length + 2] = position.z;
+            points.geometry.setAttribute('position', new THREE.BufferAttribute(newPositions, 3));
+            points.geometry.attributes.position.needsUpdate = true;
+            regenerateLines();
+        }
+
+        function regenerateLines() {
+            if (lines) scene.remove(lines);
+            const pointPositions = points.geometry.attributes.position.array;
+            const pointCount = pointPositions.length / 3;
+            const linePositions = [];
+            for (let i = 0; i < pointCount; i++) {
+                for (let j = i + 1; j < pointCount; j++) {
+                    const dx = pointPositions[i * 3] - pointPositions[j * 3];
+                    const dy = pointPositions[i * 3 + 1] - pointPositions[j * 3 + 1];
+                    const dz = pointPositions[i * 3 + 2] - pointPositions[j * 3 + 2];
+                    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    if (dist < 50) {
+                        linePositions.push(pointPositions[i * 3], pointPositions[i * 3 + 1], pointPositions[i * 3 + 2]);
+                        linePositions.push(pointPositions[j * 3], pointPositions[j * 3 + 1], pointPositions[j * 3 + 2]);
+                    }
+                }
+            }
+            const lineGeo = new THREE.BufferGeometry();
+            lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.3, transparent: true });
+            lines = new THREE.LineSegments(lineGeo, lineMaterial);
+            scene.add(lines);
+        }
+
+        // --- NAVIGATION SCRIPTS ---
+        function setupNavigation() {
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            const navMenu = document.getElementById('nav-menu');
+
+            menuToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.body.classList.toggle('menu-open');
+            });
+
+            navMenu.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A' && window.innerWidth <= 1024) {
+                   document.body.classList.remove('menu-open');
+                }
+            });
+
+            if (window.matchMedia('(min-width: 1025px)').matches) {
+                const menuItems = document.querySelectorAll('.nav-container > li');
+                menuItems.forEach(item => {
+                    const megaMenu = item.querySelector('.mega-menu');
+                    if (megaMenu) {
+                        let leaveTimeout;
+                        const showMenu = () => {
+                            clearTimeout(leaveTimeout);
+                            document.querySelectorAll('.mega-menu.is-active').forEach(m => {
+                                if (m !== megaMenu) m.classList.remove('is-active');
+                            });
+                            megaMenu.classList.add('is-active');
+                        };
+                        const startHideTimer = () => {
+                            leaveTimeout = setTimeout(() => megaMenu.classList.remove('is-active'), 250);
+                        };
+                        item.addEventListener('mouseenter', showMenu);
+                        item.addEventListener('mouseleave', startHideTimer);
+                    }
+                });
+            }
+        }
+
+        // --- SCROLL ANIMATION ---
+        function setupScrollAnimations() {
+            const animatedSections = document.querySelectorAll('[data-animate]');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        
+                        const elementsToAnimate = entry.target.querySelectorAll('h2, h3, p, .visualization-container, iframe, table, .search-bar, .filters, .ia-cards-container');
+                        elementsToAnimate.forEach((el, index) => {
+                           el.style.transitionDelay = `${index * 150}ms`;
+                        });
+
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.2 });
+            animatedSections.forEach(section => observer.observe(section));
+        }
+
+        // --- D3.js Network Graph ---
+        const graphContainer = document.getElementById('network-graph');
+        let width = graphContainer.clientWidth;
+        let height = graphContainer.clientHeight;
+
         const svg = d3.select("#network-graph")
             .append("svg")
-            .attr("width", width)
-            .attr("height", height);
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .attr("viewBox", `0 0 ${width} ${height}`)
+            .attr("preserveAspectRatio", "xMidYMid meet");
 
         const nodes = [];
         const links = [];
-        const neonColors = d3.scaleOrdinal(["#FF00FF", "#00CCFF", "#FFFF00", "#FF6600", "#FF33CC"]);
+        const neonColors = d3.scaleOrdinal(["#FF00FF", "#00CCFF", "#FFFF00", "#FF6600", "#FF33CC"]); // Original neon colors
 
         Object.entries(data).forEach(([category, apps], index) => {
             nodes.push({ id: category, group: "category", size: 62 + apps.length * 1.5, color: neonColors(index) });
@@ -617,7 +1022,7 @@
 
         node.append("circle")
             .attr("r", d => d.size)
-            .attr("fill", d => d.group === "category" ? d.color : "#00FF00")
+            .attr("fill", d => d.group === "category" ? d.color : "var(--primary-glow)")
             .on("click", (event, d) => {
                 if (d.url) window.open(d.url, "_blank");
             });
@@ -684,36 +1089,135 @@
             event.subject.fy = null;
         }
 
-        // Sidebar (unchanged)
-        const categoryList = document.getElementById('category-list');
-        Object.entries(data).forEach(([category, apps]) => {
-            const categoryLi = document.createElement('li');
-            const categoryTitle = `<a style="color: #FF00CC;" onclick="highlightCategory('${category}')">${category}</a>`;
-            categoryLi.innerHTML = categoryTitle;
-            const appList = document.createElement('ul');
-            appList.style.paddingLeft = "15px";
-            apps.forEach(app => {
-                const appLi = document.createElement('li');
-                appLi.innerHTML = `<a href="${app.url}" target="_blank">${app.name}</a>`;
-                appList.appendChild(appLi);
+        // --- Table and Filter Logic ---
+        function populateCategoryFilter() {
+            const categoryFilter = document.getElementById('categoryFilter');
+            // Clear existing options except the default "Todas las Categorías"
+            categoryFilter.innerHTML = '<option value="">Todas las Categorías</option>';
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
             });
-            categoryLi.appendChild(appList);
-            categoryList.appendChild(categoryLi);
-        });
+        }
+
+        function renderTable() {
+            const selectedCategory = document.getElementById('categoryFilter').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            let filteredIAs = ias;
+
+            if (selectedCategory) {
+                filteredIAs = filteredIAs.filter(ia => ia.category === selectedCategory);
+            }
+
+            if (searchTerm) {
+                filteredIAs = filteredIAs.filter(ia => {
+                    const nameMatch = ia.name.toLowerCase().includes(searchTerm);
+                    const categoryMatch = ia.category.toLowerCase().includes(searchTerm);
+                    const keywordMatch = ia.keywords.some(keyword => keyword.toLowerCase().includes(searchTerm));
+                    const purposeMatch = ia.purpose.toLowerCase().includes(searchTerm);
+                    return nameMatch || categoryMatch || keywordMatch || purposeMatch;
+                });
+            }
+
+            const tbody = document.querySelector('#iaTable tbody');
+            tbody.innerHTML = '';
+
+            filteredIAs.forEach(ia => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${ia.name}</td>
+                    <td><a href="${ia.url}" target="_blank">Enlace</a></td>
+                    <td>${ia.category}</td>
+                    <td>${ia.purpose}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        document.getElementById('categoryFilter').addEventListener('change', renderTable);
+        document.getElementById('searchInput').addEventListener('input', renderTable);
+
+        // --- Populate Interactive Cards (formerly sidebar) ---
+        function populateInteractiveCards() {
+            const iaCardsContainer = document.getElementById('ia-cards-container');
+            iaCardsContainer.innerHTML = ''; // Clear existing content
+
+            Object.entries(data).forEach(([category, apps]) => {
+                const cardDiv = document.createElement('div');
+                cardDiv.classList.add('ia-category-card', 'glassmorphism');
+                cardDiv.setAttribute('data-category', category); // Add data attribute for easy filtering
+
+                // Add click event to the card to filter the table
+                cardDiv.addEventListener('click', () => {
+                    highlightCategory(category);
+                    document.getElementById('catalog-section').scrollIntoView({ behavior: 'smooth' });
+                });
+
+                const categoryTitle = document.createElement('h3');
+                categoryTitle.textContent = category;
+                cardDiv.appendChild(categoryTitle);
+
+                const appList = document.createElement('ul');
+                apps.forEach(app => {
+                    const appLi = document.createElement('li');
+                    const appLink = document.createElement('a');
+                    appLink.href = app.url;
+                    appLink.target = "_blank";
+                    appLink.textContent = app.name;
+                    appLi.appendChild(appLink);
+                    appList.appendChild(appLi);
+                });
+                cardDiv.appendChild(appList);
+                iaCardsContainer.appendChild(cardDiv);
+            });
+        }
 
         function highlightCategory(category) {
+            // Reset all node styles in D3 graph
             node.selectAll("circle")
-                .style("stroke", "#00FFFF")
+                .style("stroke", "var(--secondary-glow)")
                 .style("stroke-width", "2px");
+            node.selectAll("text")
+                .style("fill", "var(--primary-text)")
+                .style("text-shadow", "0 0 10px var(--secondary-glow)")
+                .style("font-size", "11px"); // Reset font size
 
+            // Highlight selected category node in D3 graph
             node.selectAll("circle")
                 .filter(d => d.id === category)
                 .style("stroke", "#FFFFFF")
                 .style("stroke-width", "4px");
+            node.selectAll("text")
+                .filter(d => d.id === category)
+                .style("fill", "#FFFFFF")
+                .style("text-shadow", "0 0 20px #ff00c8"); // Stronger glow for category text
 
+            // Filter table and update filter dropdown
             document.getElementById('categoryFilter').value = category;
-            document.getElementById('categoryFilter').dispatchEvent(new Event('change'));
+            renderTable();
+
+            // Highlight the selected card
+            document.querySelectorAll('.ia-category-card').forEach(card => {
+                card.style.border = '1px solid rgba(255, 255, 255, 0.1)'; // Reset all card borders
+                card.style.boxShadow = '0 0 40px rgba(129, 140, 248, 0.2)'; // Reset all card shadows
+            });
+            const selectedCard = document.querySelector(`.ia-category-card[data-category="${category}"]`);
+            if (selectedCard) {
+                selectedCard.style.border = '2px solid var(--secondary-glow)'; // Highlight selected card
+                selectedCard.style.boxShadow = '0 0 50px var(--secondary-glow)';
+            }
         }
+
+        // Adjust D3 graph size on window resize
+        window.addEventListener('resize', () => {
+            width = graphContainer.clientWidth;
+            height = graphContainer.clientHeight;
+            svg.attr("viewBox", `0 0 ${width} ${height}`);
+            simulation.force("center", d3.forceCenter(width / 2, height / 2));
+            simulation.alpha(1).restart(); // Restart simulation to re-center nodes
+        });
     </script>
 </body>
 </html>
