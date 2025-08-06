@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arthur Schopenhauer | Exploración Transdisciplinaria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --primary-text: #e5e7eb;
+            --primary-glow: #818cf8;
+            --secondary-glow: #22d3ee;
+            --font-main: 'Inter', sans-serif;
+            --nav-height: 70px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: #000000;
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+        
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            cursor: crosshair;
+        }
+
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.menu-open {
+            overflow: hidden;
+        }
+        
+        nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+            padding: 0 5%;
+            pointer-events: auto;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .nav-logo a {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            text-shadow: 0 0 8px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
+        nav .nav-container > li { position: relative; height: 100%; display: flex; align-items: center; }
+        nav .nav-container > li > a {
+            color: var(--primary-text); text-decoration: none; font-size: clamp(0.9em, 1.2vw, 1.05em); font-weight: 500;
+            transition: color 0.3s ease, text-shadow 0.3s ease; padding: 0 1rem; display: flex; align-items: center; gap: 8px;
+        }
+        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a { color: #FFFFFF; text-shadow: 0 0 12px var(--primary-glow); }
+        
+        .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; }
+        
+        .mega-menu { /* Kept for mobile menu responsiveness even if not used for desktop */
+            position: fixed;
+            top: var(--nav-height);
+            left: 50%;
+            transform: translateX(-50%) scale(0.95);
+            border-radius: 10px; width: auto;
+            min-width: clamp(300px, 80vw, 950px); max-width: 95vw;
+            padding: 2rem; 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem; 
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0.3s;
+            transform-origin: top center;
+        }
+        
+        .mega-menu.is-active { 
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) scale(1);
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0s;
+        }
+        
+        .mega-menu h3 {
+            color: var(--primary-glow); font-size: 1.1em; margin-bottom: 1rem;
+            text-shadow: 0 0 5px var(--primary-glow);
+            border-bottom: 1px solid rgba(129, 140, 248, 0.3);
+            padding-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .mega-menu ul { display: flex; flex-direction: column; gap: 0.75rem; list-style: none; }
+        .mega-menu li { position: relative; }
+        .mega-menu a {
+            font-size: 0.9em; color: var(--primary-text); text-decoration: none;
+            transition: color 0.3s, padding-left 0.3s, background-color 0.3s;
+            padding: 0.5rem 0.75rem 0.5rem 2rem; border-radius: 4px;
+            display: block;
+            position: relative;
+        }
+        .mega-menu a::before {
+            content: '›';
+            color: var(--primary-glow);
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+            transition: color 0.3s;
+        }
+        .mega-menu a:hover { color: #000; background-color: var(--primary-glow); padding-left: 2.5rem; }
+        .mega-menu a:hover::before { color: #000; }
+        
+        .hero {
+            height: 100vh; min-height: 500px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; position: relative;
+            padding: 1rem;
+        }
+        .hero-content { position: relative; z-index: 2; animation: fadeIn 2s ease-in; }
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 5.5rem); font-weight: 700; color: #fff;
+            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(129, 140, 248, 0.7);
+            animation: pulse-glow 3s infinite alternate;
+        }
+        .hero p { font-size: clamp(1rem, 2.5vw, 1.3rem); max-width: 800px; margin: 1.5rem auto 0; text-shadow: 0 0 5px #000; }
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .main-container { 
+            width: 100%;
+            margin: 0 auto; 
+            padding: var(--nav-height) clamp(1rem, 5vw, 4rem) 1rem;
+            pointer-events: none;
+        }
+        
+        main, .footer, .section, .hero-content {
+            pointer-events: auto;
+        }
+
+        main p, .footer p, main li {
+            user-select: text;
+            cursor: default;
+        }
+
+        /* Estilo para justificar el texto de los párrafos */
+        main p {
+            text-align: justify;
+            line-height: 1.9; /* Ajuste para mejor legibilidad */
+        }
+
+        .layout-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 2rem; }
+        
+        .section {
+            padding: clamp(1.5rem, 5vw, 2.5rem);
+            border-radius: 12px; margin-bottom: 2rem; position: relative;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .section:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 0 40px rgba(129, 140, 248, 0.2), 0 0 80px rgba(34, 211, 238, 0.1); /* Doble brillo */
+        }
+        
+        .section h2, .section h3, .section p, .section .visualization-container, .section iframe, .section ul, .section ol, .section li, .section img {
+              opacity: 0;
+              transform: translateY(20px);
+              transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .section.is-visible h2, .section.is-visible h3, .section.is-visible p, .section.is-visible .visualization-container, .section.is-visible iframe, .section.is-visible ul, .section.is-visible ol, .section.is-visible li, .section.is-visible img {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        h2 {
+            font-size: clamp(1.5rem, 5vw, 2.2rem); 
+            color: var(--primary-text); 
+            text-shadow: 0 0 8px var(--secondary-glow);
+            border-bottom: 1px solid var(--primary-glow); 
+            padding-bottom: 1rem; 
+            margin-bottom: 1.5rem;
+        }
+        /* Nuevo estilo para h3 con color secundario */
+        h3 { 
+            font-size: clamp(1.2rem, 4vw, 1.5rem); 
+            color: var(--secondary); /* Usando el color secundario */
+            text-shadow: 0 0 8px var(--secondary-glow), 0 0 15px rgba(34, 211, 238, 0.5); /* Añadiendo un brillo más pronunciado */
+            margin: 2rem 0 1rem 0; 
+        }
+        .highlight { 
+            color: var(--primary-glow); 
+            font-weight: bold; 
+            text-shadow: 0 0 5px rgba(129, 140, 248, 0.5); /* Sutil brillo para destacados */
+        }
+        
+        .footer { text-align: center; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
+        
+        /* Estilos para imágenes de diagramas */
+        .diagram-image {
+            display: block;
+            margin: 1.5rem auto;
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Estilo para el botón "Volver Arriba" */
+        #back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: var(--primary-dark);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 9999px; /* Fully rounded */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+            z-index: 999;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        #back-to-top:hover {
+            background-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        #back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        @media (min-width: 1025px) {
+            .menu-toggle { display: none; }
+            .nav-container { display: flex; }
+        }
+
+        @media (max-width: 1024px) {
+            .nav-content { justify-content: space-between; }
+            .nav-container {
+                position: fixed;
+                top: var(--nav-height);
+                left: 0;
+                width: 100%;
+                height: calc(100vh - var(--nav-height));
+                background: rgba(17, 24, 39, 0.95);
+                backdrop-filter: blur(15px);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+                transform: translateY(-110%);
+                overflow-y: auto;
+                padding: 2rem;
+            }
+            body.menu-open .nav-container {
+                transform: translateY(0);
+            }
+
+            nav .nav-container > li { width: 100%; height: auto; flex-direction: column; align-items: center; text-align: center; }
+            nav .nav-container > li > a { padding: 1rem; width: 100%; font-size: 1.5em;}
+            
+            .mega-menu {
+                position: static; display: grid; opacity: 1; transform: none; visibility: visible; width: 100%; box-shadow: none; 
+                border: none; padding: 1rem 0 1.5rem 0; background: none; backdrop-filter: none;
+                grid-template-columns: 1fr; border-top: 1px solid rgba(129, 140, 248, 0.2); margin-top: 1rem;
+            }
+            
+            .mega-menu h3 { 
+                text-align: center; 
+                font-size: 1.8em;
+            }
+            .mega-menu ul { 
+                align-items: stretch;
+                text-align: left;
+                list-style: none;
+                padding-left: 0;
+            }
+            
+            .mega-menu a {
+                font-size: 1.5em;
+                padding: 0.8rem 1rem 0.8rem 2.5rem;
+                display: block;
+                text-align: left;
+                position: relative;
+            }
+
+            .mega-menu a::before {
+                content: '■';
+                color: var(--primary-glow);
+                position: absolute;
+                left: 0.5rem;
+                top: 50%;
+                transform: translateY(-50%) scale(0.6);
+                font-size: 1.5em;
+            }
+
+            .mega-menu a:hover {
+                padding-left: 2.5rem;
+                color: #000;
+                background-color: var(--primary-glow);
+            }
+            .mega-menu a:hover::before {
+                color: #000;
+            }
+            
+            .menu-toggle {
+                display: block; position: relative; z-index: 1001;
+                width: 30px; height: 22px;
+                background: none; border: none; cursor: pointer;
+            }
+            .icon-bar {
+                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
+                margin: 6px 0; transition: all 0.3s ease-in-out;
+                border-radius: 2px;
+            }
+
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+            body.menu-open .menu-toggle .icon-child(2) { opacity: 0; }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+    <nav class="glassmorphism">
+        <div class="nav-content">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-8 w-8 md:h-10 md:w-10 rounded-full">
+                    <span>O.C.V.M.</span>
+                </a>
+            </div>
+            
+            <ul class="nav-container" id="nav-menu">
+                <li><a href="#inicio">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+                    Inicio</a></li>
+                
+                <li><a href="#contacto">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                    Contacto</a></li>
+            </ul>
+            <button class="menu-toggle" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container" id="inicio">
+        <div class="hero">
+            <div class="hero-content">
+                <h1>Arthur Schopenhauer</h1>
+                <p>El filósofo que sostuvo que el universo, en su esencia, no es un lugar racional.</p>
+            </div>
+        </div>
+
+        <div class="layout-grid">
+            <main class="content">
+                
+                <section id="introduccion" class="glassmorphism" data-animate>
+                    <h2>Introducción</h2>
+                    <p><span class="highlight">Arthur Schopenhauer</span> (1788–1860) fue uno de los primeros filósofos del siglo XIX en afirmar que el universo, en su núcleo, no es un lugar racional. Inspirado por <span class="highlight">Platón</span> y <span class="highlight">Kant</span>, quienes veían el mundo más abierto a la razón, Schopenhauer desarrolló sus filosofías hacia una perspectiva que reconocía el instinto y, en última instancia, era ascética. Enfatizó que, ante un mundo lleno de conflictos interminables, debemos minimizar nuestros deseos naturales para lograr una mente más tranquila y una disposición hacia la beneficencia universal, a pesar de la lucha y el dolor inherentes a la condición humana. A menudo considerado un pesimista radical, Schopenhauer, de hecho, abogó por formas –a través de la conciencia artística, moral y ascética– para superar una condición humana llena de frustración y fundamentalmente dolorosa. Desde su muerte en 1860, su filosofía ha tenido una atracción especial para aquellos que se preguntan sobre el significado de la vida, junto con los dedicados a la música, la literatura y las artes visuales.</p>
+                </section>
+
+                <section id="vida" class="glassmorphism" data-animate>
+                    <h2>1. Vida: 1788–1860</h2>
+                    <p>Exactamente un mes más joven que el poeta romántico inglés, Lord Byron (1788–1824), quien nació el 22 de enero de 1788, <span class="highlight">Arthur Schopenhauer</span> llegó al mundo el 22 de febrero de 1788 en Danzig [Gdansk, Polonia], una ciudad con una larga historia en el comercio internacional como miembro de la Liga Hanseática. La familia Schopenhauer era de ascendencia holandesa, y el padre del filósofo, <span class="highlight">Heinrich Floris Schopenhauer</span> (1747–1805), fue un exitoso comerciante y armador que preparó a su hijo para que asumiera el control del negocio familiar. Se vislumbraba un futuro en el comercio internacional desde el día en que Arthur nació, como se refleja en cómo el padre de Schopenhauer eligió cuidadosamente el primer nombre de su hijo por su idéntica ortografía en alemán, francés e inglés. En marzo de 1793, cuando Schopenhauer tenía cinco años, su familia se mudó a la Ciudad Libre y Hanseática de Hamburgo después de que la antes ciudad libre de Danzig fuera anexada por Prusia.</p>
+                    <p>Schopenhauer viajó por Europa varias veces con su familia de niño y adolescente, y vivió en Francia (1797–99) [de 9 a 11 años] e Inglaterra (1803) [a los 15 años], donde aprendió los idiomas de esos países. Como más tarde informó, sus experiencias en Francia estuvieron entre las más felices de su vida. Los recuerdos de su estancia en un estricto internado anglicano en Wimbledon fueron, en contraste, bastante angustiosos, y esto lo indispuso contra el estilo inglés de cristianismo por el resto de su vida.</p>
+                    <p>Las ocupaciones profesionales de comerciante o banquero no eran suficientemente consistentes con la disposición académica de Schopenhauer, y aunque durante dos años después de la muerte de su padre (en Hamburgo, 20 de abril de 1805; posiblemente por suicidio, cuando Schopenhauer tenía diecisiete años) continuó respetando las aspiraciones comerciales que su padre tenía para él, finalmente dejó su aprendizaje comercial en Hamburgo a los 19 años para prepararse para los estudios universitarios. Mientras tanto, su madre, <span class="highlight">Johanna Henriette Troisiener Schopenhauer</span> (1766–1838), quien era hija de un senador de la ciudad, junto con la hermana de Schopenhauer, <span class="highlight">Luise Adelaide [Adele] Lavinia Schopenhauer</span> (1797–1849), dejaron su hogar en Hamburgo en Neuer Wandrahm 92 y se mudaron a Weimar después de la muerte de Heinrich Floris, donde Johanna estableció una amistad con <span class="highlight">Johann Wolfgang von Goethe</span> (1749–1832). En Weimar, Goethe visitaba con frecuencia el salón intelectual de Johanna, y Johanna Schopenhauer se convirtió en una escritora conocida de la época, produciendo una voluminosa colección de ensayos, relatos de viajes, novelas (por ejemplo, Gabriele [1819], Die Tante [1823], Sidonia [1827], Richard Wood [1837]) y biografías, como sus relatos del crítico de arte alemán, arqueólogo y amigo cercano, Carl Ludwig Fernow (1763–1808), y del pintor flamenco, Jan van Eyck (c.1390–1441), publicados en 1810 y 1822 respectivamente. Sus obras completas suman veinticuatro volúmenes.</p>
+                    <p>En 1809, Schopenhauer comenzó sus estudios en la <span class="highlight">Universidad de Göttingen</span>, donde permaneció durante dos años, primero especializándose en medicina y luego en filosofía. En Göttingen, absorbió las ideas del filósofo escéptico, <span class="highlight">Gottlob Ernst Schulze</span> (1761–1833), quien lo introdujo a <span class="highlight">Platón</span> y <span class="highlight">Kant</span>. Schopenhauer se matriculó luego en la <span class="highlight">Universidad de Berlín</span> (1811–13), donde sus profesores incluyeron a <span class="highlight">Johann Gottlieb Fichte</span> (1762–1814) y <span class="highlight">Friedrich Schleiermacher</span> (1768–1834). Sus estudios universitarios en Göttingen y Berlín incluyeron cursos de física, psicología, astronomía, zoología, arqueología, fisiología, historia, literatura y poesía. A los 25 años, y listo para escribir su disertación doctoral, Schopenhauer se mudó en 1813 a Rudolstadt, un pequeño pueblo situado a poca distancia al suroeste de Jena, donde se alojó durante la duración en una posada llamada Zum Ritter. Titulando su trabajo <span class="highlight">La cuádruple raíz del principio de razón suficiente</span> (Über die vierfache Wurzel des Satzes vom zureichenden Grunde), formó la pieza central de su filosofía posterior, articulando argumentos que luego usaría para criticar como charlatanes a los filósofos idealistas alemanes predominantes de la época, a saber, su antiguo profesor, J. G. Fichte, junto con <span class="highlight">F. W. J. Schelling</span> (1775–1854) y <span class="highlight">G. W. F. Hegel</span> (1770–1831). Ese mismo año, Schopenhauer presentó su disertación a la cercana Universidad de Jena y obtuvo un doctorado en filosofía in absentia.</p>
+                    <p>Dejando el apartamento de su madre en 1814 donde había residido brevemente, Schopenhauer se mudó a Dresde, donde vivió hasta 1818. Allí desarrolló ideas de <span class="highlight">La cuádruple raíz</span> en su libro más famoso, <span class="highlight">El mundo como voluntad y representación</span>, que se completó en marzo de 1818 y se publicó en diciembre de ese mismo año (con la fecha, 1819). En simpatía con la teoría del color de Goethe, también escribió <span class="highlight">Sobre la visión y los colores</span> (1816) durante este tiempo. En Dresde, Schopenhauer entabló amistad con el filósofo y masón, <span class="highlight">Karl Christian Friedrich Krause</span> (1781–1832), quien también había sido uno de los estudiantes de Fichte en Berlín, cuyas propias opiniones panenteístas parecen haber sido influyentes. El <span class="highlight">panenteísmo</span> (es decir, todo-en-Dios), a diferencia del panteísmo (es decir, todo-es-Dios), es la opinión de que lo que podemos comprender e imaginar como el universo es un aspecto de Dios, pero que el ser de Dios excede esto, y no es idéntico ni agotado por el universo que podemos imaginar y comprender. Como veremos más adelante, Schopenhauer a veces caracterizó la cosa en sí de una manera que recordaba al panenteísmo.</p>
+                    <p>Después de un año de vacaciones en Italia y con <span class="highlight">El mundo como voluntad y representación</span> en la mano, Schopenhauer solicitó la oportunidad de dar conferencias en la <span class="highlight">Universidad de Berlín</span>, la institución donde había estudiado anteriormente, y donde dos años antes (1818), Hegel había llegado para asumir la prestigiosa cátedra filosófica de Fichte. Sin embargo, sus experiencias en Berlín fueron menos que profesionalmente fructíferas, ya que en marzo de 1820, Schopenhauer, con seguridad, programó su clase a una hora simultánea con las populares conferencias de Hegel, y pocos estudiantes eligieron escuchar a Schopenhauer. Dos años después, en 1822, dejó su apartamento cerca de la Universidad y viajó a Italia por segunda vez, regresando a Múnich un año después. Luego vivió en Mannheim y Dresde en 1824 antes de regresar a Berlín en 1825. Un segundo intento de dar conferencias en la Universidad de Berlín no tuvo éxito, y esta decepción se complicó por la pérdida de una demanda que había comenzado varios años antes, en agosto de 1821. La disputa surgió de un furioso altercado entre Schopenhauer y <span class="highlight">Caroline Luise Marguet</span> (f. 1852), una costurera de 47 años, que ocurrió en la pensión donde ambos vivían. El problema se refería a que la Sra. Marguet conversaba en voz alta con sus asociados en la antesala del apartamento de Schopenhauer, lo que le dificultaba concentrarse en su trabajo. Las conversaciones eran aparentemente una cuestión de rutina que acumuló la animosidad de Schopenhauer, lo que llevó a la confrontación explosiva.</p>
+                    <p>Dejando Berlín en 1831 debido a una epidemia de cólera que entraba en Alemania desde Rusia, Schopenhauer se mudó al sur, primero brevemente a Frankfurt-am-Main, y luego a Mannheim. Poco después, en junio de 1833, se estableció permanentemente en Frankfurt, donde permaneció durante los siguientes veintisiete años, residiendo en un apartamento a lo largo de la orilla del río Main desde 1843 hasta 1859 en Schöne Aussicht 17, a pocos minutos a pie de la Judengasse de Frankfurt. Su vida diaria, viviendo solo con una sucesión de caniches franceses como mascotas, se definía por una rutina deliberada: Schopenhauer se despertaba, se lavaba, leía y estudiaba durante las horas de la mañana, tocaba su flauta, almorzaba en el Englisher Hof –una elegante posada en el centro de la ciudad cerca de la Hauptwache– descansaba después, leía, daba un paseo por la tarde, consultaba los acontecimientos mundiales según lo informado en <span class="highlight">The London Times</span>, a veces asistía a conciertos por las noches y con frecuencia leía textos inspiradores como los <span class="highlight">Upanishads</span> antes de irse a dormir.</p>
+                    <p>Durante esta última fase de su vida, Schopenhauer escribió una breve obra en 1836, <span class="highlight">Über den Willen in der Natur</span> (Sobre la voluntad en la naturaleza), que tenía como objetivo confirmar y reiterar sus puntos de vista metafísicos a la luz de la evidencia científica. En esta obra se incluyen capítulos sobre magnetismo animal y magia, junto con la sinología (estudios chinos). Lo primero revela el interés de Schopenhauer por la parapsicología; lo segundo es valioso por sus referencias al eminente erudito neoconfuciano, <span class="highlight">Zhu Xi</span> (1130-1200), así como a influyentes escritores sobre el pensamiento asiático de la época como <span class="highlight">Robert Spence Hardy</span> (1803–1868) e <span class="highlight">Isaac Jacob Schmidt</span> (1779–1847).</p>
+                    <p>Poco después, en 1839, Schopenhauer completó un ensayo del que estaba inmensamente orgulloso, “Sobre la libertad de la voluntad humana” (Über die Freiheit des menschlichen Willens), que fue galardonado con el primer premio en un concurso patrocinado por la Real Sociedad Noruega de Ciencias y Letras en Trondheim. Un año después, lo complementó con un segundo ensayo, “Sobre el fundamento de la moral” (Über die Grundlage der Moral), que no fue honrado con un premio por la Real Sociedad Danesa de Ciencias en Copenhague, a pesar de ser la única presentación en su concurso de ensayos. La Sociedad afirmó que Schopenhauer no respondió a la pregunta asignada y que faltó gravemente al respeto a filósofos de reputación destacada (es decir, Fichte y Hegel). En 1841, Schopenhauer publicó desafiante ambos ensayos juntos como <span class="highlight">Los dos problemas fundamentales de la ética</span> (Die Beiden Grundprobleme der Ethik). Pronto siguió un volumen complementario de <span class="highlight">El mundo como voluntad y representación</span>, que se publicó en 1844 junto con el primer volumen en una segunda edición combinada.</p>
+                    <p>En 1851, Schopenhauer publicó un extenso y animado conjunto de reflexiones filosóficas titulado <span class="highlight">Parerga y Paralipomena</span> (apéndices y omisiones, del griego), y en un par de años, comenzó a recibir el reconocimiento filosófico que tanto había esperado. El reconocimiento fue estimulado por una reseña favorable de su filosofía (“Iconoclasia en la filosofía alemana,” por <span class="highlight">John Oxenford</span>) publicada en 1853 sin firma en la influyente <span class="highlight">Westminster Review</span>, que en ese momento estaba bajo la dirección editorial de <span class="highlight">George Eliot</span> (Mary Ann Evans). La reseña reconoció la centralidad de la “Voluntad” en la perspectiva de Schopenhauer y trazó paralelismos perspicaces entre el pensamiento de Schopenhauer y el más conocido de Fichte. Un año después de que apareciera la tercera edición de <span class="highlight">El mundo como voluntad y representación</span> con nuevas revisiones en 1859, Schopenhauer murió pacíficamente el 21 de septiembre de 1860, en su apartamento de Frankfurt en Schöne Aussicht 16. Tenía 72 años. Después de su muerte, <span class="highlight">Julius Frauenstädt</span> (1813–1879) publicó nuevas ediciones de la mayoría de las obras de Schopenhauer, apareciendo la primera edición completa (seis volúmenes) en 1873. En el siglo XX, el trabajo editorial sobre los manuscritos de Schopenhauer fue llevado a cabo con autoridad por <span class="highlight">Arthur Hübscher</span> (1897–1985).</p>
+                    <p>Schopenhauer donó su patrimonio para ayudar a los soldados prusianos discapacitados y a las familias de los soldados muertos que habían participado en la supresión de la revolución de 1848. Se tomaron varias fotografías de Schopenhauer durante sus últimos años, y aunque nos revelan a un anciano, debemos apreciar que Schopenhauer completó su obra principal, <span class="highlight">El mundo como voluntad y representación</span>, cuando había alcanzado la edad de treinta años.</p>
+                </section>
+
+                <section id="cuadruple-raiz" class="glassmorphism" data-animate>
+                    <h2>2. La Cuádruple Raíz del Principio de Razón Suficiente</h2>
+                    <p>La tesis doctoral de <span class="highlight">Schopenhauer</span> de 1813, <span class="highlight">La cuádruple raíz del principio de razón suficiente</span>, examina lo que muchos filósofos han reconocido como una tendencia innata a asumir que, en principio, el universo es un lugar completamente comprensible. Su disertación, en efecto, examina críticamente la disposición a asumir que lo real es lo racional. Un siglo antes, <span class="highlight">G.W. Leibniz</span> (1646–1716) había definido el principio de esta suposición –el <span class="highlight">principio de razón suficiente</span>– en su <span class="highlight">Monadología</span> (1714) como aquello que nos exige reconocer que no hay hecho o verdad que carezca de una razón suficiente de por qué debe ser así, y no de otra manera.</p>
+                    <p>Aunque el principio de razón suficiente podría parecer evidente por sí mismo, produce resultados sorprendentes. Por ejemplo, podemos apelar a este principio para argumentar que no puede haber dos individuos exactamente iguales, porque de lo contrario no habría razón suficiente de por qué uno de los individuos estaba en un lugar, mientras que el otro individuo estaba en otro. El principio también apoya el argumento de que el mundo físico no fue creado en ningún momento, ya que no hay razón suficiente de por qué sería creado en un momento en lugar de otro, ya que todos los momentos son cualitativamente iguales. Además, si se asume que el alcance de aplicabilidad del principio de razón suficiente es ilimitado, entonces hay una respuesta definitiva a la pregunta: "¿Por qué hay algo, en lugar de nada?" Schopenhauer estaba ansioso por cuestionar la extensión universal del principio de razón suficiente, principalmente debido a su defensa de la opinión de Kant de que la racionalidad humana carece del poder para responder preguntas metafísicas, ya que nuestro conocimiento está limitado por nuestras capacidades específicas y estrechamente circunscritas para organizar nuestro campo de sensación.</p>
+                    <p>Schopenhauer observó como una condición elemental que, para emplear el principio de razón suficiente, debemos pensar en algo específico que necesita explicación. Esto le indicó que en la raíz de nuestra situación epistemológica, debemos asumir la presencia de un <span class="highlight">sujeto</span> que piensa en algún <span class="highlight">objeto</span> a explicar. De esto, concluyó que la raíz general del principio de razón suficiente es la distinción entre sujeto y objeto que debe presuponerse como una condición para la empresa misma de buscar explicaciones (La cuádruple raíz, Sección 16) y como una condición para el conocimiento en general.</p>
+                    <p>La afirmación de Schopenhauer de que la distinción sujeto-objeto es la condición más general para el conocimiento humano tiene su fuente teórica en la <span class="highlight">Crítica de la razón pura</span> de <span class="highlight">Kant</span>, ya que Kant fundamentó de manera similar su propia teoría del conocimiento en una distinción sujeto-objeto altamente abstracta, formalizada y universalizada. Kant caracterizó el polo subjetivo de la distinción como la unidad trascendental sin contenido de la autoconciencia y el polo objetivo como el objeto trascendental sin contenido que corresponde al concepto de un objeto en general (CPR, A 109). La raíz general del principio de razón suficiente, tal como la caracteriza Schopenhauer, también se encuentra en la raíz de la epistemología de Kant.</p>
+                    <p>Siguiendo las exigentes concepciones del conocimiento típicas de su tiempo que habían sido inspiradas por la búsqueda de certeza de <span class="highlight">René Descartes</span> (1596–1650) (véase el “método de duda” de Descartes y su “cogito” [latín, para “pienso”]), Schopenhauer sostuvo que si alguna explicación ha de ser genuina, entonces lo que se explica no puede pensarse que haya surgido por accidente, sino que debe considerarse como algo necesario. La investigación de Schopenhauer sobre el principio de razón suficiente puede, por lo tanto, caracterizarse alternativamente como una investigación sobre la naturaleza de los diversos tipos de conexión necesaria que pueden surgir entre diferentes tipos de objetos.</p>
+                    <p>Inspirado por la doctrina de <span class="highlight">Aristóteles</span> sobre los cuatro tipos básicos de razón explicativa o cuatro [ser]causas (Física, Libro II, Capítulo 3), Schopenhauer define cuatro tipos de conexión necesaria que surgen en el contexto de la búsqueda de explicaciones, e identifica correspondientemente cuatro tipos independientes de objetos en referencia a los cuales se pueden dar explicaciones:</p>
+                    <ul>
+                        <li><span class="highlight">Cosas materiales</span></li>
+                        <li><span class="highlight">Conceptos abstractos</span></li>
+                        <li><span class="highlight">Construcciones matemáticas y geométricas</span></li>
+                        <li><span class="highlight">Fuerzas psicológicamente motivadoras</span></li>
+                    </ul>
+                    <p>Correspondiendo a estos cuatro tipos de objetos, Schopenhauer vincula en paralelo, cuatro tipos diferentes de razonamiento. Asocia las cosas materiales con el razonamiento en términos de <span class="highlight">causa y efecto</span>; los conceptos abstractos con el razonamiento en términos de <span class="highlight">lógica</span>; las construcciones matemáticas y geométricas con el razonamiento en referencia a <span class="highlight">números y espacios</span>; y las fuerzas motivadoras con el razonamiento en referencia a <span class="highlight">intenciones</span>, o lo que él llama <span class="highlight">razonamiento moral</span>. En resumen, identifica la raíz general del principio de razón suficiente como la distinción sujeto-objeto en conjunción con la idea de conexión necesaria, y la cuádruple raíz del principio de razón suficiente como la especificación de cuatro tipos diferentes de objetos para los cuales podemos buscar explicaciones, en asociación con los cuatro estilos independientes de conexión necesaria a lo largo de los cuales se pueden dar tales explicaciones, dependiendo de los diferentes tipos de objetos involucrados.</p>
+                    <p>Una de las afirmaciones más significativas de Schopenhauer es que los cuatro modos diferentes de explicación solo funcionan en paralelo entre sí y no pueden mezclarse coherentemente. Si comenzamos eligiendo un cierto estilo de explicación, entonces elegimos inmediatamente los tipos de objeto a los que podemos referirnos. Por el contrario, si comenzamos eligiendo un cierto tipo de objeto para explicar, estamos obligados a usar el estilo de razonamiento asociado con ese tipo de objeto. Por lo tanto, viola la racionalidad de la explicación confundir un tipo de explicación con otro tipo de objeto. No podemos comenzar con un estilo de explicación que involucre objetos materiales y sus relaciones de causa y efecto asociadas, por ejemplo, y luego argumentar una conclusión que involucre un tipo diferente de objeto, such as an abstract concept. Likewise, we cannot begin with abstract conceptual definitions and accordingly employ logical reasoning for the purposes of concluding our argumentation with assertions about things that exist.</p>
+                    <p>Con este conjunto de regulaciones sobre lo que cuenta como una forma legítima de llevar a cabo explicaciones, Schopenhauer descartó los argumentos cosmológicos y ontológicos para la existencia de Dios, a menudo citados y (especialmente durante su tiempo) filosóficamente a menudo utilizados, y junto con ellos, todas las filosofías que se basan en tales argumentos. Insistió en que las perspectivas idealistas alemanas de <span class="highlight">Fichte</span>, <span class="highlight">Schelling</span> y <span class="highlight">Hegel</span> se basaban en errores explicativos de este tipo, y consideró esas perspectivas como estilos de pensamiento fundamentalmente equivocados, ya que veía sus filosofías específicamente basadas en versiones del argumento ontológico para la existencia de Dios. Su frecuente condena del idealismo alemán se basó en lo que consideraba razones filosóficas sólidas, a pesar de sus ataques ad hominem intransigentes contra Fichte, Schelling y Hegel, a quienes describió repetidamente como "charlatanes" y "impostores".</p>
+                    <img src="https://placehold.co/800x400/818cf8/000000?text=La+Cuádruple+Raíz+del+Principio+de+Razón+Suficiente" alt="Diagrama de la Cuádruple Raíz del Principio de Razón Suficiente" class="diagram-image">
+                </section>
+
+                <section id="critica-kant" class="glassmorphism" data-animate>
+                    <h2>3. Crítica de Schopenhauer a Kant</h2>
+                    <p>Schopenhauer puede ser llamado kantiano en muchos aspectos, pero no siempre estuvo de acuerdo con los detalles de los argumentos de <span class="highlight">Kant</span>. Como se señaló, el maestro de Schopenhauer en Göttingen fue <span class="highlight">G. E. Schulze</span>, quien en 1792, fue autor de un texto titulado <span class="highlight">Aenesidemus</span>, que contiene una crítica al filósofo kantiano, <span class="highlight">Karl Leonhard Reinhold</span> (1757–1823). Reinhold fue un defensor de Kant, y era conocido por su Filosofía de los Elementos (Elementarphilosophie) que se expresó, junto con algunos escritos anteriores, en la obra de Reinhold de 1791, <span class="highlight">El fundamento del conocimiento filosófico</span> (Fundament des philosophischen Wissens).</p>
+                    <p>La crítica de Schulze a Kant es esencialmente la siguiente: es incoherente postular como una cuestión de conocimiento filosófico –como Kant parece haber hecho– un objeto independiente de la mente que está más allá de toda experiencia humana, y que sirve como la causa principal de nuestra experiencia sensorial. Schulze comparte esta crítica a Kant con <span class="highlight">F. H. Jacobi</span>, quien expresó la misma objeción cinco años antes en <span class="highlight">David Hume sobre la fe, o Idealismo y Realismo, un diálogo</span> [1787] en un apéndice titulado “Sobre el idealismo trascendental.” Schulze argumenta que Kant utiliza ilegítimamente el concepto de causalidad para concluir como una cuestión de fuerte requisito epistemológico, y no meramente como una cuestión de especulación racional, que existe algún objeto –a saber, la <span class="highlight">cosa en sí</span>– fuera de toda posible experiencia humana, que sin embargo es la causa de nuestras sensaciones.</p>
+                    <p>Schopenhauer está de acuerdo en que la hipótesis de una cosa en sí como causa de nuestras sensaciones equivale a una aplicación constitutiva y proyección del concepto de <span class="highlight">causalidad</span> más allá de su alcance legítimo, porque según el propio Kant, el concepto de causalidad solo proporciona conocimiento cuando se aplica dentro del campo de la experiencia posible, y no fuera de él. Por lo tanto, Schopenhauer niega que nuestras sensaciones tengan una causa externa en el sentido de que podamos saber que existe algún objeto epistemológicamente inaccesible –la cosa en sí– que existe independientemente de nuestras sensaciones y es la causa de ellas.</p>
+                    <p>Estos problemas internos con el argumento de Kant sugieren a Schopenhauer que la referencia de Kant a la cosa en sí como un objeto independiente de la mente (o como un objeto de cualquier tipo) está mal interpretada. Schopenhauer sostiene, en cambio, que si vamos a referirnos a la cosa en sí, entonces debemos llegar a una conciencia de ella, no invocando la relación de causalidad –una relación donde la causa y el efecto se entienden lógicamente como objetos o eventos distintos (ya que la autocausalidad es una contradicción en términos)– sino a través de otro medio completamente diferente. Como veremos en la siguiente sección, y como podemos ver inmediatamente en el título de su obra principal –<span class="highlight">El mundo como voluntad y representación</span>– Schopenhauer cree que el mundo tiene un <span class="highlight">doble aspecto</span>, a saber, como “<span class="highlight">Voluntad</span>” (Wille) y como <span class="highlight">representación</span> (Vorstellung). La palabra alemana “Vorstellung” puede traducirse como “representación,” “presentación,” “idea,” o “imagen mental.”</p>
+                    <p>Schopenhauer no cree, entonces, que la Voluntad <span class="highlight">cause</span> nuestras representaciones. Su posición es que la Voluntad y las representaciones son una misma realidad, consideradas desde diferentes perspectivas. Se relacionan entre sí de una manera que se compara con la relación entre una fuerza y su manifestación (por ejemplo, como se ejemplifica en la relación entre la electricidad y una chispa, donde la chispa “es” electricidad). Esto se opone a decir que la cosa en sí causa nuestras sensaciones, como si nos refiriéramos a una ficha de dominó golpeando a otra. La visión de Schopenhauer es que la relación entre la cosa en sí y nuestras sensaciones es más parecida a la de las dos caras de una moneda, ninguna de las cuales causa a la otra, y ambas son de la misma moneda y acuñación.</p>
+                    <p>Entre sus otras críticas a Kant (véase el apéndice del primer volumen de <span class="highlight">El mundo como voluntad y representación</span>, titulado “Crítica de la filosofía kantiana”), Schopenhauer sostiene que las doce <span class="highlight">categorías del entendimiento humano</span> de Kant –las diversas categorías a través de las cuales organizamos lógicamente nuestro campo de sensaciones en objetos individuales comprensibles e interrelacionados– son reducibles a la única categoría de <span class="highlight">causalidad</span>, y que esta categoría, junto con las formas de <span class="highlight">espacio</span> y <span class="highlight">tiempo</span>, es suficiente para explicar el formato básico de toda experiencia humana, es decir, objetos individuales dispersos a lo largo del espacio y el tiempo, relacionados causalmente entre sí.</p>
+                    <p>Schopenhauer comprende además estos tres principios (y para él, interdependientes) como expresiones de un solo principio, a saber, el <span class="highlight">principio de razón suficiente</span>, cuya cuádruple raíz había examinado en su disertación doctoral. En <span class="highlight">El mundo como voluntad y representación</span>, Schopenhauer a menudo se refiere a un aspecto del principio de razón suficiente como el “<span class="highlight">principio de individuación</span>” (principium individuationis), vinculando la idea de individuación explícitamente con el espacio y el tiempo, pero también implícitamente con la racionalidad, la necesidad, la sistematicidad y el determinismo. Utiliza el principio de razón suficiente y el principio de individuación como expresiones abreviadas de lo que Kant había denominado de forma más compleja como espacio, tiempo y las doce categorías del entendimiento (es decir, unidad, pluralidad, totalidad, realidad, negación, limitación, sustancia, causalidad, reciprocidad, posibilidad, actualidad [Dasein] y necesidad).</p>
+                </section>
+
+                <section id="mundo-como-voluntad" class="glassmorphism" data-animate>
+                    <h2>4. El Mundo como Voluntad</h2>
+                    <p>Es una reflexión filosófica perenne que si uno mira lo suficientemente profundo dentro de sí mismo, descubrirá no solo su propia esencia, sino también la esencia del universo. Porque así como uno es parte del universo como todo lo demás, las energías básicas del universo fluyen a través de uno mismo como fluyen a través de todo lo demás. Por esa razón se piensa que uno puede entrar en contacto con la naturaleza del universo si entra en contacto sustancial con su ser interno último.</p>
+                    <p>Entre los principios identificados con mayor frecuencia que se manifiestan introspectivamente –y uno que era el estándar para filósofos idealistas alemanes como Fichte, Schelling y Hegel que filosofaban dentro de la tradición cartesiana– se encuentra el principio de <span class="highlight">autoconciencia</span>. Con la creencia de que los actos de autoconciencia ejemplifican un proceso autocreativo similar a la creación divina, y desarrollando una lógica que refleja la estructura de la autoconciencia, a saber, la lógica dialéctica de posición, oposición y reconciliación (a veces descrita como la lógica de tesis, antítesis y síntesis), los idealistas alemanes sostenían que la lógica dialéctica refleja la estructura no solo de las producciones humanas, tanto individuales como sociales, sino la estructura de la realidad en su conjunto, concebida como una sustancia pensante o un ser estructurado y constituido conceptualmente.</p>
+                    <p>Aunque se opone a los idealistas alemanes tradicionales en su elevación metafísica de la autoconciencia (que él considera demasiado intelectualista), Schopenhauer filosofa dentro del espíritu de esta tradición, porque cree que el principio supremo del universo es igualmente aprehensible a través de la introspección, y que podemos entender el mundo como diversas manifestaciones de este principio general. Para Schopenhauer, este no es el principio de autoconciencia y voluntad infundida racionalmente, sino más bien lo que él simplemente llama “<span class="highlight">Voluntad</span>” – un impulso sin mente, sin propósito, no racional en la base de nuestros impulsos instintivos, y en el ser fundamental de todo. La originalidad de Schopenhauer no reside en su caracterización del mundo como Voluntad, o como acto –porque encontramos esta posición en la filosofía de Fichte– sino en la concepción de la Voluntad como desprovista de racionalidad o intelecto.</p>
+                    <p>Habiendo rechazado la posición kantiana de que nuestras sensaciones son causadas por un objeto incognoscible que existe independientemente de nosotros, Schopenhauer señala de manera importante que nuestro cuerpo –que es solo uno entre los muchos objetos del mundo– se nos presenta de dos maneras diferentes: percibimos nuestro cuerpo como un objeto físico entre otros objetos físicos, sujeto a las leyes naturales que rigen los movimientos de todos los objetos físicos, y somos conscientes de nuestro cuerpo a través de nuestra conciencia inmediata, ya que cada uno de nosotros habita conscientemente nuestro cuerpo, lo mueve intencionalmente y siente directamente nuestros placeres, dolores y estados emocionales. Podemos percibir objetivamente nuestra mano como un objeto externo, como un cirujano podría percibirla durante una operación médica, y también podemos ser subjetivamente conscientes de nuestra mano como algo que habitamos, como algo que movemos voluntariamente y de lo cual podemos sentir su funcionamiento muscular interno.</p>
+                    <p>De esta observación, Schopenhauer afirma que entre todos los objetos del universo, solo hay <span class="highlight">un</span> objeto, en relación con cada uno de nosotros –a saber, nuestro cuerpo físico– que se da de dos maneras completamente diferentes. Se da como <span class="highlight">representación</span> (es decir, objetivamente; externamente) y como <span class="highlight">Voluntad</span> (es decir, subjetivamente; internamente). Una de sus conclusiones notables es que cuando movemos nuestra mano, esto no debe comprenderse como un acto motivacional que ocurre primero y luego causa el movimiento de nuestra mano como un efecto. Sostiene que el movimiento de nuestra mano no es más que un solo acto –de nuevo, como las dos caras de una moneda– que tiene un sentimiento subjetivo de querer como uno de sus aspectos, y el movimiento de la mano como el otro. Más generalmente, añade que la acción del cuerpo no es más que el acto de la Voluntad objetivado, es decir, traducido a la percepción.</p>
+                    <p>En este punto de su argumentación, Schopenhauer ha establecido solo que entre sus muchas ideas, o representaciones, solo una de ellas (es decir, la representación [compleja] de su cuerpo) tiene esta cualidad especial de doble aspecto. Cuando percibe la luna o una montaña, en circunstancias normales no tiene acceso directo al interior metafísico de tales objetos; permanecen como representaciones que le revelan solo su lado objetivo. Schopenhauer pregunta, sin embargo, cómo podría entender el mundo como un todo integrado, o cómo podría hacer que todo su campo de percepción fuera lo más comprensible, porque tal como están las cosas, puede experimentar directamente el interior de una de sus representaciones, pero no de ninguna otra. Para responder a esta pregunta, utiliza el doble conocimiento de su propio cuerpo como la clave del ser interno de cualquier otro fenómeno natural: considera –como si intentara hacer teóricamente posible la noción de empatía universal– cada objeto del mundo como metafísicamente de doble aspecto, y como teniendo un interior o aspecto interno propio, al igual que su conciencia es el aspecto interno de su propio cuerpo. Esta es su razón para rechazar el interaccionismo causal de Descartes, donde se dice que la sustancia pensante causa cambios en una sustancia material independiente y viceversa.</p>
+                    <p>Esto precipita una posición que caracteriza el aspecto interno de las cosas, en la medida en que podemos describirlo, como Voluntad. Por lo tanto, Schopenhauer considera que el mundo en su conjunto tiene dos lados: el mundo es Voluntad y el mundo es representación. El mundo como Voluntad (“para nosotros”, como a veces lo califica) es el mundo tal como es en sí mismo, que es una unidad, y el mundo como representación es el mundo de las apariencias, de nuestras ideas, o de los objetos, que es una diversidad. Un título alternativo para el libro principal de Schopenhauer, <span class="highlight">El mundo como voluntad y representación</span>, bien podría haber sido, <span class="highlight">El mundo como realidad y apariencia</span>. Del mismo modo, su libro podría haberse titulado, <span class="highlight">La naturaleza interna y externa de la realidad</span>.</p>
+                    <p>Una inspiración para la visión de Schopenhauer de que las ideas son como objetos inertes es <span class="highlight">George Berkeley</span> (1685–1753), quien describe las ideas de esta manera desactivada en su <span class="highlight">Tratado sobre los principios del conocimiento humano</span> (1710) [Sección 25]. Una inspiración principal para la visión de doble aspecto del universo de Schopenhauer es <span class="highlight">Baruch (Benedict) de Spinoza</span> (1632–1677), quien desarrolló una metafísica de estructura similar, y a quien Schopenhauer había estudiado en sus primeros años antes de escribir su disertación. Una inspiración posterior, pero a menudo destacada, es de los <span class="highlight">Upanishads</span> (c. 900–600 a. C.) que también expresa una visión de doble aspecto del universo que tiene aspectos objetivos y subjetivos, denominados respectivamente <span class="highlight">Brahman</span> y <span class="highlight">Atman</span>.</p>
+                    <p>Solo unos pocos meses después de completar su disertación, Schopenhauer fue expuesto al pensamiento indio clásico a fines de 1813 por el orientalista <span class="highlight">Friedrich Majer</span> (1771–1818), quien visitó el salón de Johanna Schopenhauer en Weimar. Schopenhauer también probablemente conoció en ese momento a <span class="highlight">Julius Klaproth</span> (1783–1835), quien era el editor de <span class="highlight">Das Asiatische Magazin</span>. Como indican los registros de sus retiros de libros de la biblioteca, Schopenhauer comenzó a leer el <span class="highlight">Bhagavadgita</span> en diciembre de 1813 o muy poco después, y los <span class="highlight">Upanishads</span> en marzo de 1814, coincidiendo con el momento en que el pensamiento de Schopenhauer adquirió una cualidad explícitamente atea. Solo un año antes de esto, se refería explícitamente a sí mismo en sus cuadernos como un “teísta iluminado,” es decir, un místico, en una discusión de 1812 sobre la filosofía de Schelling (Manuscritos, Vol. 2, p. 373).</p>
+                    <p>La apreciación de Schopenhauer por el pensamiento indio se vio aumentada en Dresde durante la redacción de <span class="highlight">El mundo como voluntad y representación</span> por su vecino de 1815–1817 <span class="highlight">Karl Friedrich Christian Krause</span>. Krause no solo era un panenteísta metafísico (véase el segmento biográfico anterior), sino que también era un entusiasta del pensamiento del sur de Asia. Familiarizado con el idioma sánscrito, introdujo a Schopenhauer a publicaciones sobre la India en el <span class="highlight">Asiatisches Magazin</span>, y estas mejoraron los estudios de Schopenhauer sobre la primera traducción de los Upanishads a un idioma europeo: en 1801, una versión persa de los Upanishads (el Oupnekhat) fue traducida al latín por el orientalista francés, <span class="highlight">Abraham Hyacinthe Anquetil-Duperron</span> (1731-1805) – un erudito que también introdujo traducciones de textos zoroastrianos en Europa en 1771.</p>
+                    <p>A pesar de sus precedentes generales dentro de la familia filosófica de las teorías de doble aspecto, la caracterización particular de Schopenhauer del mundo como Voluntad es, sin embargo, novedosa y audaz. También es aterradora y pandemónica: sostiene que el mundo tal como es en sí mismo (de nuevo, a veces añadiendo “para nosotros”) es un esfuerzo interminable y un impulso ciego sin fin a la vista, desprovisto de conocimiento, sin ley, absolutamente libre, enteramente autodeterminante y omnipotente. Dentro de la visión de Schopenhauer del mundo como Voluntad, no hay Dios que comprender, y el mundo se concibe como inherentemente sin sentido. Cuando se considera antropomórficamente, el mundo se representa como en una condición de frustración eterna, ya que se esfuerza sin cesar por nada en particular y esencialmente no va a ninguna parte. Es un mundo más allá de cualquier adscripción de bien y mal.</p>
+                    <p>La negación del significado al mundo por parte de Schopenhauer difiere radicalmente de las opiniones de Fichte, Schelling y Hegel, quienes sostenían una creencia distinta de que todo se mueve hacia un fin armonioso y justo. Sin embargo, al igual que estos idealistas alemanes, Schopenhauer explicó cómo el mundo que experimentamos diariamente es el resultado de la actividad del principio central de las cosas. Así como los idealistas alemanes explicaron la gran cadena del ser –las rocas, los árboles, los animales y los seres humanos– como las objetivaciones cada vez más complicadas y detalladas de la autoconciencia, Schopenhauer explicó el mundo como objetivaciones de la Voluntad.</p>
+                    <p>Para Schopenhauer, el mundo que experimentamos está constituido por objetivaciones de la Voluntad que corresponden, primero, a la raíz general del principio de razón suficiente, y segundo, a la raíz cuádruple más específica del principio de razón suficiente. Esto genera una perspectiva de dos niveles (es decir, Voluntad [= realidad] vs. objetos en general [= apariencia]), que se articula en una perspectiva de tres niveles (es decir, Voluntad [= realidad] vs. objetos universales, no espacio-temporales vs. objetos individuales, espacio-temporales), al distinguir aún más entre niveles universalistas e individualistas dentro de la esfera de los objetos.</p>
+                    <p>El patrón filosófico general de una única esencia mundial que inicialmente se manifiesta como una multiplicidad de esencias abstractas, que, a su vez, se manifiestan como una multiplicidad de individuos físicos, se encuentra en todo el mundo. Es característico del <span class="highlight">Neoplatonismo</span> (c. siglo III d. C., representado por Plotino [204–270]), así como de la <span class="highlight">Doctrina de los Tres Cuerpos del Buda</span> [trikaya] de la manifestación del Buda, que se desarrolla en la escuela Yogacara del budismo Mahayana, representada por <span class="highlight">Maitreya</span> (270–350), <span class="highlight">Asanga</span> (375–430) y <span class="highlight">Vasubandu</span> (400–480).</p>
+                    <p>Según Schopenhauer, correspondiendo al nivel de la distinción universal sujeto-objeto, la Voluntad se objetiva inmediatamente en un conjunto de objetos universales o <span class="highlight">Ideas Platónicas</span>. Estas constituyen los patrones atemporales para cada una de las cosas individuales que experimentamos en el espacio y el tiempo. Hay diferentes Ideas Platónicas, y aunque esta multiplicidad de Ideas implica que cierta medida de individuación está presente dentro de este reino, cada Idea, sin embargo, no contiene pluralidad dentro de sí misma y se dice que es “una.” Dado que las Ideas Platónicas no están ni en el espacio ni en el tiempo, carecen de las cualidades de individuación que se derivarían de la introducción de calificaciones espaciales y temporales. A este respecto, las Ideas Platónicas son independientes de la raíz cuádruple específica del principio de razón suficiente, aunque sería engañoso decir que no hay individuación alguna en este nivel universal, ya que hay muchas Ideas Platónicas diferentes. Schopenhauer se refiere a las Ideas Platónicas como las objetivaciones directas de la Voluntad y como la objetividad inmediata de la Voluntad.</p>
+                    <p>Las objetivaciones indirectas de la Voluntad aparecen cuando nuestras mentes continúan aplicando el principio de razón suficiente más allá de su raíz general, de tal manera que introducen las formas de tiempo, espacio y causalidad, sin mencionar la lógica, las matemáticas, la geometría y el razonamiento moral. Cuando la Voluntad se objetiva a este nivel de determinación, el mundo de la vida cotidiana emerge, cuyos objetos son, en efecto, manifestaciones caleidoscópicamente multiplicadas de las formas platónicas, dispersas sin fin por el espacio y el tiempo.</p>
+                    <p>Dado que el principio de razón suficiente es –dada la inspiración de Schopenhauer en Kant– la forma epistemológica de la mente humana, el mundo espacio-temporal es el mundo de nuestra propia reflexión. En esa medida, Schopenhauer dice que la vida es como un sueño. Como condición de nuestro conocimiento, Schopenhauer cree que las leyes de la naturaleza, junto con los conjuntos de objetos que experimentamos, nosotros mismos los creamos de una manera que no es diferente de la forma en que la constitución de nuestras lenguas invoca el sabor del azúcar. Como <span class="highlight">Galileo Galilei</span> (1564–1642) afirma en “El ensayador” (1623), si se quitaran las orejas, las lenguas y las narices del mundo, también se eliminarían los olores, los sabores y los sonidos.</p>
+                    <p>En este punto, lo que Schopenhauer ha desarrollado filosóficamente es ciertamente interesante, pero aún no hemos mencionado su aspecto más notable y memorable. Si combinamos su afirmación de que el mundo es Voluntad con su visión kantiana de que somos responsables del mundo individuado de las apariencias, llegamos a una perspectiva novedosa, una perspectiva que depende en gran medida de la caracterización de Schopenhauer de la cosa en sí como Voluntad, entendida como un esfuerzo ciego y sin rumbo.</p>
+                    <p>Antes de que el ser humano aparezca en escena con su principio de razón suficiente (o principio de individuación) no hay individuos. Es el ser humano el que, en su propio esfuerzo por conocer algo, objetiva una apariencia para sí mismo que implica la fragmentación de la Voluntad y su división en un conjunto comprensible de individuos. El resultado de esta fragmentación, dada la naturaleza de la Voluntad, es terrible: es un mundo de lucha constante, donde cada cosa individual se esfuerza contra todas las demás cosas individuales. El resultado es una "guerra de todos contra todos" permanente, similar a lo que <span class="highlight">Thomas Hobbes</span> (1588–1679) caracterizó como el estado de naturaleza.</p>
+                    <p>Kant sostiene en la <span class="highlight">Crítica de la razón pura</span> que creamos las leyes de la naturaleza (CPR, A125). A esto, Schopenhauer añade en <span class="highlight">El mundo como voluntad y representación</span> que creamos el estado violento de la naturaleza, ya que su visión es que la individuación que imponemos a las cosas se impone a una energía ciega que, una vez individuada y objetivada, se vuelve contra sí misma, se consume y se hace violencia. Su imagen paradigmática es la de la hormiga bulldog de Australia, que, al ser cortada por la mitad, lucha a muerte entre su cabeza y su cola. Nuestra misma búsqueda de conocimiento científico y práctico crea –para Schopenhauer, pecaminosa y repulsivamente– un mundo que se devora a sí mismo de forma pesadillesca.</p>
+                    <p>Esto marca el origen del reconocido <span class="highlight">pesimismo</span> de Schopenhauer: afirma que, como individuos, somos los productos angustiados de nuestra propia creación epistemológica, y que dentro del mundo de las apariencias que estructuramos, estamos destinados a luchar con otros individuos y a desear más de lo que jamás podremos tener. Según la visión de Schopenhauer, el mundo de la vida diaria es esencialmente violento y frustrante; es un mundo que, mientras nuestra conciencia permanezca en ese nivel donde el principio de razón suficiente se aplica en su cuádruple raíz, nunca se resolverá en una condición de mayor tranquilidad. Como él mismo afirma explícitamente, la vida diaria “es sufrimiento” (WWR, Sección 56) y para expresarlo, emplea imágenes de frustración tomadas de la mitología griega clásica, como las de <span class="highlight">Tántalo</span> y las <span class="highlight">Danaides</span>, junto con el sufrimiento de <span class="highlight">Ixión</span> en la rueda de fuego que gira sin cesar. La imagen de <span class="highlight">Sísifo</span> expresa el mismo espíritu frustrado.</p>
+                    <img src="https://placehold.co/800x400/22d3ee/000000?text=El+Mundo+como+Voluntad+y+Representación" alt="Diagrama El Mundo como Voluntad y Representación" class="diagram-image">
+                </section>
+
+                <section id="trascender-conflicto" class="glassmorphism" data-animate>
+                    <h2>5. Trascendiendo las Condiciones Humanas de Conflicto</h2>
+                    <p>La visión violenta de Schopenhauer del mundo diario lo lleva a una búsqueda de tranquilidad, y la persigue rastreando el camino a través del cual la Voluntad se objetiva. Descubre estados mentales más pacíficos dirigiendo su conciencia cotidiana, orientada prácticamente, hacia estados mentales más extraordinarios, universales y menos individuados, ya que cree que la violencia que experimenta una persona es proporcional al grado en que la conciencia de esa persona está individuada y objetivando. Su opinión es que con menos individuación y objetivación, hay menos conflicto, menos dolor y más paz.</p>
+
+                    <h3>5.1 Percepción Estética como Modo de Trascendencia</h3>
+                    <p>Una forma de lograr un estado de conciencia más tranquilo es a través de la <span class="highlight">percepción estética</span>. Este es un estado especial de conciencia perceptual donde aprehendemos algún objeto espacio-temporal y discernimos a través de este objeto, la esencia, el arquetipo o la “<span class="highlight">Idea Platónica</span>” del objeto que corresponde al tipo de objeto en cuestión. En esta forma de percepción, nos perdemos en el objeto, olvidamos nuestra individualidad y nos convertimos en el espejo claro del objeto. Durante la percepción estética de un manzano individual, por ejemplo, percibiríamos a través del árbol, el arquetipo de todos los manzanos (es decir, el Ur-fenómeno, como lo describiría Goethe) en una apreciación de cada manzano que fue, es o será. El tipo de percepción involucrada se compara, por ejemplo, con el retratista tradicional que discierne las formas que la naturaleza pretendía realizar en un rostro, pero que no se realizaron idealmente. El pintor, en consecuencia, elimina en el retrato artístico los pequeños pelos, verrugas, arrugas y demás, para presentar una presentación facial más idealizada, angelical, atemporal y perfeccionada, como podríamos ver en un retrato de boda o religioso.</p>
+                    <p>Dado que Schopenhauer asume que la cualidad del sujeto de la experiencia debe corresponder a la cualidad del objeto de la experiencia, infiere que en el estado de percepción estética, donde los objetos son universalistas, el sujeto de la experiencia debe asumir igualmente una cualidad universalista (WWR, Sección 33). La percepción estética transforma así un estado de conciencia orientado individualmente en un estado de conciencia orientado universalmente, o lo que Schopenhauer llama un sujeto de conocimiento puro, sin voluntad, sin dolor y atemporal (WWR, Sección 34).</p>
+                    <p>Supuestamente, pocas personas tienen la capacidad de permanecer en tal estado mental estético por mucho tiempo, y a la mayoría se les niega la tranquilidad trascendente de la percepción estética. Solo el <span class="highlight">genio artístico</span>, con mentalidad artística, está naturalmente dispuesto a y supuestamente puede permanecer durante mucho tiempo en el estado de percepción pura, y es a estos individuos a quienes Schopenhauer cree que debemos recurrir –mientras apreciamos sus obras de arte– para obtener una visión más concentrada y conocedora de las Ideas Platónicas (es decir, de las esencias de las cosas). El genio artístico contempla estas Ideas, crea una obra de arte que presenta las Ideas de una manera más clara y accesible de lo habitual, y así comunica una visión universalista a quienes carecen del poder idealizador para ver a través y elevarse por encima del mundo ordinario de los objetos espacio-temporales.</p>
+                    <p>Schopenhauer afirma que el propósito más elevado del arte es comunicar las Ideas Platónicas (WWR, Sección 50). Al constituir el arte, tiene en mente las cinco bellas artes tradicionales menos la música, a saber, la arquitectura, la escultura, la pintura y la poesía. Estas cuatro artes las comprende en relación con las Ideas Platónicas –esos objetos universales de conciencia estética que se encuentran en el polo objetivo de la distinción universal sujeto-objeto en la raíz del principio de razón suficiente. La descripción de Schopenhauer de las artes visuales y literarias corresponde al mundo como representación en su objetivación inmediata, es decir, el campo de las Ideas Platónicas en oposición al campo de los objetos espacio-temporales.</p>
+                    <p>Como contraparte de su interpretación de las artes visuales y literarias, Schopenhauer desarrolla una descripción de la <span class="highlight">música</span> que la coordina con el polo subjetivo de la distinción universal sujeto-objeto. Separada de las otras artes tradicionales, sostiene que la música es el arte más metafísico y se encuentra en un paralelo subjetivo, centrado en el sentimiento, con las propias Ideas Platónicas. Así como las Ideas Platónicas contienen los patrones para los tipos de objetos en el mundo diario, la música duplica formalmente la estructura básica del mundo: las notas graves son análogas a la naturaleza inorgánica, las armonías son análogas al mundo animal y las melodías son análogas al mundo humano. El sonido de la nota grave produce estructuras sonoras más sutiles en sus armónicos; de manera similar, la naturaleza inanimada produce vida animada.</p>
+                    <p>En la estructura de la música, Schopenhauer discierne una serie de analogías con la estructura del mundo físico que le permiten afirmar que la música es “una copia de la Voluntad misma” (Abbild des Willens selbst [cursivas en el alemán original]) (WWR, Sección 52). Su visión podría parecer extravagante al principio, pero se basa en la idea de que, si uno quiere discernir la verdad del mundo, podría ser ventajoso aprehender el mundo, no exclusivamente en términos científicos, mecánicos y causales, sino más bien en términos estéticos, analógicos, expresivos y metafóricos que requieren un sentido del gusto para su discernimiento. Si la forma del mundo se refleja mejor en la forma de la música, entonces la sensibilidad más filosófica será una sensibilidad musical. Esto explica parcialmente la atracción positiva de la teoría musical de Schopenhauer para espíritus creativos como <span class="highlight">Richard Wagner</span> y <span class="highlight">Friedrich Nietzsche</span>, quienes combinaron intereses musicales y filosóficos en su trabajo.</p>
+                    <p>Con respecto al tema de lograr estados mentales más pacíficos y trascendentes, Schopenhauer cree que la música lo logra al encarnar las formas abstractas de los sentimientos, o sentimientos abstraídos de sus circunstancias cotidianas particulares. Esto nos permite percibir las esencias de la vida emocional –“la tristeza misma,” “la alegría misma,” etc.– sin los contenidos contingentes que típicamente causarían sufrimiento. Al expresar la emoción de esta manera desapegada, la música nos permite aprehender la naturaleza del mundo sin la frustración involucrada en la vida diaria, y por lo tanto, en un modo de conciencia estética similar a la tranquila contemplación filosófica del mundo. Sin embargo, en la medida en que la música proporciona una visión abstracta e indolora del mundo y de la vida interior, también falla en evocar la compasión que surge de identificarse tangiblemente con el sufrimiento de otra persona. Esta deficiencia motiva un cambio de la conciencia musical o estética a la conciencia moral.</p>
+
+                    <h3>5.2 Conciencia Moral como Modo de Trascendencia</h3>
+                    <p>Como muchos cristianos medievales asumieron una vez, Schopenhauer creía que deberíamos minimizar nuestros deseos carnales, ya que la <span class="highlight">conciencia moral</span> surge a través de una actitud que trasciende nuestra individualidad corporal. De hecho, afirma explícitamente que sus puntos de vista sobre la moralidad están completamente en el espíritu del cristianismo, además de ser consistentes con las doctrinas y preceptos éticos de los libros sagrados de la India (WWR, Sección 68). Entre los preceptos que respeta se encuentran aquellos que prescriben que uno trate a los demás tan amablemente como se trata a sí mismo, que uno se abstenga de la violencia y tome medidas para reducir el sufrimiento en el mundo, que uno evite el egoísmo y los pensamientos dirigidos a la venganza, y que uno cultive un fuerte sentido de la compasión. Tales preceptos no son exclusivos del cristianismo; Schopenhauer cree que constituyen la mayoría de los puntos de vista morales basados en la religión. Lejos de ser inmoralista, su teoría moral está escrita en la misma línea que las de <span class="highlight">Immanuel Kant</span> (1724–1804) y <span class="highlight">John Stuart Mill</span> (1806–1873), que defienden principios que están en general de acuerdo con los preceptos cristianos.</p>
+                    <p>La concepción de la conciencia moral de Schopenhauer concuerda con su proyecto de buscar estados mentales más tranquilos y trascendentes. Dentro del ámbito moral, esta búsqueda de trascendencia lo lleva a sostener que una vez que reconocemos a cada ser humano como una mera instancia y aspecto del único acto de Voluntad que es la humanidad misma, apreciaremos que la diferencia entre el verdugo y el atormentado es ilusoria, y que, de hecho, el mismo ojo de la humanidad mira desde cada persona. Según la verdadera naturaleza de las cosas, cada persona tiene todos los sufrimientos del mundo como propios, porque la misma naturaleza humana interna soporta en última instancia todo el dolor y toda la culpa. Así, con la conciencia de la humanidad en mente, una conciencia moral se daría cuenta de que tiene sobre sí misma y dentro de sí misma los pecados del mundo entero (WWR, Secciones 63 y 64). Cabe señalar que tal conciencia también soportaría todas las alegrías, triunfos y placeres de la humanidad, pero Schopenhauer no desarrolla esta idea.</p>
+                    <p>No solo, entonces, la aplicación específica del <span class="highlight">principio de razón suficiente</span> fragmenta el mundo en un conjunto de individuos dispersos a través del espacio y el tiempo con el propósito de obtener conocimiento científico, este principio racionalista genera la ilusión de que cuando una persona hace daño a otra, estas dos personas son individuos esencialmente separados y privados. Así como la fragmentación del mundo en individuos es necesaria para aplicar la relación de causalidad, donde A causa B y donde A y B se conciben como dos objetos independientes, esta misma fragmentación cognitiva nos lleva a concebir las relaciones entre personas según un modelo en el que una persona P actúa sobre la persona Q, donde P y Q se conciben como dos individuos independientes. Las condiciones para el conocimiento científico tienen, por lo tanto, un impacto moral negativo, porque nos llevan a considerarnos mutuamente como individuos separados y ajenos entre sí.</p>
+                    <p>Al reconocer compasivamente a un nivel más universal que la naturaleza interna de otra persona es de la misma sustancia metafísica que uno mismo, se llega a una perspectiva moral con una conciencia filosófica más concreta. Esta forma compasiva de aprehender a otra persona no es simplemente comprender abstractamente la proposición de que "cada persona es un ser humano", o comprender abstractamente (como lo haría Kant) que, en principio, las mismas regulaciones de la racionalidad operan por igual en cada uno de nosotros y nos obligan en consecuencia como iguales. Es sentir directamente la vida de otra persona de una manera casi mágica; es entrar en la vida de la humanidad imaginativamente, hasta coincidir con todos los demás tanto como sea posible. Es imaginar por igual, y con toda su fuerza, <span class="highlight">cómo es</span> ser tanto un cruel verdugo como una víctima atormentada, y ubicar ambas experiencias y caracteres opuestos dentro de una única conciencia universal que es la conciencia de la humanidad misma. Con el desarrollo de la conciencia moral, la conciencia de uno se expande hacia la conciencia mezclada, tensa, agridulce, tragicómica, multi-aspectual y distintivamente sublime de la humanidad misma.</p>
+                    <p><span class="highlight">Edmund Burke</span> (1729–1797) caracterizó lo <span class="highlight">sublime</span> como un sentimiento de tranquilidad teñido de terror, y la conciencia moral de Schopenhauer encaja en esta descripción. Así como la música encarna las tensiones emocionales dentro del mundo de una manera abstracta y distanciada, y así proporciona una medida de tranquilidad al presentar una imagen sonora suavizada del mundo diario de conflicto perpetuo, una medida de tranquilidad también acompaña a la conciencia moral. Al alcanzar la conciencia universal de la humanidad que trasciende las determinaciones espaciales y temporales, los deseos que derivan su significado de la condición personal de uno como individuo espacio-temporal se ven como lo que son, como basados en la ilusión de fragmentación, y de ese modo pierden gran parte de su fuerza coercitiva. A este respecto, la conciencia moral se convierte en el “apaciguador” de la voluntad, a pesar de su reconocimiento en primera persona del tormento humano. Obras de arte que retratan este tipo de conciencia sublime incluirían el <span class="highlight">Laocoonte</span> (c. 25 a. C.) y la pintura de <span class="highlight">Hieronymous Bosch</span>, <span class="highlight">Cristo llevando la cruz</span> (c. 1515).</p>
+                    <p>Considerada negativamente, la conciencia moral nos libera de la sed insaciable que es la vida humana individuada, junto con la incesante oscilación entre el dolor y el aburrimiento. Considerada positivamente, la conciencia moral genera una medida de sabiduría, ya que la perspectiva de uno se vuelve similar a una novela universal que contiene las plantillas para todas las historias humanas que se han estado repitiendo generación tras generación –historias cómicas y trágicas, patéticas y triunfantes, y triviales y monumentales. Uno se vuelve como el árbol inquebrantable, cuyas generaciones de hojas caen con cada estación que pasa, al igual que generación tras generación de personas (Homero, <span class="highlight">Ilíada</span>, Libro VI).</p>
+                    <p>Schopenhauer sostiene de manera similar en su “Ensayo sobre la libertad de la voluntad” (1839) que todo lo que sucede, sucede necesariamente. Habiendo aceptado la opinión de Kant de que las relaciones de causa y efecto se extienden por todo el mundo de la experiencia, cree que cada acto individual está determinado por causas o motivos previos. Esta realización fatalista es una fuente de consuelo y tranquilidad para Schopenhauer, porque al darse cuenta de que no se puede hacer nada para alterar el curso de los acontecimientos, descubre que la lucha por cambiar el mundo pierde rápidamente su fuerza (véase también WWR, Sección 56).</p>
+                    <p>Schopenhauer niega la concepción común de que ser libre implica que, en cualquier situación en la que actuamos, siempre podríamos haber actuado de manera diferente. Sin embargo, complementa esta negación con la afirmación de que cada uno de nosotros es libre en un sentido más básico. Señalando que tenemos “una certeza inquebrantable de que somos los autores de nuestras acciones” (“Ensayo sobre la libertad de la voluntad”, Conclusión), sostiene que nuestro sentido de responsabilidad revela un carácter innato que es autodeterminante e independiente de la experiencia. Así como los árboles y las flores individuales son las expresiones multifacéticas de las Ideas Platónicas de árbol y flor, cada una de nuestras acciones individuales es la manifestación espacio-temporal de nuestro respectivo <span class="highlight">carácter innato o inteligible</span>.</p>
+                    <p>El carácter inteligible de una persona es un acto atemporal de Voluntad que la persona es esencialmente, y puede concebirse como el aspecto subjetivo de la Idea Platónica que definiría objetivamente la esencia interna de la persona (WWR, Sección 28), como podría percibirlo un retratista. Este concepto del carácter inteligible es kantiano (<span class="highlight">Crítica de la razón pura</span>, A539/B567), y en conjunción con el concepto correlacionado de Kant de un carácter empírico (es decir, el carácter inteligible tal como se expresa experiencialmente) Schopenhauer lo considera un medio para resolver el problema de la libertad y el determinismo, y una de las ideas más profundas de la filosofía de Kant.</p>
+                    <p>Desde el punto de vista de la influencia filosófica posterior, la discusión de Schopenhauer sobre el carácter inteligible resuena con la exhortación de <span class="highlight">Friedrich Nietzsche</span> a “llegar a ser lo que uno es” (Ecce Homo, “Por qué soy tan inteligente”, Sección 9). Schopenhauer cree que a medida que aprendemos más sobre nosotros mismos, podemos manifestar nuestro carácter inteligible de manera más efectiva y podemos desempeñar nuestro papel designado “artística y metódicamente, con firmeza y gracia.” Con el autoconocimiento, podemos transformar nuestras vidas en obras de arte, como Nietzsche prescribió más tarde.</p>
+                    <p>El desarrollo del carácter implica así expandir el conocimiento de nuestras tendencias individuales innatas, y un efecto principal de este conocimiento y autorrealización es una mayor paz mental (WWR, Sección 55). Además, dado que nuestro carácter inteligible es tanto subjetivo como universal, su estatus se coordina con el de la música, el arte más elevado. Esta asociación con la música –como probablemente observó Nietzsche– revela un vínculo sistemático entre la estética de Schopenhauer y su teoría moral, y puede explicar la referencia de Schopenhauer a la aparición de agradables cualidades estéticas y artísticas, si no musicales, en relación con la expresión de nuestro carácter adquirido.</p>
+
+                    <h3>5.3 Ascetismo y la Negación de la Voluntad de Vivir</h3>
+                    <p>Según Schopenhauer, la percepción estética ofrece solo una trascendencia de corta duración del mundo diario. La conciencia moral tampoco es el estado mental último, a pesar de su tranquilidad comparativa en contraste con el mundo diario de violencia. Schopenhauer cree que una persona que experimenta la verdad de la naturaleza humana desde una perspectiva moral –que aprecia cómo las formas espaciales y temporales del conocimiento generan un constante perecer, sufrimiento continuo, vano esfuerzo y tensión interna– se sentirá tan repelida por la condición humana y por la Voluntad que se esfuerza sin sentido de la cual es una manifestación, que perderá el deseo de afirmar la situación humana objetivada en cualquiera de sus manifestaciones. El resultado es una actitud de negación hacia nuestra <span class="highlight">voluntad de vivir</span> que Schopenhauer identifica con una actitud ascética de renuncia, resignación y falta de voluntad, pero también con compostura y tranquilidad. De una manera que recuerda al <span class="highlight">budismo</span> tradicional, reconoce que la vida está llena de frustraciones inevitables y reconoce que el sufrimiento causado por esta frustración puede reducirse minimizando los deseos. La conciencia moral y la virtud dan paso así a la pobreza voluntaria y la castidad del asceta. <span class="highlight">San Francisco de Asís</span> (WWR, Sección 68) y <span class="highlight">Jesús</span> (WWR, Sección 70) emergen posteriormente como prototipos de Schopenhauer para el estilo de vida más iluminado, junto con los ascetas de cada tradición religiosa.</p>
+                    <p>Este énfasis en la conciencia ascética y su desapego y tranquilidad asociados introduce cierta paradoja en la perspectiva de Schopenhauer, ya que admite que la negación de nuestra voluntad de vivir implica una terrible lucha con las energías instintivas, ya que evitamos las tentaciones de los placeres corporales y resistimos la mera fuerza animal para perdurar, reproducirnos y florecer. Antes de que podamos entrar en la conciencia trascendente de la tranquilidad celestial, debemos pasar por los fuegos del infierno y experimentar una noche oscura del alma, mientras nuestro yo universal lucha contra nuestro yo individualizado y físico, mientras el conocimiento puro se opone a la voluntad animalista, y mientras la libertad lucha contra la naturaleza.</p>
+                    <p>Se puede sostener superficialmente que no hay contradicción en el acto de querer negar la voluntad de vivir, porque no se está diciendo que la Voluntad se esté destruyendo de alguna manera, sino solo que una manifestación más universal de la Voluntad está dominando una manifestación menos universal, a saber, el aspecto natural, individuado y físicamente encarnado. Dentro de esta oposición, sí persiste que la Voluntad en su conjunto se opone a sí misma según el mismo modelo que Schopenhauer intenta trascender, a saber, el modelo en el que una manifestación de la Voluntad lucha contra otra manifestación, como la hormiga bulldog dividida. Esto en sí mismo puede no ser un problema, pero la ubicación de la conciencia ascética atormentada y autocrucificante en el nivel penúltimo de la iluminación es paradójica, debido a su alto grado de ferocidad interna. Aunque esta ferocidad ocurre a un nivel reflexivo e introspectivo, tenemos ante nosotros una lucha espiritualizada a vida o muerte dentro de la conciencia ascética.</p>
+                    <p>A pesar de esta peculiaridad, la lucha del asceta no es otra cosa que una lucha suprema contra la naturaleza humana. Es una lucha contra la tendencia casi inevitable a aplicar el principio de razón suficiente con el propósito de obtener conocimiento práctico –una aplicación que para Schopenhauer tiene el efecto secundario repulsivo de crear la ilusión, o pesadilla, de un mundo permeado de conflicto interminable. Desde un ángulo relacionado, la lucha del asceta es contra las fuerzas de la violencia y el mal, que, debido a la aceptación e interpretación de la epistemología de Kant por parte de Schopenhauer, sitúa estas fuerzas significativamente dentro de la propia naturaleza humana. Cuando el asceta trasciende la naturaleza humana, el asceta resuelve el problema del mal: al eliminar la conciencia humana individuada e individualizadora de la escena, se elimina toda la situación espacio-temporal dentro de la cual ocurre la violencia diaria.</p>
+                    <p>De alguna manera, entonces, se puede decir simbólicamente que la conciencia ascética devuelve a Adán y Eva al Paraíso, porque es la misma búsqueda de conocimiento (es decir, la voluntad de aplicar el principio de individuación a la experiencia) lo que el asceta supera. Esto equivale a una superación de sí mismo a nivel universal, donde no solo se superan los deseos físicos, sino también las disposiciones epistemológicas inherentes al ser humano.</p>
+                </section>
+
+                <section id="obras-posteriores" class="glassmorphism" data-animate>
+                    <h2>6. Obras Posteriores</h2>
+                    <p>Al final del primer volumen de <span class="highlight">El mundo como voluntad y representación</span> (1818), Schopenhauer insinúa que el asceta experimenta un estado místico de conciencia inescrutable que no se parece en nada desde el punto de vista de la conciencia ordinaria, cotidiana, individuada y objetivadora. Por el contrario, añade que desde el punto de vista de la conciencia mística del asceta, donde solo el conocimiento permanece y donde “la voluntad [de vivir] ha desaparecido,” el propio mundo físico, con todos sus soles y galaxias “es – nada,” comparando esta conciencia con “la Prajna-Paramita de los budistas” (WWR, Sección 71) para concluir el libro. También afirma en la misma sección que esta conciencia mística tiene una calma, tranquilidad, confianza y serenidad similares a las del océano, añadiendo que si se buscara una caracterización positiva del estado místico, podríamos referirnos libremente a palabras y frases como “éxtasis,” “arrobamiento,” “iluminación” y “unión con Dios.” Schopenhauer reconoce un contenido positivo en la experiencia mística del asceta, pero considera que la experiencia es inefable.</p>
+                    <p>Esta defensa de la experiencia mística crea un enigma: si <span class="highlight">todo</span> es Voluntad sin calificación, entonces no está claro dónde ubicar el estado místico sin voluntad. Según el esquema filosófico de tres niveles de Schopenhauer, que ahora se está cuestionando, debe ubicarse en el nivel de la Voluntad tal como es en sí misma, o en el nivel de las Ideas Platónicas, o en el nivel de las cosas individuales en el espacio y el tiempo. No puede ser este último, porque la conciencia individuada es la conciencia cotidiana del deseo, la frustración y el sufrimiento. Tampoco puede ubicarse en el nivel de la Voluntad tal como es en sí misma, porque la Voluntad es un esfuerzo ciego, sin conocimiento y sin satisfacción.</p>
+                    <p>La conciencia ascética podría ubicarse de manera más plausible en el nivel de la distinción universal sujeto-objeto, similar a la conciencia llena de música, pero Schopenhauer afirma que la conciencia mística abole no solo el tiempo y el espacio, sino también las formas fundamentales de sujeto y objeto: “sin voluntad: sin representación, sin mundo” (WWR, Sección 71). Así que, en términos de su grado de generalidad, el estado mental místico parece ubicarse en un nivel de universalidad comparable al de la Voluntad como cosa en sí. Sin embargo, dado que lo caracteriza como no ser una manifestación de la Voluntad, parece estar conectado a otra dimensión por completo, en total desconexión de la Voluntad como la cosa en sí. Esto quiere decir que si la cosa en sí es exactamente congruente con la Voluntad, entonces es difícil aceptar las caracterizaciones místicas de la conciencia ascética por parte de Schopenhauer, y al mismo tiempo identificar un lugar consistente para ella dentro del esquema filosófico de tres niveles de la realidad de Schopenhauer.</p>
+                    <p>La posición de Schopenhauer sobre si la cosa en sí es Voluntad presenta, en consecuencia, algunas dificultades interpretativas. En <span class="highlight">Sobre la voluntad en la naturaleza</span> (1836/1854), casi siempre habla como si las dos fueran idénticas. En el segundo volumen de <span class="highlight">El mundo como voluntad y representación</span> (1844), aborda la complicación anterior y matiza su afirmación de que la cosa en sí es Voluntad. Afirma en la obra de 1844 (recitando notas manuscritas de 1821 casi textualmente, por lo que esta no es una opinión “de 1844” o “posterior”) que solo “para nosotros” la cosa en sí aparece como Voluntad y que sigue siendo posible que la cosa en sí tenga otros modos de ser que son incomprensibles en términos ordinarios, pero que podrían ser accesibles a la conciencia mística (WWR, II, Capítulo XVIII, “Sobre la posibilidad de conocer la cosa en sí”). Concluye que la experiencia mística es solo una nada relativa, es decir, cuando se considera desde el punto de vista del mundo diario, pero que no es una nada absoluta, como sería el caso si la cosa en sí fuera Voluntad en un sentido incondicional, y no meramente Voluntad para nosotros.</p>
+                    <p>A la luz de esto, Schopenhauer a veces expresa la opinión de que la cosa en sí es multidimensional, y aunque la cosa en sí no es totalmente idéntica al mundo como Voluntad, no obstante incluye como sus manifestaciones, el mundo como Voluntad y el mundo como representación. Esto le da una estructura <span class="highlight">panenteísta</span> a la visión de Schopenhauer (señalada anteriormente en las opiniones de <span class="highlight">K.C.F. Krause</span>). Desde un punto de vista académico, implica que las interpretaciones de Schopenhauer que lo retratan como un kantiano que cree que el conocimiento de la cosa en sí es imposible, no encajan con lo que el propio Schopenhauer creía. También implica que las interpretaciones que lo retratan como un metafísico tradicional que afirma que la cosa en sí es directa, total e incondicionalmente Voluntad, también necesitan ser matizadas.</p>
+                </section>
+
+                <section id="reflexiones-criticas" class="glassmorphism" data-animate>
+                    <h2>7. Reflexiones Críticas</h2>
+                    <p>La afirmación intermitente de Schopenhauer de que la Voluntad es la cosa en sí <span class="highlight">solo para nosotros</span>, le proporciona espacio filosófico para afirmar consistentemente que la experiencia mística proporciona una visión positiva. También relativiza a la condición humana la posición de Schopenhauer de que el mundo es Voluntad. Esto implica que su perspectiva sobre la vida diaria como un mundo cruel y lleno de violencia –un mundo generado por la aplicación del <span class="highlight">principio de razón suficiente</span>– se basa en una intuición condicionada por el ser humano, a saber, el conocimiento directo y doble del propio cuerpo como sujeto y objeto. Así, en este sentido, la visión pesimista del mundo de Schopenhauer puede verse a sí misma fundamentada en la distinción sujeto-objeto, es decir, la raíz general del principio de razón suficiente. Como se mencionó anteriormente, podemos ver esta dependencia fundamental de la distinción sujeto-objeto reflejada en el propio título de su libro, <span class="highlight">El mundo como voluntad y representación</span>, que puede leerse, en efecto, como <span class="highlight">El mundo aprehendido subjetiva y objetivamente</span>.</p>
+                    <p>Esta observación no hace que (dentro de los parámetros de su perspectiva) el escenario mundial despiadadamente competitivo de Schopenhauer sea típicamente menos evitable, pero sí lleva a uno a entender la visión pesimista de Schopenhauer del mundo-como-Voluntad, como una perspectiva menos derivada de un punto de vista absoluto que trasciende la naturaleza humana –aunque él habla con frecuencia de esta manera absolutista– y más como una perspectiva expresiva de la naturaleza humana en su esfuerzo por lograr la comprensión filosófica. Debido a su dependencia fundamental de la distinción sujeto-objeto, la descripción clásica de Schopenhauer del mundo diario como la objetivación de la Voluntad, es comprensible no solo como una teoría metafísica tradicional que pretende describir la verdad incondicional. Puede entenderse alternativamente como una expresión de la perspectiva humana sobre el mundo que, como individuos encarnados, normalmente no podemos evitar. Este enfoque moderado, sin embargo, nos deja con la pregunta decisiva de por qué el mundo parecería ser tan violento, si el núcleo del universo no es completamente “Voluntad,” sino también algo misterioso más allá de esto. Porque si la Voluntad es solo una de un número incalculable de dimensiones del universo, no habría razón para esperar que los efectos individualizadores del principio de razón suficiente generaran un mundo que se devora a sí mismo de la manera que describe Schopenhauer.</p>
+                </section>
+
+                <section id="influencia" class="glassmorphism" data-animate>
+                    <h2>8. Influencia de Schopenhauer</h2>
+                    <p>La filosofía de Schopenhauer ha sido ampliamente influyente, en parte porque su perspectiva reconoce los valores morales tradicionales sin necesidad de postular la existencia de Dios. Su visión también permite la posibilidad de un conocimiento absoluto por medio de la experiencia mística. Schopenhauer también desafía implícitamente la hegemonía de la ciencia y otros modos de expresión literalistas, sustituyéndolos por estilos de comprensión más musicales y literarios. Su reconocimiento –al menos con respecto a una perspectiva que normalmente no podemos evitar– de que el universo parece ser un lugar fundamentalmente irracional, también fue atractivo para los pensadores del siglo XX que entendían las fuerzas instintivas como fuerzas irracionales, pero guía, subyacentes al comportamiento humano.</p>
+                    <p>La influencia de Schopenhauer ha sido fuerte entre figuras literarias, que incluyen poetas, dramaturgos, ensayistas, novelistas e historiadores como <span class="highlight">Charles Baudelaire</span>, <span class="highlight">Samuel Beckett</span>, <span class="highlight">Thomas Bernhard</span>, <span class="highlight">Jorge Luis Borges</span>, <span class="highlight">Jacob Burckhardt</span>, <span class="highlight">Joseph Conrad</span>, <span class="highlight">André Gide</span>, <span class="highlight">George Gissing</span>, <span class="highlight">Franz Grillparzer</span>, <span class="highlight">Thomas Hardy</span>, <span class="highlight">Gerhardt Hauptmann</span>, <span class="highlight">Friedrich Hebbel</span>, <span class="highlight">Hugo von Hofmannsthal</span>, <span class="highlight">Joris Karl Huysmans</span>, <span class="highlight">Ernst Jünger</span>, <span class="highlight">Karl Kraus</span>, <span class="highlight">D. H. Lawrence</span>, <span class="highlight">Joaquim Maria Machado de Assis</span>, <span class="highlight">Stephane Mallarmé</span>, <span class="highlight">Thomas Mann</span>, <span class="highlight">Guy de Maupassant</span>, <span class="highlight">Herman Melville</span>, <span class="highlight">Robert Musil</span>, <span class="highlight">Edgar Allan Poe</span>, <span class="highlight">Marcel Proust</span>, <span class="highlight">Arno Schmidt</span>, <span class="highlight">August Strindberg</span>, <span class="highlight">Italo Svevo</span>, <span class="highlight">Leo Tolstoy</span>, <span class="highlight">Ivan Turgenev</span>, <span class="highlight">Frank Wedekind</span>, <span class="highlight">W. B. Yeats</span> y <span class="highlight">Emile Zola</span>. En general, estos autores se inspiraron en el sentido de la absurdidad del mundo de Schopenhauer, ya sea considerado de una manera más nihilista y sombría, o de una manera más alegre, absurda y cómica.</p>
+                    <p>Entre los filósofos, se puede citar a <span class="highlight">Henri Bergson</span>, <span class="highlight">Julius Bahnsen</span>, <span class="highlight">Eduard von Hartmann</span>, <span class="highlight">Suzanne Langer</span>, <span class="highlight">Philipp Mainländer</span>, <span class="highlight">Hans Vaihinger</span> y <span class="highlight">Friedrich Nietzsche</span>, donde cada uno tendió a centrarse en aspectos seleccionados de la filosofía de Schopenhauer, como sus puntos de vista sobre el significado de la vida, su teoría de la voluntad no racional, su teoría de la música o su kantianismo. En la medida en que influyó en Nietzsche, quien subordinó la ciencia al arte, el desafío del siglo XX de la filosofía continental a los estilos puramente literalistas de filosofía a través de Nietzsche es anticipado por la visión de Schopenhauer de que la música expresa la verdad metafísica más directamente que la filosofía tradicional.</p>
+                    <p>La teoría musical de Schopenhauer, junto con su énfasis en el genio artístico y el mundo como sufrimiento, también influyó en compositores como <span class="highlight">Johannes Brahms</span>, <span class="highlight">Antonín Dvorák</span>, <span class="highlight">Gustav Mahler</span>, <span class="highlight">Hans Pfitzner</span>, <span class="highlight">Sergei Prokofiev</span>, <span class="highlight">Nikolay Rimsky-Korsakoff</span>, <span class="highlight">Arnold Schönberg</span> y <span class="highlight">Richard Wagner</span>. En la medida en que influyó en Wagner, quien es el padre de la música del siglo XX escrita para acompañar y realzar las películas, la teoría de la música de Schopenhauer como expresión de un flujo continuo de emoción se encuentra significativamente detrás de la experiencia contemporánea de la música en los medios artísticos y de comunicación.</p>
+                    <p>El perfil histórico de Schopenhauer en el siglo XIX se ve frecuentemente oscurecido por las sombras de Kant, Hegel, Marx, Mill, Darwin y Nietzsche, pero más de lo que suele reconocerse, en su rechazo de las concepciones racionalistas del mundo ya en 1818, percibió la forma de las cosas por venir. La risa hueca y nihilista expresada por el movimiento Dadá a principios de siglo en medio de la Primera Guerra Mundial, reitera sentimientos que la filosofía de Schopenhauer había encarnado casi un siglo antes. Las ideas de Schopenhauer sobre la importancia de los impulsos instintivos en el núcleo de la vida diaria también reaparecieron en el pensamiento psicoanalítico de <span class="highlight">Freud</span> que inspiró el surrealismo, y su convicción de que la historia humana no va a ninguna parte, se convirtió en notas clave dentro de la filosofía francesa del siglo XX, después de que dos Guerras Mundiales frenaran las anticipaciones del siglo XIX de progreso continuo que habían capturado los corazones de pensadores como Hegel y Marx.</p>
+                </section>
+
+                <section id="bibliografia" class="glassmorphism" data-animate>
+                    <h2>Bibliografía</h2>
+                    <p>La obra de Schopenhauer incluye títulos fundamentales como <span class="highlight">Sobre la cuádruple raíz del principio de razón suficiente</span> (1813), <span class="highlight">El mundo como voluntad y representación</span> (1819, con ediciones revisadas en 1844 y 1859), <span class="highlight">Sobre la voluntad en la naturaleza</span> (1836), y <span class="highlight">Los dos problemas fundamentales de la ética</span> (1841). Existen numerosas traducciones al inglés y una vasta bibliografía crítica y biográfica que profundiza en su pensamiento y su impacto.</p>
+                    <h3>A. Obras de Schopenhauer</h3>
+                    <ul>
+                        <li>1813: <span class="highlight">Über die vierfache Wurzel des Satzes vom zureichenden Grunde</span> (Sobre la cuádruple raíz del principio de razón suficiente).</li>
+                        <li>1816: <span class="highlight">Über das Sehn und die Farben</span> (Sobre la visión y los colores).</li>
+                        <li>1819 [1818]: <span class="highlight">Die Welt als Wille und Vorstellung</span> (El mundo como voluntad y representación) [primera edición, un volumen].</li>
+                        <li>1836: <span class="highlight">Über den Willen in der Natur</span> (Sobre la voluntad en la naturaleza).</li>
+                        <li>1839: “<span class="highlight">Über die Freiheit des menschlichen Willens</span>” (“Sobre la libertad de la voluntad humana”).</li>
+                        <li>1840: “<span class="highlight">Über die Grundlage der Moral</span>” (“Sobre el fundamento de la moral”).</li>
+                        <li>1841 [1840]: <span class="highlight">Die beiden Grundprobleme der Ethik</span> (Los dos problemas fundamentales de la ética) [publicación conjunta de los ensayos de 1839 y 1840 en formato de libro].</li>
+                        <li>1844: <span class="highlight">Die Welt als Wille und Vorstellung</span> (El mundo como voluntad y representación) [segunda edición, dos volúmenes].</li>
+                        <li>1847: <span class="highlight">Über die vierfache Wurzel des Satzes vom zureichenden Grunde</span> (Sobre la cuádruple raíz del principio de razón suficiente) [segunda edición, revisada].</li>
+                        <li>1851: <span class="highlight">Parerga und Paralipomena</span>.</li>
+                        <li>1859: <span class="highlight">Die Welt als Wille und Vorstellung</span> (El mundo como voluntad y representación) [tercera edición, dos volúmenes].</li>
+                    </ul>
+                    <h3>B. Traducciones al inglés de <span class="highlight">Die Welt als Wille und Vorstellung</span></h3>
+                    <ul>
+                        <li>1883: <span class="highlight">The World as Will and Idea</span>, 3 Vols., translated by R. B. Haldane and J. Kemp, London: Routledge and Kegan Paul Ltd.</li>
+                        <li>1958: <span class="highlight">The World as Will and Representation</span>, Vols. I and II, translated by E. F. J. Payne, New York: Dover Publications (1969).</li>
+                        <li>2007: <span class="highlight">The World as Will and Presentation</span>, Vol. I, translated by Richard Aquila in collaboration with David Carus, New York: Longman.</li>
+                        <li>2010: <span class="highlight">The World as Will and Presentation</span>, Vol. I, translated by David Carus and Richard Aquila, New York: Longman.</li>
+                        <li>2010: <span class="highlight">The World as Will and Representation</span>, Vol. I, translated by Judith Norman, Alistair Welchman, and Christopher Janaway, Cambridge: Cambridge University Press.</li>
+                        <li>2018: <span class="highlight">The World as Will and Representation</span>, Vol. II, translated by Judith Norman, Alistair Welchman, and Christopher Janaway, Cambridge: Cambridge University Press.</li>
+                    </ul>
+                    <h3>C. Obras sobre Schopenhauer</h3>
+                    <ul>
+                        <li>App, U., 2014, <span class="highlight">Schopenhauer’s Compass: An Introduction to Schopenhauer’s Philosophy and its Origins</span>, Wil: UniversityMedia.</li>
+                        <li>Atwell, J., 1990, <span class="highlight">Schopenhauer: The Human Character</span>, Philadelphia: Temple University Press.</li>
+                        <li>–––, 1995, <span class="highlight">Schopenhauer on the Character of the World</span>, Berkeley: University of California Press.</li>
+                        <li>Barron, A., 2017, <span class="highlight">Against Reason: Schopenhauer, Beckett and the Aesthetics of Irreducibility</span>, Stuttgart and Hanover: Ibidem Press.</li>
+                        <li>Barua, A., M. Gerhard, and M. Kossler (eds.), 2013, <span class="highlight">Understanding Schopenhauer Through the Prism of Indian Culture</span>, Berlin: deGruyter.</li>
+                        <li>Barua, A. (ed.), 2008, <span class="highlight">Schopenhauer and Indian Philosophy: A Dialogue Between Indian and Germany</span>, New Delhi: Northern Book Centre.</li>
+                        <li>–––, 2017, <span class="highlight">Schopenhauer on Self, World and Morality: Vedantic and Non-Vedantic Perspectives</span>, Berlin: Springer.</li>
+                        <li>Beiser, F., 2018, <span class="highlight">Weltschmerz: Pessimism in German Philosophy, 1860–1900</span>, Oxford: Oxford University Press.</li>
+                        <li>Berger, D.L., 2004, <span class="highlight">The Veil of Maya: Schopenhauer’s System and Early Indian Thought</span>, Binghamton, New York: Global Academic Publishing.</li>
+                        <li>Brener, M., 2014, <span class="highlight">Schopenhauer and Wagner: A Closer Look</span>, Bloomington, Xlibris.</li>
+                        <li>Cartwright, D., 2005, <span class="highlight">Historical Dictionary of Schopenhauer’s Philosophy</span>, Lanham, Maryland, Toronto, Oxford: The Scarecrow Press, Inc.</li>
+                        <li>Copleston, F., 1975 [1946], <span class="highlight">Arthur Schopenhauer: Philosopher of Pessimism</span>, London: Barnes and Noble.</li>
+                        <li>Farrelly, D. (ed. and trans.), 2015, <span class="highlight">Arthur Schopenhauer: New Material by Him and about Him by Dr. David Asher</span>, Cambridge: Cambridge Scholars Publishing.</li>
+                        <li>Fox, M. (ed.), 1980, <span class="highlight">Schopenhauer: His Philosophical Achievement</span>, Brighton: Harvester Press.</li>
+                        <li>Gardiner, P., 1967, <span class="highlight">Schopenhauer</span>, Middlesex: Penguin Books.</li>
+                        <li>Hamlyn, D. W., 1980, <span class="highlight">Schopenhauer</span>, London: Routledge & Kegan Paul.</li>
+                        <li>Head, J., and D. Vanden Auweele, 2017, <span class="highlight">Schopenhauer’s Fourfold Root</span>, New York and London: Routledge</li>
+                        <li>Houellebecq, M., 2020, <span class="highlight">In the Presence of Schopenhauer</span>, Cambridge: Polity.</li>
+                        <li>Hübscher, A., 1989, <span class="highlight">The Philosophy of Schopenhauer in its Intellectual Context: Thinker Against the Tide</span>, trans. Joachim T. Baer and David E. Humphrey, Lewiston, N.Y.: Edwin Mellen Press.</li>
+                        <li>Jacquette, D. (ed.),1996, <span class="highlight">Schopenhauer, Philosophy and the Arts</span>, Cambridge: Cambridge University Press .</li>
+                        <li>Jacquette, D., 2005, <span class="highlight">The Philosophy of Schopenhauer</span>, Chesham, UK: Acumen.</li>
+                        <li>Janaway, C., 1994, <span class="highlight">Schopenhauer</span>, Oxford: Oxford University Press.</li>
+                        <li>–––, 1989, <span class="highlight">Self and World in Schopenhauer’s Philosophy</span>, Oxford: Clarendon Press.</li>
+                        <li>Janaway, C. (ed.), 1998, <span class="highlight">Willing and Nothingness: Schopenhauer as Nietzsche’s Educator</span>, Oxford: Clarendon Press.</li>
+                        <li>–––, 1999, <span class="highlight">The Cambridge Companion to Schopenhauer</span>, Cambridge: Cambridge University Press.</li>
+                        <li>Jordan, N., 2010, <span class="highlight">Schopenhauer’s Ethics of Patience: Virtue, Salvation and Value</span>, Lewiston, N.Y.: Edwin Mellen Press.</li>
+                        <li>Kelly, M., 1910, <span class="highlight">Kant’s Ethics and Schopenhauer’s Criticism</span>, London: Swan Sonnenschein & Co., Ltd.</li>
+                        <li>–––, 1909, <span class="highlight">Kant’s Philosophy as Rectified by Schopenhauer</span>, London: Swan Sonnenschein & Co., Ltd.</li>
+                        <li>Lauxtermann, P.F.H., 2000, <span class="highlight">Schopenhauer’s Broken World View: Colours and Ethics Between Kant and Goethe</span>, Dordrecht: Kluwer Academic Publishers.</li>
+                        <li>Lemanski, J. (ed.), 2020, <span class="highlight">Language, Logic, and Mathematics in Schopenhauer</span>, Berlin: Springer; Cham: Birkhäuser.</li>
+                        <li>Magee, B., 1983, <span class="highlight">The Philosophy of Schopenhauer</span>, Oxford: Clarendon Press.</li>
+                        <li>Mannion, G., 2003, <span class="highlight">Schopenhauer, Religion and Morality: The Humble Path to Ethics</span>, Farnham, UK: Ashgate Publishing.</li>
+                        <li>Marcin, R.B., 2006, <span class="highlight">In Search of Schopenhauer’s Cat: Arthur Schopenhauer’s Quantum-mystical Theory of Justice</span>, Washington, D.C.: The Catholic University of America Press.</li>
+                        <li>Neeley, S.G., 2004, <span class="highlight">Schopenhauer: A Consistent Reading</span>, Lewiston, N.Y.: Edwin Mellen Press.</li>
+                        <li>Neil, A. and Janaway, C. (eds.) 2009, <span class="highlight">Better Consciousness: Schopenhauer’s Philosophy of Value</span>, London: Wiley-Blackwell.</li>
+                        <li>Peters, M., 2009, <span class="highlight">Schopenhauer and Adorno on Bodily Suffering: A Comparative Analysis</span>, London: Palgrave Macmillan.</li>
+                        <li>Ray, M. A., 2003, <span class="highlight">Subjectivity and Irreligion: Atheism and Agnosticism in Kant, Schopenhauer and Nietzsche</span>, London: Routledge.</li>
+                        <li>Ryan, C., 2010, <span class="highlight">Schopenhauer’s Philosophy of Religion: The Death of God and the Oriental Renaissance</span>, Leuven: Peeters.</li>
+                        <li>Schirmacher, W. (ed.), 2008, <span class="highlight">Philosophy of Culture, Schopenhauer and Tradition</span>, New York and Dresden: Atropos Press.</li>
+                        <li>Schulz, O., 2014, <span class="highlight">Schopenhauer’s Critique of Hope</span>, Norderstedt: Books on Demand.</li>
+                        <li>Shapshay, S. (ed.), 2018, <span class="highlight">The Palgrave Schopenhauer Handbook</span>, London: Palgrave Macmillan.</li>
+                        <li>Shapshay, S., 2019, <span class="highlight">Reconstructing Schopenhauer’s Ethics: Hope, Compassion, and Animal Welfare</span>, Oxford: Oxford University Press.</li>
+                        <li>Simmel, G., 1986 [1907], <span class="highlight">Schopenhauer and Nietzsche</span>, trans. Helmut Loiskandl, Deena Weinstein, and Michael Weinstein, Amherst: University of Massachusetts Press.</li>
+                        <li>Stelling, P., 2020, <span class="highlight">Philosophical Perspectives on Suicide: Kant, Schopenhauer, Nietzsche, and Wittgenstein</span>, London: Palgrave Macmillan.</li>
+                        <li>Tsanoff, R.A., 1911, <span class="highlight">Schopenhauer’s Criticism of Kant’s Theory of Experience</span>, New York: Longmans, Green.</li>
+                        <li>Vasalou, S., 2016, <span class="highlight">Schopenhauer and the Aesthetic Standpoint</span>, Cambridge: Cambridge University Press.</li>
+                        <li>Vanden Auweele, D., 2017, <span class="highlight">The Kantian Foundation of Schopenhauer’s Pessimism</span>, London: Routledge.</li>
+                        <li>Vandenabeele, B., 2015, <span class="highlight">The Sublime in Schopenhauer’s Philosophy</span>, London: Palgrave Macmillan.</li>
+                        <li>von der Luft, E. (ed.), 1988, <span class="highlight">Schopenhauer: New Essays in Honor of His 200th Birthday</span>, Lewiston, N.Y.: Edwin Mellen Press.</li>
+                        <li>Walker, M., 2011, <span class="highlight">Kant, Schopenhauer and Morality: Recovering the Categorical Imperative</span>, London: Palgrave Macmillan.</li>
+                        <li>White, F.C., 1992, <span class="highlight">On Schopenhauer’s Fourfold Root of the Principle of Sufficient Reason</span>, Leiden: E.J. Brill.</li>
+                        <li>White, F.C. (ed.), 1997, <span class="highlight">Schopenhauer’s Early Fourfold Root: Translation and Commentary</span>, Aldershot: Avebury, Ashgate Publishing, Ltd.</li>
+                        <li>Wicks, R. (ed.), 2020, <span class="highlight">The Oxford Handbook of Schopenhauer</span>, Oxford: Oxford University Press.</li>
+                        <li>Wicks, R., 2008, <span class="highlight">Schopenhauer</span>, Oxford: Blackwell.</li>
+                        <li>–––, 2011, <span class="highlight">Schopenhauer’s The World as Will and Representation: A Reader’s Guide</span>, London: Continuum.</li>
+                        <li>Young, J., 1987, <span class="highlight">Willing and Unwilling: A Study in the Philosophy of Arthur Schopenhauer</span>, Dordrecht: Martinus Nijhof.</li>
+                        <li>–––, 2005, <span class="highlight">Schopenhauer</span>, London & New York: Routledge.</li>
+                    </ul>
+                    <h3>D. Biografías de Schopenhauer (publicadas en inglés)</h3>
+                    <ul>
+                        <li>Bridgewater, P., 1988, <span class="highlight">Arthur Schopenhauer’s English Schooling</span>, London and New York: Routledge.</li>
+                        <li>Cartwright, D., 2010, <span class="highlight">Schopenhauer: A Biography</span>, Cambridge: Cambridge University Press.</li>
+                        <li>McGill, V. J, 1931, <span class="highlight">Schopenhauer: Pessimist and Pagan</span>, New York: Haskell House Publishers (1971).</li>
+                        <li>Safranski, R., 1989, <span class="highlight">Schopenhauer and the Wild Years of Philosophy</span>, trans. Ewald Osers, London: Weidenfeld and Nicholson.</li>
+                        <li>Wallace, W., 1890, <span class="highlight">Life of Arthur Schopenhauer</span>, London: Walter Scott.</li>
+                        <li>Zimmern, H., 1876, <span class="highlight">Arthur Schopenhauer: His Life and Philosophy</span>, London: Longmans Green & Co.</li>
+                    </ul>
+                </section>
+
+            </main>
+        </div>
+        <footer class="footer" id="contacto">
+            <h2>Contacto</h2>
+            <p>Este espacio es una cartografía personal y una invitación al diálogo.</p>
+            <p style="margin-top:1.5rem; font-size: 0.9em;">"La vida es terriblemente bella cuando los jugadores juegan." | 2025</p>
+        </footer>
+    </div>
+
+    <!-- Botón "Volver Arriba" -->
+    <a href="#inicio" id="back-to-top" class="hidden md:flex flex-col items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" />
+        </svg>
+        <span class="text-xs mt-1">Arriba</span>
+    </a>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Three.js Background
+            if (typeof THREE !== 'undefined') {
+                initThreeJS();
+            } else {
+                console.error("Three.js not loaded");
+            }
+
+            // Setup Navigation and other event listeners
+            setupNavigation();
+            setupScrollAnimations();
+            
+            // Handle window resizing
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    // No hay gráficos D3 en la plantilla base
+                }, 250);
+            });
+
+            // Back to Top Button Logic
+            const backToTopButton = document.getElementById('back-to-top');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) { // Show button after scrolling 300px
+                    backToTopButton.classList.add('show');
+                } else {
+                    backToTopButton.classList.remove('show');
+                }
+            });
+        });
+
+        // --- THREE.JS BACKGROUND ---
+        let scene, camera, renderer, points, lines;
+        
+        function initThreeJS() {
+            try {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+                camera.position.z = 50;
+
+                renderer = new THREE.WebGLRenderer({
+                    canvas: document.getElementById("bg-canvas"),
+                    alpha: true
+                });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+                const pointCount = 250; // Aumentar ligeramente el número de puntos
+                const positions = new Float32Array(pointCount * 3);
+                const pointGeo = new THREE.BufferGeometry();
+                for (let i = 0; i < pointCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 450; // Mayor dispersión
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 450;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 450;
+                }
+                pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+                const pointMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.8, transparent: true, opacity: 0.9 }); // Puntos ligeramente más grandes y opacos
+                points = new THREE.Points(pointGeo, pointMaterial);
+                scene.add(points);
+
+                regenerateLines();
+
+                window.addEventListener("resize", onWindowResize, false);
+                document.addEventListener('mousemove', onMouseMove, false);
+                renderer.domElement.addEventListener('click', onCanvasClick, false);
+                animate();
+            } catch (error) {
+                console.error('Error initializing Three.js:', error);
+            }
+        }
+
+        function onWindowResize() {
+            if(camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+
+        let mouseX = 0, mouseY = 0;
+        function onMouseMove(event) {
+            mouseX = (event.clientX - window.innerWidth / 2) / 100;
+            mouseY = (event.clientY - window.innerHeight / 2) / 100;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if(scene && camera && renderer && points && lines) {
+                points.rotation.y += 0.0007; // Ligeramente más rápido
+                lines.rotation.y += 0.0007; // Ligeramente más rápido
+                camera.position.x += (mouseX - camera.position.x) * 0.03; // Menos reactivo al ratón para suavidad
+                camera.position.y += (-mouseY - camera.position.y) * 0.03;
+                camera.lookAt(scene.position);
+                renderer.render(scene, camera);
+            }
+        }
+
+        function onCanvasClick(event) {
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+            vector.unproject(camera);
+            const dir = vector.sub(camera.position).normalize();
+            const distance = -camera.position.z / dir.z;
+            const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+            addPoint(pos);
+        }
+
+        function addPoint(position) {
+            const oldPositions = points.geometry.attributes.position.array;
+            const newPointCount = oldPositions.length / 3 + 1;
+            const newPositions = new Float32Array(newPointCount * 3);
+            newPositions.set(oldPositions);
+            newPositions[oldPositions.length] = position.x;
+            newPositions[oldPositions.length + 1] = position.y;
+            newPositions[oldPositions.length + 2] = position.z;
+            points.geometry.setAttribute('position', new THREE.BufferAttribute(newPositions, 3));
+            points.geometry.attributes.position.needsUpdate = true;
+            regenerateLines();
+        }
+
+        function regenerateLines() {
+            if (lines) scene.remove(lines);
+            const pointPositions = points.geometry.attributes.position.array;
+            const pointCount = pointPositions.length / 3;
+            const linePositions = [];
+            for (let i = 0; i < pointCount; i++) {
+                for (let j = i + 1; j < pointCount; j++) {
+                    const dx = pointPositions[i * 3] - pointPositions[j * 3];
+                    const dy = pointPositions[i * 3 + 1] - pointPositions[j * 3 + 1];
+                    const dz = pointPositions[i * 3 + 2] - pointPositions[j * 3 + 2];
+                    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    if (dist < 60) { /* Mayor distancia para líneas, más conexiones */
+                        linePositions.push(pointPositions[i * 3], pointPositions[i * 3 + 1], pointPositions[i * 3 + 2]);
+                        linePositions.push(pointPositions[j * 3], pointPositions[j * 3 + 1], pointPositions[j * 3 + 2]);
+                    }
+                }
+            }
+            const lineGeo = new THREE.BufferGeometry();
+            lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.25, transparent: true }); /* Ligeramente menos opaco */
+            lines = new THREE.LineSegments(lineGeo, lineMaterial);
+            scene.add(lines);
+        }
+
+        // --- NAVIGATION SCRIPTS ---
+        function setupNavigation() {
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            const navMenu = document.getElementById('nav-menu');
+
+            menuToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.body.classList.toggle('menu-open');
+            });
+
+            navMenu.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A' && window.innerWidth <= 1024) {
+                   document.body.classList.remove('menu-open');
+                }
+            });
+
+            if (window.matchMedia('(min-width: 1025px)').matches) {
+                const menuItems = document.querySelectorAll('.nav-container > li');
+                menuItems.forEach(item => {
+                    const megaMenu = item.querySelector('.mega-menu');
+                    if (megaMenu) {
+                        let leaveTimeout;
+                        const showMenu = () => {
+                            clearTimeout(leaveTimeout);
+                            document.querySelectorAll('.mega-menu.is-active').forEach(m => {
+                                if (m !== megaMenu) m.classList.remove('is-active');
+                            });
+                            megaMenu.classList.add('is-active');
+                        };
+                        const startHideTimer = () => {
+                            leaveTimeout = setTimeout(() => megaMenu.classList.remove('is-active'), 250);
+                        };
+                        item.addEventListener('mouseenter', showMenu);
+                        item.addEventListener('mouseleave', startHideTimer);
+                    }
+                });
+            }
+        }
+
+        // --- SCROLL ANIMATION ---
+        function setupScrollAnimations() {
+            const animatedSections = document.querySelectorAll('[data-animate]');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        
+                        const elementsToAnimate = entry.target.querySelectorAll('h2, h3, p, .visualization-container, iframe, ul, ol, li, img');
+                        elementsToAnimate.forEach((el, index) => {
+                           el.style.transitionDelay = `${index * 150}ms`;
+                        });
+
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.2 });
+            animatedSections.forEach(section => observer.observe(section));
+        }
+    </script>
+</body>
+</html>
