@@ -1,371 +1,649 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Diagrama de Relaciones Cognitivas 3D - Perfeccionado</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #0A0E1F; /* Fondo aún más oscuro para un efecto cósmico */
-      font-family: 'Arial', sans-serif;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartografía Cognitiva 3D | O.C.V.M.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Three.js y Controles -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <!-- Post-procesamiento -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 
-    /* Estilo para el recuadro de leyenda en la esquina inferior derecha */
-    #legend {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      background: rgba(20, 30, 50, 0.95); /* Fondo futurista semi-transparente */
-      border: 2px solid #00FFEA; /* Borde cian neón */
-      border-radius: 10px;
-      padding: 15px;
-      color: #00FFEA; /* Texto cian neón */
-      font-size: 16px; /* Tamaño más grande para legibilidad */
-      box-shadow: 0 0 15px rgba(0, 255, 234, 0.5); /* Sombra con brillo cian */
-      z-index: 100;
-      transition: transform 0.3s ease, box-shadow 0.3s ease; /* Animación suave */
-    }
+    <style>
+        :root {
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --primary-text: #e5e7eb;
+            --font-main: 'Inter', sans-serif;
+            --nav-height: 70px;
+        }
 
-    #legend:hover {
-      transform: scale(1.05); /* Efecto de escala al pasar el ratón */
-      box-shadow: 0 0 25px rgba(0, 255, 234, 0.8); /* Brillo más intenso */
-    }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            background-color: #000000;
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
+            overflow: hidden; 
+        }
+        
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            cursor: grab;
+        }
+        #bg-canvas:active {
+            cursor: grabbing;
+        }
 
-    #legend div {
-      display: flex;
-      align-items: center;
-      margin: 8px 0;
-    }
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            z-index: 1000; display: flex; justify-content: center; align-items: center;
+            padding: 0 5%; pointer-events: auto;
+        }
 
-    #legend .color-box {
-      width: 24px;
-      height: 24px;
-      margin-right: 12px;
-      border: 2px solid #FFFFFF; /* Borde blanco para los cuadros de color */
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); /* Sombra suave */
-    }
-  </style>
+        .nav-content {
+            display: flex; justify-content: space-between; align-items: center; width: 100%;
+        }
+        
+        .nav-logo a {
+            font-size: 1.3em; font-weight: 700; color: #fff; text-decoration: none;
+            display: flex; align-items: center; gap: 0.75rem;
+        }
+
+        .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
+        nav .nav-container > li { position: relative; height: 100%; display: flex; align-items: center; }
+        nav .nav-container > li > a {
+            color: var(--primary-text); text-decoration: none; font-size: clamp(0.9em, 1.2vw, 1.05em); font-weight: 500;
+            transition: color 0.3s ease; padding: 0 1rem; display: flex; align-items: center; gap: 8px;
+        }
+        nav .nav-container > li > a:hover { color: #FFFFFF; }
+        .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; }
+
+        .mega-menu {
+            position: fixed;
+            top: var(--nav-height);
+            left: 50%;
+            transform: translateX(-50%) scale(0.95);
+            border-radius: 10px; width: auto;
+            min-width: clamp(300px, 80vw, 950px); max-width: 95vw;
+            padding: 2rem; 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem; 
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0.3s;
+            transform-origin: top center;
+        }
+        
+        .mega-menu.is-active { 
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) scale(1);
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0s;
+        }
+        
+        .mega-menu h3 {
+            color: var(--primary); font-size: 1.1em; margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(129, 140, 248, 0.3);
+            padding-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .mega-menu ul { display: flex; flex-direction: column; gap: 0.75rem; list-style: none; }
+        .mega-menu a {
+            font-size: 0.9em; color: var(--primary-text); text-decoration: none;
+            transition: color 0.3s, padding-left 0.3s, background-color 0.3s;
+            padding: 0.5rem 0.75rem; border-radius: 4px;
+            display: block;
+            position: relative;
+        }
+        .mega-menu a:hover { color: #000; background-color: var(--primary); padding-left: 1.5rem; }
+
+        #legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(20, 30, 50, 0.9);
+            border: 1px solid var(--secondary);
+            border-radius: 10px;
+            padding: 15px;
+            color: var(--secondary);
+            font-size: 14px;
+            box-shadow: 0 0 15px rgba(34, 211, 238, 0.4);
+            z-index: 100;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            pointer-events: auto;
+        }
+        #legend:hover {
+            transform: scale(1.03);
+        }
+        #legend h3 {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            color: #fff;
+            border-bottom: 1px solid rgba(34, 211, 238, 0.3);
+            padding-bottom: 5px;
+        }
+        #legend div { display: flex; align-items: center; margin: 8px 0; }
+        #legend .color-box {
+            width: 20px; height: 20px; margin-right: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 4px;
+        }
+
+        @media (min-width: 1025px) {
+            .menu-toggle { display: none; }
+            .nav-container { display: flex; }
+        }
+
+        @media (max-width: 1024px) {
+            .nav-content { justify-content: space-between; }
+            .nav-container {
+                position: fixed;
+                top: var(--nav-height);
+                left: 0;
+                width: 100%;
+                height: calc(100vh - var(--nav-height));
+                background: rgba(17, 24, 39, 0.95);
+                backdrop-filter: blur(15px);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+                transform: translateY(-110%);
+                overflow-y: auto;
+                padding: 2rem;
+            }
+            body.menu-open .nav-container {
+                transform: translateY(0);
+            }
+            body.menu-open {
+                overflow: hidden;
+            }
+
+            nav .nav-container > li { width: 100%; height: auto; flex-direction: column; align-items: center; text-align: center; }
+            nav .nav-container > li > a { padding: 1rem; width: 100%; font-size: 1.5em;}
+            
+            .mega-menu {
+                position: static; display: none; opacity: 1; transform: none; visibility: visible; width: 100%; box-shadow: none; 
+                border: none; padding: 1rem 0 1.5rem 0; background: none; backdrop-filter: none;
+                grid-template-columns: 1fr; border-top: 1px solid rgba(129, 140, 248, 0.2); margin-top: 1rem;
+            }
+            nav .nav-container > li:hover .mega-menu {
+                display: grid;
+            }
+            
+            .mega-menu h3 { text-align: center; font-size: 1.2em; }
+            .mega-menu ul { align-items: center; }
+            .mega-menu a { font-size: 1.1em; }
+            
+            .menu-toggle {
+                display: block; position: relative; z-index: 1001;
+                width: 30px; height: 22px;
+                background: none; border: none; cursor: pointer;
+            }
+            .icon-bar {
+                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
+                margin: 6px 0; transition: all 0.3s ease-in-out;
+                border-radius: 2px;
+            }
+
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+
+            #legend { font-size: 12px; padding: 10px; bottom: 10px; right: 10px; }
+            #legend .color-box { width: 15px; height: 15px; }
+        }
+    </style>
 </head>
-
 <body>
-  <!-- Canvas para la escena 3D -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-  <script src="https://unpkg.com/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
 
-  <!-- Leyenda en la esquina inferior derecha -->
-  <div id="legend">
-    <div><span class="color-box" style="background: #1E90FF;"></span> Cognitivismo (Esfera Interna)</div>
-    <div><span class="color-box" style="background: #FF69B4;"></span> Emergentismo (Esfera Intermedia)</div>
-    <div><span class="color-box" style="background: #32CD32;"></span> Enacción (Esfera Externa)</div>
-  </div>
+    <nav class="glassmorphism">
+        <div class="nav-content">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-8 w-8 md:h-10 md:w-10 rounded-full">
+                    <span>O.C.V.M.</span>
+                </a>
+            </div>
+            <ul class="nav-container" id="nav-menu">
+                 <li><a href="index.html">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+                    Inicio</a></li>
+                <li><a href="#">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9.75L16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0020.25 18V5.75A2.25 2.25 0 0018 3.5H6A2.25 2.25 0 003.75 5.75v12.5A2.25 2.25 0 006 20.25z" /></svg>
+                    Origen de la Vida</a>
+                    <div class="mega-menu glassmorphism">
+                        <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15m-10.875 0h15.75c.621 0 1.125-.504 1.125-1.125V5.625c0-.621-.504-1.125-1.125-1.125H4.125C3.504 4.5 3 5.004 3 5.625v12.75c0 .621.504 1.125 1.125 1.125z" /></svg>Fundamentos de Biología</h3>
+                            <ul>
+                                <li><a href="index.html#biologia-celular">Introducción a la Célula</a></li>
+                                <li><a href="NUMEROS_BIOLOGOS.HTML">Números Importantes en Biología Celular</a></li>
+                                <li><a href="CURSO_BIOLOGIA_CELULAR.HTML">Curso Biología Celular</a></li>
+                                <li><a href="HISTOLOGIA.html">Histología y Tejidos</a></li>
+                                <li><a href="cuerpo humano completo plantilla Lt.html">Anatomía Humana</a></li>
+                            </ul>
+                        </div>
+                        <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183m-4.991-2.691v4.992h4.992v-.001M2.985 19.644l3.181-3.182m0-4.992l-3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183" /></svg>Autopoiesis y Sistemas Vivos</h3>
+                            <ul>
+                                <li><a href="AUTOPOIESIS.HTML">Simulación Autopoiesis</a></li>
+                                <li><a href="AUTOPOIESIS_3D.HTML">Simulación Autopoiesis (3D)</a></li>
+                                <li><a href="Autopoiesis_Fractal00.html">Simulación Autopoiesis (Fractal)</a></li>
+                                <li><a href="Paper_Varela_1974.html">Paper de Varela (1974)</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+                <li><a href="#">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zm.75-12h9v9h-9v-9z" /></svg>
+                    Origen de la Mente</a>
+                    <div class="mega-menu glassmorphism">
+                        <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>Filosofía y Cognición</h3>
+                            <ul>
+                                <li><a href="index.html#filosofia-mente">Mente, Lenguaje y Realidad</a></li>
+                                <li><a href="index.html#ciencias-cognitivas">Mente Encarnada y Cognición</a></li>
+                                <li><a href="Feno_style.html">Aproximación Fenomenológica</a></li>
+                            </ul>
+                        </div>
+                        <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>Autores y Referentes</h3>
+                            <ul>
+                                <li><a href="PAPERS_VARELA.HTML">Publicaciones de Varela</a></li>
+                                <li><a href="CITAS.HTML">Fragmentos de Mentes</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+            <button class="menu-toggle" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
+    </nav>
 
-  <script>
-    // Configuración básica de la escena 3D con Three.js
-    const scene = new THREE.Scene(); // Crea la escena 3D donde se colocarán todos los objetos
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); // Cámara con perspectiva
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); // Renderizador con anti-aliasing y soporte para transparencia
-    renderer.setSize(window.innerWidth, window.innerHeight); // Ajusta el tamaño del render al viewport
-    renderer.setClearColor(0x0A0E1F, 1); // Fondo oscuro para consistencia
-    document.body.appendChild(renderer.domElement); // Agrega el canvas al cuerpo del HTML
+    <div id="legend">
+        <h3>Paradigmas</h3>
+        <div><span class="color-box" style="background: #818cf8;"></span>Cognitivismo</div>
+        <div><span class="color-box" style="background: #22d3ee;"></span>Emergentismo</div>
+        <div><span class="color-box" style="background: #e5e7eb;"></span>Enacción</div>
+    </div>
 
-    // Controles de órbita para permitir rotación y zoom
-    const controls = new THREE.OrbitControls(camera, renderer.domElement); // Permite interactuar con la escena girándola
-    controls.enableDamping = true; // Suaviza el movimiento
-    controls.dampingFactor = 0.05; // Factor de amortiguación para el movimiento
-    controls.minDistance = 200; // Distancia mínima de zoom
-    controls.maxDistance = 1000; // Distancia máxima de zoom
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        let scene, camera, renderer, controls, composer, starfield, shootingStar;
+        let pointMeshes = [], pointSprites = [], categoryLines = [], categorySprites = [];
+        let raycaster, mouse, hoveredPoint = null, hoveredCategory = null;
 
-    // Define el radio base de la esfera principal
-    const radius = 300; // Radio en unidades 3D para las esferas concéntricas
+        const data = {
+            points: [
+                { phi: 0, theta: 0.5, text: "McCarthy", link: "https://es.wikipedia.org/wiki/John_McCarthy_(inform%C3%A1tico)", category: "Inteligencia Artificial" },
+                { phi: Math.PI / 5, theta: 0.6, text: "Brooks", link: "https://es.wikipedia.org/wiki/Rodney_Brooks", category: "Inteligencia Artificial" },
+                { phi: -Math.PI / 5, theta: 0.6, text: "Winograd", link: "https://es.wikipedia.org/wiki/Terry_Winograd", category: "Inteligencia Artificial" },
+                { phi: Math.PI / 4, theta: 0.4, text: "Newell", link: "https://es.wikipedia.org/wiki/Allen_Newell", category: "Inteligencia Artificial" },
+                { phi: -Math.PI / 4, theta: 0.4, text: "Feldman", link: "https://es.wikipedia.org/wiki/Jerome_Feldman", category: "Inteligencia Artificial" },
+                { phi: Math.PI / 4, theta: -0.2, text: "Llinás", link: "https://es.wikipedia.org/wiki/Rodolfo_Llin%C3%A1s", category: "Neurociencia" },
+                { phi: Math.PI / 3, theta: -0.1, text: "Marr", link: "https://es.wikipedia.org/wiki/David_Marr_(neurocient%C3%ADfico)", category: "Neurociencia" },
+                { phi: -Math.PI / 4, theta: 0.2, text: "Chomsky", link: "https://es.wikipedia.org/wiki/Noam_Chomsky", category: "Lingüística" },
+                { phi: -Math.PI / 3, theta: 0.1, text: "Lakoff", link: "https://es.wikipedia.org/wiki/George_Lakoff", category: "Lingüística" },
+                { phi: 0, theta: -0.75, text: "Varela", link: "https://es.wikipedia.org/wiki/Francisco_Varela", category: "Neurociencia" },
+                { phi: Math.PI / 6, theta: -0.3, text: "Neisser", link: "https://es.wikipedia.org/wiki/Ulric_Neisser", category: "Ciencias Cognitivas" },
+                { phi: -Math.PI / 6, theta: 0.3, text: "Dennett", link: "https://es.wikipedia.org/wiki/Daniel_Dennett", category: "Ciencias Cognitivas" },
+                { phi: Math.PI / 2, theta: 0, text: "Rumelhart", link: "https://es.wikipedia.org/wiki/David_Rumelhart", category: "Ciencias Cognitivas" },
+                { phi: -Math.PI / 2, theta: -0.1, text: "Searle", link: "https://es.wikipedia.org/wiki/John_Searle", category: "Filosofía" },
+                { phi: -Math.PI / 3, theta: 0.4, text: "Hofstadter", link: "https://es.wikipedia.org/wiki/Douglas_Hofstadter", category: "Filosofía" },
+                { phi: Math.PI / 8, theta: -0.6, text: "Maturana", link: "https://es.wikipedia.org/wiki/Humberto_Maturana", category: "Filosofía" },
+                { phi: -Math.PI / 8, theta: 0.6, text: "Dreyfus", link: "https://es.wikipedia.org/wiki/Hubert_Dreyfus", category: "Filosofía" },
+                { phi: 0, theta: -0.7, text: "Rorty", link: "https://es.wikipedia.org/wiki/Richard_Rorty", category: "Filosofía" }
+            ],
+            categories: [
+                { x: 0, y: 1, z: 0, text: "Inteligencia Artificial", associatedPoints: ["McCarthy", "Brooks", "Winograd", "Newell", "Feldman"] },
+                { x: -1, y: 0, z: 0, text: "Neurociencia", associatedPoints: ["Llinás", "Marr", "Varela"] },
+                { x: 0, y: 0, z: 1, text: "Lingüística", associatedPoints: ["Chomsky", "Lakoff"] },
+                { x: 1, y: 0, z: 0, text: "Ciencias Cognitivas", associatedPoints: ["Neisser", "Dennett", "Rumelhart"] },
+                { x: 0, y: -1, z: 0, text: "Filosofía", associatedPoints: ["Searle", "Hofstadter", "Maturana", "Dreyfus", "Rorty"] }
+            ],
+            spheres: [
+                { factor: 0.3, color: 0x818cf8 },
+                { factor: 0.6, color: 0x22d3ee },
+                { factor: 0.9, color: 0xe5e7eb }
+            ]
+        };
+        const radius = 120;
 
-    // Añadir iluminación para profundidad y realismo
-    const ambientLight = new THREE.AmbientLight(0xFFFFFF, 0.3); // Luz ambiental suave
-    scene.add(ambientLight);
+        function init() {
+            scene = new THREE.Scene();
+            
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("bg-canvas"), antialias: true, alpha: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 1);
 
-    const pointLight = new THREE.PointLight(0xFFFFFF, 1, 1000); // Luz puntual para destacar los elementos
-    pointLight.position.set(500, 500, 500); // Posición dinámica
-    scene.add(pointLight);
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+            camera.position.set(0, 0, 350);
+            
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 150;
+            controls.maxDistance = 600;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 0.1;
 
-    // Sistema de partículas para un fondo dinámico
-    const particleCount = 500; // Número de partículas
-    const particles = new THREE.BufferGeometry();
-    const positions = new Float32Array(particleCount * 3);
-    const colors = new Float32Array(particleCount * 3);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.9);
+            directionalLight.position.set(5, 5, 5);
+            scene.add(directionalLight);
 
-    for (let i = 0; i < particleCount * 3; i += 3) {
-      positions[i] = (Math.random() - 0.5) * 2000; // Posición aleatoria en X
-      positions[i + 1] = (Math.random() - 0.5) * 2000; // Posición aleatoria en Y
-      positions[i + 2] = (Math.random() - 0.5) * 2000; // Posición aleatoria en Z
+            createStarfield();
+            createShootingStar();
+            createSpheres();
+            createCategoryRadiosAndLabels();
+            createAuthorPoints();
+            setupBloomEffect();
 
-      colors[i] = Math.random(); // R
-      colors[i + 1] = Math.random(); // G
-      colors[i + 2] = 1; // B (más azul para el tema cósmico)
-    }
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('click', onClick);
+            window.addEventListener('resize', onWindowResize);
+            
+            setupNavigation();
+        }
 
-    particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    particles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        function setupBloomEffect() {
+            const renderScene = new THREE.RenderPass(scene, camera);
+            const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.5, 0.4, 0.85);
+            bloomPass.threshold = 0;
+            bloomPass.strength = 0.4; // Brillo sutil
+            bloomPass.radius = 0;
 
-    const particleMaterial = new THREE.PointsMaterial({
-      size: 2,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.6
+            composer = new THREE.EffectComposer(renderer);
+            composer.addPass(renderScene);
+            composer.addPass(bloomPass);
+        }
+        
+        function createStarfield() {
+            const starGeometry = new THREE.BufferGeometry();
+            const starVertices = [];
+            for (let i = 0; i < 10000; i++) {
+                const x = (Math.random() - 0.5) * 2000;
+                const y = (Math.random() - 0.5) * 2000;
+                const z = (Math.random() - 0.5) * 2000;
+                starVertices.push(x, y, z);
+            }
+            starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+            const starMaterial = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 0.7,
+                transparent: true,
+                opacity: 0.7
+            });
+            starfield = new THREE.Points(starGeometry, starMaterial);
+            scene.add(starfield);
+        }
+
+        function createShootingStar() {
+            const starGeo = new THREE.BufferGeometry();
+            starGeo.setAttribute('position', new THREE.Float32BufferAttribute([0,0,0], 3));
+            const starMat = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 2,
+                transparent: true,
+                opacity: 0.9,
+                sizeAttenuation: true
+            });
+            shootingStar = new THREE.Points(starGeo, starMat);
+            resetShootingStar();
+            scene.add(shootingStar);
+        }
+
+        function resetShootingStar() {
+            const x = Math.random() * 800 + 400;
+            const y = Math.random() * 400 - 200;
+            const z = (Math.random() - 0.5) * 1000;
+            shootingStar.position.set(x, y, z);
+        }
+
+        function createSpheres() {
+            data.spheres.forEach(sphereData => {
+                const geometry = new THREE.SphereGeometry(radius * sphereData.factor, 64, 64);
+                const material = new THREE.MeshStandardMaterial({
+                    color: sphereData.color,
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.3,
+                    metalness: 0.2,
+                    roughness: 0.8
+                });
+                const mesh = new THREE.Mesh(geometry, material);
+                scene.add(mesh);
+            });
+        }
+
+        function createCategoryRadiosAndLabels() {
+            const radioMaterial = new THREE.LineBasicMaterial({ color: 0x818cf8, transparent: true, opacity: 0.5 });
+            data.categories.forEach(label => {
+                const endPoint = new THREE.Vector3(label.x, label.y, label.z).normalize().multiplyScalar(radius);
+                const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), endPoint]);
+                const line = new THREE.Line(geometry, radioMaterial.clone());
+                line.userData = { associatedPoints: label.associatedPoints, originalColor: radioMaterial.color.clone() };
+                scene.add(line);
+                categoryLines.push(line);
+
+                const sprite = createTextSprite(label.text, '#22d3ee', true);
+                sprite.position.copy(endPoint).multiplyScalar(1.15);
+                sprite.userData = { line: line };
+                scene.add(sprite);
+                categorySprites.push(sprite);
+            });
+        }
+
+        function createAuthorPoints() {
+            data.points.forEach(point => {
+                let radiusFactor;
+                if (point.category === "Inteligencia Artificial") radiusFactor = data.spheres[0].factor;
+                else if (point.category === "Neurociencia" || point.category === "Lingüística") radiusFactor = data.spheres[1].factor;
+                else radiusFactor = data.spheres[2].factor;
+
+                const pos = sphericalToCartesian(point.phi, point.theta, radius * radiusFactor);
+                const geometry = new THREE.SphereGeometry(2.5, 24, 24);
+                const material = new THREE.MeshStandardMaterial({ color: 0x818cf8, metalness: 0.5, roughness: 0.5 });
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.copy(pos);
+                mesh.userData = { ...point, originalColor: material.color.clone(), originalScale: mesh.scale.clone() };
+                scene.add(mesh);
+                pointMeshes.push(mesh);
+
+                const textSprite = createTextSprite(point.text, '#FFC300');
+                textSprite.position.copy(pos).add(new THREE.Vector3(0, 6, 0));
+                textSprite.userData = { point: mesh };
+                scene.add(textSprite);
+                pointSprites.push(textSprite);
+            });
+        }
+
+        function createTextSprite(text, color, isCategory = false) {
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
+            const fontSize = isCategory ? 48 : 32;
+            context.font = `Bold ${fontSize}px Inter, sans-serif`;
+            canvas.width = context.measureText(text).width + 20;
+            canvas.height = fontSize + 20;
+            
+            context.font = `Bold ${fontSize}px Inter, sans-serif`;
+            context.textAlign = "center";
+            context.textBaseline = "middle";
+            context.fillStyle = color;
+            context.fillText(text, canvas.width / 2, canvas.height / 2);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true, opacity: 0.8 });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.scale.set(canvas.width / 4, canvas.height / 4, 1.0);
+            return sprite;
+        }
+        
+        function onMouseMove(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        }
+
+        function onClick() {
+            if (hoveredPoint) {
+                window.open(hoveredPoint.userData.link, "_blank");
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        function sphericalToCartesian(phi, theta, r) {
+            const x = r * Math.sin(theta) * Math.cos(phi);
+            const y = r * Math.cos(theta);
+            const z = r * Math.sin(theta) * Math.sin(phi);
+            return new THREE.Vector3(x, y, z);
+        }
+
+        function checkIntersections() {
+            raycaster.setFromCamera(mouse, camera);
+
+            const allSceneElements = [...pointMeshes, ...pointSprites, ...categoryLines, ...categorySprites];
+            allSceneElements.forEach(el => {
+                if(el.material) el.material.opacity = el.userData.originalOpacity ?? (el.isLine ? 0.5 : 0.8);
+            });
+            
+            if (hoveredPoint) {
+                hoveredPoint.material.color.copy(hoveredPoint.userData.originalColor);
+                hoveredPoint.scale.copy(hoveredPoint.userData.originalScale);
+                hoveredPoint = null;
+            }
+            if(hoveredCategory) {
+                hoveredCategory.userData.line.material.color.copy(hoveredCategory.userData.line.userData.originalColor);
+                hoveredCategory = null;
+            }
+
+            const categoryIntersects = raycaster.intersectObjects(categorySprites);
+            if (categoryIntersects.length > 0) {
+                controls.autoRotate = false;
+                hoveredCategory = categoryIntersects[0].object;
+                hoveredCategory.userData.line.material.color.set(0x22d3ee); 
+                
+                const associated = hoveredCategory.userData.line.userData.associatedPoints;
+                pointMeshes.forEach(mesh => {
+                    if (!associated.includes(mesh.userData.text)) {
+                        mesh.material.opacity = 0.1;
+                    }
+                });
+                pointSprites.forEach(sprite => {
+                     if (!associated.includes(sprite.userData.point.userData.text)) {
+                        sprite.material.opacity = 0.1;
+                    }
+                });
+
+
+            } else {
+                const pointIntersects = raycaster.intersectObjects(pointMeshes);
+                if (pointIntersects.length > 0) {
+                    controls.autoRotate = false;
+                    hoveredPoint = pointIntersects[0].object;
+                    hoveredPoint.material.color.set(0x22d3ee);
+                    hoveredPoint.scale.set(1.5, 1.5, 1.5);
+                } else {
+                    controls.autoRotate = true;
+                }
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = Date.now() * 0.0001;
+            
+            starfield.rotation.x = time;
+            starfield.rotation.y = time;
+
+            if (shootingStar) {
+                shootingStar.position.x -= 4;
+                shootingStar.position.y -= 2;
+                if (shootingStar.position.x < -1000) {
+                    resetShootingStar();
+                }
+            }
+
+            pointMeshes.forEach(mesh => {
+                const pulse = Math.sin(time * 5 + mesh.position.x) * 0.1 + 0.9;
+                mesh.scale.set(pulse, pulse, pulse);
+            });
+
+            controls.update();
+            checkIntersections();
+            composer.render();
+        }
+        
+        function setupNavigation() {
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            const navMenu = document.getElementById('nav-menu');
+
+            menuToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.body.classList.toggle('menu-open');
+            });
+
+            if (window.matchMedia('(min-width: 1025px)').matches) {
+                const menuItems = document.querySelectorAll('.nav-container > li');
+                menuItems.forEach(item => {
+                    const megaMenu = item.querySelector('.mega-menu');
+                    if (megaMenu) {
+                        let leaveTimeout;
+                        const showMenu = () => {
+                            clearTimeout(leaveTimeout);
+                            document.querySelectorAll('.mega-menu.is-active').forEach(m => {
+                                if (m !== megaMenu) m.classList.remove('is-active');
+                            });
+                            megaMenu.classList.add('is-active');
+                        };
+                        const startHideTimer = () => {
+                            leaveTimeout = setTimeout(() => megaMenu.classList.remove('is-active'), 250);
+                        };
+                        item.addEventListener('mouseenter', showMenu);
+                        item.addEventListener('mouseleave', startHideTimer);
+                    }
+                });
+            }
+        }
+
+        init();
+        animate();
     });
-
-    const particleSystem = new THREE.Points(particles, particleMaterial);
-    scene.add(particleSystem);
-
-    // Animación de partículas
-    function animateParticles() {
-      const positions = particleSystem.geometry.attributes.position.array;
-      for (let i = 0; i < particleCount * 3; i += 3) {
-        positions[i + 1] -= 0.5; // Movimiento hacia abajo
-        if (positions[i + 1] < -1000) positions[i + 1] = 1000; // Reinicia al llegar al fondo
-      }
-      particleSystem.geometry.attributes.position.needsUpdate = true;
-    }
-
-    // Lista de puntos (autores) con sus posiciones esféricas, enlaces y categorías
-    const points = [
-      // Inteligencia Artificial (esfera interna, factor 0.25)
-      { phi: 0, theta: 0.5, text: "McCarthy", link: "https://es.wikipedia.org/wiki/John_McCarthy_(inform%C3%A1tico)", category: "Inteligencia Artificial" },
-      { phi: Math.PI / 5, theta: 0.6, text: "Brooks", link: "https://es.wikipedia.org/wiki/Rodney_Brooks", category: "Inteligencia Artificial" },
-      { phi: -Math.PI / 5, theta: 0.6, text: "Winograd", link: "https://es.wikipedia.org/wiki/Terry_Winograd", category: "Inteligencia Artificial" },
-      { phi: Math.PI / 4, theta: 0.4, text: "Newell", link: "https://es.wikipedia.org/wiki/Allen_Newell", category: "Inteligencia Artificial" },
-      { phi: -Math.PI / 4, theta: 0.4, text: "Feldman", link: "https://es.wikipedia.org/wiki/Jerome_Feldman", category: "Inteligencia Artificial" },
-
-      // Neurociencia (esfera intermedia, factor 0.5)
-      { phi: Math.PI / 4, theta: -0.2, text: "Llinás", link: "https://es.wikipedia.org/wiki/Rodolfo_Llin%C3%A1s", category: "Neurociencia" },
-      { phi: Math.PI / 3, theta: -0.1, text: "Marr", link: "https://es.wikipedia.org/wiki/David_Marr_(neurocient%C3%ADfico)", category: "Neurociencia" },
-      { phi: 0, theta: -0.75, text: "Varela", link: "https://es.wikipedia.org/wiki/Francisco_Varela", category: "Neurociencia" },
-
-      // Lingüística (esfera intermedia, factor 0.5)
-      { phi: -Math.PI / 4, theta: 0.2, text: "Chomsky", link: "https://es.wikipedia.org/wiki/Noam_Chomsky", category: "Lingüística" },
-      { phi: -Math.PI / 3, theta: 0.1, text: "Lakoff", link: "https://es.wikipedia.org/wiki/George_Lakoff", category: "Lingüística" },
-
-      // Ciencias Cognitivas (esfera externa, factor 0.75)
-      { phi: Math.PI / 6, theta: -0.3, text: "Neisser", link: "https://es.wikipedia.org/wiki/Ulric_Neisser", category: "Ciencias Cognitivas" },
-      { phi: -Math.PI / 6, theta: 0.3, text: "Dennett", link: "https://es.wikipedia.org/wiki/Daniel_Dennett", category: "Ciencias Cognitivas" },
-      { phi: Math.PI / 2, theta: 0, text: "Rumelhart", link: "https://es.wikipedia.org/wiki/David_Rumelhart", category: "Ciencias Cognitivas" },
-
-      // Filosofía (esfera externa, factor 0.75)
-      { phi: -Math.PI / 2, theta: -0.1, text: "Searle", link: "https://es.wikipedia.org/wiki/John_Searle", category: "Filosofía" },
-      { phi: -Math.PI / 3, theta: 0.4, text: "Hofstadter", link: "https://es.wikipedia.org/wiki/Douglas_Hofstadter", category: "Filosofía" },
-      { phi: Math.PI / 8, theta: -0.6, text: "Maturana", link: "https://es.wikipedia.org/wiki/Humberto_Maturana", category: "Filosofía" },
-      { phi: -Math.PI / 8, theta: 0.6, text: "Dreyfus", link: "https://es.wikipedia.org/wiki/Hubert_Dreyfus", category: "Filosofía" },
-      { phi: 0, theta: -0.7, text: "Rorty", link: "https://es.wikipedia.org/wiki/Richard_Rorty", category: "Filosofía" }
-    ];
-
-    // Etiquetas de categorías con coordenadas cartesianas (x, y, z) para distribución en todas las direcciones 3D
-    const categoryLabels = [
-      { x: 0, y: radius * 0.95, z: 0, text: "Inteligencia Artificial", associatedPoints: ["McCarthy", "Brooks", "Winograd", "Newell", "Feldman"] },
-      { x: -radius * 0.95, y: 0, z: 0, text: "Neurociencia", associatedPoints: ["Llinás", "Marr", "Varela"] },
-      { x: 0, y: 0, z: radius * 0.95, text: "Lingüística", associatedPoints: ["Chomsky", "Lakoff"] },
-      { x: radius * 0.95, y: 0, z: 0, text: "Ciencias Cognitivas", associatedPoints: ["Neisser", "Dennett", "Rumelhart"] },
-      { x: 0, y: -radius * 0.95, z: 0, text: "Filosofía", associatedPoints: ["Searle", "Hofstadter", "Maturana", "Dreyfus", "Rorty"] }
-    ];
-
-    // Esferas concéntricas con colores distintivos y efectos avanzados
-    const sphereColors = [
-      { factor: 0.25, color: 0x1E90FF }, // Azul cielo vibrante para Cognitivismo
-      { factor: 0.5, color: 0xFF69B4 },  // Rosa fuerte para Emergentismo
-      { factor: 0.75, color: 0x32CD32 }  // Verde lima para Enacción
-    ];
-
-    const spheres = sphereColors.map(sphere => {
-      const geometry = new THREE.SphereGeometry(radius * sphere.factor, 32, 32); // Geometría de la esfera
-      const material = new THREE.MeshBasicMaterial({
-        color: sphere.color,
-        wireframe: true,
-        opacity: 0.6,
-        transparent: true
-      });
-      const mesh = new THREE.Mesh(geometry, material);
-      scene.add(mesh);
-      return mesh;
-    });
-
-    // Animación de las esferas (pulsación suave)
-    function animateSpheres() {
-      spheres.forEach((sphere, index) => {
-        const scale = 1 + Math.sin(Date.now() * 0.001 + index) * 0.02; // Pulsación suave
-        sphere.scale.set(scale, scale, scale);
-      });
-    }
-
-    // Función para crear sprites de texto con efectos avanzados
-    function createTextSprite(text, color = 0xFFFFFF, isCategoryLabel = false) {
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      canvas.width = 512;
-      canvas.height = 128;
-      ctx.font = isCategoryLabel ? "Bold 48px Arial" : "Bold 32px Arial"; // Tamaños más grandes para impacto
-      ctx.fillStyle = `#${color.toString(16).padStart(6, "0")}`;
-      ctx.strokeStyle = '#000000'; // Contorno negro para legibilidad
-      ctx.lineWidth = 2; // Grosor del contorno
-      ctx.textAlign = "center";
-      ctx.strokeText(text, canvas.width / 2, 80); // Contorno
-      ctx.fillText(text, canvas.width / 2, 80); // Relleno
-      const texture = new THREE.Texture(canvas);
-      texture.needsUpdate = true;
-      const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
-      const sprite = new THREE.Sprite(spriteMaterial);
-      sprite.scale.set(isCategoryLabel ? 150 : 100, isCategoryLabel ? 75 : 50, 1); // Escala mayor para mejor visibilidad
-      return sprite;
-    }
-
-    // Añadir líneas muy gruesas con efecto de brillo
-    const radioMaterial = new THREE.LineBasicMaterial({ color: 0x00CED1, linewidth: 100 }); // Líneas ultra gruesas
-    const categoryLines = [];
-    const categorySprites = [];
-    categoryLabels.forEach(label => {
-      const start = new THREE.Vector3(0, 0, 0);
-      const end = new THREE.Vector3(label.x, label.y, label.z);
-
-      const geometry = new THREE.BufferGeometry().setFromPoints([start, end]);
-      const line = new THREE.Line(geometry, radioMaterial);
-      line.userData = { associatedPoints: label.associatedPoints }; // Almacena los puntos asociados para interacción
-      scene.add(line);
-      categoryLines.push(line);
-
-      // Añadir el texto como sprite en el extremo del radio
-      const sprite = createTextSprite(label.text, 0xFF00FF, true); // Magenta neón
-      sprite.position.copy(end);
-      sprite.userData = { associatedPoints: label.associatedPoints };
-      scene.add(sprite);
-      categorySprites.push(sprite);
-    });
-
-    // Añadir puntos (autores) como esferas con efecto de brillo
-    const pointMeshes = [];
-    const pointSprites = [];
-    points.forEach(point => {
-      let radiusFactor;
-      switch (point.category) {
-        case "Inteligencia Artificial":
-          radiusFactor = 0.25; // Cognitivismo
-          break;
-        case "Neurociencia":
-        case "Lingüística":
-          radiusFactor = 0.5; // Emergentismo
-          break;
-        case "Ciencias Cognitivas":
-        case "Filosofía":
-          radiusFactor = 0.75; // Enacción
-          break;
-        default:
-          radiusFactor = 0.5;
-      }
-
-      const pos = sphericalToCartesian(point.phi, point.theta, radius * radiusFactor);
-      const geometry = new THREE.SphereGeometry(6, 16, 16);
-      const material = new THREE.MeshBasicMaterial({ color: 0x4169E1 });
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.position.copy(pos);
-      mesh.userData = { text: point.text, link: point.link, category: point.category };
-      scene.add(mesh);
-      pointMeshes.push(mesh);
-
-      // Añadir el nombre del autor como sprite más cerca del punto
-      const textSprite = createTextSprite(point.text, 0xFFFF00, false); // Amarillo neón
-      textSprite.position.copy(pos).add(new THREE.Vector3(10, 10, 0)); // Muy cerca del punto
-      textSprite.userData = { point: mesh };
-      scene.add(textSprite);
-      pointSprites.push(textSprite);
-    });
-
-    // Función para convertir coordenadas esféricas a cartesianas (x, y, z)
-    function sphericalToCartesian(phi, theta, r) {
-      const x = r * Math.sin(theta) * Math.cos(phi);
-      const y = r * Math.cos(theta);
-      const z = r * Math.sin(theta) * Math.sin(phi);
-      return new THREE.Vector3(x, y, z);
-    }
-
-    // Posición inicial de la cámara para una vista épica
-    camera.position.set(700, 700, 700);
-    camera.lookAt(new THREE.Vector3(0, 0, 0));
-
-    // Raycaster para interacciones avanzadas
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
-    let hoveredPoint = null;
-    let hoveredCategory = null;
-
-    // Maneja el movimiento del ratón para interacciones avanzadas
-    function onMouseMove(event) {
-      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-      raycaster.setFromCamera(mouse, camera);
-
-      // Interacción con puntos (autores)
-      const pointIntersects = raycaster.intersectObjects(pointMeshes);
-      if (hoveredPoint && (!pointIntersects.length || pointIntersects[0].object !== hoveredPoint)) {
-        hoveredPoint.material.color.set(0x4169E1);
-        hoveredPoint = null;
-      }
-      if (pointIntersects.length > 0) {
-        hoveredPoint = pointIntersects[0].object;
-        hoveredPoint.material.color.set(0xFFFF00);
-      }
-
-      // Interacción con categorías (radios)
-      const categoryIntersects = raycaster.intersectObjects(categorySprites);
-      if (hoveredCategory && (!categoryIntersects.length || categoryIntersects[0].object !== hoveredCategory)) {
-        const associatedLine = categoryLines[categorySprites.indexOf(hoveredCategory)];
-        associatedLine.material.color.set(0x00CED1);
-        pointMeshes.forEach(point => {
-          if (associatedLine.userData.associatedPoints.includes(point.userData.text)) {
-            point.material.color.set(0x4169E1);
-          }
-        });
-        hoveredCategory = null;
-      }
-      if (categoryIntersects.length > 0) {
-        hoveredCategory = categoryIntersects[0].object;
-        const associatedLine = categoryLines[categorySprites.indexOf(hoveredCategory)];
-        associatedLine.material.color.set(0xFF00FF); // Resalta el radio en magenta neón
-        pointMeshes.forEach(point => {
-          if (associatedLine.userData.associatedPoints.includes(point.userData.text)) {
-            point.material.color.set(0xFFFF00); // Resalta los puntos asociados
-          }
-        });
-      }
-    }
-
-    // Maneja clics para abrir enlaces de los puntos
-    function onClick() {
-      if (hoveredPoint) {
-        window.open(hoveredPoint.userData.link, "_blank");
-      }
-    }
-
-    // Añade eventos de ratón al documento
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("click", onClick);
-
-    // Animación principal
-    function animate() {
-      requestAnimationFrame(animate);
-      controls.update();
-      animateParticles();
-      animateSpheres();
-      renderer.render(scene, camera);
-    }
-    animate();
-
-    // Ajusta el tamaño del render al redimensionar la ventana
-    window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-  </script>
+    </script>
 </body>
-
 </html>
