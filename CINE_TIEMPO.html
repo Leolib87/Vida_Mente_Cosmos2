@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Línea de Tiempo Cinematográfica | Exploración Transdisciplinaria</title>
+    <title>Cine y Tiempo (Ser y Tiempo) | Línea de Tiempo Cinematográfica</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
+        /* --- GLOBAL STYLES & CSS VARIABLES --- */
         :root {
             --primary: #818cf8;
             --primary-dark: #6366f1;
@@ -45,6 +46,7 @@
 
         body.menu-open { overflow: hidden; }
         
+        /* --- NAVIGATION --- */
         nav {
             position: fixed; top: 0; width: 100%; height: var(--nav-height);
             z-index: 1000; display: flex; justify-content: center; align-items: center;
@@ -55,154 +57,51 @@
             font-size: 1.3em; font-weight: 700; color: #fff; text-decoration: none;
             text-shadow: 0 0 8px var(--primary-glow); display: flex; align-items: center; gap: 0.75rem;
         }
-        .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
-        nav .nav-container > li { position: relative; height: 100%; display: flex; align-items: center; }
-        nav .nav-container > li > a {
-            color: var(--primary-text); text-decoration: none; font-size: clamp(0.9em, 1.2vw, 1.05em); font-weight: 500;
-            transition: color 0.3s ease, text-shadow 0.3s ease; padding: 0 1rem; display: flex; align-items: center; gap: 8px;
-        }
-        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a { color: #FFFFFF; text-shadow: 0 0 12px var(--primary-glow); }
         .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; }
-        
-        .mega-menu {
-            position: fixed; top: var(--nav-height); left: 50%; transform: translateX(-50%) scale(0.95);
-            border-radius: 10px; width: auto; min-width: clamp(300px, 80vw, 950px); max-width: 95vw;
-            padding: 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 2rem; opacity: 0; visibility: hidden;
-            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0.3s;
-            transform-origin: top center;
-        }
-        .mega-menu.is-active { 
-            opacity: 1; visibility: visible; transform: translateX(-50%) scale(1);
-            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0s;
-        }
-        .mega-menu h3 {
-            color: var(--primary-glow); font-size: 1.1em; margin-bottom: 1rem;
-            text-shadow: 0 0 5px var(--primary-glow); border-bottom: 1px solid rgba(129, 140, 248, 0.3);
-            padding-bottom: 0.75rem; display: flex; align-items: center; gap: 0.75rem;
-        }
-        .mega-menu ul { display: flex; flex-direction: column; gap: 0.75rem; list-style: none; padding-left:0; }
-        .mega-menu a {
-            font-size: 0.9em; color: var(--primary-text); text-decoration: none;
-            transition: color 0.3s, padding-left 0.3s, background-color 0.3s;
-            padding: 0.5rem 0.75rem 0.5rem 2rem; border-radius: 4px; display: block; position: relative;
-        }
-        .mega-menu a::before {
-            content: '›'; color: var(--primary-glow); position: absolute; left: 0.75rem; top: 50%;
-            transform: translateY(-50%); font-size: 1.2em; transition: color 0.3s;
-        }
-        .mega-menu a:hover { color: #000; background-color: var(--primary-glow); padding-left: 2.5rem; }
-        .mega-menu a:hover::before { color: #000; }
-        
-        .main-container { 
-            width: 100%; max-width: 1440px; margin: 0 auto; 
-            padding-top: var(--nav-height);
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .hero {
-            text-align: center; position: relative; padding: 2rem 1rem;
-        }
-        .hero h1 {
-            font-family: var(--font-accent);
-            font-size: clamp(2rem, 6vw, 3.5rem); font-weight: 700; color: var(--secondary);
-            text-shadow: 0 0 10px var(--secondary-glow), 0 0 20px var(--secondary-glow), 0 0 40px rgba(34, 211, 238, 0.7);
-            animation: pulse-glow 3s infinite alternate;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-        }
-        .hero p { font-size: clamp(0.9rem, 2vw, 1.1rem); max-width: 800px; margin: 1rem auto 0; text-shadow: 0 0 5px #000; }
-        
-        @keyframes pulse-glow {
-            from { text-shadow: 0 0 10px var(--secondary-glow), 0 0 20px var(--secondary-glow); }
-            to { text-shadow: 0 0 20px var(--secondary-glow), 0 0 40px var(--secondary-glow); }
+        .menu-toggle { display: none; } /* Hidden by default, shown on mobile */
+
+        /* Desktop Navigation */
+        @media (min-width: 1025px) {
+            .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
+            nav .nav-container > li { position: relative; height: 100%; display: flex; align-items: center; }
+            nav .nav-container > li > a {
+                color: var(--primary-text); text-decoration: none; font-size: clamp(0.9em, 1.2vw, 1.05em); font-weight: 500;
+                transition: color 0.3s ease, text-shadow 0.3s ease; padding: 0 1rem; display: flex; align-items: center; gap: 8px;
+            }
+            nav .nav-container > li > a:hover, nav .nav-container > li:hover > a { color: #FFFFFF; text-shadow: 0 0 12px var(--primary-glow); }
+            
+            .mega-menu {
+                position: fixed; top: var(--nav-height); left: 50%; transform: translateX(-50%) scale(0.95);
+                border-radius: 10px; width: auto; min-width: clamp(300px, 80vw, 950px); max-width: 95vw;
+                padding: 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 2rem; opacity: 0; visibility: hidden;
+                transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0.3s;
+                transform-origin: top center;
+            }
+            .mega-menu.is-active { 
+                opacity: 1; visibility: visible; transform: translateX(-50%) scale(1);
+                transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0s;
+            }
+            .mega-menu h3 {
+                color: var(--primary-glow); font-size: 1.1em; margin-bottom: 1rem;
+                text-shadow: 0 0 5px var(--primary-glow); border-bottom: 1px solid rgba(129, 140, 248, 0.3);
+                padding-bottom: 0.75rem; display: flex; align-items: center; gap: 0.75rem;
+            }
+            .mega-menu ul { display: flex; flex-direction: column; gap: 0.75rem; list-style: none; padding-left:0; }
+            .mega-menu a {
+                font-size: 0.9em; color: var(--primary-text); text-decoration: none;
+                transition: color 0.3s, padding-left 0.3s, background-color 0.3s;
+                padding: 0.5rem 0.75rem 0.5rem 2rem; border-radius: 4px; display: block; position: relative;
+            }
+            .mega-menu a::before {
+                content: '›'; color: var(--primary-glow); position: absolute; left: 0.75rem; top: 50%;
+                transform: translateY(-50%); font-size: 1.2em; transition: color 0.3s;
+            }
+            .mega-menu a:hover { color: #000; background-color: var(--primary-glow); padding-left: 2.5rem; }
+            .mega-menu a:hover::before { color: #000; }
         }
 
-        .footer { text-align: center; padding: 2rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
-
-        /* --- STYLES FOR THIS SPECIFIC PAGE --- */
-        .canvas-wrapper {
-            position: relative;
-            flex-grow: 1;
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            align-items: start;
-            gap: 2rem;
-            margin-top: 1rem;
-            min-height: 0;
-        }
-        #movie-titles-column {
-            text-align: right;
-        }
-        .movie-title {
-            display: flex; align-items: center; justify-content: flex-end;
-            font-weight: 600; color: #a0aec0; font-size: clamp(0.6rem, 1.2vw, 0.875rem);
-            text-transform: uppercase;
-            transition: color 0.3s, text-shadow 0.3s;
-            white-space: nowrap;
-        }
-        .movie-title.highlighted {
-            color: var(--secondary);
-            text-shadow: 0 0 8px var(--secondary-glow);
-        }
-        #p5-canvas-container {
-            width: 100%;
-            height: 100%;
-            min-height: 400px;
-            cursor: pointer;
-        }
-        #three-canvas-container {
-            position: absolute;
-            /* CAMBIO: Aquí puedes modificar el tamaño del planeta */
-            width: clamp(350px, 30vw, 500px); 
-            height: clamp(350px, 30vw, 500px);
-            border-radius: 50%; overflow: hidden;
-            box-shadow: 0 0 40px rgba(34, 211, 238, 0.7), inset 0 0 30px rgba(34, 211, 238, 0.5);
-            border: 3px solid rgba(34, 211, 238, 0.8);
-            transition: top 0.5s ease, left 0.5s ease, transform 0.5s ease;
-            /* CAMBIO: Aquí puedes modificar la posición vertical del planeta */
-            top: 35%;
-            right: 5%;
-            transform: translateY(-50%);
-            opacity: 0;
-            animation: fadeIn 2s ease-in-out forwards;
-            pointer-events: none;
-        }
-        #three-canvas-container.interactive { pointer-events: all; }
-        #three-canvas-container canvas {
-            display: block; width: 100% !important; height: 100% !important;
-        }
-        #timeline-tooltip {
-            position: fixed;
-            display: none;
-            background: rgba(10, 10, 26, 0.9);
-            border: 1px solid var(--secondary);
-            color: var(--primary-text);
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            pointer-events: none;
-            z-index: 9999;
-            box-shadow: 0 0 15px var(--secondary-glow);
-            text-align: center;
-        }
-
-        @keyframes fadeIn { to { opacity: 1; } }
-
-        @media (max-width: 1200px) {
-            .canvas-wrapper { grid-template-columns: 1fr 1.5fr; }
-            #three-canvas-container { right: 2%; }
-        }
-
-        @media (max-width: 900px) {
-            .canvas-wrapper { grid-template-columns: 1fr; }
-            #movie-titles-column { text-align: center; padding-top: 0; }
-            .movie-title { justify-content: center; }
-            #three-canvas-container { display: none; }
-        }
-
+        /* Mobile & Tablet Navigation */
         @media (max-width: 1024px) {
             .nav-content { justify-content: space-between; }
             .nav-container {
@@ -241,7 +140,91 @@
             body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
             body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
         }
-        @media (min-width: 1025px) { .menu-toggle { display: none; } .nav-container { display: flex; } }
+
+        /* --- LAYOUT & CONTENT --- */
+        .main-container { 
+            width: 100%; max-width: 1440px; margin: 0 auto; 
+            padding-top: var(--nav-height);
+            padding-left: 1rem; padding-right: 1rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .hero {
+            text-align: center; position: relative; padding: 2rem 1rem;
+        }
+        .hero h1 {
+            font-family: var(--font-accent);
+            font-size: clamp(2rem, 6vw, 3.5rem); font-weight: 700; color: var(--secondary);
+            text-shadow: 0 0 10px var(--secondary-glow), 0 0 20px var(--secondary-glow), 0 0 40px rgba(34, 211, 238, 0.7);
+            animation: pulse-glow 3s infinite alternate;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        .hero p { font-size: clamp(0.9rem, 2vw, 1.1rem); max-width: 800px; margin: 1rem auto 0; text-shadow: 0 0 5px #000; }
+        
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--secondary-glow), 0 0 20px var(--secondary-glow); }
+            to { text-shadow: 0 0 20px var(--secondary-glow), 0 0 40px var(--secondary-glow); }
+        }
+
+        .footer { text-align: center; padding: 2rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: auto; }
+
+        /* --- RESPONSIVE TIMELINE STYLES --- */
+        .canvas-wrapper {
+            position: relative;
+            flex-grow: 1;
+            margin-top: 1rem;
+            min-height: 600px; /* Increased min-height */
+        }
+        
+        #p5-canvas-container {
+            width: 100%;
+            height: 100%;
+            min-height: inherit;
+            cursor: pointer;
+        }
+        
+        #three-canvas-container {
+            position: absolute;
+            /* Responsive size for the planet */
+            width: clamp(150px, 30vw, 400px); 
+            height: clamp(150px, 30vw, 400px);
+            border-radius: 50%; 
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(34, 211, 238, 0.6), inset 0 0 25px rgba(34, 211, 238, 0.4);
+            border: 2px solid rgba(34, 211, 238, 0.7);
+            transition: top 0.5s ease, right 0.5s ease, transform 0.5s ease;
+            top: 50%;
+            /* Positioned to the right, with space */
+            right: 5%; 
+            transform: translateY(-50%);
+            opacity: 0;
+            animation: fadeIn 2s 0.5s ease-in-out forwards;
+            pointer-events: none; /* Default */
+            z-index: 5; /* Behind p5 canvas but visible */
+        }
+        #three-canvas-container.interactive { pointer-events: all; }
+        #three-canvas-container canvas {
+            display: block; width: 100% !important; height: 100% !important;
+        }
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        #timeline-tooltip {
+            position: fixed;
+            display: none;
+            background: rgba(10, 10, 26, 0.9);
+            border: 1px solid var(--secondary);
+            color: var(--primary-text);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            pointer-events: none;
+            z-index: 9999;
+            box-shadow: 0 0 15px var(--secondary-glow);
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -291,36 +274,19 @@
                 <li><a href="#">
                     <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zm.75-12h9v9h-9v-9z" /></svg>
                     Mente</a>
-                     <div class="mega-menu glassmorphism">
-                        <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>Filosofía y Cognición</h3>
-                            <ul>
-                                <li><a href="Feno_style.html">Aproximación Fenomenológica</a></li>
-                                <li><a href="conocer_fv.html">El Árbol del Conocimiento</a></li>
-                            </ul>
+                        <div class="mega-menu glassmorphism">
+                            <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>Filosofía y Cognición</h3>
+                                <ul>
+                                    <li><a href="Feno_style.html">Aproximación Fenomenológica</a></li>
+                                    <li><a href="conocer_fv.html">El Árbol del Conocimiento</a></li>
+                                </ul>
+                            </div>
+                            <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0l-1.07-1.07m15.482 0l1.07 1.07m-1.07-1.07l-1.07 1.07m1.07-1.07l-1.07 1.07m-1.07-1.07l-1.07 1.07m2.14 0l-1.07 1.07M12 6.873l-1.07 1.07m2.14 0l-1.07-1.07m-1.07 1.07l-1.07-1.07m2.14 0l-1.07 1.07m-1.07 1.07l-1.07-1.07m2.14 0l-1.07 1.07" /></svg>Reflexiones Culturales</h3>
+                                <ul>
+                                    <li><a href="peliculas.html">Reflexiones en el Cine</a></li>
+                                </ul>
+                            </div>
                         </div>
-                        <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0l-1.07-1.07m15.482 0l1.07 1.07m-1.07-1.07l-1.07 1.07m1.07-1.07l-1.07 1.07m-1.07-1.07l-1.07 1.07m2.14 0l-1.07 1.07M12 6.873l-1.07 1.07m2.14 0l-1.07-1.07m-1.07 1.07l-1.07-1.07m2.14 0l-1.07 1.07m-1.07 1.07l-1.07-1.07m2.14 0l-1.07 1.07" /></svg>Reflexiones Culturales</h3>
-                            <ul>
-                                <li><a href="peliculas.html">Reflexiones en el Cine</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </li>
-                <li><a href="#">
-                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" /></svg>
-                    Cartografías</a>
-                     <div class="mega-menu glassmorphism">
-                        <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 20.25h12A2.25 2.25 0 0020.25 18V5.75A2.25 2.25 0 0018 3.5H6A2.25 2.25 0 003.75 5.75v12.5A2.25 2.25 0 006 20.25z" /></svg>Visualización de Datos</h3>
-                            <ul>
-                                <li><a href="varios graficos.html">Colección de Gráficos</a></li>
-                                <li><a href="INFLACION ARGENTINA RESPONSIVA.html">Inflación en Argentina</a></li>
-                            </ul>
-                        </div>
-                        <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" /></svg>Mapas Conceptuales</h3>
-                            <ul>
-                                <li><a href="VARELA_CARTOGRAFIA.HTML">Cartografía Varela (3D)</a></li>
-                            </ul>
-                        </div>
-                    </div>
                 </li>
                 <li><a href="#">
                     <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
@@ -333,19 +299,18 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="main-container">
+    <main class="main-container">
         <div class="hero">
             <h1>Línea de Tiempo Cinematográfica</h1>
             <p>Una exploración visual de los futuros imaginados en el cine.</p>
         </div>
 
         <div class="canvas-wrapper">
-            <div id="movie-titles-column"></div>
             <div id="p5-canvas-container"></div>
             <div id="three-canvas-container"></div>
         </div>
 
-    </div>
+    </main>
     <footer class="footer" id="contacto">
         <p>Este espacio es una cartografía personal y una invitación al diálogo.</p>
         <p style="margin-top:1.5rem; font-size: 0.9em;">La vida es terriblemente bella cuando los jugadores juegan. | 2025</p>
@@ -359,23 +324,38 @@
         let hoveredMovieIndex = -1;
         let p5Instance; // To hold the p5 instance
         const movies = [
-            { title: "Clockwork Orange", year: 1995 }, { title: "Escape from NY", year: 1997 },
-            { title: "2001: A Space Odyssey", year: 2001 }, { title: "Freejack", year: 2009 },
-            { title: "The Postman", year: 2013 }, { title: "Robocop", year: 2015 },
-            { title: "Back To The Future II", year: 2015 }, { title: "The Running Man", year: 2017 },
-            { title: "Rollerball", year: 2018 }, { title: "Blade Runner", year: 2019 },
-            { title: "Soylent Green", year: 2022 }, { title: "Children of Men", year: 2027 },
-            { title: "12 Monkeys", year: 2028 }, { title: "Demolition Man", year: 2032 },
-            { title: "V for Vendetta", year: 2038 }, { title: "Event Horizon", year: 2047 },
-            { title: "Minority Report", year: 2054 }, { title: "Total Recall", year: 2084 },
-            { title: "A.I. Artificial Intelligence", year: 2101 }, { title: "Alien", year: 2122 },
-            { title: "The Black Hole", year: 2130 }, { title: "Sleeper", year: 2173 },
-            { title: "The Matrix", year: 2199 }, { title: "Forbidden Planet", year: 2220 },
-            { title: "The Fifth Element", year: 2263 }, { title: "Zardoz", year: 2293 },
-            { title: "Star Trek: The Motion Picture", year: 2387 }, { title: "Logan's Run", year: 2500 },
-            { title: "Idiocracy", year: 2505 }, { title: "Planet of The Apes", year: 3978, displayYear: "3978" },
-            { title: "Dune", year: 10191, displayYear: "10,191" },
-            { title: "Barbarella", year: 40000, displayYear: "40,000" }
+            { title: "Clockwork Orange", year: 1995, url: "https://es.wikipedia.org/wiki/La_naranja_mec%C3%A1nica_(pel%C3%ADcula)" }, 
+            { title: "Escape from NY", year: 1997, url: "https://es.wikipedia.org/wiki/Escape_from_New_York" },
+            { title: "2001: A Space Odyssey", year: 2001, url: "https://es.wikipedia.org/wiki/2001:_A_Space_Odyssey" }, 
+            { title: "Freejack", year: 2009, url: "https://es.wikipedia.org/wiki/Freejack_(pel%C3%ADcula)" },
+            { title: "The Postman", year: 2013, url: "https://es.wikipedia.org/wiki/The_Postman_(pel%C3%ADcula)" }, 
+            { title: "Robocop", year: 2015, url: "https://es.wikipedia.org/wiki/RoboCop_(franquicia)" },
+            { title: "Back To The Future II", year: 2015, url: "https://es.wikipedia.org/wiki/Back_to_the_Future_Part_II" }, 
+            { title: "The Running Man", year: 2017, url: "https://es.wikipedia.org/wiki/The_Running_Man_(pel%C3%ADcula_de_1987)" },
+            { title: "Rollerball", year: 2018, url: "https://es.wikipedia.org/wiki/Rollerball_(pel%C3%ADcula_de_1975)" }, 
+            { title: "Blade Runner", year: 2019, url: "https://es.wikipedia.org/wiki/Blade_Runner" },
+            { title: "Soylent Green", year: 2022, url: "https://es.wikipedia.org/wiki/Soylent_Green" }, 
+            { title: "Children of Men", year: 2027, url: "https://es.wikipedia.org/wiki/Children_of_Men" },
+            { title: "12 Monkeys", year: 2028, url: "https://es.wikipedia.org/wiki/12_monos_(pel%C3%ADcula)" }, 
+            { title: "Demolition Man", year: 2032, url: "https://es.wikipedia.org/wiki/Demolition_Man" },
+            { title: "V for Vendetta", year: 2038, url: "https://es.wikipedia.org/wiki/V_de_Vendetta_(pel%C3%ADcula)" }, 
+            { title: "Event Horizon", year: 2047, url: "https://es.wikipedia.org/wiki/Event_Horizon_(pel%C3%ADcula)" },
+            { title: "Minority Report", year: 2054, url: "https://es.wikipedia.org/wiki/Minority_Report" }, 
+            { title: "Total Recall", year: 2084, url: "https://es.wikipedia.org/wiki/Total_Recall_(pel%C3%ADcula_de_1990)" },
+            { title: "A.I. Artificial Intelligence", year: 2101, url: "https://es.wikipedia.org/wiki/Inteligencia_artificial_(pel%C3%ADcula)" }, 
+            { title: "Alien", year: 2122, url: "https://es.wikipedia.org/wiki/Alien:_el_octavo_pasajero" },
+            { title: "The Black Hole", year: 2130, url: "https://es.wikipedia.org/wiki/The_Black_Hole" }, 
+            { title: "Sleeper", year: 2173, url: "https://es.wikipedia.org/wiki/Sleeper_(pel%C3%ADcula)" },
+            { title: "The Matrix", year: 2199, url: "https://es.wikipedia.org/wiki/The_Matrix" }, 
+            { title: "Forbidden Planet", year: 2220, url: "https://es.wikipedia.org/wiki/Forbidden_Planet" },
+            { title: "The Fifth Element", year: 2263, url: "https://es.wikipedia.org/wiki/El_quinto_elemento" }, 
+            { title: "Zardoz", year: 2293, url: "https://es.wikipedia.org/wiki/Zardoz" },
+            { title: "Star Trek: The Motion Picture", year: 2387, url: "https://es.wikipedia.org/wiki/Star_Trek:_The_Motion_Picture" }, 
+            { title: "Logan's Run", year: 2500, url: "https://es.wikipedia.org/wiki/Logan's_Run_(pel%C3%ADcula)" },
+            { title: "Idiocracy", year: 2505, url: "https://es.wikipedia.org/wiki/Idiocracy" }, 
+            { title: "Planet of The Apes", year: 3978, displayYear: "3978", url: "https://es.wikipedia.org/wiki/El_planeta_de_los_simios_(pel%C3%ADcula_de_1968)" },
+            { title: "Dune", year: 10191, displayYear: "10,191", url: "https://es.wikipedia.org/wiki/Dune_(pel%C3%ADcula_de_1984)" },
+            { title: "Barbarella", year: 40000, displayYear: "40,000", url: "https://es.wikipedia.org/wiki/Barbarella" }
         ].sort((a,b) => a.year - b.year);
         const yearStart = 1990;
         const yearEnd = 41000;
@@ -383,7 +363,6 @@
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
             setupNavigation();
-            populateTitles();
             initThree();
             animateThree();
             p5Instance = new p5(sketch);
@@ -443,43 +422,8 @@
             }
         }
 
-        // --- DOM MANIPULATION & INTERACTIVITY ---
-        function populateTitles() {
-            const titlesColumn = document.getElementById('movie-titles-column');
-            titlesColumn.innerHTML = ''; 
-            movies.forEach((movie, index) => {
-                // CAMBIO: Se crea un enlace <a> en lugar de un div
-                const titleEl = document.createElement('a');
-                titleEl.className = 'movie-title';
-                titleEl.textContent = movie.title;
-                titleEl.dataset.index = index;
-                // Se construye la URL de Wikipedia a partir del título de la película
-                const wikipediaTitle = movie.title.replace(/ /g, '_');
-                titleEl.href = `https://es.wikipedia.org/wiki/${wikipediaTitle}`;
-                // Se abre el enlace en una nueva pestaña
-                titleEl.target = "_blank";
-                titlesColumn.appendChild(titleEl);
-            });
-        }
-        
-        function updateTitleStyles(barHeight, barSpacing, firstBarY) {
-              const titles = document.querySelectorAll('.movie-title');
-              const titlesColumn = document.getElementById('movie-titles-column');
-              if(!titlesColumn) return;
-
-              titlesColumn.style.paddingTop = `${firstBarY - barHeight / 2}px`;
-              titles.forEach(title => {
-                title.style.height = `${barHeight}px`;
-                title.style.marginBottom = `${barSpacing}px`;
-              });
-        }
-
+        // --- DOM MANIPULATION ---
         function updateDOMOnHover(index) {
-            const titles = document.querySelectorAll('.movie-title');
-            titles.forEach((title, i) => {
-                title.classList.toggle('highlighted', i === index);
-            });
-
             const tooltip = document.getElementById('timeline-tooltip');
             if (index !== -1) {
                 const movie = movies[index];
@@ -511,13 +455,12 @@
                 barHeight = singleEntryHeight * 0.8;
                 barSpacing = singleEntryHeight * 0.2;
                 firstBarY = barHeight / 2;
-                updateTitleStyles(barHeight, barSpacing, firstBarY);
             }
 
             p.setup = () => {
-                calculateDimensions();
-                let cnv = p.createCanvas(container.offsetWidth, totalHeight);
+                let cnv = p.createCanvas(container.offsetWidth, container.offsetHeight);
                 cnv.parent('p5-canvas-container');
+                calculateDimensions();
                 p.frameRate(60);
                 for (let i = 0; i < 200; i++) {
                     stars.push({
@@ -541,18 +484,34 @@
             };
             
             p.windowResized = () => {
-                if(!container.offsetWidth) return;
+                if(!container.offsetWidth || !container.offsetHeight) return;
+                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
                 calculateDimensions();
-                p.resizeCanvas(container.offsetWidth, totalHeight);
+            };
+
+            p.mouseClicked = () => {
+                let clickedIndex = -1;
+                for (let i = 0; i < movies.length; i++) {
+                    const yPos = i * (barHeight + barSpacing) + firstBarY;
+                    if (p.mouseY > yPos - barHeight / 2 && p.mouseY < yPos + barHeight / 2) {
+                        clickedIndex = i;
+                        break;
+                    }
+                }
+                if (clickedIndex !== -1) {
+                    window.open(movies[clickedIndex].url, '_blank');
+                }
             };
             
             function handleHover() {
                 let foundIndex = -1;
-                for (let i = 0; i < movies.length; i++) {
-                    const yPos = i * (barHeight + barSpacing) + firstBarY;
-                    if (p.mouseY > yPos - barHeight / 2 && p.mouseY < yPos + barHeight / 2) {
-                        foundIndex = i;
-                        break;
+                if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
+                    for (let i = 0; i < movies.length; i++) {
+                        const yPos = i * (barHeight + barSpacing) + firstBarY;
+                        if (p.mouseY > yPos - barHeight / 2 && p.mouseY < yPos + barHeight / 2) {
+                            foundIndex = i;
+                            break;
+                        }
                     }
                 }
                 if (foundIndex !== hoveredMovieIndex) {
@@ -576,9 +535,13 @@
                     const yPos = i * (barHeight + barSpacing) + firstBarY;
                     const logYear = Math.log(movie.year - yearStart + 1);
                     const logEnd = Math.log(yearEnd - yearStart + 1);
-                    const barWidth = p.map(logYear, 0, logEnd, 0, p.width * 0.8);
+                    
+                    const maxBarWidth = p.width * 0.65; // Reserve space on the right for the planet
+                    const minBarWidth = p.width * 0.05;
+                    const barWidth = p.map(logYear, 0, logEnd, minBarWidth, maxBarWidth); 
                     const animatedWidth = barWidth * p.easing.easeOutCubic(animationProgress);
 
+                    // Draw Bar
                     p.noStroke();
                     let gradient = p.drawingContext.createLinearGradient(0, yPos, animatedWidth, yPos);
                     gradient.addColorStop(0, '#22d3ee');
@@ -594,15 +557,35 @@
                     }
                     p.rectMode(p.CENTER);
                     p.rect(animatedWidth / 2, yPos, animatedWidth, barHeight, 5);
-                    p.rectMode(p.CORNER);
-
+                    
+                    // Draw Text Inside Bar
                     p.noStroke();
+                    p.fill(0, 0, 0, 200); // Dark text for contrast
+                    p.textFont('Inter'); // FIXED: Changed from var(--font-main)
+                    
+                    // --- Dynamic Text Sizing ---
+                    let idealTextSize = barHeight * 0.5;
+                    p.textSize(idealTextSize);
+                    // Reduce text size until it fits
+                    while (p.textWidth(movie.title.toUpperCase()) > animatedWidth - 20 && idealTextSize > 6) {
+                        idealTextSize -= 0.5;
+                        p.textSize(idealTextSize);
+                    }
+                    
+                    p.textAlign(p.CENTER, p.CENTER);
+                    if (animatedWidth > p.textWidth(movie.title.toUpperCase()) + 10) {
+                       p.text(movie.title.toUpperCase(), animatedWidth / 2, yPos);
+                    }
+
+
+                    // Draw Year Text
                     p.fill(255);
                     p.textFont('Orbitron');
                     p.textSize(p.max(8, barHeight * 0.4));
                     p.textAlign(p.LEFT, p.CENTER);
                     const yearText = movie.displayYear || movie.year;
                     p.text(yearText, animatedWidth + 15, yPos);
+                    p.rectMode(p.CORNER); // Reset rectMode
                 });
             }
             
@@ -626,46 +609,47 @@
 
                 const logYear = Math.log(currentYear - yearStart + 1);
                 const logEnd = Math.log(yearEnd - yearStart + 1);
-                const xPos = p.map(logYear, 0, logEnd, 0, p.width * 0.8);
                 
-                // --- PARÁMETROS DE LA FLECHA "ESTÁS AQUÍ" (AQUÍ PUEDES HACER CAMBIOS)
-                // Modifica este valor para cambiar la altura del cuerpo de la flecha
-                const newRectHeight = p.max(10, barHeight * 0.4); 
-                // Modifica este valor para cambiar el tamaño de la punta
-                const newArrowHeadSize = newRectHeight * 0.5;
-                // Modifica este valor para cambiar la longitud del cuerpo de la flecha
-                const arrowBodyLength = p.width > 600 ? 55 : 40; 
-                // Modifica este valor para cambiar la posición de la punta de la flecha
-                const tipOffset = 45; 
+                const maxBarWidth = p.width * 0.65;
+                const minBarWidth = p.width * 0.05;
+                const xPos = p.map(logYear, 0, logEnd, minBarWidth, maxBarWidth); 
                 
-                // Estos valores definen el cuerpo de la flecha
-                const newTipX = xPos + tipOffset;
-                const newEndX = newTipX + newArrowHeadSize; 
-                const startX = p.min(p.width, newEndX + arrowBodyLength);
+                const rectHeight = p.max(8, barHeight * 0.35); 
+                const arrowHeadSize = rectHeight * 0.7;
+                const arrowBodyLength = p.width > 600 ? 55 : 35; 
+                const tipOffset = p.width > 600 ? 45 : 30; 
+                
+                const tipX = xPos + tipOffset;
+                const endX = tipX + arrowHeadSize; 
+                const startX = p.min(p.width - 10, endX + arrowBodyLength);
 
                 p.fill(220, 53, 69, 220);
                 p.stroke(255, 100, 100);
                 p.strokeWeight(1);
+                p.drawingContext.shadowOffsetX = 0;
+                p.drawingContext.shadowOffsetY = 0;
+                p.drawingContext.shadowBlur = 10;
+                p.drawingContext.shadowColor = 'rgba(220, 53, 69, 0.7)';
 
-                // Asegurar que la flecha esté por encima del planeta (z-index simulado por orden de dibujo)
                 p.beginShape();
-                p.vertex(startX, yPos - newRectHeight / 2);
-                p.vertex(newEndX, yPos - newRectHeight / 2);
-                p.vertex(newEndX, yPos - newRectHeight / 2 - newArrowHeadSize);
-                p.vertex(newTipX, yPos);
-                p.vertex(newEndX, yPos + newRectHeight / 2 + newArrowHeadSize);
-                p.vertex(newEndX, yPos + newRectHeight / 2);
-                p.vertex(startX, yPos + newRectHeight / 2);
+                p.vertex(startX, yPos - rectHeight / 2);
+                p.vertex(endX, yPos - rectHeight / 2);
+                p.vertex(endX, yPos - rectHeight / 2 - arrowHeadSize);
+                p.vertex(tipX, yPos);
+                p.vertex(endX, yPos + rectHeight / 2 + arrowHeadSize);
+                p.vertex(endX, yPos + rectHeight / 2);
+                p.vertex(startX, yPos + rectHeight / 2);
                 p.endShape(p.CLOSE);
+                
+                p.drawingContext.shadowBlur = 0;
 
                 p.noStroke();
                 p.fill(255);
                 p.textFont('Orbitron');
                 p.textStyle(p.BOLD);
-                p.textSize(p.width > 400 ? 8 : 6);
+                p.textSize(p.width > 400 ? 8 : 7);
                 p.textAlign(p.CENTER, p.CENTER);
-                p.text("ESTÁS AQUÍ", (startX + newEndX) / 2, yPos);
-                // ------------------------------------
+                p.text("ESTÁS AQUÍ", (startX + endX) / 2, yPos);
             }
         };
         
@@ -717,19 +701,20 @@
             let isDragging = false;
             let previousMousePosition = { x: 0, y: 0 };
             const domEl = renderer.domElement;
-            domEl.addEventListener('mousedown', (e) => { isDragging = true; previousMousePosition = { x: e.clientX, y: e.clientY }; });
-            domEl.addEventListener('mouseup', () => { isDragging = false; });
-            domEl.addEventListener('mouseleave', () => { isDragging = false; });
-            domEl.addEventListener('mousemove', (e) => {
-                if (!isDragging || !earthMesh) return;
-                const delta = { x: e.clientX - previousMousePosition.x, y: e.clientY - previousMousePosition.y };
-                earthMesh.rotation.y += delta.x * 0.005;
-                earthMesh.rotation.x += delta.y * 0.005;
-                previousMousePosition = { x: e.clientX, y: e.clientY };
-            });
-            domEl.addEventListener('wheel', (e) => {
-                e.preventDefault();
-            });
+            const addDragListeners = (el) => {
+                el.addEventListener('mousedown', (e) => { isDragging = true; previousMousePosition = { x: e.clientX, y: e.clientY }; });
+                el.addEventListener('mouseup', () => { isDragging = false; });
+                el.addEventListener('mouseleave', () => { isDragging = false; });
+                el.addEventListener('mousemove', (e) => {
+                    if (!isDragging || !earthMesh) return;
+                    const delta = { x: e.clientX - previousMousePosition.x, y: e.clientY - previousMousePosition.y };
+                    earthMesh.rotation.y += delta.x * 0.005;
+                    earthMesh.rotation.x += delta.y * 0.005;
+                    previousMousePosition = { x: e.clientX, y: e.clientY };
+                });
+                el.addEventListener('wheel', (e) => e.preventDefault());
+            };
+            addDragListeners(domEl);
         }
 
         function animateThree() {
