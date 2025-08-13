@@ -1,393 +1,621 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-gray-900">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Análisis Extensivo de "Conocer" por Francisco J. Varela</title>
+    <title>Análisis de "Conocer" de F. Varela | O.C.V.M.</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0;600;1,400&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
+        /* Estilos base y variables de color O.C.V.M. */
+        :root {
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --primary-text: #e5e7eb;
+            --primary-glow: #818cf8;
+            --secondary-glow: #22d3ee;
+            --font-main: 'Inter', sans-serif;
+            --font-serif: 'Lora', serif;
+            --nav-height: 70px;
+        }
+
+        /* Reset y configuración base del body */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
         body {
-            font-family: 'Inter', sans-serif;
-            overflow: hidden; /* Prevent body scroll, let the div handle it */
+            background-color: #000000;
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
+            overflow-x: hidden;
         }
-        h1, h2, h3, h4 {
-            font-family: 'Lora', serif;
-        }
-        #game-of-life-canvas {
+        
+        /* Canvas de fondo con Three.js */
+        #bg-canvas {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             z-index: -1;
         }
-        .content-wrapper {
-            background-color: rgba(17, 24, 39, 0.8); /* bg-gray-900 with opacity */
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+
+        /* Efecto Glassmorphism para elementos UI */
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.88);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1f2937; } /* bg-gray-800 */
-        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; } /* bg-gray-600 */
-        ::-webkit-scrollbar-thumb:hover { background: #6b7280; } /* bg-gray-500 */
+
+        /* Evita el scroll del body cuando el menú móvil está abierto */
+        body.menu-open { 
+            overflow: hidden; 
+        }
+        
+        /* Estilos para fuentes y resaltados de palabras clave */
+        h1, h2, h3, h4 { font-family: 'Lora', serif; }
+        .concept { 
+            color: var(--secondary); 
+            font-weight: 600;
+            text-shadow: 0 0 7px rgba(34, 211, 238, 0.4);
+        }
+        .person { 
+            color: #facc15; 
+            font-weight: 600;
+            text-shadow: 0 0 7px rgba(250, 204, 21, 0.4);
+        }
+
+        /* Estilos para la barra de navegación de pestañas */
+        .tab-nav-container { overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+        .tab-nav-container::-webkit-scrollbar { display: none; }
+        .tab-nav { flex-wrap: nowrap !important; }
+        .tab-btn { transition: color 0.3s, border-color 0.3s, background-color 0.3s; white-space: nowrap; flex-shrink: 0; }
+        .active-tab {
+            border-color: var(--primary);
+            color: var(--primary);
+            background-color: rgba(129, 140, 248, 0.1);
+            text-shadow: 0 0 5px var(--primary-glow);
+        }
+        .inactive-tab {
+            border-color: transparent;
+            color: var(--primary-text);
+        }
+        .inactive-tab:hover {
+            color: #FFFFFF;
+            border-color: rgba(129, 140, 248, 0.5);
+        }
+        
+        /* Animación para el contenido de las pestañas */
         .tab-content { display: none; }
+        .tab-content p { text-align: justify; }
         .tab-content.active { display: block; animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .active-tab {
-            border-color: #60a5fa; /* border-blue-400 */
-            color: #60a5fa; /* text-blue-400 */
-            background-color: rgba(55, 65, 81, 0.5); /* bg-gray-700/50 */
+
+        /* Estilos para el menú móvil (off-canvas) */
+        #nav-menu {
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
-        .inactive-tab {
-            border-color: transparent;
-            color: #9ca3af; /* text-gray-400 */
+        body.menu-open #nav-menu {
+            transform: translateX(0);
         }
-        .inactive-tab:hover {
-            color: #e5e7eb; /* hover:text-gray-200 */
-            border-color: #4b5563; /* hover:border-gray-600 */
+        
+        /* Estilos para el botón del menú hamburguesa */
+        .icon-bar {
+            transition: all 0.3s ease-in-out;
         }
-        .concept { color: #2dd4bf; font-weight: 600; } /* text-teal-400 */
-        .person { color: #facc15; font-weight: 600; } /* text-yellow-400 */
+        body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+        body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
+        body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(6px, -7px); }
+
+        /* Estilos para el mega menú en versión de escritorio */
+        @media (min-width: 1024px) {
+            .mega-menu {
+                position: fixed;
+                top: var(--nav-height);
+                left: 50%;
+                transform: translateX(-50%) scale(0.95);
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0.3s;
+                transform-origin: top center;
+            }
+            .nav-item:hover .mega-menu, .mega-menu:hover {
+                opacity: 1;
+                visibility: visible;
+                transform: translateX(-50%) scale(1);
+                transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0s;
+            }
+            .mega-menu a::before {
+                content: '›';
+                color: var(--primary-glow);
+                position: absolute;
+                left: 0.75rem;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 1.2em;
+                transition: color 0.3s;
+            }
+            .mega-menu a:hover {
+                color: #000;
+                background-color: var(--primary-glow);
+                padding-left: 2.5rem;
+            }
+            .mega-menu a:hover::before { color: #000; }
+        }
     </style>
 </head>
-<body class="h-full text-gray-200">
+<body class="antialiased">
+    <canvas id="bg-canvas"></canvas>
+    
+    <!-- Barra de Navegación Principal -->
+    <nav class="glassmorphism fixed top-0 w-full z-50 h-[var(--nav-height)]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+            <div class="flex items-center justify-between h-full">
+                <!-- Logo -->
+                <div class="flex-shrink-0">
+                    <a href="index.html" class="flex items-center gap-3 text-white text-xl font-bold" style="text-shadow: 0 0 8px var(--primary-glow);">
+                        <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-10 w-10 rounded-full">
+                        <span>O.C.V.M.</span>
+                    </a>
+                </div>
 
-    <canvas id="game-of-life-canvas"></canvas>
+                <!-- Menú de Escritorio -->
+                <div class="hidden lg:block">
+                    <ul class="ml-10 flex items-center space-x-2 h-full">
+                        <!-- Aquí se insertaría el menú de navegación completo para escritorio -->
+                        <li class="nav-item h-full flex items-center"><a href="index.html" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Inicio</a></li>
+                        <li class="nav-item h-full flex items-center relative group">
+                            <a href="#" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Origen de la Mente</a>
+                            <div class="mega-menu glassmorphism rounded-lg w-auto min-w-[400px] p-6 grid grid-cols-2 gap-x-8 gap-y-4">
+                                <div>
+                                    <h3 class="font-semibold text-base text-[var(--primary-glow)] mb-3 pb-2 border-b border-indigo-500/30">Filosofía y Cognición</h3>
+                                    <ul class="space-y-2">
+                                        <li><a href="conocer_fv.html" class="block text-sm text-gray-300 hover:text-white relative pl-8 py-1 rounded">Conocer, FV</a></li>
+                                        <li><a href="Feno_style.html" class="block text-sm text-gray-300 hover:text-white relative pl-8 py-1 rounded">Aproximación Fenomenológica</a></li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-base text-[var(--primary-glow)] mb-3 pb-2 border-b border-indigo-500/30">Autores y Referentes</h3>
+                                    <ul class="space-y-2">
+                                        <li><a href="PAPERS_VARELA.HTML" class="block text-sm text-gray-300 hover:text-white relative pl-8 py-1 rounded">Publicaciones de Varela</a></li>
+                                        <li><a href="CITAS.HTML" class="block text-sm text-gray-300 hover:text-white relative pl-8 py-1 rounded">Fragmentos de Mentes</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </li>
+                        <!-- Añadir más elementos del menú aquí -->
+                    </ul>
+                </div>
 
-    <div class="h-full overflow-y-auto">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        
-            <header class="text-center mb-12">
-                <h1 class="text-4xl sm:text-5xl font-bold text-blue-400">CONOCER: Las Ciencias Cognitivas</h1>
-                <p class="text-lg text-gray-400 mt-2">Una cartografía profunda de las ideas actuales por <span class="person">Francisco J. Varela</span>.</p>
+                <!-- Botón de Menú Móvil -->
+                <div class="lg:hidden">
+                    <button id="menu-toggle-btn" class="menu-toggle inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none" aria-label="Abrir menú principal">
+                        <span class="w-[24px] h-[20px] relative">
+                            <span class="icon-bar block w-full h-0.5 bg-current rounded-full absolute top-0 left-0"></span>
+                            <span class="icon-bar block w-full h-0.5 bg-current rounded-full absolute top-1/2 -translate-y-1/2 left-0"></span>
+                            <span class="icon-bar block w-full h-0.5 bg-current rounded-full absolute bottom-0 left-0"></span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de Menú Móvil (Off-canvas) -->
+        <div id="nav-menu" class="lg:hidden fixed top-[var(--nav-height)] right-0 h-[calc(100vh-var(--nav-height))] w-full max-w-xs bg-gray-900/95 backdrop-blur-lg shadow-lg p-6 transform translate-x-full overflow-y-auto">
+             <!-- Aquí se insertaría el menú de navegación completo para móvil -->
+             <ul class="flex flex-col space-y-2">
+                <li><a href="index.html" class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium">Inicio</a></li>
+                <li>
+                    <details>
+                        <summary class="cursor-pointer text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium">Origen de la Mente</summary>
+                        <ul class="pl-4 mt-2 space-y-1 border-l border-gray-600">
+                             <li><a href="conocer_fv.html" class="block text-gray-400 hover:text-white px-3 py-2 rounded-md text-sm">Conocer, FV</a></li>
+                             <li><a href="Feno_style.html" class="block text-gray-400 hover:text-white px-3 py-2 rounded-md text-sm">Aprox. Fenomenológica</a></li>
+                             <li><a href="PAPERS_VARELA.HTML" class="block text-gray-400 hover:text-white px-3 py-2 rounded-md text-sm">Publicaciones Varela</a></li>
+                             <li><a href="CITAS.HTML" class="block text-gray-400 hover:text-white px-3 py-2 rounded-md text-sm">Fragmentos de Mentes</a></li>
+                        </ul>
+                    </details>
+                </li>
+                <!-- Añadir más elementos del menú aquí -->
+             </ul>
+        </div>
+    </nav>
+
+    <!-- Contenedor Principal del Contenido -->
+    <div class="pt-[var(--nav-height)]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <header class="text-center py-12 sm:py-16 md:py-20">
+                <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold text-white" style="text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(129, 140, 248, 0.7);">
+                    CONOCER: Las Ciencias Cognitivas
+                </h1>
+                <p class="mt-4 text-lg sm:text-xl md:text-2xl max-w-3xl mx-auto text-gray-300">
+                    Una cartografía profunda de las ideas actuales por <span class="person">Francisco J. Varela</span>.
+                </p>
             </header>
 
             <main>
-                <div class="content-wrapper rounded-2xl shadow-2xl shadow-blue-500/10 overflow-hidden">
-                    <div class="border-b border-gray-700">
-                        <nav class="flex flex-wrap -mb-px" id="tab-nav">
-                            <a href="#" class="tab-btn active-tab flex-grow sm:flex-grow-0 items-center justify-center w-1/2 md:w-auto text-center p-4 border-b-2 font-medium text-sm sm:text-base" data-tab="intro">Introducción</a>
-                            <a href="#" class="tab-btn inactive-tab flex-grow sm:flex-grow-0 items-center justify-center w-1/2 md:w-auto text-center p-4 border-b-2 font-medium text-sm sm:text-base" data-tab="cap1_2">Etapa 1: Cibernética</a>
-                            <a href="#" class="tab-btn inactive-tab flex-grow sm:flex-grow-0 items-center justify-center w-1/2 md:w-auto text-center p-4 border-b-2 font-medium text-sm sm:text-base" data-tab="cap3">Etapa 2: Símbolos</a>
-                            <a href="#" class="tab-btn inactive-tab flex-grow sm:flex-grow-0 items-center justify-center w-1/2 md:w-auto text-center p-4 border-b-2 font-medium text-sm sm:text-base" data-tab="cap4">Etapa 3: Emergencia</a>
-                            <a href="#" class="tab-btn inactive-tab flex-grow sm:flex-grow-0 items-center justify-center w-1/2 md:w-auto text-center p-4 border-b-2 font-medium text-sm sm:text-base" data-tab="cap5">Etapa 4: Enacción</a>
-                            <a href="#" class="tab-btn inactive-tab flex-grow sm:flex-grow-0 items-center justify-center w-1/2 md:w-auto text-center p-4 border-b-2 font-medium text-sm sm:text-base" data-tab="cap6">Conclusiones</a>
+                <section class="section glassmorphism rounded-2xl mb-8">
+                    <div class="tab-nav-container border-b border-[var(--primary-dark)]/30">
+                        <nav class="flex space-x-2 sm:space-x-4 px-2 sm:px-4" id="tab-nav">
+                            <a href="#" class="tab-btn active-tab py-3 px-4 text-sm sm:text-base font-medium text-center border-b-2" data-tab="intro">Introducción</a>
+                            <a href="#" class="tab-btn inactive-tab py-3 px-4 text-sm sm:text-base font-medium text-center border-b-2" data-tab="cap1_2">Etapa 1: Cibernética</a>
+                            <a href="#" class="tab-btn inactive-tab py-3 px-4 text-sm sm:text-base font-medium text-center border-b-2" data-tab="cap3">Etapa 2: Símbolos</a>
+                            <a href="#" class="tab-btn inactive-tab py-3 px-4 text-sm sm:text-base font-medium text-center border-b-2" data-tab="cap4">Etapa 3: Emergencia</a>
+                            <a href="#" class="tab-btn inactive-tab py-3 px-4 text-sm sm:text-base font-medium text-center border-b-2" data-tab="cap5">Etapa 4: Enacción</a>
+                            <a href="#" class="tab-btn inactive-tab py-3 px-4 text-sm sm:text-base font-medium text-center border-b-2" data-tab="cap6">Conclusiones</a>
                         </nav>
                     </div>
 
-                    <div class="p-6 sm:p-8">
-                        <!-- Pestaña Introducción -->
+                    <div class="p-4 sm:p-6 md:p-8">
+                        <!-- Contenido de la pestaña Introducción -->
                         <div id="intro" class="tab-content active">
-                            <h2 class="text-3xl font-bold text-gray-100 mb-4">Introducción: Una Tarea Ambiciosa</h2>
-                            <p class="mb-6 text-lg text-gray-300">En esta obra, <span class="person">Francisco Varela</span> emprende la ambiciosa tarea de cartografiar el paisaje de las <span class="concept">ciencias cognitivas</span>. Advierte que su visión no es neutral, sino la de un participante activo que busca tejer un diálogo entre la tradición científica predominante y corrientes de pensamiento a menudo marginadas. Su introducción se fundamenta en dos observaciones críticas:</p>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-gray-100 mb-4" style="color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);">Introducción: Una Tarea Ambiciosa</h2>
+                            <p class="mb-6 text-base sm:text-lg text-gray-300">En esta obra, <span class="person">Francisco Varela</span> emprende la ambiciosa tarea de cartografiar el paisaje de las <span class="concept">ciencias cognitivas</span>. Advierte que su visión no es neutral, sino la de un participante activo que busca tejer un diálogo entre la tradición científica predominante y corrientes de pensamiento a menudo marginadas. Su introducción se fundamenta en dos observaciones críticas:</p>
                             
                             <div class="grid md:grid-cols-2 gap-6 mb-6">
-                                <div class="bg-gray-700/50 p-6 rounded-lg border border-blue-500/30">
-                                    <h3 class="text-xl font-semibold text-blue-300 mb-3">Observación Epistemológica</h3>
+                                <div class="bg-black/20 p-6 rounded-lg border border-[var(--primary)]/30">
+                                    <h3 class="text-xl font-semibold text-[var(--primary)] mb-3">Observación Epistemológica</h3>
                                     <p class="text-gray-300">Varela, influenciado por historiadores como <span class="person">Alexander Koyré</span>, sostiene que la ciencia no es un progreso lineal, sino una narrativa con <span class="concept">mutaciones radicales</span>. La fase moderna de las ciencias cognitivas es una de estas mutaciones, donde el conocimiento mismo se vuelve objeto de estudio científico, inseparable de la tecnología (como la <span class="concept">Inteligencia Artificial</span>). Esto nos confronta con preguntas fundamentales: ¿Es la mente una simple manipulación de símbolos?</p>
                                 </div>
-                                <div class="bg-gray-700/50 p-6 rounded-lg border border-purple-500/30">
-                                    <h3 class="text-xl font-semibold text-purple-300 mb-3">Observación Sociopolítica</h3>
+                                <div class="bg-black/20 p-6 rounded-lg border border-[var(--primary)]/30">
+                                    <h3 class="text-xl font-semibold text-[var(--primary)] mb-3">Observación Sociopolítica</h3>
                                     <p class="text-gray-300">Critica el poder hegemónico de la ciencia cognitiva estadounidense (el <span class="concept">"estilo MIT"</span>), que tiende a ignorar valiosas tradiciones europeas. Varela reivindica la importancia del <span class="concept">movimiento fenomenológico</span> (con figuras como <span class="person">Edmund Husserl</span> y <span class="person">Maurice Merleau-Ponty</span>) y la <span class="concept">epistemología genética</span> de <span class="person">Jean Piaget</span>, instando a Europa a valerse de estas tradiciones para enriquecer el debate global.</p>
                                 </div>
                             </div>
                             
-                            <div class="my-8">
-                                <figure class="bg-gray-900/50 p-4 rounded-lg text-center">
-                                    <img src="https://i.imgur.com/g8r4Y2y.png" alt="Diagrama de las disciplinas que componen las CTC" class="w-full max-w-md mx-auto h-auto rounded-md bg-white p-2" onerror="this.onerror=null;this.src='https://placehold.co/600x400/111827/9ca3af?text=Figura+1:+Disciplinas+de+las+CTC';">
-                                    <figcaption class="mt-2 text-sm text-gray-400">Figura 1. Las principales disciplinas que forman parte de las <span class="concept">Ciencias y Tecnologías de la Cognición (CTC)</span>.</figcaption>
-                                </figure>
-                            </div>
+                            <figure class="bg-black/30 p-4 rounded-lg text-center my-8">
+                                <img src="https://i.imgur.com/g8r4Y2y.png" alt="Diagrama de las disciplinas que componen las CTC" class="w-full max-w-md mx-auto h-auto rounded-md bg-white p-2" onerror="this.onerror=null;this.src='https://placehold.co/600x400/111827/9ca3af?text=Figura+1:+Disciplinas+de+las+CTC';">
+                                <figcaption class="mt-2 text-sm text-gray-400">Figura 1. Las principales disciplinas que forman parte de las <span class="concept">Ciencias y Tecnologías de la Cognición (CTC)</span>.</figcaption>
+                            </figure>
 
-                            <blockquote class="mt-4 p-4 rounded-md bg-gray-700 border-l-4 border-blue-400 text-gray-300">
+                            <blockquote class="mt-4 p-4 rounded-md bg-[var(--primary)]/5 border-l-4 border-[var(--primary)] text-gray-300">
                                 <p>"Argumentaré que la <span class="concept">información</span> es semejante a un moderno <span class="concept">flogisto</span>... El pivote de la cognición es precisamente su capacidad para explicar la significación y las regularidades; la información no debe aparecer como un orden intrínseco sino como un <span class="concept">orden emergente</span> de las actividades cognitivas mismas."</p>
                             </blockquote>
                         </div>
-
-                        <!-- Pestaña Etapa 1 -->
+                        
+                        <!-- Contenido de la pestaña Etapa 1 -->
                         <div id="cap1_2" class="tab-content">
-                            <h2 class="text-3xl font-bold text-gray-100 mb-6">Etapa 1: Los Años Jóvenes - La Cibernética (1940-1956)</h2>
-                            <p class="text-lg text-gray-300 mb-6">Este período fundacional, bautizado como <span class="concept">cibernética</span> por <span class="person">Norbert Wiener</span>, fue un esfuerzo interdisciplinario sin precedentes para crear una "ciencia de la mente". Varela destaca la sincronicidad de figuras como <span class="person">Jean Piaget</span> en Suiza, <span class="person">Konrad Lorenz</span> con su epistemología evolutiva, y <span class="person">Warren McCulloch</span> con su epistemología experimental.</p>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-gray-100 mb-6" style="color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);">Etapa 1: Los Años Jóvenes - La Cibernética (1940-1956)</h2>
+                            <p class="text-base sm:text-lg text-gray-300 mb-6">Este período fundacional, bautizado como <span class="concept">cibernética</span> por <span class="person">Norbert Wiener</span>, fue un esfuerzo interdisciplinario sin precedentes para crear una "ciencia de la mente". Varela destaca la sincronicidad de figuras como <span class="person">Jean Piaget</span> en Suiza, <span class="person">Konrad Lorenz</span> con su epistemología evolutiva, y <span class="person">Warren McCulloch</span> con su epistemología experimental.</p>
 
                             <div class="space-y-8">
-                                <div class="p-6 bg-gray-700/50 rounded-lg border border-gray-600">
-                                    <h3 class="text-2xl font-semibold text-blue-300 mb-2">La Lógica como Clave de la Mente</h3>
+                                <div class="p-6 bg-black/20 rounded-lg border border-[var(--primary)]/30">
+                                    <h3 class="text-xl sm:text-2xl font-semibold text-[var(--primary)] mb-2">La Lógica como Clave de la Mente</h3>
                                     <p class="text-gray-300 mb-4">El momento decisivo fue el artículo de 1943 de <span class="person">Warren McCulloch</span> y <span class="person">Walter Pitts</span>, que propuso dos ideas revolucionarias: 1) La lógica es la disciplina adecuada para entender la mente. 2) El cerebro encarna principios lógicos a través de sus neuronas, concebidas como <span class="concept">autómatas-umbral</span> (activas/inactivas equivalen a verdad/falsedad). Esta visión del cerebro como una máquina deductiva fue fundamental para que <span class="person">John von Neumann</span>, inspirado también por <span class="person">Alan Turing</span>, diseñara la <span class="concept">arquitectura del ordenador digital</span> que aún usamos.</p>
                                     <figure>
                                         <img src="https://i.imgur.com/s6n5g8a.png" alt="Diagrama de neuronas de McCulloch-Pitts" class="w-full max-w-sm mx-auto h-auto rounded-md bg-white p-2" onerror="this.onerror=null;this.src='https://placehold.co/600x300/111827/9ca3af?text=Figura+2:+Neuronas+de+McCulloch-Pitts';">
                                         <figcaption class="mt-2 text-xs text-gray-500 text-center">Figura 2. Esquema de las <span class="concept">neuronas de McCulloch-Pitts</span>, capaces de realizar operaciones lógicas.</figcaption>
                                     </figure>
                                 </div>
-                                <div class="p-6 bg-gray-700/50 rounded-lg border border-gray-600">
-                                    <h3 class="text-2xl font-semibold text-blue-300 mb-2">Los Frutos y las Semillas Ocultas</h3>
+                                <div class="p-6 bg-black/20 rounded-lg border border-[var(--primary)]/30">
+                                    <h3 class="text-xl sm:text-2xl font-semibold text-[var(--primary)] mb-2">Los Frutos y las Semillas Ocultas</h3>
                                     <p class="text-gray-300">Las famosas <span class="concept">Conferencias de Macy</span> fueron el crisol de estas ideas, produciendo la <span class="concept">Teoría de Sistemas</span>, la <span class="concept">Teoría de la Información</span> de <span class="person">Shannon</span>, y los primeros ejemplos de <span class="concept">sistemas autoorganizativos</span>. Varela subraya que esta última idea, que veía al cerebro como un sistema distribuido y no centralizado, fue eclipsada por el modelo computacional, quedando latente hasta su resurgimiento décadas más tarde.</p>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Pestaña Etapa 2 -->
+                        <!-- Contenido de la pestaña Etapa 2 -->
                         <div id="cap3" class="tab-content">
-                             <h2 class="text-3xl font-bold text-gray-100 mb-6">Etapa 2: Los Símbolos y la Hipótesis Cognitivista</h2>
-                             <p class="text-lg text-gray-300 mb-6">En 1956, en encuentros clave en Cambridge y Dartmouth, una nueva generación liderada por <span class="person">Herbert Simon</span>, <span class="person">Noam Chomsky</span> y <span class="person">Marvin Minsky</span> consolidó una nueva ortodoxia: el <span class="concept">cognitivismo</span>. Su idea central es que la inteligencia es, en esencia, computación, y la cognición se define como la <span class="concept">computación de representaciones simbólicas</span>.</p>
+                             <h2 class="text-2xl sm:text-3xl font-bold text-gray-100 mb-6" style="color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);">Etapa 2: Los Símbolos y la Hipótesis Cognitivista</h2>
+                             <p class="text-base sm:text-lg text-gray-300 mb-6">En 1956, en encuentros clave en Cambridge y Dartmouth, una nueva generación liderada por <span class="person">Herbert Simon</span>, <span class="person">Noam Chomsky</span> y <span class="person">Marvin Minsky</span> consolidó una nueva ortodoxia: el <span class="concept">cognitivismo</span>. Su idea central es que la inteligencia es, en esencia, computación, y la cognición se define como la <span class="concept">computación de representaciones simbólicas</span>.</p>
                              
-                             <blockquote class="mt-4 mb-6 p-4 rounded-md bg-gray-700 border-l-4 border-blue-400 text-gray-300">
-                                <p><strong><span class="concept">Hipótesis del Sistema de Símbolos Físicos</span>:</strong> La inteligencia y la <span class="concept">intencionalidad</span> (el ser "acerca de algo") se explican postulando que la cognición consiste en actuar sobre la base de representaciones que tienen una realidad física como un código simbólico en el cerebro o una máquina.</p>
+                             <blockquote class="my-6 p-4 rounded-md bg-[var(--primary)]/5 border-l-4 border-[var(--primary)] text-gray-300">
+                                 <p><strong><span class="concept">Hipótesis del Sistema de Símbolos Físicos</span>:</strong> La inteligencia y la <span class="concept">intencionalidad</span> (el ser "acerca de algo") se explican postulando que la cognición consiste en actuar sobre la base de representaciones que tienen una realidad física como un código simbólico en el cerebro o una máquina.</p>
                              </blockquote>
 
-                             <div class="my-8">
-                                <figure class="bg-gray-900/50 p-4 rounded-lg text-center">
-                                    <img src="https://i.imgur.com/uGzJ4Jk.png" alt="Caricatura de un martín pescador calculando la refracción" class="w-full max-w-lg mx-auto h-auto rounded-md" onerror="this.onerror=null;this.src='https://placehold.co/600x400/111827/9ca3af?text=Figura+3:+Hipótesis+Cognitivista';">
-                                    <figcaption class="mt-2 text-sm text-gray-400">Figura 3. Caricatura que ilustra la hipótesis cognitivista: el sistema cognitivo debe poseer una representación interna de las leyes del mundo para actuar eficazmente.</figcaption>
-                                </figure>
-                            </div>
+                             <figure class="bg-black/30 p-4 rounded-lg text-center my-8">
+                                 <img src="https://i.imgur.com/uGzJ4Jk.png" alt="Caricatura de un martín pescador calculando la refracción" class="w-full max-w-lg mx-auto h-auto rounded-md" onerror="this.onerror=null;this.src='https://placehold.co/600x400/111827/9ca3af?text=Figura+3:+Hipótesis+Cognitivista';">
+                                 <figcaption class="mt-2 text-sm text-gray-400">Figura 3. Caricatura que ilustra la hipótesis cognitivista: el sistema cognitivo debe poseer una representación interna de las leyes del mundo para actuar eficazmente.</figcaption>
+                             </figure>
                              
-                             <div class="bg-gray-700/50 p-6 rounded-lg border border-purple-500/30">
-                                 <h3 class="text-xl font-semibold text-purple-300 mb-3">El Programa Cognitivista</h3>
+                             <div class="bg-black/20 p-6 rounded-lg border border-[var(--primary)]/30 mb-8">
+                                 <h3 class="text-xl font-semibold text-[var(--primary)] mb-3">El Programa Cognitivista</h3>
                                  <p class="text-gray-300 mb-3">Postula un <span class="concept">nivel de explicación simbólico</span>, irreductible a la física o la neurobiología. La IA es su vástago más directo, culminando en el ambicioso <span class="concept">Programa de Quinta Generación ICOT</span> de Japón. En neurociencia, llevó a la idea del cerebro como procesador de información, con neuronas como <span class="concept">"detectores de rasgos"</span> (idea popularizada por <span class="person">Hubel</span> y <span class="person">Wiesel</span>) y la doctrina extrema de la <span class="concept">"célula abuela"</span> de <span class="person">H. Barlow</span>. Pensadores como <span class="person">Zenon Pylyshyn</span> y <span class="person">Jerry Fodor</span> son defensores clave, mientras que críticos como <span class="person">John Searle</span> (con su famoso experimento mental del <span class="concept">"Cuarto Chino"</span>) cuestionan sus fundamentos.</p>
                              </div>
-                             <div class="mt-8 bg-gray-700/50 p-6 rounded-lg border-2 border-blue-400 shadow-lg shadow-blue-500/20">
-                                <h3 class="text-2xl font-semibold text-blue-300 mb-4 text-center">Las Tres Preguntas del Cognitivismo</h3>
-                                <div class="space-y-4">
-                                    <div>
-                                        <h4 class="font-bold text-lg text-white">1. ¿Qué es la cognición?</h4>
-                                        <p class="text-gray-300 pl-4 border-l-2 border-blue-300/50 ml-2">Es <span class="concept">procesamiento de información</span>, definido como la manipulación de símbolos basada en un conjunto de reglas explícitas (sintaxis). Se llega a esta respuesta al abstraer la esencia de la computación digital: un ordenador opera siguiendo un programa (reglas) sobre datos (símbolos) para producir un resultado. El cognitivismo extrapola este modelo a la mente humana, asumiendo que el pensamiento, la percepción y el lenguaje son, en su nivel fundamental, formas de computación.</p>
-                                    </div>
+                             <div class="bg-black/20 p-6 rounded-lg border-2 border-[var(--primary)] shadow-lg shadow-[var(--primary)]/20">
+                                 <h3 class="text-xl sm:text-2xl font-semibold text-[var(--primary)] mb-4 text-center">Las Tres Preguntas del Cognitivismo</h3>
+                                 <div class="space-y-4">
                                      <div>
-                                        <h4 class="font-bold text-lg text-white">2. ¿Cómo funciona?</h4>
-                                        <p class="text-gray-300 pl-4 border-l-2 border-blue-300/50 ml-2">Funciona a través de un <span class="concept">sistema de símbolos físicos</span> (un ordenador, un cerebro) que puede representar y manipular elementos discretos. Crucialmente, el sistema interactúa solo con la <span class="concept">forma</span> de los símbolos (su sintaxis), no con su <span class="concept">significado</span> (su semántica). Se llega a esta respuesta al resolver la paradoja de cómo un sistema puramente mecánico puede ser inteligente. La solución es el "golpe maestro" del cognitivismo: el programador diseña la sintaxis para que sea paralela a la semántica. Así, al manipular correctamente las formas, la máquina (o el cerebro) respeta los significados sin necesidad de "comprenderlos", permitiendo que la inteligencia sea un proceso físico.</p>
-                                    </div>
-                                     <div>
-                                        <h4 class="font-bold text-lg text-white">3. ¿Cómo saber que un sistema cognitivo funciona adecuadamente?</h4>
-                                        <p class="text-gray-300 pl-4 border-l-2 border-blue-300/50 ml-2">El sistema funciona adecuadamente cuando sus símbolos internos <span class="concept">representan apropiadamente</span> un aspecto del mundo real, y el procesamiento de esa información conduce a una <span class="concept">solución exitosa</span> del problema planteado. Se llega a esta respuesta estableciendo un criterio externo y objetivo de éxito. La "verdad" o corrección de la cognición se mide por su correspondencia con un mundo predefinido. Si el sistema tiene un mapa preciso del mundo (representaciones correctas) y sigue las reglas adecuadas, su comportamiento será exitoso.</p>
-                                    </div>
-                                </div>
-                            </div>
+                                         <h4 class="font-bold text-lg text-white">1. ¿Qué es la cognición?</h4>
+                                         <p class="text-gray-300 pl-4 border-l-2 border-[var(--primary)]/50 ml-2">Es <span class="concept">procesamiento de información</span>, definido como la manipulación de símbolos basada en un conjunto de reglas explícitas (sintaxis). Se llega a esta respuesta al abstraer la esencia de la computación digital: un ordenador opera siguiendo un programa (reglas) sobre datos (símbolos) para producir un resultado. El cognitivismo extrapola este modelo a la mente humana, asumiendo que el pensamiento, la percepción y el lenguaje son, en su nivel fundamental, formas de computación.</p>
+                                     </div>
+                                      <div>
+                                         <h4 class="font-bold text-lg text-white">2. ¿Cómo funciona?</h4>
+                                         <p class="text-gray-300 pl-4 border-l-2 border-[var(--primary)]/50 ml-2">Funciona a través de un <span class="concept">sistema de símbolos físicos</span> (un ordenador, un cerebro) que puede representar y manipular elementos discretos. Crucialmente, el sistema interactúa solo con la <span class="concept">forma</span> de los símbolos (su sintaxis), no con su <span class="concept">significado</span> (su semántica). Se llega a esta respuesta al resolver la paradoja de cómo un sistema puramente mecánico puede ser inteligente. La solución es el "golpe maestro" del cognitivismo: el programador diseña la sintaxis para que sea paralela a la semántica. Así, al manipular correctamente las formas, la máquina (o el cerebro) respeta los significados sin necesidad de "comprenderlos", permitiendo que la inteligencia sea un proceso físico.</p>
+                                     </div>
+                                      <div>
+                                         <h4 class="font-bold text-lg text-white">3. ¿Cómo saber que un sistema cognitivo funciona adecuadamente?</h4>
+                                         <p class="text-gray-300 pl-4 border-l-2 border-[var(--primary)]/50 ml-2">El sistema funciona adecuadamente cuando sus símbolos internos <span class="concept">representan apropiadamente</span> un aspecto del mundo real, y el procesamiento de esa información conduce a una <span class="concept">solución exitosa</span> del problema planteado. Se llega a esta respuesta estableciendo un criterio externo y objetivo de éxito. La "verdad" o corrección de la cognición se mide por su correspondencia con un mundo predefinido. Si el sistema tiene un mapa preciso del mundo (representaciones correctas) y sigue las reglas adecuadas, su comportamiento será exitoso.</p>
+                                     </div>
+                                 </div>
+                             </div>
                         </div>
 
-                        <!-- Pestaña Etapa 3 -->
+                        <!-- Contenido de la pestaña Etapa 3 -->
                         <div id="cap4" class="tab-content">
-                            <h2 class="text-3xl font-bold text-gray-100 mb-6">Etapa 3: La Emergencia y el Conexionismo</h2>
-                            <p class="text-lg text-gray-300 mb-6">A fines de los 70, las ideas de <span class="concept">autoorganización</span> de la cibernética resurgen con fuerza, dando lugar al <span class="concept">conexionismo</span>. Este enfoque nace de las limitaciones del cognitivismo: su naturaleza secuencial (el <span class="concept">"cuello de botella von Neumann"</span>) y su fragilidad ante fallos. Se inspira de nuevo en el cerebro, no como una máquina lógica, sino como una red de componentes simples interconectados.</p>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-gray-100 mb-6" style="color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);">Etapa 3: La Emergencia y el Conexionismo</h2>
+                            <p class="text-base sm:text-lg text-gray-300 mb-6">A fines de los 70, las ideas de <span class="concept">autoorganización</span> de la cibernética resurgen con fuerza, dando lugar al <span class="concept">conexionismo</span>. Este enfoque nace de las limitaciones del cognitivismo: su naturaleza secuencial (el <span class="concept">"cuello de botella von Neumann"</span>) y su fragilidad ante fallos. Se inspira de nuevo en el cerebro, no como una máquina lógica, sino como una red de componentes simples interconectados.</p>
                             
                             <div class="space-y-8">
-                                <div class="p-6 bg-gray-700/50 rounded-lg border border-gray-600">
-                                    <h3 class="text-2xl font-semibold text-blue-300 mb-2">La Estrategia Conexionista</h3>
+                                <div class="p-6 bg-black/20 rounded-lg border border-[var(--primary)]/30">
+                                    <h3 class="text-xl sm:text-2xl font-semibold text-[var(--primary)] mb-2">La Estrategia Conexionista</h3>
                                     <p class="text-gray-300 mb-4">Las propiedades cognitivas no residen en los componentes, sino que <span class="concept">emergen</span> de la interacción de la red. No hay un procesador central; el sistema converge hacia <span class="concept">estados globales estables (atractores)</span> de forma espontánea. El aprendizaje ocurre al modificar la fuerza de las conexiones, a menudo siguiendo la <span class="concept">Regla de Hebb</span>, propuesta por <span class="person">Donald Hebb</span> en 1949. Pioneros como <span class="person">Frank Rosenblatt</span> con su <span class="concept">Perceptrón</span> y <span class="person">W. R. Ashby</span> ya habían explorado estas ideas.</p>
                                     <figure>
                                         <img src="https://i.imgur.com/kS2xPjL.png" alt="Diagrama de una red de Hopfield" class="w-full max-w-lg mx-auto h-auto rounded-md bg-white p-2" onerror="this.onerror=null;this.src='https://placehold.co/600x400/111827/9ca3af?text=Figura+5:+Red+de+Hopfield';">
                                         <figcaption class="mt-2 text-xs text-gray-500 text-center">Figura 5. Ejemplo de una red conexionista (<span class="concept">Red de Hopfield</span>), que muestra cómo la computación colectiva de unidades simples puede resolver problemas complejos.</figcaption>
                                     </figure>
                                 </div>
-                                <div class="p-6 bg-gray-700/50 rounded-lg border border-gray-600">
-                                    <h3 class="text-2xl font-semibold text-blue-300 mb-2">El Abandono de los Símbolos</h3>
+                                <div class="p-6 bg-black/20 rounded-lg border border-[var(--primary)]/30">
+                                    <h3 class="text-xl sm:text-2xl font-semibold text-[var(--primary)] mb-2">El Abandono de los Símbolos</h3>
                                     <p class="text-gray-300">En el conexionismo, los símbolos desaparecen. El significado no está en elementos discretos, sino en <span class="concept">patrones de actividad globales y distribuidos</span>. Por eso se le llama el paradigma <span class="concept">"subsimbólico"</span> (término acuñado por <span class="person">Paul Smolensky</span>). Los símbolos del cognitivismo se ven como una descripción de alto nivel de las regularidades que emergen de la dinámica subyacente, similar a cómo el <span class="concept">código genético</span> solo tiene sentido dentro del metabolismo celular completo. Ejemplos modernos como <span class="concept">NetTalk</span> de <span class="person">T. Sejnowski</span> y <span class="person">C. Rosenbaum</span>, que aprende a leer mediante <span class="concept">retropropagación</span>, ilustran el poder de este enfoque.</p>
                                 </div>
-                                <div class="mt-8 bg-gray-700/50 p-6 rounded-lg border-2 border-blue-400 shadow-lg shadow-blue-500/20">
-                                    <h3 class="text-2xl font-semibold text-blue-300 mb-4 text-center">Las Tres Preguntas del Conexionismo</h3>
+                                <div class="mt-8 bg-black/20 p-6 rounded-lg border-2 border-[var(--primary)] shadow-lg shadow-[var(--primary)]/20">
+                                    <h3 class="text-xl sm:text-2xl font-semibold text-[var(--primary)] mb-4 text-center">Las Tres Preguntas del Conexionismo</h3>
                                     <div class="space-y-4">
                                         <div>
                                             <h4 class="font-bold text-lg text-white">1. ¿Qué es la cognición?</h4>
-                                            <p class="text-gray-300 pl-4 border-l-2 border-blue-300/50 ml-2">Es la <span class="concept">emergencia de estados globales</span> en una red de componentes simples. Se llega a esta respuesta al abandonar la idea de un procesador central y centrarse en la dinámica colectiva. En lugar de un programa que dicta la acción, la cognición es el resultado espontáneo de la cooperación entre miles de unidades simples (neuronas artificiales), cada una siguiendo reglas locales. La "solución" a un problema es un estado de equilibrio (un atractor) al que la red converge.</p>
+                                            <p class="text-gray-300 pl-4 border-l-2 border-[var(--primary)]/50 ml-2">Es la <span class="concept">emergencia de estados globales</span> en una red de componentes simples. Se llega a esta respuesta al abandonar la idea de un procesador central y centrarse en la dinámica colectiva. En lugar de un programa que dicta la acción, la cognición es el resultado espontáneo de la cooperación entre miles de unidades simples (neuronas artificiales), cada una siguiendo reglas locales. La "solución" a un problema es un estado de equilibrio (un atractor) al que la red converge.</p>
                                         </div>
                                          <div>
                                             <h4 class="font-bold text-lg text-white">2. ¿Cómo funciona?</h4>
-                                            <p class="text-gray-300 pl-4 border-l-2 border-blue-300/50 ml-2">Funciona a través de <span class="concept">reglas locales</span> que gobiernan la operación de cada unidad y <span class="concept">reglas de cambio (aprendizaje)</span> que modifican la fuerza de las conexiones entre ellas. Se llega a esta respuesta inspirándose en la neurobiología: la actividad de una neurona depende de sus vecinas, y la sinapsis cambia con la experiencia (plasticidad). En lugar de programar símbolos, se diseña una arquitectura de red y una regla de aprendizaje (como la Regla de Hebb o la retropropagación), y se deja que el sistema se "autoorganice" a través de la experiencia.</p>
+                                            <p class="text-gray-300 pl-4 border-l-2 border-[var(--primary)]/50 ml-2">Funciona a través de <span class="concept">reglas locales</span> que gobiernan la operación de cada unidad y <span class="concept">reglas de cambio (aprendizaje)</span> que modifican la fuerza de las conexiones entre ellas. Se llega a esta respuesta inspirándose en la neurobiología: la actividad de una neurona depende de sus vecinas, y la sinapsis cambia con la experiencia (plasticidad). En lugar de programar símbolos, se diseña una arquitectura de red y una regla de aprendizaje (como la Regla de Hebb o la retropropagación), y se deja que el sistema se "autoorganice" a través de la experiencia.</p>
                                         </div>
                                          <div>
                                             <h4 class="font-bold text-lg text-white">3. ¿Cómo saber que un sistema cognitivo funciona adecuadamente?</h4>
-                                            <p class="text-gray-300 pl-4 border-l-2 border-blue-300/50 ml-2">Funciona adecuadamente cuando las <span class="concept">propiedades emergentes</span> (los patrones globales) se corresponden con una aptitud cognitiva específica (p. ej., reconocer un rostro, clasificar un objeto). Se llega a esta respuesta cambiando el foco del símbolo individual a la coherencia global. El éxito no se mide por la corrección de un símbolo, sino por la capacidad de la red para asentarse en un estado global que sea una respuesta útil o correcta a una entrada determinada. La evaluación sigue siendo externa, pero el mecanismo es intrínsecamente distribuido.</p>
+                                            <p class="text-gray-300 pl-4 border-l-2 border-[var(--primary)]/50 ml-2">Funciona adecuadamente cuando las <span class="concept">propiedades emergentes</span> (los patrones globales) se corresponden con una aptitud cognitiva específica (p. ej., reconocer un rostro, clasificar un objeto). Se llega a esta respuesta cambiando el foco del símbolo individual a la coherencia global. El éxito no se mide por la corrección de un símbolo, sino por la capacidad de la red para asentarse en un estado global que sea una respuesta útil o correcta a una entrada determinada. La evaluación sigue siendo externa, pero el mecanismo es intrínsecamente distribuido.</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Pestaña Etapa 4 -->
+                        <!-- Contenido de la pestaña Etapa 4 -->
                         <div id="cap5" class="tab-content">
-                            <h2 class="text-3xl font-bold text-gray-100 mb-6">Etapa 4: La Enacción y la Crítica a la Representación</h2>
-                            <p class="text-lg text-gray-300 mb-6">Varela introduce aquí su crítica más profunda y original. Tanto el cognitivismo como el conexionismo, argumenta, comparten un supuesto fundamental: la cognición es la <span class="concept">representación</span> de un mundo externo, predefinido. La <span class="concept">posición enactiva</span> ataca esta idea de raíz, afirmando que la mayor capacidad de la cognición viviente no es resolver problemas, sino <span class="concept">plantear las cuestiones relevantes</span> que surgen en cada momento desde un trasfondo de <span class="concept">sentido común</span>.</p>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-gray-100 mb-6" style="color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);">Etapa 4: La Enacción y la Crítica a la Representación</h2>
+                            <p class="text-base sm:text-lg text-gray-300 mb-6">Varela introduce aquí su crítica más profunda y original. Tanto el cognitivismo como el conexionismo, argumenta, comparten un supuesto fundamental: la cognición es la <span class="concept">representación</span> de un mundo externo, predefinido. La <span class="concept">posición enactiva</span> ataca esta idea de raíz, afirmando que la mayor capacidad de la cognición viviente no es resolver problemas, sino <span class="concept">plantear las cuestiones relevantes</span> que surgen en cada momento desde un trasfondo de <span class="concept">sentido común</span>.</p>
 
-                            <blockquote class="mt-4 mb-6 p-4 rounded-md bg-gray-700 border-l-4 border-blue-400 text-gray-300">
+                            <blockquote class="my-6 p-4 rounded-md bg-[var(--primary)]/5 border-l-4 border-[var(--primary)] text-gray-300">
                                 <p><strong><span class="concept">Posición Enactiva</span>:</strong> El conocimiento no consiste en representar un mundo predefinido, sino en <span class="concept">"hacer emerger" o enactuar un mundo</span> a través de la acción. Conocedor y conocido, sujeto y objeto, se determinan mutuamente en un círculo indisociable. La cognición es <span class="concept">acción efectiva</span>.</p>
                             </blockquote>
 
-                            <div class="my-8">
-                                <figure class="bg-gray-900/50 p-4 rounded-lg text-center">
-                                    <img src="https://i.imgur.com/pB3t0qC.png" alt="Diagrama de acoplamiento estructural" class="w-full max-w-lg mx-auto h-auto rounded-md bg-white p-2" onerror="this.onerror=null;this.src='https://placehold.co/600x400/111827/9ca3af?text=Figura+10:+Acoplamiento+Estructural';">
-                                    <figcaption class="mt-2 text-sm text-gray-400">Figura 10. La idea de <span class="concept">acoplamiento estructural</span>: un sistema autónomo y su medio se co-determinan a través de una historia de interacciones, haciendo emerger un mundo de significados.</figcaption>
-                                </figure>
-                            </div>
+                            <figure class="bg-black/30 p-4 rounded-lg text-center my-8">
+                                <img src="https://i.imgur.com/pB3t0qC.png" alt="Diagrama de acoplamiento estructural" class="w-full max-w-lg mx-auto h-auto rounded-md bg-white p-2" onerror="this.onerror=null;this.src='https://placehold.co/600x400/111827/9ca3af?text=Figura+10:+Acoplamiento+Estructural';">
+                                <figcaption class="mt-2 text-sm text-gray-400">Figura 10. La idea de <span class="concept">acoplamiento estructural</span>: un sistema autónomo y su medio se co-determinan a través de una historia de interacciones, haciendo emerger un mundo de significados.</figcaption>
+                            </figure>
 
-                            <div class="bg-gray-700/50 p-6 rounded-lg border border-purple-500/30">
-                                <h3 class="text-xl font-semibold text-purple-300 mb-3">Ejemplos de Enacción</h3>
+                            <div class="bg-black/20 p-6 rounded-lg border border-[var(--primary)]/30 mb-8">
+                                <h3 class="text-xl font-semibold text-[var(--primary)] mb-3">Ejemplos de Enacción</h3>
                                 <p class="text-gray-300">Varela se apoya en la fenomenología (<span class="person">Heidegger</span>, <span class="person">Merleau-Ponty</span>) y en ejemplos concretos. La <span class="concept">visión del color</span> no es la "captura" de longitudes de onda, sino el resultado de una historia evolutiva de acoplamiento. Aves (tetracromáticas) y primates (tricromáticos) enactúan mundos de colores diferentes, ambos viables. Los estudios del olfato de <span class="person">Walter Freeman</span> muestran que los patrones neuronales para un olor solo emergen cuando el animal está activamente involucrado. La inteligencia deja de ser resolver un problema para ser la capacidad de <span class="concept">ingresar en un mundo compartido</span>. Esta visión inspira aplicaciones como los <span class="concept">"coordinadores"</span> de <span class="person">Terry Winograd</span> y <span class="person">Fernando Flores</span>, que estructuran la comunicación como una red de actos de habla.</p>
                             </div>
-                            <div class="mt-8 bg-gray-700/50 p-6 rounded-lg border-2 border-blue-400 shadow-lg shadow-blue-500/20">
-                                <h3 class="text-2xl font-semibold text-blue-300 mb-4 text-center">Las Tres Preguntas de la Enacción</h3>
+                            <div class="bg-black/20 p-6 rounded-lg border-2 border-[var(--primary)] shadow-lg shadow-[var(--primary)]/20">
+                                <h3 class="text-xl sm:text-2xl font-semibold text-[var(--primary)] mb-4 text-center">Las Tres Preguntas de la Enacción</h3>
                                 <div class="space-y-4">
                                     <div>
                                         <h4 class="font-bold text-lg text-white">1. ¿Qué es la cognición?</h4>
-                                        <p class="text-gray-300 pl-4 border-l-2 border-blue-300/50 ml-2">Es <span class="concept">acción efectiva</span>, una historia de <span class="concept">acoplamiento estructural</span> que <span class="concept">enactúa (hace emerger) un mundo</span>. Se llega a esta respuesta al rechazar la premisa de un mundo predefinido. La cognición no es "resolver" un problema externo, sino la danza continua entre un sistema autónomo y su entorno, donde ambos se co-definen. Lo que el sistema "conoce" es el conjunto de acciones que le permiten seguir existiendo. El conocimiento es la senda que se hace al andar.</p>
+                                        <p class="text-gray-300 pl-4 border-l-2 border-[var(--primary)]/50 ml-2">Es <span class="concept">acción efectiva</span>, una historia de <span class="concept">acoplamiento estructural</span> que <span class="concept">enactúa (hace emerger) un mundo</span>. Se llega a esta respuesta al rechazar la premisa de un mundo predefinido. La cognición no es "resolver" un problema externo, sino la danza continua entre un sistema autónomo y su entorno, donde ambos se co-definen. Lo que el sistema "conoce" es el conjunto de acciones que le permiten seguir existiendo. El conocimiento es la senda que se hace al andar.</p>
                                     </div>
                                      <div>
                                         <h4 class="font-bold text-lg text-white">2. ¿Cómo funciona?</h4>
-                                        <p class="text-gray-300 pl-4 border-l-2 border-blue-300/50 ml-2">Funciona a través de una <span class="concept">red de elementos interconectados</span> (un cuerpo, un sistema nervioso) capaz de sufrir cambios estructurales durante una historia ininterrumpida de interacciones. Se llega a esta respuesta al ver el sistema nervioso no como un procesador de información, sino como un sistema operacionalmente cerrado cuya estructura interna determina qué perturbaciones del medio pueden gatillar cambios en él. La cognición es la modulación continua de esta estructura interna a través de la acción en el mundo.</p>
+                                        <p class="text-gray-300 pl-4 border-l-2 border-[var(--primary)]/50 ml-2">Funciona a través de una <span class="concept">red de elementos interconectados</span> (un cuerpo, un sistema nervioso) capaz de sufrir cambios estructurales durante una historia ininterrumpida de interacciones. Se llega a esta respuesta al ver el sistema nervioso no como un procesador de información, sino como un sistema operacionalmente cerrado cuya estructura interna determina qué perturbaciones del medio pueden gatillar cambios en él. La cognición es la modulación continua de esta estructura interna a través de la acción en el mundo.</p>
                                     </div>
                                      <div>
                                         <h4 class="font-bold text-lg text-white">3. ¿Cómo saber que un sistema cognitivo funciona adecuadamente?</h4>
-                                        <p class="text-gray-300 pl-4 border-l-2 border-blue-300/50 ml-2">Funciona adecuadamente cuando se transforma en parte de un mundo de significación preexistente (como un organismo en su nicho) o configura uno nuevo (como en la evolución). El criterio ya no es la representación correcta o la solución óptima, sino la <span class="concept">viabilidad</span>: la capacidad del sistema para mantener su identidad y continuar su historia de acoplamiento. Se llega a esta respuesta al abandonar la necesidad de un observador externo que juzgue la "verdad". El sistema es adecuado si sobrevive y se reproduce en el mundo que él mismo ha ayudado a enactuar.</p>
+                                        <p class="text-gray-300 pl-4 border-l-2 border-[var(--primary)]/50 ml-2">Funciona adecuadamente cuando se transforma en parte de un mundo de significación preexistente (como un organismo en su nicho) o configura uno nuevo (como en la evolución). El criterio ya no es la representación correcta o la solución óptima, sino la <span class="concept">viabilidad</span>: la capacidad del sistema para mantener su identidad y continuar su historia de acoplamiento. Se llega a esta respuesta al abandonar la necesidad de un observador externo que juzgue la "verdad". El sistema es adecuado si sobrevive y se reproduce en el mundo que él mismo ha ayudado a enactuar.</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Pestaña Conclusiones -->
+                        <!-- Contenido de la pestaña Conclusiones -->
                         <div id="cap6" class="tab-content">
-                            <h2 class="text-3xl font-bold text-gray-100 mb-6">Conclusiones: Un Mapa Polar de las Ideas</h2>
-                            <p class="text-lg text-gray-300 mb-6">Varela concluye presentando las tres orientaciones como cajas chinas, una dentro de la otra. El viaje conceptual va desde el núcleo abstracto de las CTC hacia su periferia, que abraza la historia biológica y cultural.</p>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-gray-100 mb-6" style="color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);">Conclusiones: Un Mapa Polar de las Ideas</h2>
+                            <p class="text-base sm:text-lg text-gray-300 mb-6">Varela concluye presentando las tres orientaciones como cajas chinas, una dentro de la otra. El viaje conceptual va desde el núcleo abstracto de las CTC hacia su periferia, que abraza la historia biológica y cultural.</p>
 
-                             <div class="overflow-x-auto rounded-lg border border-gray-700 mb-8">
+                            <div class="overflow-x-auto rounded-lg border border-[var(--primary-dark)]/50 mb-8">
                                 <table class="w-full text-left border-collapse">
-                                    <thead class="bg-gray-700">
+                                    <thead class="bg-black/30">
                                         <tr>
-                                            <th class="p-4 font-semibold border-b-2 border-gray-600">Desde (Cognitivismo/Representacionalismo)</th>
-                                            <th class="p-4 font-semibold border-b-2 border-gray-600 text-blue-300">Hacia (Enacción)</th>
+                                            <th class="p-4 font-semibold border-b-2 border-[var(--primary-dark)]/50">Desde (Cognitivismo/Representacionalismo)</th>
+                                            <th class="p-4 font-semibold border-b-2 border-[var(--primary-dark)]/50 text-[var(--primary)]">Hacia (Enacción)</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-gray-700 text-gray-300">
-                                        <tr class="hover:bg-gray-700/50"> <td class="p-3">Resolución de problemas</td> <td class="p-3"><span class="concept">Definición de problemas</span></td> </tr>
-                                        <tr class="hover:bg-gray-700/50"> <td class="p-3">Abstracto, simbólico</td> <td class="p-3"><span class="concept">Ligado a la historia, al cuerpo</span></td> </tr>
-                                        <tr class="hover:bg-gray-700/50"> <td class="p-3">Centralizado, secuencial</td> <td class="p-3"><span class="concept">Distribuido, paralelo</span></td> </tr>
-                                        <tr class="hover:bg-gray-700/50"> <td class="p-3">Mundo predefinido</td> <td class="p-3"><span class="concept">Mundo enactuado</span></td> </tr>
-                                        <tr class="hover:bg-gray-700/50"> <td class="p-3">Representación</td> <td class="p-3"><span class="concept">Acción productiva</span></td> </tr>
-                                        <tr class="hover:bg-gray-700/50"> <td class="p-3">Desarrollo por diseño</td> <td class="p-3"><span class="concept">Estrategias evolutivas</span></td> </tr>
+                                    <tbody class="divide-y divide-[var(--primary-dark)]/30 text-gray-300">
+                                        <tr class="hover:bg-black/20"> <td class="p-3">Resolución de problemas</td> <td class="p-3"><span class="concept">Definición de problemas</span></td> </tr>
+                                        <tr class="hover:bg-black/20"> <td class="p-3">Abstracto, simbólico</td> <td class="p-3"><span class="concept">Ligado a la historia, al cuerpo</span></td> </tr>
+                                        <tr class="hover:bg-black/20"> <td class="p-3">Centralizado, secuencial</td> <td class="p-3"><span class="concept">Distribuido, paralelo</span></td> </tr>
+                                        <tr class="hover:bg-black/20"> <td class="p-3">Mundo predefinido</td> <td class="p-3"><span class="concept">Mundo enactuado</span></td> </tr>
+                                        <tr class="hover:bg-black/20"> <td class="p-3">Representación</td> <td class="p-3"><span class="concept">Acción productiva</span></td> </tr>
+                                        <tr class="hover:bg-black/20"> <td class="p-3">Desarrollo por diseño</td> <td class="p-3"><span class="concept">Estrategias evolutivas</span></td> </tr>
                                     </tbody>
                                 </table>
                             </div>
 
-                            <div class="my-8">
-                                <figure class="bg-gray-900/50 p-4 rounded-lg text-center">
-                                    <img src="https://i.imgur.com/O6hJgZQ.png" alt="Mapa polar de las CTC" class="w-full max-w-xl mx-auto h-auto rounded-md bg-white p-2" onerror="this.onerror=null;this.src='https://placehold.co/600x600/111827/9ca3af?text=Figura+11:+Mapa+Polar+de+las+CTC';">
-                                    <figcaption class="mt-2 text-sm text-gray-400">Figura 11. El mapa polar de las CTC, ubicando el <span class="concept">Cognitivismo</span> en el centro, la <span class="concept">Emergencia</span> en el anillo intermedio, y la <span class="concept">Enacción</span> en la periferia más abarcadora, junto con los investigadores clave de cada área.</figcaption>
-                                </figure>
-                            </div>
+                            <figure class="bg-black/30 p-4 rounded-lg text-center my-8">
+                                <img src="https://i.imgur.com/O6hJgZQ.png" alt="Mapa polar de las CTC" class="w-full max-w-xl mx-auto h-auto rounded-md bg-white p-2" onerror="this.onerror=null;this.src='https://placehold.co/600x600/111827/9ca3af?text=Figura+11:+Mapa+Polar+de+las+CTC';">
+                                <figcaption class="mt-2 text-sm text-gray-400">Figura 11. El mapa polar de las CTC, ubicando el <span class="concept">Cognitivismo</span> en el centro, la <span class="concept">Emergencia</span> en el anillo intermedio, y la <span class="concept">Enacción</span> en la periferia más abarcadora, junto con los investigadores clave de cada área.</figcaption>
+                            </figure>
                             <p class="text-gray-300">Para Varela, el nivel correcto para entender la cognición en su totalidad es el de la <span class="concept">enacción</span>. El pivote del conocimiento no es procesar información, sino la capacidad de <span class="concept">hacer emerger significados</span>. Este cambio de perspectiva, concluye, tiene profundas consecuencias científicas, técnicas, filosóficas y éticas, y ofrece una vía para que Europa, aprovechando sus propias tradiciones intelectuales, participe de manera vigorosa y original en la construcción de la ciencia de la mente.</p>
                         </div>
                     </div>
-                </div>
+                </section>
             </main>
             
-            <footer class="text-center mt-12 text-gray-500 text-sm">
-                <p>&copy; 2025 Análisis Detallado. Página generada con base en "Conocer" de Francisco J. Varela.</p>
+            <footer class="text-center py-8 sm:py-12 border-t border-gray-800">
+                <p class="text-sm text-gray-400">&copy; 2025 Análisis Detallado. Página generada con base en "Conocer" de Francisco J. Varela.</p>
+                <p class="mt-4 text-sm text-gray-500 italic">La vida es terriblemente bella cuando los jugadores juegan.</p>
             </footer>
-
         </div>
     </div>
 
     <script>
-        // --- Navigation Tabs Logic ---
-        const tabNav = document.getElementById('tab-nav');
-        const tabBtns = tabNav.querySelectorAll('.tab-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
-        const activeClasses = 'active-tab';
-        const inactiveClasses = 'inactive-tab';
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Lógica de Pestañas de Navegación ---
+            const tabNav = document.getElementById('tab-nav');
+            if(tabNav) {
+                const tabBtns = tabNav.querySelectorAll('.tab-btn');
+                const tabContents = document.querySelectorAll('.tab-content');
+                
+                tabNav.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const clickedTab = e.target.closest('.tab-btn');
+                    if (!clickedTab) return;
 
-        tabNav.addEventListener('click', (e) => {
-            e.preventDefault();
-            const clickedTab = e.target.closest('.tab-btn');
-            if (!clickedTab) return;
+                    tabBtns.forEach(btn => {
+                        btn.classList.remove('active-tab');
+                        btn.classList.add('inactive-tab');
+                    });
+                    clickedTab.classList.add('active-tab');
+                    clickedTab.classList.remove('inactive-tab');
 
-            tabBtns.forEach(btn => {
-                btn.classList.remove(activeClasses);
-                btn.classList.add(inactiveClasses);
-            });
-            clickedTab.classList.add(activeClasses);
-            clickedTab.classList.remove(inactiveClasses);
+                    const tabId = clickedTab.dataset.tab;
+                    tabContents.forEach(content => {
+                        content.classList.toggle('active', content.id === tabId);
+                    });
+                });
+            }
 
-            const tabId = clickedTab.dataset.tab;
-            tabContents.forEach(content => {
-                content.classList.toggle('active', content.id === tabId);
-            });
+            // --- Lógica del Menú de Navegación O.C.V.M. ---
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            if(menuToggleBtn) {
+                menuToggleBtn.addEventListener('click', () => {
+                    document.body.classList.toggle('menu-open');
+                });
+            }
+
+            // --- Lógica del Fondo Animado con Three.js ---
+            if (typeof THREE !== 'undefined') {
+                initCombinedBackground();
+            } else {
+                console.error("Three.js no ha sido cargado.");
+            }
         });
 
-        // --- Three.js Conway's Game of Life Background ---
-        let scene, camera, renderer;
-        let grid, cells;
-        const GRID_SIZE = 60; // Adjust for performance vs density
-        const CELL_SIZE = 1;
-        const UPDATE_INTERVAL = 5; // Update every 5 frames
-        let frameCount = 0;
+        // --- LÓGICA DE THREE.JS (COMBINADA Y OPTIMIZADA) ---
+        let scene, camera, renderer, points, lines, gameOfLifeCells;
+        let mouseX = 0, mouseY = 0;
+        let gameOfLifeGrid;
+        const GOL_GRID_SIZE = 50;
+        const GOL_CELL_SIZE = 1.6;
+        const GOL_UPDATE_INTERVAL = 8;
+        let golFrameCount = 0;
+        
+        function initCombinedBackground() {
+            try {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.z = 35;
 
-        function initThreeJS() {
-            // Scene setup
-            scene = new THREE.Scene();
+                renderer = new THREE.WebGLRenderer({
+                    canvas: document.getElementById("bg-canvas"),
+                    alpha: true,
+                    antialias: true
+                });
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(window.innerWidth, window.innerHeight);
 
-            // Camera setup
-            const aspect = window.innerWidth / window.innerHeight;
-            const frustumSize = GRID_SIZE / 2;
-            camera = new THREE.OrthographicCamera(frustumSize * aspect / -2, frustumSize * aspect / 2, frustumSize / 2, frustumSize / -2, 1, 1000);
-            camera.position.z = 10;
-            scene.add(camera);
+                createParticleNetwork();
+                createGameOfLifeGrid();
 
-            // Renderer setup
-            const canvas = document.getElementById('game-of-life-canvas');
-            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-
-            // Create Game of Life grid
-            createGrid();
-
-            // Event Listeners
-            window.addEventListener('resize', onWindowResize, false);
+                window.addEventListener("resize", onWindowResize, false);
+                document.addEventListener('mousemove', onMouseMove, false);
+                
+                animate();
+            } catch (error) {
+                console.error('Error al inicializar Three.js:', error);
+            }
         }
 
-        function createGrid() {
-            grid = new Array(GRID_SIZE).fill(null).map(() => new Array(GRID_SIZE).fill(0));
-            cells = new Array(GRID_SIZE).fill(null).map(() => new Array(GRID_SIZE).fill(null));
+        function createParticleNetwork() {
+            const pointCount = 180;
+            const positions = new Float32Array(pointCount * 3);
+            const pointGeo = new THREE.BufferGeometry();
+            for (let i = 0; i < pointCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 250;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 250;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 250;
+            }
+            pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const pointMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.2, transparent: true, opacity: 0.7 });
+            points = new THREE.Points(pointGeo, pointMaterial);
+            scene.add(points);
+            regenerateLines();
+        }
+
+        function regenerateLines() {
+            if (lines) scene.remove(lines);
+            const pointPositions = points.geometry.attributes.position.array;
+            const pointCount = pointPositions.length / 3;
+            const linePositions = [];
+            for (let i = 0; i < pointCount; i++) {
+                for (let j = i + 1; j < pointCount; j++) {
+                    const p1 = new THREE.Vector3(pointPositions[i*3], pointPositions[i*3+1], pointPositions[i*3+2]);
+                    const p2 = new THREE.Vector3(pointPositions[j*3], pointPositions[j*3+1], pointPositions[j*3+2]);
+                    if (p1.distanceTo(p2) < 45) {
+                        linePositions.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+                    }
+                }
+            }
+            const lineGeo = new THREE.BufferGeometry();
+            lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.15, transparent: true });
+            lines = new THREE.LineSegments(lineGeo, lineMaterial);
+            scene.add(lines);
+        }
+
+        function createGameOfLifeGrid() {
+            // Paleta de colores azules y morados de O.C.V.M.
+            const ocvmBlues = [0x818cf8, 0x6366f1, 0x4f46e5];
+
+            gameOfLifeGrid = Array(GOL_GRID_SIZE).fill(null).map(() => Array(GOL_GRID_SIZE).fill(0));
+            gameOfLifeCells = Array(GOL_GRID_SIZE).fill(null).map(() => Array(GOL_GRID_SIZE).fill(null));
             
-            const geometry = new THREE.PlaneGeometry(CELL_SIZE * 0.8, CELL_SIZE * 0.8);
-            const materialAlive = new THREE.MeshBasicMaterial({ color: 0x2dd4bf, transparent: true, opacity: 0.6 });
-            const materialDead = new THREE.MeshBasicMaterial({ color: 0x4b5563, transparent: true, opacity: 0.1 });
-
-            for (let i = 0; i < GRID_SIZE; i++) {
-                for (let j = 0; j < GRID_SIZE; j++) {
-                    // Initialize grid state randomly
-                    grid[i][j] = Math.random() > 0.7 ? 1 : 0;
-
-                    // Create cell mesh
-                    const cell = new THREE.Mesh(geometry, grid[i][j] ? materialAlive : materialDead);
-                    cell.position.x = (j - GRID_SIZE / 2) * CELL_SIZE;
-                    cell.position.y = (i - GRID_SIZE / 2) * CELL_SIZE;
-                    cells[i][j] = cell;
+            const geometry = new THREE.PlaneGeometry(GOL_CELL_SIZE * 0.8, GOL_CELL_SIZE * 0.8);
+            
+            for (let i = 0; i < GOL_GRID_SIZE; i++) {
+                for (let j = 0; j < GOL_GRID_SIZE; j++) {
+                    gameOfLifeGrid[i][j] = Math.random() > 0.75 ? 1 : 0;
+                    
+                    // Asigna un color aleatorio de la paleta a cada célula
+                    const randomColor = ocvmBlues[Math.floor(Math.random() * ocvmBlues.length)];
+                    
+                    const material = new THREE.MeshBasicMaterial({
+                        color: randomColor,
+                        transparent: true,
+                        opacity: gameOfLifeGrid[i][j] ? 0.8 : 0.05
+                    });
+                    const cell = new THREE.Mesh(geometry, material);
+                    cell.position.set((j - GOL_GRID_SIZE / 2) * GOL_CELL_SIZE, (i - GOL_GRID_SIZE / 2) * GOL_CELL_SIZE, 0);
+                    gameOfLifeCells[i][j] = cell;
                     scene.add(cell);
                 }
             }
         }
 
         function updateGameOfLife() {
-            const newGrid = grid.map(arr => [...arr]);
-
-            for (let i = 0; i < GRID_SIZE; i++) {
-                for (let j = 0; j < GRID_SIZE; j++) {
+            const newGrid = gameOfLifeGrid.map(arr => [...arr]);
+            for (let i = 0; i < GOL_GRID_SIZE; i++) {
+                for (let j = 0; j < GOL_GRID_SIZE; j++) {
                     const neighbors = countNeighbors(i, j);
-                    const isAlive = grid[i][j] === 1;
-
-                    if (isAlive && (neighbors < 2 || neighbors > 3)) {
-                        newGrid[i][j] = 0; // Dies
-                    } else if (!isAlive && neighbors === 3) {
-                        newGrid[i][j] = 1; // Becomes alive
-                    }
+                    const isAlive = gameOfLifeGrid[i][j] === 1;
+                    if (isAlive && (neighbors < 2 || neighbors > 3)) newGrid[i][j] = 0;
+                    else if (!isAlive && neighbors === 3) newGrid[i][j] = 1;
                 }
             }
-            grid = newGrid;
+            gameOfLifeGrid = newGrid;
+
+            for (let i = 0; i < GOL_GRID_SIZE; i++) {
+                for (let j = 0; j < GOL_GRID_SIZE; j++) {
+                    const targetOpacity = gameOfLifeGrid[i][j] ? 0.8 : 0.05;
+                    const cell = gameOfLifeCells[i][j];
+                    cell.material.opacity += (targetOpacity - cell.material.opacity) * 0.1;
+                }
+            }
         }
 
         function countNeighbors(x, y) {
@@ -395,49 +623,46 @@
             for (let i = -1; i <= 1; i++) {
                 for (let j = -1; j <= 1; j++) {
                     if (i === 0 && j === 0) continue;
-                    const newX = (x + i + GRID_SIZE) % GRID_SIZE;
-                    const newY = (y + j + GRID_SIZE) % GRID_SIZE;
-                    count += grid[newX][newY];
+                    const newX = (x + i + GOL_GRID_SIZE) % GOL_GRID_SIZE;
+                    const newY = (y + j + GOL_GRID_SIZE) % GOL_GRID_SIZE;
+                    count += gameOfLifeGrid[newX][newY];
                 }
             }
             return count;
         }
 
-        function updateCellMaterials() {
-             const materialAlive = new THREE.MeshBasicMaterial({ color: 0x2dd4bf, transparent: true, opacity: 0.6 });
-             const materialDead = new THREE.MeshBasicMaterial({ color: 0x4b5563, transparent: true, opacity: 0.1 });
-            for (let i = 0; i < GRID_SIZE; i++) {
-                for (let j = 0; j < GRID_SIZE; j++) {
-                    cells[i][j].material = grid[i][j] ? materialAlive : materialDead;
-                }
+        function onWindowResize() {
+            if(camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
             }
         }
 
-        function onWindowResize() {
-            const aspect = window.innerWidth / window.innerHeight;
-            const frustumSize = GRID_SIZE / 2;
-            camera.left = frustumSize * aspect / -2;
-            camera.right = frustumSize * aspect / 2;
-            camera.top = frustumSize / 2;
-            camera.bottom = frustumSize / -2;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+        function onMouseMove(event) {
+            mouseX = (event.clientX - window.innerWidth / 2) / 200;
+            mouseY = (event.clientY - window.innerHeight / 2) / 200;
         }
 
         function animate() {
             requestAnimationFrame(animate);
 
-            frameCount++;
-            if (frameCount % UPDATE_INTERVAL === 0) {
-                updateGameOfLife();
-                updateCellMaterials();
+            if (points && lines) {
+                points.rotation.y += 0.0002;
+                lines.rotation.y += 0.0002;
             }
-            
+
+            camera.position.x += (mouseX - camera.position.x) * 0.05;
+            camera.position.y += (-mouseY - camera.position.y) * 0.05;
+            camera.lookAt(scene.position);
+
+            golFrameCount++;
+            if (golFrameCount % GOL_UPDATE_INTERVAL === 0) {
+                updateGameOfLife();
+            }
+
             renderer.render(scene, camera);
         }
-
-        initThreeJS();
-        animate();
     </script>
 </body>
 </html>
