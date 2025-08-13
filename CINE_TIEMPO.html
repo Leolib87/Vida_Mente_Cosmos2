@@ -206,6 +206,14 @@
             pointer-events: none; /* Default */
             z-index: 5; /* Behind p5 canvas but visible */
         }
+
+        /* Specific adjustment for smartphones */
+        @media (max-width: 767px) {
+            #three-canvas-container {
+                right: -30%; /* Pushes the planet much further to the right on small screens */
+            }
+        }
+
         #three-canvas-container.interactive { pointer-events: all; }
         #three-canvas-container canvas {
             display: block; width: 100% !important; height: 100% !important;
@@ -302,8 +310,8 @@
     <!-- Main Content -->
     <main class="main-container">
         <div class="hero">
-            <h1>Cine y Tiempo (Ser y Tiempo)</h1>
-            <p>Línea de Tiempo Cinematográfica de Ciencia Ficción Una exploración visual de los futuros imaginados en el cine.</p>
+            <h1>Línea de Tiempo Cinematográfica</h1>
+            <p>Una exploración visual de los futuros imaginados en el cine.</p>
         </div>
 
         <div class="canvas-wrapper">
