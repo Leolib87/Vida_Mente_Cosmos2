@@ -10,7 +10,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        /* --- GLOBAL STYLES & CSS VARIABLES --- */
         :root {
             --primary: #818cf8;
             --primary-dark: #6366f1;
@@ -24,10 +23,11 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         html { scroll-behavior: smooth; }
 
         body {
-            background-color: #0a0a1a;
+            background-color: #0a0a1a; /* Dark blue background */
             color: var(--primary-text);
             font-family: var(--font-main);
             line-height: 1.8;
@@ -58,7 +58,7 @@
             text-shadow: 0 0 8px var(--primary-glow); display: flex; align-items: center; gap: 0.75rem;
         }
         .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; }
-        .menu-toggle { display: none; } /* Hidden by default, shown on mobile */
+        .menu-toggle { display: none; }
 
         /* Desktop Navigation */
         @media (min-width: 1025px) {
@@ -156,8 +156,10 @@
         }
         .hero h1 {
             font-family: var(--font-accent);
-            font-size: clamp(2rem, 6vw, 3.5rem); font-weight: 700; color: var(--secondary);
-            text-shadow: 0 0 10px var(--secondary-glow), 0 0 20px var(--secondary-glow), 0 0 40px rgba(34, 211, 238, 0.7);
+            font-size: clamp(2rem, 6vw, 3.5rem); 
+            font-weight: 700; 
+            color: #ffffff; /* CHANGED TO WHITE */
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3); /* CHANGED TO WHITE GLOW */
             animation: pulse-glow 3s infinite alternate;
             text-transform: uppercase;
             letter-spacing: 0.1em;
@@ -165,18 +167,19 @@
         .hero p { font-size: clamp(0.9rem, 2vw, 1.1rem); max-width: 800px; margin: 1rem auto 0; text-shadow: 0 0 5px #000; }
         
         @keyframes pulse-glow {
-            from { text-shadow: 0 0 10px var(--secondary-glow), 0 0 20px var(--secondary-glow); }
-            to { text-shadow: 0 0 20px var(--secondary-glow), 0 0 40px var(--secondary-glow); }
+            from { text-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.5); }
+            to { text-shadow: 0 0 20px rgba(255, 255, 255, 0.7), 0 0 40px rgba(255, 255, 255, 0.5); }
         }
+        @keyframes fadeIn { to { opacity: 1; } }
 
-        .footer { text-align: center; padding: 2rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: auto; }
+        .footer { text-align: center; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: auto; }
 
         /* --- RESPONSIVE TIMELINE STYLES --- */
         .canvas-wrapper {
             position: relative;
             flex-grow: 1;
             margin-top: 1rem;
-            min-height: 600px; /* Increased min-height */
+            min-height: 600px;
         }
         
         #p5-canvas-container {
@@ -188,7 +191,6 @@
         
         #three-canvas-container {
             position: absolute;
-            /* Responsive size for the planet - Made much larger */
             width: clamp(280px, 45vw, 650px); 
             height: clamp(280px, 45vw, 650px);
             border-radius: 50%; 
@@ -196,21 +198,18 @@
             box-shadow: 0 0 30px rgba(34, 211, 238, 0.6), inset 0 0 25px rgba(34, 211, 238, 0.4);
             border: 2px solid rgba(34, 211, 238, 0.7);
             transition: top 0.5s ease, right 0.5s ease, transform 0.5s ease;
-            /* Adjusted vertical position */
             top: 38%; 
-            /* Positioned to the right, with space */
             right: 5%; 
             transform: translateY(-50%);
             opacity: 0;
             animation: fadeIn 2s 0.5s ease-in-out forwards;
             pointer-events: none; /* Default */
-            z-index: 5; /* Behind p5 canvas but visible */
+            z-index: 5;
         }
 
-        /* Specific adjustment for smartphones */
         @media (max-width: 767px) {
             #three-canvas-container {
-                right: -30%; /* Pushes the planet much further to the right on small screens */
+                right: -30%;
             }
         }
 
@@ -218,7 +217,6 @@
         #three-canvas-container canvas {
             display: block; width: 100% !important; height: 100% !important;
         }
-        @keyframes fadeIn { to { opacity: 1; } }
 
         #timeline-tooltip {
             position: fixed;
@@ -253,51 +251,51 @@
                 <li><a href="#">
                     <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
                     Cosmos</a>
-                    <div class="mega-menu glassmorphism">
-                        <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z" /></svg>Sistemas Complejos</h3>
-                            <ul>
-                                <li><a href="GAME_OF_LIFE.HTML">Juego de la Vida (Conway)</a></li>
-                                <li><a href="GAME_OF_LIFE3D.HTML">Juego de la Vida (3D)</a></li>
-                            </ul>
+                        <div class="mega-menu glassmorphism">
+                            <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z" /></svg>Sistemas Complejos</h3>
+                                <ul>
+                                    <li><a href="GAME_OF_LIFE.HTML">Juego de la Vida (Conway)</a></li>
+                                    <li><a href="GAME_OF_LIFE3D.HTML">Juego de la Vida (3D)</a></li>
+                                </ul>
+                            </div>
                         </div>
-                    </div>
                 </li>
                 <li><a href="#">
                     <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9.75L16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0020.25 18V5.75A2.25 2.25 0 0018 3.5H6A2.25 2.25 0 003.75 5.75v12.5A2.25 2.25 0 006 20.25z" /></svg>
                     Vida</a>
-                    <div class="mega-menu glassmorphism">
-                        <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15m-10.875 0h15.75c.621 0 1.125-.504 1.125-1.125V5.625c0-.621-.504-1.125-1.125-1.125H4.125C3.504 4.5 3 5.004 3 5.625v12.75c0 .621.504 1.125 1.125 1.125z" /></svg>Fundamentos de Biología</h3>
-                            <ul>
-                                <li><a href="CURSO_BIOLOGIA_CELULAR.HTML">Curso Biología Celular</a></li>
-                                <li><a href="HISTOLOGIA.html">Histología y Tejidos</a></li>
-                            </ul>
+                        <div class="mega-menu glassmorphism">
+                            <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15m-10.875 0h15.75c.621 0 1.125-.504 1.125-1.125V5.625c0-.621-.504-1.125-1.125-1.125H4.125C3.504 4.5 3 5.004 3 5.625v12.75c0 .621.504 1.125 1.125 1.125z" /></svg>Fundamentos de Biología</h3>
+                                <ul>
+                                    <li><a href="CURSO_BIOLOGIA_CELULAR.HTML">Curso Biología Celular</a></li>
+                                    <li><a href="HISTOLOGIA.html">Histología y Tejidos</a></li>
+                                </ul>
+                            </div>
+                            <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183m-4.991-2.691v4.992h4.992v-.001M2.985 19.644l3.181-3.182m0-4.992l-3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183" /></svg>Autopoiesis</h3>
+                                <ul>
+                                    <li><a href="AUTOPOIESIS.HTML">Simulación Autopoiesis</a></li>
+                                    <li><a href="Paper_Varela_1974.html">Paper de Varela (1974)</a></li>
+                                </ul>
+                            </div>
                         </div>
-                        <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183m-4.991-2.691v4.992h4.992v-.001M2.985 19.644l3.181-3.182m0-4.992l-3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183" /></svg>Autopoiesis</h3>
-                            <ul>
-                                <li><a href="AUTOPOIESIS.HTML">Simulación Autopoiesis</a></li>
-                                <li><a href="Paper_Varela_1974.html">Paper de Varela (1974)</a></li>
-                            </ul>
-                        </div>
-                    </div>
                 </li>
                 <li><a href="#">
                     <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zm.75-12h9v9h-9v-9z" /></svg>
                     Mente</a>
-                        <div class="mega-menu glassmorphism">
-                            <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>Filosofía y Cognición</h3>
-                                <ul>
-                                    <li><a href="Feno_style.html">Aproximación Fenomenológica</a></li>
-                                    <li><a href="conocer_fv.html">El Árbol del Conocimiento</a></li>
-                                </ul>
+                            <div class="mega-menu glassmorphism">
+                                <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>Filosofía y Cognición</h3>
+                                    <ul>
+                                        <li><a href="Feno_style.html">Aproximación Fenomenológica</a></li>
+                                        <li><a href="conocer_fv.html">El Árbol del Conocimiento</a></li>
+                                    </ul>
+                                </div>
+                                <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0l-1.07-1.07m15.482 0l1.07 1.07m-1.07-1.07l-1.07 1.07m1.07-1.07l-1.07 1.07m-1.07-1.07l-1.07 1.07m1.07-1.07l-1.07 1.07M12 6.873l-1.07 1.07m2.14 0l-1.07-1.07m-1.07 1.07l-1.07-1.07m2.14 0l-1.07 1.07m-1.07 1.07l-1.07-1.07m2.14 0l-1.07 1.07" /></svg>Reflexiones Culturales</h3>
+                                    <ul>
+                                        <li><a href="peliculas.html">Reflexiones en el Cine</a></li>
+                                    </ul>
+                                </div>
                             </div>
-                            <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0l-1.07-1.07m15.482 0l1.07 1.07m-1.07-1.07l-1.07 1.07m1.07-1.07l-1.07 1.07m-1.07-1.07l-1.07 1.07m2.14 0l-1.07 1.07M12 6.873l-1.07 1.07m2.14 0l-1.07-1.07m-1.07 1.07l-1.07-1.07m2.14 0l-1.07 1.07m-1.07 1.07l-1.07-1.07m2.14 0l-1.07 1.07" /></svg>Reflexiones Culturales</h3>
-                                <ul>
-                                    <li><a href="peliculas.html">Reflexiones en el Cine</a></li>
-                                </ul>
-                            </div>
-                        </div>
                 </li>
-                <li><a href="#">
+                <li><a href="#contacto">
                     <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
                     Contacto</a></li>
             </ul>
@@ -329,48 +327,387 @@
     <div id="timeline-tooltip"></div>
 
     <script>
-        // --- GLOBAL STATE & DATA ---
-        let hoveredMovieIndex = -1;
-        let p5Instance; // To hold the p5 instance
-        const movies = [
-            { title: "Clockwork Orange", year: 1995, url: "https://es.wikipedia.org/wiki/La_naranja_mec%C3%A1nica_(pel%C3%ADcula)" }, 
-            { title: "Escape from NY", year: 1997, url: "https://es.wikipedia.org/wiki/Escape_from_New_York" },
-            { title: "2001: A Space Odyssey", year: 2001, url: "https://es.wikipedia.org/wiki/2001:_A_Space_Odyssey" }, 
-            { title: "Freejack", year: 2009, url: "https://es.wikipedia.org/wiki/Freejack_(pel%C3%ADcula)" },
-            { title: "The Postman", year: 2013, url: "https://es.wikipedia.org/wiki/The_Postman_(pel%C3%ADcula)" }, 
-            { title: "Robocop", year: 2015, url: "https://es.wikipedia.org/wiki/RoboCop_(franquicia)" },
-            { title: "Back To The Future II", year: 2015, url: "https://es.wikipedia.org/wiki/Back_to_the_Future_Part_II" }, 
-            { title: "The Running Man", year: 2017, url: "https://es.wikipedia.org/wiki/The_Running_Man_(pel%C3%ADcula_de_1987)" },
-            { title: "Rollerball", year: 2018, url: "https://es.wikipedia.org/wiki/Rollerball_(pel%C3%ADcula_de_1975)" }, 
-            { title: "Blade Runner", year: 2019, url: "https://es.wikipedia.org/wiki/Blade_Runner" },
-            { title: "Soylent Green", year: 2022, url: "https://es.wikipedia.org/wiki/Soylent_Green" }, 
-            { title: "Children of Men", year: 2027, url: "https://es.wikipedia.org/wiki/Children_of_Men" },
-            { title: "12 Monkeys", year: 2028, url: "https://es.wikipedia.org/wiki/12_monos_(pel%C3%ADcula)" }, 
-            { title: "Demolition Man", year: 2032, url: "https://es.wikipedia.org/wiki/Demolition_Man" },
-            { title: "V for Vendetta", year: 2038, url: "https://es.wikipedia.org/wiki/V_de_Vendetta_(pel%C3%ADcula)" }, 
-            { title: "Event Horizon", year: 2047, url: "https://es.wikipedia.org/wiki/Event_Horizon_(pel%C3%ADcula)" },
-            { title: "Minority Report", year: 2054, url: "https://es.wikipedia.org/wiki/Minority_Report" }, 
-            { title: "Total Recall", year: 2084, url: "https://es.wikipedia.org/wiki/Total_Recall_(pel%C3%ADcula_de_1990)" },
-            { title: "A.I. Artificial Intelligence", year: 2101, url: "https://es.wikipedia.org/wiki/Inteligencia_artificial_(pel%C3%ADcula)" }, 
-            { title: "Alien", year: 2122, url: "https://es.wikipedia.org/wiki/Alien:_el_octavo_pasajero" },
-            { title: "The Black Hole", year: 2130, url: "https://es.wikipedia.org/wiki/The_Black_Hole" }, 
-            { title: "Sleeper", year: 2173, url: "https://es.wikipedia.org/wiki/Sleeper_(pel%C3%ADcula)" },
-            { title: "The Matrix", year: 2199, url: "https://es.wikipedia.org/wiki/The_Matrix" }, 
-            { title: "Forbidden Planet", year: 2220, url: "https://es.wikipedia.org/wiki/Forbidden_Planet" },
-            { title: "The Fifth Element", year: 2263, url: "https://es.wikipedia.org/wiki/El_quinto_elemento" }, 
-            { title: "Zardoz", year: 2293, url: "https://es.wikipedia.org/wiki/Zardoz" },
-            { title: "Star Trek: The Motion Picture", year: 2387, url: "https://es.wikipedia.org/wiki/Star_Trek:_The_Motion_Picture" }, 
-            { title: "Logan's Run", year: 2500, url: "https://es.wikipedia.org/wiki/Logan's_Run_(pel%C3%ADcula)" },
-            { title: "Idiocracy", year: 2505, url: "https://es.wikipedia.org/wiki/Idiocracy" }, 
-            { title: "Planet of The Apes", year: 3978, displayYear: "3978", url: "https://es.wikipedia.org/wiki/El_planeta_de_los_simios_(pel%C3%ADcula_de_1968)" },
-            { title: "Dune", year: 10191, displayYear: "10,191", url: "https://es.wikipedia.org/wiki/Dune_(pel%C3%ADcula_de_1984)" },
-            { title: "Barbarella", year: 40000, displayYear: "40,000", url: "https://es.wikipedia.org/wiki/Barbarella" }
-        ].sort((a,b) => a.year - b.year);
-        const yearStart = 1990;
-        const yearEnd = 41000;
-
-        // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
+            // --- GLOBAL STATE & DATA ---
+            let hoveredMovieIndex = -1;
+            let p5Instance;
+            const movies = [
+                { title: "Clockwork Orange", year: 1995, url: "https://es.wikipedia.org/wiki/La_naranja_mec%C3%A1nica_(pel%C3%ADcula)" }, 
+                { title: "Escape from NY", year: 1997, url: "https://es.wikipedia.org/wiki/Escape_from_New_York" },
+                { title: "2001: A Space Odyssey", year: 2001, url: "https://es.wikipedia.org/wiki/2001:_A_Space_Odyssey" }, 
+                { title: "Freejack", year: 2009, url: "https://es.wikipedia.org/wiki/Freejack_(pel%C3%ADcula)" },
+                { title: "The Postman", year: 2013, url: "https://es.wikipedia.org/wiki/The_Postman_(pel%C3%ADcula)" }, 
+                { title: "Robocop", year: 2015, url: "https://es.wikipedia.org/wiki/RoboCop_(franquicia)" },
+                { title: "Back To The Future II", year: 2015, url: "https://es.wikipedia.org/wiki/Back_to_the_Future_Part_II" }, 
+                { title: "The Running Man", year: 2017, url: "https://es.wikipedia.org/wiki/The_Running_Man_(pel%C3%ADcula_de_1987)" },
+                { title: "Rollerball", year: 2018, url: "https://es.wikipedia.org/wiki/Rollerball_(pel%C3%ADcula_de_1975)" }, 
+                { title: "Blade Runner", year: 2019, url: "https://es.wikipedia.org/wiki/Blade_Runner" },
+                { title: "Soylent Green", year: 2022, url: "https://es.wikipedia.org/wiki/Soylent_Green" }, 
+                { title: "Children of Men", year: 2027, url: "https://es.wikipedia.org/wiki/Children_of_Men" },
+                { title: "12 Monkeys", year: 2028, url: "https://es.wikipedia.org/wiki/12_monos_(pel%C3%ADcula)" }, 
+                { title: "Demolition Man", year: 2032, url: "https://es.wikipedia.org/wiki/Demolition_Man" },
+                { title: "V for Vendetta", year: 2038, url: "https://es.wikipedia.org/wiki/V_de_Vendetta_(pel%C3%ADcula)" }, 
+                { title: "Event Horizon", year: 2047, url: "https://es.wikipedia.org/wiki/Event_Horizon_(pel%C3%ADcula)" },
+                { title: "Minority Report", year: 2054, url: "https://es.wikipedia.org/wiki/Minority_Report" }, 
+                { title: "Total Recall", year: 2084, url: "https://es.wikipedia.org/wiki/Total_Recall_(pel%C3%ADcula_de_1990)" },
+                { title: "A.I. Artificial Intelligence", year: 2101, url: "https://es.wikipedia.org/wiki/Inteligencia_artificial_(pel%C3%ADcula)" }, 
+                { title: "Alien", year: 2122, url: "https://es.wikipedia.org/wiki/Alien:_el_octavo_pasajero" },
+                { title: "The Black Hole", year: 2130, url: "https://es.wikipedia.org/wiki/The_Black_Hole" }, 
+                { title: "Sleeper", year: 2173, url: "https://es.wikipedia.org/wiki/Sleeper_(pel%C3%ADcula)" },
+                { title: "The Matrix", year: 2199, url: "https://es.wikipedia.org/wiki/The_Matrix" }, 
+                { title: "Forbidden Planet", year: 2220, url: "https://es.wikipedia.org/wiki/Forbidden_Planet" },
+                { title: "The Fifth Element", year: 2263, url: "https://es.wikipedia.org/wiki/El_quinto_elemento" }, 
+                { title: "Zardoz", year: 2293, url: "https://es.wikipedia.org/wiki/Zardoz" },
+                { title: "Star Trek: The Motion Picture", year: 2387, url: "https://es.wikipedia.org/wiki/Star_Trek:_The_Motion_Picture" }, 
+                { title: "Logan's Run", year: 2500, url: "https://es.wikipedia.org/wiki/Logan's_Run_(pel%C3%ADcula)" },
+                { title: "Idiocracy", year: 2505, url: "https://es.wikipedia.org/wiki/Idiocracy" }, 
+                { title: "Planet of The Apes", year: 3978, displayYear: "3978", url: "https://es.wikipedia.org/wiki/El_planeta_de_los_simios_(pel%C3%ADcula_de_1968)" },
+                { title: "Dune", year: 10191, displayYear: "10,191", url: "https://es.wikipedia.org/wiki/Dune_(pel%C3%ADcula_de_1984)" },
+                { title: "Barbarella", year: 40000, displayYear: "40,000", url: "https://es.wikipedia.org/wiki/Barbarella" }
+            ].sort((a,b) => a.year - b.year);
+            const yearStart = 1990;
+            const yearEnd = 41000;
+
+            // --- FUNCTION DEFINITIONS ---
+            function setupNavigation() {
+                const menuToggleBtn = document.getElementById('menu-toggle-btn');
+                const navMenu = document.getElementById('nav-menu');
+
+                menuToggleBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.body.classList.toggle('menu-open');
+                });
+
+                navMenu.addEventListener('click', (e) => {
+                    const isLink = e.target.tagName === 'A' || e.target.closest('a');
+                    if (isLink && window.innerWidth <= 1024) {
+                        const megaMenu = e.target.closest('.mega-menu');
+                        if(!megaMenu) {
+                            document.body.classList.remove('menu-open');
+                        }
+                    }
+                });
+
+                if (window.matchMedia('(min-width: 1025px)').matches) {
+                    const menuItems = document.querySelectorAll('.nav-container > li');
+                    menuItems.forEach(item => {
+                        const megaMenu = item.querySelector('.mega-menu');
+                        if (megaMenu) {
+                            let leaveTimeout;
+                            const showMenu = () => {
+                                clearTimeout(leaveTimeout);
+                                document.querySelectorAll('.mega-menu.is-active').forEach(m => {
+                                    if (m !== megaMenu) m.classList.remove('is-active');
+                                });
+                                megaMenu.classList.add('is-active');
+                            };
+                            const startHideTimer = () => {
+                                leaveTimeout = setTimeout(() => megaMenu.classList.remove('is-active'), 250);
+                            };
+                            item.addEventListener('mouseenter', showMenu);
+                            item.addEventListener('mouseleave', startHideTimer);
+                        }
+                    });
+                }
+            }
+
+            function updateDOMOnHover(index) {
+                const tooltip = document.getElementById('timeline-tooltip');
+                if (index !== -1) {
+                    const movie = movies[index];
+                    tooltip.style.display = 'block';
+                    tooltip.innerHTML = `<strong>${movie.title}</strong><br>${movie.displayYear || movie.year}`;
+                } else {
+                    tooltip.style.display = 'none';
+                }
+            }
+
+            const sketch = (p) => {
+                const container = document.getElementById('p5-canvas-container');
+                let barHeight, barSpacing, totalHeight, firstBarY;
+                let animationProgress = 0; 
+                let stars = [];
+
+                function calculateDimensions() {
+                    totalHeight = container.offsetHeight;
+                    let singleEntryHeight = totalHeight / movies.length;
+                    barHeight = singleEntryHeight * 0.8;
+                    barSpacing = singleEntryHeight * 0.2;
+                    firstBarY = barHeight / 2;
+                }
+
+                p.setup = () => {
+                    let cnv = p.createCanvas(container.offsetWidth, container.offsetHeight);
+                    cnv.parent('p5-canvas-container');
+                    calculateDimensions();
+                    p.frameRate(60);
+                    for (let i = 0; i < 200; i++) {
+                        stars.push({
+                            x: p.random(p.width), y: p.random(p.height),
+                            size: p.random(1, 3), alpha: p.random(50, 150)
+                        });
+                    }
+                };
+
+                p.draw = () => {
+                    p.clear();
+                    if (animationProgress < 1) {
+                        animationProgress += 0.05;
+                    }
+                    animationProgress = p.min(animationProgress, 1);
+
+                    drawStarfield();
+                    handleHover();
+                    drawTimeline();
+                    drawYouAreHere();
+                };
+                
+                p.windowResized = () => {
+                    if(!container.offsetWidth || !container.offsetHeight) return;
+                    p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+                    calculateDimensions();
+                };
+
+                p.mouseClicked = () => {
+                    let clickedIndex = -1;
+                    for (let i = 0; i < movies.length; i++) {
+                        const yPos = i * (barHeight + barSpacing) + firstBarY;
+                        if (p.mouseY > yPos - barHeight / 2 && p.mouseY < yPos + barHeight / 2) {
+                            clickedIndex = i;
+                            break;
+                        }
+                    }
+                    if (clickedIndex !== -1) {
+                        window.open(movies[clickedIndex].url, '_blank');
+                    }
+                };
+                
+                function handleHover() {
+                    let foundIndex = -1;
+                    if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
+                        for (let i = 0; i < movies.length; i++) {
+                            const yPos = i * (barHeight + barSpacing) + firstBarY;
+                            if (p.mouseY > yPos - barHeight / 2 && p.mouseY < yPos + barHeight / 2) {
+                                foundIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                    if (foundIndex !== hoveredMovieIndex) {
+                        hoveredMovieIndex = foundIndex;
+                        updateDOMOnHover(hoveredMovieIndex);
+                    }
+                }
+                
+                function drawStarfield() {
+                    p.noStroke();
+                    stars.forEach(star => {
+                        star.x -= star.size * 0.05;
+                        if (star.x < 0) star.x = p.width;
+                        p.fill(255, star.alpha);
+                        p.circle(star.x, star.y, star.size);
+                    });
+                }
+
+                function drawTimeline() {
+                    movies.forEach((movie, i) => {
+                        const yPos = i * (barHeight + barSpacing) + firstBarY;
+                        const logYear = Math.log(movie.year - yearStart + 1);
+                        const logEnd = Math.log(yearEnd - yearStart + 1);
+                        
+                        const maxBarWidth = p.width * 0.65;
+                        const minBarWidth = p.width * 0.05;
+                        const barWidth = p.map(logYear, 0, logEnd, minBarWidth, maxBarWidth); 
+                        const animatedWidth = barWidth * p.easing.easeOutCubic(animationProgress);
+
+                        p.noStroke();
+                        let gradient = p.drawingContext.createLinearGradient(0, yPos, animatedWidth, yPos);
+                        gradient.addColorStop(0, '#22d3ee');
+                        gradient.addColorStop(0.8, '#818cf8');
+                        gradient.addColorStop(1, '#6366f1');
+                        p.drawingContext.fillStyle = gradient;
+                        
+                        if (i === hoveredMovieIndex) {
+                            p.stroke(255, 255, 255, 200);
+                            p.strokeWeight(2);
+                        } else {
+                            p.noStroke();
+                        }
+                        p.rectMode(p.CENTER);
+                        p.rect(animatedWidth / 2, yPos, animatedWidth, barHeight, 5);
+                        
+                        p.noStroke();
+                        p.fill(0, 0, 0, 200);
+                        p.textFont('Inter');
+                        
+                        let idealTextSize = barHeight * 0.5;
+                        p.textSize(idealTextSize);
+                        while (p.textWidth(movie.title.toUpperCase()) > animatedWidth - 20 && idealTextSize > 6) {
+                            idealTextSize -= 0.5;
+                            p.textSize(idealTextSize);
+                        }
+                        
+                        p.textAlign(p.CENTER, p.CENTER);
+                        if (animatedWidth > p.textWidth(movie.title.toUpperCase()) + 10) {
+                           p.text(movie.title.toUpperCase(), animatedWidth / 2, yPos);
+                        }
+
+                        p.fill(255);
+                        p.textFont('Orbitron');
+                        p.textSize(p.max(8, barHeight * 0.4));
+                        p.textAlign(p.LEFT, p.CENTER);
+                        const yearText = movie.displayYear || movie.year;
+                        p.text(yearText, animatedWidth + 15, yPos);
+                        p.rectMode(p.CORNER);
+                    });
+                }
+                
+                p.easing = { easeOutCubic: t => (--t)*t*t+1 };
+
+                function drawYouAreHere() {
+                    const currentYear = 2025;
+                    let prevMovie = movies.findLast(m => m.year <= currentYear);
+                    let nextMovie = movies.find(m => m.year > currentYear);
+                    
+                    if (!prevMovie || !nextMovie) return;
+
+                    const prevIndex = movies.indexOf(prevMovie);
+                    const nextIndex = movies.indexOf(nextMovie);
+
+                    const prevY = prevIndex * (barHeight + barSpacing) + firstBarY;
+                    const nextY = nextIndex * (barHeight + barSpacing) + firstBarY;
+                    
+                    const yearFraction = (currentYear - prevMovie.year) / (nextMovie.year - prevMovie.year);
+                    const yPos = p.lerp(prevY, nextY, yearFraction);
+
+                    const logYear = Math.log(currentYear - yearStart + 1);
+                    const logEnd = Math.log(yearEnd - yearStart + 1);
+                    
+                    const maxBarWidth = p.width * 0.65;
+                    const minBarWidth = p.width * 0.05;
+                    const xPos = p.map(logYear, 0, logEnd, minBarWidth, maxBarWidth); 
+                    
+                    const rectHeight = p.max(8, barHeight * 0.35); 
+                    const arrowHeadSize = rectHeight * 0.7;
+                    const arrowBodyLength = p.width > 600 ? 55 : 35; 
+                    const tipOffset = p.width > 600 ? 45 : 30; 
+                    
+                    const tipX = xPos + tipOffset;
+                    const endX = tipX + arrowHeadSize; 
+                    const startX = p.min(p.width - 10, endX + arrowBodyLength);
+
+                    p.fill(220, 53, 69, 220);
+                    p.stroke(255, 100, 100);
+                    p.strokeWeight(1);
+                    p.drawingContext.shadowOffsetX = 0;
+                    p.drawingContext.shadowOffsetY = 0;
+                    p.drawingContext.shadowBlur = 10;
+                    p.drawingContext.shadowColor = 'rgba(220, 53, 69, 0.7)';
+
+                    p.beginShape();
+                    p.vertex(startX, yPos - rectHeight / 2);
+                    p.vertex(endX, yPos - rectHeight / 2);
+                    p.vertex(endX, yPos - rectHeight / 2 - arrowHeadSize);
+                    p.vertex(tipX, yPos);
+                    p.vertex(endX, yPos + rectHeight / 2 + arrowHeadSize);
+                    p.vertex(endX, yPos + rectHeight / 2);
+                    p.vertex(startX, yPos + rectHeight / 2);
+                    p.endShape(p.CLOSE);
+                    
+                    p.drawingContext.shadowBlur = 0;
+
+                    p.noStroke();
+                    p.fill(255);
+                    p.textFont('Orbitron');
+                    p.textStyle(p.BOLD);
+                    p.textSize(p.width > 400 ? 8 : 7);
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.text("ESTÁS AQUÍ", (startX + endX) / 2, yPos);
+                }
+            };
+        
+            // --- THREE.JS SCENE ---
+            let scene, camera, renderer, earthMesh;
+
+            function initThree() {
+                const container3D = document.getElementById('three-canvas-container');
+                if (!container3D) return;
+
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(45, container3D.clientWidth / container3D.clientHeight, 0.1, 1000);
+                camera.position.z = 2.5;
+
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(container3D.clientWidth, container3D.clientHeight);
+                renderer.setClearColor(0x000000, 0);
+                container3D.appendChild(renderer.domElement);
+
+                scene.add(new THREE.AmbientLight(0xcccccc, 0.7));
+                const pointLight = new THREE.PointLight(0x22d3ee, 1.5, 10);
+                pointLight.position.set(2, 3, 4);
+                scene.add(pointLight);
+
+                const textureLoader = new THREE.TextureLoader();
+                textureLoader.load(
+                    'https://s3-us-west-2.amazonaws.com/s.cdpn.io/141228/earthmap1k.jpg',
+                    (texture) => {
+                        const geometry = new THREE.SphereGeometry(1, 64, 64);
+                        const material = new THREE.MeshStandardMaterial({ 
+                            map: texture, metalness: 0.1, roughness: 0.7,
+                            emissive: '#22d3ee', emissiveIntensity: 0.05
+                        });
+                        earthMesh = new THREE.Mesh(geometry, material);
+                        scene.add(earthMesh);
+                        container3D.classList.add('interactive');
+                    },
+                    undefined,
+                    (err) => {
+                        console.error('Texture failed to load.', err);
+                        const fallbackGeo = new THREE.SphereGeometry(1, 32, 32);
+                        const fallbackMat = new THREE.MeshStandardMaterial({ color: 0x22d3ee, emissive: 0x22d3ee, emissiveIntensity: 0.2 });
+                        earthMesh = new THREE.Mesh(fallbackGeo, fallbackMat);
+                        scene.add(earthMesh);
+                        container3D.classList.add('interactive');
+                    }
+                );
+                
+                let isDragging = false;
+                let previousMousePosition = { x: 0, y: 0 };
+                const domEl = renderer.domElement;
+                const addDragListeners = (el) => {
+                    el.addEventListener('mousedown', (e) => { isDragging = true; previousMousePosition = { x: e.clientX, y: e.clientY }; });
+                    el.addEventListener('mouseup', () => { isDragging = false; });
+                    el.addEventListener('mouseleave', () => { isDragging = false; });
+                    el.addEventListener('mousemove', (e) => {
+                        if (!isDragging || !earthMesh) return;
+                        const delta = { x: e.clientX - previousMousePosition.x, y: e.clientY - previousMousePosition.y };
+                        earthMesh.rotation.y += delta.x * 0.005;
+                        earthMesh.rotation.x += delta.y * 0.005;
+                        previousMousePosition = { x: e.clientX, y: e.clientY };
+                    });
+                    el.addEventListener('wheel', (e) => e.preventDefault());
+                };
+                addDragListeners(domEl);
+            }
+
+            function animateThree() {
+                requestAnimationFrame(animateThree);
+                if (earthMesh) {
+                    earthMesh.rotation.y += 0.001;
+                }
+                if(renderer) renderer.render(scene, camera);
+            }
+            
+            function onWindowResize() {
+                const container3D = document.getElementById('three-canvas-container');
+                if(camera && renderer && container3D) {
+                    camera.aspect = container3D.clientWidth / container3D.clientHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(container3D.clientWidth, container3D.clientHeight);
+                }
+            }
+
+            // --- INITIALIZATION ---
             setupNavigation();
             initThree();
             animateThree();
@@ -386,362 +723,15 @@
                     }
                 }, 250);
             });
-        });
 
-        // --- NAVIGATION SCRIPTS ---
-        function setupNavigation() {
-            const menuToggleBtn = document.getElementById('menu-toggle-btn');
-            const navMenu = document.getElementById('nav-menu');
-
-            menuToggleBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                document.body.classList.toggle('menu-open');
-            });
-
-            navMenu.addEventListener('click', (e) => {
-                const isLink = e.target.tagName === 'A' || e.target.closest('a');
-                if (isLink && window.innerWidth <= 1024) {
-                   const megaMenu = e.target.closest('.mega-menu');
-                   if(!megaMenu) {
-                        document.body.classList.remove('menu-open');
-                   }
+            document.addEventListener('mousemove', (e) => {
+                const tooltip = document.getElementById('timeline-tooltip');
+                if (tooltip.style.display === 'block') {
+                    tooltip.style.left = `${e.clientX + 15}px`;
+                    tooltip.style.top = `${e.clientY + 15}px`;
                 }
             });
-
-            if (window.matchMedia('(min-width: 1025px)').matches) {
-                const menuItems = document.querySelectorAll('.nav-container > li');
-                menuItems.forEach(item => {
-                    const megaMenu = item.querySelector('.mega-menu');
-                    if (megaMenu) {
-                        let leaveTimeout;
-                        const showMenu = () => {
-                            clearTimeout(leaveTimeout);
-                            document.querySelectorAll('.mega-menu.is-active').forEach(m => {
-                                if (m !== megaMenu) m.classList.remove('is-active');
-                            });
-                            megaMenu.classList.add('is-active');
-                        };
-                        const startHideTimer = () => {
-                            leaveTimeout = setTimeout(() => megaMenu.classList.remove('is-active'), 250);
-                        };
-                        item.addEventListener('mouseenter', showMenu);
-                        item.addEventListener('mouseleave', startHideTimer);
-                    }
-                });
-            }
-        }
-
-        // --- DOM MANIPULATION ---
-        function updateDOMOnHover(index) {
-            const tooltip = document.getElementById('timeline-tooltip');
-            if (index !== -1) {
-                const movie = movies[index];
-                tooltip.style.display = 'block';
-                tooltip.innerHTML = `<strong>${movie.title}</strong><br>${movie.displayYear || movie.year}`;
-            } else {
-                tooltip.style.display = 'none';
-            }
-        }
-
-        document.addEventListener('mousemove', (e) => {
-            const tooltip = document.getElementById('timeline-tooltip');
-            if (tooltip.style.display === 'block') {
-                tooltip.style.left = `${e.clientX + 15}px`;
-                tooltip.style.top = `${e.clientY + 15}px`;
-            }
         });
-
-        // --- P5.JS SKETCH ---
-        const sketch = (p) => {
-            const container = document.getElementById('p5-canvas-container');
-            let barHeight, barSpacing, totalHeight, firstBarY;
-            let stars = [];
-            let animationProgress = 0; 
-
-            function calculateDimensions() {
-                totalHeight = container.offsetHeight;
-                let singleEntryHeight = totalHeight / movies.length;
-                barHeight = singleEntryHeight * 0.8;
-                barSpacing = singleEntryHeight * 0.2;
-                firstBarY = barHeight / 2;
-            }
-
-            p.setup = () => {
-                let cnv = p.createCanvas(container.offsetWidth, container.offsetHeight);
-                cnv.parent('p5-canvas-container');
-                calculateDimensions();
-                p.frameRate(60);
-                for (let i = 0; i < 200; i++) {
-                    stars.push({
-                        x: p.random(p.width), y: p.random(p.height),
-                        size: p.random(1, 3), alpha: p.random(50, 150)
-                    });
-                }
-            };
-
-            p.draw = () => {
-                p.background('#0a0a1a');
-                if (animationProgress < 1) {
-                    animationProgress += 0.05;
-                }
-                animationProgress = p.min(animationProgress, 1);
-
-                drawStarfield();
-                handleHover();
-                drawTimeline();
-                drawYouAreHere();
-            };
-            
-            p.windowResized = () => {
-                if(!container.offsetWidth || !container.offsetHeight) return;
-                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-                calculateDimensions();
-            };
-
-            p.mouseClicked = () => {
-                let clickedIndex = -1;
-                for (let i = 0; i < movies.length; i++) {
-                    const yPos = i * (barHeight + barSpacing) + firstBarY;
-                    if (p.mouseY > yPos - barHeight / 2 && p.mouseY < yPos + barHeight / 2) {
-                        clickedIndex = i;
-                        break;
-                    }
-                }
-                if (clickedIndex !== -1) {
-                    window.open(movies[clickedIndex].url, '_blank');
-                }
-            };
-            
-            function handleHover() {
-                let foundIndex = -1;
-                if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
-                    for (let i = 0; i < movies.length; i++) {
-                        const yPos = i * (barHeight + barSpacing) + firstBarY;
-                        if (p.mouseY > yPos - barHeight / 2 && p.mouseY < yPos + barHeight / 2) {
-                            foundIndex = i;
-                            break;
-                        }
-                    }
-                }
-                if (foundIndex !== hoveredMovieIndex) {
-                    hoveredMovieIndex = foundIndex;
-                    updateDOMOnHover(hoveredMovieIndex);
-                }
-            }
-
-            function drawStarfield() {
-                p.noStroke();
-                stars.forEach(star => {
-                    star.x -= star.size * 0.05;
-                    if (star.x < 0) star.x = p.width;
-                    p.fill(255, star.alpha);
-                    p.circle(star.x, star.y, star.size);
-                });
-            }
-
-            function drawTimeline() {
-                movies.forEach((movie, i) => {
-                    const yPos = i * (barHeight + barSpacing) + firstBarY;
-                    const logYear = Math.log(movie.year - yearStart + 1);
-                    const logEnd = Math.log(yearEnd - yearStart + 1);
-                    
-                    const maxBarWidth = p.width * 0.65; // Reserve space on the right for the planet
-                    const minBarWidth = p.width * 0.05;
-                    const barWidth = p.map(logYear, 0, logEnd, minBarWidth, maxBarWidth); 
-                    const animatedWidth = barWidth * p.easing.easeOutCubic(animationProgress);
-
-                    // Draw Bar
-                    p.noStroke();
-                    let gradient = p.drawingContext.createLinearGradient(0, yPos, animatedWidth, yPos);
-                    gradient.addColorStop(0, '#22d3ee');
-                    gradient.addColorStop(0.8, '#818cf8');
-                    gradient.addColorStop(1, '#6366f1');
-                    p.drawingContext.fillStyle = gradient;
-                    
-                    if (i === hoveredMovieIndex) {
-                        p.stroke(255, 255, 255, 200);
-                        p.strokeWeight(2);
-                    } else {
-                        p.noStroke();
-                    }
-                    p.rectMode(p.CENTER);
-                    p.rect(animatedWidth / 2, yPos, animatedWidth, barHeight, 5);
-                    
-                    // Draw Text Inside Bar
-                    p.noStroke();
-                    p.fill(0, 0, 0, 200); // Dark text for contrast
-                    p.textFont('Inter'); // FIXED: Changed from var(--font-main)
-                    
-                    // --- Dynamic Text Sizing ---
-                    let idealTextSize = barHeight * 0.5;
-                    p.textSize(idealTextSize);
-                    // Reduce text size until it fits
-                    while (p.textWidth(movie.title.toUpperCase()) > animatedWidth - 20 && idealTextSize > 6) {
-                        idealTextSize -= 0.5;
-                        p.textSize(idealTextSize);
-                    }
-                    
-                    p.textAlign(p.CENTER, p.CENTER);
-                    if (animatedWidth > p.textWidth(movie.title.toUpperCase()) + 10) {
-                       p.text(movie.title.toUpperCase(), animatedWidth / 2, yPos);
-                    }
-
-
-                    // Draw Year Text
-                    p.fill(255);
-                    p.textFont('Orbitron');
-                    p.textSize(p.max(8, barHeight * 0.4));
-                    p.textAlign(p.LEFT, p.CENTER);
-                    const yearText = movie.displayYear || movie.year;
-                    p.text(yearText, animatedWidth + 15, yPos);
-                    p.rectMode(p.CORNER); // Reset rectMode
-                });
-            }
-            
-            p.easing = { easeOutCubic: t => (--t)*t*t+1 };
-
-            function drawYouAreHere() {
-                const currentYear = 2025;
-                let prevMovie = movies.findLast(m => m.year <= currentYear);
-                let nextMovie = movies.find(m => m.year > currentYear);
-                
-                if (!prevMovie || !nextMovie) return;
-
-                const prevIndex = movies.indexOf(prevMovie);
-                const nextIndex = movies.indexOf(nextMovie);
-
-                const prevY = prevIndex * (barHeight + barSpacing) + firstBarY;
-                const nextY = nextIndex * (barHeight + barSpacing) + firstBarY;
-                
-                const yearFraction = (currentYear - prevMovie.year) / (nextMovie.year - prevMovie.year);
-                const yPos = p.lerp(prevY, nextY, yearFraction);
-
-                const logYear = Math.log(currentYear - yearStart + 1);
-                const logEnd = Math.log(yearEnd - yearStart + 1);
-                
-                const maxBarWidth = p.width * 0.65;
-                const minBarWidth = p.width * 0.05;
-                const xPos = p.map(logYear, 0, logEnd, minBarWidth, maxBarWidth); 
-                
-                const rectHeight = p.max(8, barHeight * 0.35); 
-                const arrowHeadSize = rectHeight * 0.7;
-                const arrowBodyLength = p.width > 600 ? 55 : 35; 
-                const tipOffset = p.width > 600 ? 45 : 30; 
-                
-                const tipX = xPos + tipOffset;
-                const endX = tipX + arrowHeadSize; 
-                const startX = p.min(p.width - 10, endX + arrowBodyLength);
-
-                p.fill(220, 53, 69, 220);
-                p.stroke(255, 100, 100);
-                p.strokeWeight(1);
-                p.drawingContext.shadowOffsetX = 0;
-                p.drawingContext.shadowOffsetY = 0;
-                p.drawingContext.shadowBlur = 10;
-                p.drawingContext.shadowColor = 'rgba(220, 53, 69, 0.7)';
-
-                p.beginShape();
-                p.vertex(startX, yPos - rectHeight / 2);
-                p.vertex(endX, yPos - rectHeight / 2);
-                p.vertex(endX, yPos - rectHeight / 2 - arrowHeadSize);
-                p.vertex(tipX, yPos);
-                p.vertex(endX, yPos + rectHeight / 2 + arrowHeadSize);
-                p.vertex(endX, yPos + rectHeight / 2);
-                p.vertex(startX, yPos + rectHeight / 2);
-                p.endShape(p.CLOSE);
-                
-                p.drawingContext.shadowBlur = 0;
-
-                p.noStroke();
-                p.fill(255);
-                p.textFont('Orbitron');
-                p.textStyle(p.BOLD);
-                p.textSize(p.width > 400 ? 8 : 7);
-                p.textAlign(p.CENTER, p.CENTER);
-                p.text("ESTÁS AQUÍ", (startX + endX) / 2, yPos);
-            }
-        };
-        
-        // --- THREE.JS SCENE ---
-        let scene, camera, renderer, earthMesh;
-
-        function initThree() {
-            const container3D = document.getElementById('three-canvas-container');
-            if (!container3D) return;
-
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(45, container3D.clientWidth / container3D.clientHeight, 0.1, 1000);
-            camera.position.z = 2.5;
-
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(container3D.clientWidth, container3D.clientHeight);
-            renderer.setClearColor(0x000000, 0);
-            container3D.appendChild(renderer.domElement);
-
-            scene.add(new THREE.AmbientLight(0xcccccc, 0.7));
-            const pointLight = new THREE.PointLight(0x22d3ee, 1.5, 10);
-            pointLight.position.set(2, 3, 4);
-            scene.add(pointLight);
-
-            const textureLoader = new THREE.TextureLoader();
-            textureLoader.load(
-                'https://s3-us-west-2.amazonaws.com/s.cdpn.io/141228/earthmap1k.jpg',
-                (texture) => {
-                    const geometry = new THREE.SphereGeometry(1, 64, 64);
-                    const material = new THREE.MeshStandardMaterial({ 
-                        map: texture, metalness: 0.1, roughness: 0.7,
-                        emissive: '#22d3ee', emissiveIntensity: 0.05
-                    });
-                    earthMesh = new THREE.Mesh(geometry, material);
-                    scene.add(earthMesh);
-                    container3D.classList.add('interactive');
-                },
-                undefined,
-                (err) => {
-                    console.error('Texture failed to load.', err);
-                    const fallbackGeo = new THREE.SphereGeometry(1, 32, 32);
-                    const fallbackMat = new THREE.MeshStandardMaterial({ color: 0x22d3ee, emissive: 0x22d3ee, emissiveIntensity: 0.2 });
-                    earthMesh = new THREE.Mesh(fallbackGeo, fallbackMat);
-                    scene.add(earthMesh);
-                    container3D.classList.add('interactive');
-                }
-            );
-            
-            let isDragging = false;
-            let previousMousePosition = { x: 0, y: 0 };
-            const domEl = renderer.domElement;
-            const addDragListeners = (el) => {
-                el.addEventListener('mousedown', (e) => { isDragging = true; previousMousePosition = { x: e.clientX, y: e.clientY }; });
-                el.addEventListener('mouseup', () => { isDragging = false; });
-                el.addEventListener('mouseleave', () => { isDragging = false; });
-                el.addEventListener('mousemove', (e) => {
-                    if (!isDragging || !earthMesh) return;
-                    const delta = { x: e.clientX - previousMousePosition.x, y: e.clientY - previousMousePosition.y };
-                    earthMesh.rotation.y += delta.x * 0.005;
-                    earthMesh.rotation.x += delta.y * 0.005;
-                    previousMousePosition = { x: e.clientX, y: e.clientY };
-                });
-                el.addEventListener('wheel', (e) => e.preventDefault());
-            };
-            addDragListeners(domEl);
-        }
-
-        function animateThree() {
-            requestAnimationFrame(animateThree);
-            if (earthMesh) {
-                earthMesh.rotation.y += 0.001;
-            }
-            if(renderer) renderer.render(scene, camera);
-        }
-        
-        function onWindowResize() {
-            const container3D = document.getElementById('three-canvas-container');
-            if(camera && renderer && container3D) {
-                camera.aspect = container3D.clientWidth / container3D.clientHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(container3D.clientWidth, container3D.clientHeight);
-            }
-        }
     </script>
 </body>
 </html>
