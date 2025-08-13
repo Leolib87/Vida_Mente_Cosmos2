@@ -3,380 +3,739 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Treemap Interactivo</title>
+    <title>Treemap de IAs | Exploración Transdisciplinaria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root {
-            --neon-green: #00FF00;
-            --neon-cyan: #00FFFF;
-            --black-bg: #000000;
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --primary-text: #e5e7eb;
+            --primary-glow: #818cf8;
+            --secondary-glow: #22d3ee;
+            --font-main: 'Inter', sans-serif;
+            --nav-height: 70px;
         }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
         body {
-            background-color: var(--black-bg);
-            color: var(--neon-cyan);
-            font-family: 'Orbitron', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
+            background-color: #000000;
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
+            overflow-x: hidden;
         }
-        /* Barra de Navegación */
-        nav {
+        
+        #bg-canvas {
             position: fixed;
             top: 0;
+            left: 0;
             width: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            padding: 15px 0;
-            border-bottom: 2px solid var(--neon-cyan);
-            box-shadow: 0 0 15px var(--neon-cyan);
+            height: 100%;
+            z-index: -1;
+            cursor: crosshair;
+        }
+
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.menu-open {
+            overflow: hidden;
+        }
+        
+        nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
             z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+            padding: 0 5%;
+            pointer-events: auto;
         }
-        nav ul {
+
+        .nav-content {
             display: flex;
-            justify-content: center;
-            list-style: none;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
         }
-        nav ul li {
-            margin: 0 20px;
+        
+        .nav-logo a {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            text-shadow: 0 0 8px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
+        nav .nav-container > li { position: relative; height: 100%; display: flex; align-items: center; }
+        nav .nav-container > li > a {
+            color: var(--primary-text); text-decoration: none; font-size: clamp(0.9em, 1.2vw, 1.05em); font-weight: 500;
+            transition: color 0.3s ease, text-shadow 0.3s ease; padding: 0 1rem; display: flex; align-items: center; gap: 8px;
+        }
+        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a { color: #FFFFFF; text-shadow: 0 0 12px var(--primary-glow); }
+        
+        .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; }
+        
+        .mega-menu {
+            position: fixed;
+            top: var(--nav-height);
+            left: 50%;
+            transform: translateX(-50%) scale(0.95);
+            border-radius: 10px; width: auto;
+            min-width: clamp(300px, 80vw, 950px); max-width: 95vw;
+            padding: 2rem; 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem; 
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0.3s;
+            transform-origin: top center;
+        }
+        
+        .mega-menu.is-active { 
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) scale(1);
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s 0s;
+        }
+        
+        .mega-menu h3 {
+            color: var(--primary-glow); font-size: 1.1em; margin-bottom: 1rem;
+            text-shadow: 0 0 5px var(--primary-glow);
+            border-bottom: 1px solid rgba(129, 140, 248, 0.3);
+            padding-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .mega-menu ul { display: flex; flex-direction: column; gap: 0.75rem; list-style: none; }
+        .mega-menu li { position: relative; }
+        .mega-menu a {
+            font-size: 0.9em; color: var(--primary-text); text-decoration: none;
+            transition: color 0.3s, padding-left 0.3s, background-color 0.3s;
+            padding: 0.5rem 0.75rem 0.5rem 2rem; border-radius: 4px;
+            display: block;
             position: relative;
         }
-        nav ul li a {
-            color: var(--neon-green);
-            text-decoration: none;
-            font-size: 1.1em;
-            transition: color 0.3s ease, text-shadow 0.3s ease;
-        }
-        nav ul li a:hover {
-            color: #FFFFFF;
-            text-shadow: 0 0 10px var(--neon-cyan);
-        }
-        .mega-menu {
+        .mega-menu a::before {
+            content: '›';
+            color: var(--primary-glow);
             position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.95);
-            border: 2px solid var(--neon-cyan);
-            box-shadow: 0 0 20px var(--neon-cyan);
-            padding: 20px;
-            display: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            display: flex;
-            gap: 20px;
-        }
-        nav ul li:hover .mega-menu {
-            display: flex;
-            opacity: 1;
-        }
-        .mega-menu h3 {
-            color: var(--neon-cyan);
-            text-shadow: 0 0 5px var(--neon-green);
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
             font-size: 1.2em;
-            margin-bottom: 10px;
+            transition: color 0.3s;
         }
-        .mega-menu ul {
-            list-style: none;
-            padding: 0;
+        .mega-menu a:hover { color: #000; background-color: var(--primary-glow); padding-left: 2.5rem; }
+        .mega-menu a:hover::before { color: #000; }
+        
+        .hero {
+            min-height: 30vh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; position: relative;
+            padding: 1rem;
         }
-        .mega-menu ul li {
-            margin: 8px 0;
+        .hero-content { position: relative; z-index: 2; animation: fadeIn 2s ease-in; }
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 4.5rem); font-weight: 700; color: #fff;
+            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(129, 140, 248, 0.7);
+            animation: pulse-glow 3s infinite alternate;
         }
-        .mega-menu ul li a {
-            color: var(--neon-green);
-            font-size: 0.9em;
-            transition: color 0.3s ease, text-shadow 0.3s ease;
+        .hero p { font-size: clamp(1rem, 2.5vw, 1.3rem); max-width: 800px; margin: 1.5rem auto 0; text-shadow: 0 0 5px #000; }
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
         }
-        .mega-menu ul li a:hover {
-            color: #FFFFFF;
-            text-shadow: 0 0 10px var(--neon-cyan);
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .main-container { 
+            width: 100%;
+            margin: 0 auto; 
+            padding: var(--nav-height) clamp(1rem, 5vw, 4rem) 1rem;
+            pointer-events: none;
         }
-        /* Contenido */
-        .title {
-            color: var(--neon-cyan);
-            font-size: 1.5em;
-            margin: 80px 0 20px;
-            text-shadow: 0 0 10px var(--neon-green);
-            font-weight: 700;
+        
+        main, .footer, .section, .hero-content {
+            pointer-events: auto;
         }
+
+        main p, .footer p {
+            user-select: text;
+            cursor: default;
+        }
+
+        .layout-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 2rem; }
+        
+        .section {
+            padding: clamp(1.5rem, 5vw, 2.5rem);
+            border-radius: 12px; margin-bottom: 2rem; position: relative;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .section:hover { transform: translateY(-5px); box-shadow: 0 0 40px rgba(129, 140, 248, 0.2); }
+        
+        .section h2, .section h3, .section p, .section .visualization-container, .section iframe {
+             opacity: 0;
+             transform: translateY(20px);
+             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .section.is-visible h2, .section.is-visible h3, .section.is-visible p, .section.is-visible .visualization-container, .section.is-visible iframe, .section.is-visible #chart-container {
+             opacity: 1;
+             transform: translateY(0);
+        }
+        
+        h2 {
+            font-size: clamp(1.5rem, 5vw, 2.2rem); color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);
+            border-bottom: 1px solid var(--primary-glow); padding-bottom: 1rem; margin-bottom: 1.5rem;
+        }
+        h3 { font-size: clamp(1.2rem, 4vw, 1.5rem); color: var(--primary-glow); margin: 2rem 0 1rem 0; }
+        .highlight { color: var(--primary-glow); font-weight: bold; }
+        
+        .footer { text-align: center; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
+        
+        /* --- ESTILOS ESPECÍFICOS DEL TREEMAP --- */
+        #chart-container {
+            width: 100%;
+            margin: 0 auto;
+        }
+
         .legend {
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
-            margin: 10px 0;
+            margin: 1.5rem 0;
+            gap: 1.5rem;
         }
+
         .legend-item {
-            margin: 5px 15px;
             display: flex;
             align-items: center;
+            gap: 0.75rem;
+            font-size: 0.9em;
+            color: var(--primary-text);
         }
+
         .legend-color {
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
-            border: 1px solid var(--neon-green);
+            width: 18px;
+            height: 18px;
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
         }
-        #chart {
-            width: 90%;
-            height: 80vh;
-            margin-bottom: 20px;
+
+        #chart svg {
+            border-radius: 8px;
         }
-        text {
-            font-size: 12px;
-            font-weight: 700;
-            fill: #000000;
-            text-shadow: 0 0 5px var(--neon-green);
-            pointer-events: none;
-        }
-        rect {
-            stroke: var(--neon-green);
-            stroke-width: 2;
+
+        #chart rect {
+            stroke: #000;
+            stroke-width: 2px;
             cursor: pointer;
+            transition: filter 0.3s ease;
+        }
+
+        #chart rect:hover {
+            filter: brightness(1.2);
+        }
+
+        #chart text {
+            font-family: var(--font-main);
+            font-size: 11px;
+            font-weight: 600;
+            fill: #000;
+            pointer-events: none;
+            text-shadow: 0 0 3px rgba(255,255,255,0.7);
+        }
+        /* --- FIN ESTILOS TREEMAP --- */
+
+
+        @media (min-width: 1025px) {
+            .menu-toggle { display: none; }
+            .nav-container { display: flex; }
+        }
+
+        @media (max-width: 1024px) {
+            .nav-content { justify-content: space-between; }
+            .nav-container {
+                position: fixed;
+                top: var(--nav-height);
+                left: 0;
+                width: 100%;
+                height: calc(100vh - var(--nav-height));
+                background: rgba(17, 24, 39, 0.95);
+                backdrop-filter: blur(15px);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+                transform: translateY(-110%);
+                overflow-y: auto;
+                padding: 2rem;
+            }
+            body.menu-open .nav-container {
+                transform: translateY(0);
+            }
+
+            nav .nav-container > li { width: 100%; height: auto; flex-direction: column; align-items: center; text-align: center; }
+            nav .nav-container > li > a { padding: 1rem; width: 100%; font-size: 1.5em;}
+            
+            .mega-menu {
+                position: static; display: grid; opacity: 1; transform: none; visibility: visible; width: 100%; box-shadow: none; 
+                border: none; padding: 1rem 0 1.5rem 0; background: none; backdrop-filter: none;
+                grid-template-columns: 1fr; border-top: 1px solid rgba(129, 140, 248, 0.2); margin-top: 1rem;
+            }
+            
+            .mega-menu h3 { 
+                text-align: center; 
+                font-size: 1.8em;
+            }
+            .mega-menu ul { 
+                align-items: stretch;
+                text-align: left;
+                list-style: none;
+                padding-left: 0;
+            }
+            
+            .mega-menu a {
+                font-size: 1.5em;
+                padding: 0.8rem 1rem 0.8rem 2.5rem;
+                display: block;
+                text-align: left;
+                position: relative;
+            }
+
+            .mega-menu a::before {
+                content: '■';
+                color: var(--primary-glow);
+                position: absolute;
+                left: 0.5rem;
+                top: 50%;
+                transform: translateY(-50%) scale(0.6);
+                font-size: 1.5em;
+            }
+
+            .mega-menu a:hover {
+                padding-left: 2.5rem;
+                color: #000;
+                background-color: var(--primary-glow);
+            }
+            .mega-menu a:hover::before {
+                color: #000;
+            }
+            
+            .menu-toggle {
+                display: block; position: relative; z-index: 1001;
+                width: 30px; height: 22px;
+                background: none; border: none; cursor: pointer;
+            }
+            .icon-bar {
+                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
+                margin: 6px 0; transition: all 0.3s ease-in-out;
+                border-radius: 2px;
+            }
+
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
         }
     </style>
 </head>
 <body>
-    <!-- Navegación con Mega Menú -->
-    <nav>
-        <ul>
-            <li><a href="#inicio">Inicio</a></li>
-            <li>
-                <a href="#">Exploración Conceptual</a>
-                <div class="mega-menu">
-                    <div>
-                        <h3>Ideas y Preguntas Existenciales</h3>
-                        <ul>
-                            <li><a href="#trazado-vida">Origen y Fin de la Vida</a></li>
-                            <li><a href="#biologia">Determinismo vs. Libertad</a></li>
-                            <li><a href="#filosofia-mente">Conducta y Creatividad</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>Fundamentos Teóricos</h3>
-                        <ul>
-                            <li><a href="#biologia">Filosofía de la Biología</a></li>
-                            <li><a href="#ciencias-cognitivas">Filosofía de las Ciencias Cognitivas</a></li>
-                            <li><a href="#filosofia-mente">Mente y Lenguaje</a></li>
-                            <li><a href="Explorando la Visualización Filosófica.HTML">Visualización Filosófica</a></li>
-                            <li><a href="MAPEO_FILO_MENTE_CHILE.HTML">Mapeo Filosofía de la Mente Chile</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </li>
-            <li>
-                <a href="#">Perspectivas Disciplinarias</a>
-                <div class="mega-menu">
-                    <div>
-                        <h3>Biología y Ciencias Naturales</h3>
-                        <ul>
-                            <li><a href="#biologia">Histología y Biología Celular</a></li>
-                            <li><a href="HISTOLOGIA.html">Histología</a></li>
-                            <li><a href="https://leolib87.github.io/herbario/">Herbario</a></li>
-                            <li><a href="cuerpo humano completo plantilla Lt.html">Cuerpo Humano Desplegable</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>Economía y Política</h3>
-                        <ul>
-                            <li><a href="#economia-politica">Teorías Colectivistas y Liberales</a></li>
-                            <li><a href="#economia-politica">Análisis de Corrientes Ideológicas</a></li>
-                            <li><a href="RED POLITICOS.html">Red de Políticos FA</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>Educación y Filosofía</h3>
-                        <ul>
-                            <li><a href="red 2.html">Filosofía de la Educación</a></li>
-                            <li><a href="#trazado-vida">Autoconocimiento y Sentido Humano</a></li>
-                            <li><a href="red3.html">Red Tesis de Magíster Ejemplos</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </li>
-            <li>
-                <a href="#">Metodología y Datos</a>
-                <div class="mega-menu">
-                    <div>
-                        <h3>Recolección y Procesamiento</h3>
-                        <ul>
-                            <li><a href="#redes-palabras">Visualización y Análisis de Datos</a></li>
-                            <li><a href="#voyant-tools">Herramientas Digitales (Gephi, D3.js)</a></li>
-                            <li><a href="varios graficos.html">Varios Gráficos</a></li>
-                            <li><a href="GRAFICO DE LINEAS Y TREEMAP.html">Gráfico de Líneas y Treemap</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </li>
-            <li>
-                <a href="#">Proyectos & Mapas</a>
-                <div class="mega-menu">
-                    <div>
-                        <h3>Mapas de Conocimiento</h3>
-                        <ul>
-                            <li><a href="#elementos-comunes">Filosofía de la Mente</a></li>
-                            <li><a href="#economia-politica">Política Chilena</a></li>
-                            <li><a href="VARELA_CARTOGRAFIA.HTML">Cartografía Varela 3d</a></li>
-                            <li><a href="cartografia_varela_01.html">Cartografía Varela 2d</a></li>                            
-                            <li><a href="AUTOPOIESIS.HTML">Simulación Autopoiesis Maturana y Varela 1974</a></li>
-                            <li><a href="Pedagogia-Biologia.html">Pedagogías en Biologia - Chile</a></li>
-                             <li><a href="Pedagogia-Biologia.html">Investigacion Facultad de Ciencias - Chile</a></li>
-                             <li><a href="FONDECYT.HTML">Fondecyt Chile - Chile</a></li>
-                            <li><a href="IAs.html">Red de IAs</a></li>
-                            <li><a href="googleias.html">IAs de Google</a></li>
-                            <li><a href="treemap_ias.html">Treemap de IAs</a></li>                                          
-                        
-                           
-                        </ul>
-                    </div>
-                </div>
-            </li>
-            <li>
-                <a href="#">Recursos</a>
-                <div class="mega-menu">
-                    <div>
-                        <h3>Lecturas y Bibliografía</h3>
-                        <ul>
-                            <li><a href="MI_BIBLIOTECA.HTML">Mi Biblioteca de Humanidades</a></li>
-                            <li><a href="BIBLIOTECA_CIENCIAS.HTML">Mi Biblioteca de Ciencias</a></li>
-                            <li><a href="BIBLIOECAS_DIGITALES_SOMBRA.HTML">Bibliotecas Sombra</a></li>
-                            <li><a href="CITAS.HTML">Fragmentos de Mentes</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>Enlaces de Interés</h3>
-                        <ul>
-                            <li><a href="LEOLIB NEWS BLACK.HTML">Leolib News</a></li>
-                            <li><a href="https://leolib87.github.io/herbario/">Herbario</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </li>
-            <li><a href="#contacto">Acerca de / Contacto</a></li>
-        </ul>
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+    
+    <nav class="glassmorphism">
+        <div class="nav-content">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-8 w-8 md:h-10 md:w-10 rounded-full">
+                    <span>O.C.V.M.</span>
+                </a>
+            </div>
+            <ul class="nav-container" id="nav-menu">
+                 <li><a href="index.html">
+                     <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+                     Inicio</a></li>
+     
+                 <li><a href="#">
+                     <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
+                     Origen del Cosmos</a>
+                     <div class="mega-menu glassmorphism">
+                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z" /></svg>Sistemas Complejos</h3>
+                             <ul>
+                                 <li><a href="GAME_OF_LIFE.HTML">Juego de la Vida (Conway)</a></li>
+                                 <li><a href="GAME_OF_LIFE3D.HTML">Juego de la Vida (3D)</a></li>
+                             </ul>
+                         </div>
+                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 4.5l7.5 7.5-7.5 7.5" /></svg>Principios Fundamentales</h3>
+                             <ul>
+                                 <li><a href="#">(Próximamente: Física)</a></li>
+                                 <li><a href="#">(Próximamente: Cosmología)</a></li>
+                             </ul>
+                         </div>
+                     </div>
+                 </li>
+                 
+                 <li><a href="#">
+                     <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9.75L16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0020.25 18V5.75A2.25 2.25 0 0018 3.5H6A2.25 2.25 0 003.75 5.75v12.5A2.25 2.25 0 006 20.25z" /></svg>
+                     Origen de la Vida</a>
+                     <div class="mega-menu glassmorphism">
+                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15m-10.875 0h15.75c.621 0 1.125-.504 1.125-1.125V5.625c0-.621-.504-1.125-1.125-1.125H4.125C3.504 4.5 3 5.004 3 5.625v12.75c0 .621.504 1.125 1.125 1.125z" /></svg>Fundamentos de Biología</h3>
+                             <ul>
+                                 <li><a href="index.html#biologia-celular">Introducción a la Célula</a></li>
+                                 <li><a href="NUMEROS_BIOLOGOS.HTML">Números Importantes en Biología Celular</a></li>
+                                 <li><a href="CURSO_BIOLOGIA_CELULAR.HTML">Curso Biología Celular</a></li>
+                                 <li><a href="HISTOLOGIA.html">Histología y Tejidos</a></li>
+                                 <li><a href="cuerpo humano completo plantilla Lt.html">Anatomía Humana</a></li>
+                             </ul>
+                         </div>
+                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183m-4.991-2.691v4.992h4.992v-.001M2.985 19.644l3.181-3.182m0-4.992l-3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183" /></svg>Autopoiesis y Sistemas Vivos</h3>
+                             <ul>
+                                 <li><a href="AUTOPOIESIS.HTML">Simulación Autopoiesis</a></li>
+                                 <li><a href="AUTOPOIESIS_3D.HTML">Simulación Autopoiesis (3D)</a></li>
+                                 <li><a href="Autopoiesis_Fractal00.html">Simulación Autopoiesis (Fractal)</a></li>
+                                 <li><a href="Paper_Varela_1974.html">Paper de Varela (1974)</a></li>
+                             </ul>
+                         </div>
+                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>Herramientas de Investigación</h3>
+                             <ul>
+                                 <li><a href="https://leolib87.github.io/herbario/">Herbario Digital</a></li>
+                                 <li><a href="WESTERNCHILE.HTML">Proveedores Western Blot</a></li>
+                                 <li><a href="histologychile.html">Proveedores Histología</a></li>
+                                 <li><a href="proveedores_biologia.html">Proveedores Biología</a></li>
+                             </ul>
+                         </div>
+                     </div>
+                 </li>
+                 
+                 <li><a href="#">
+                     <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zm.75-12h9v9h-9v-9z" /></svg>
+                     Origen de la Mente</a>
+                     <div class="mega-menu glassmorphism">
+                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>Filosofía y Cognición</h3>
+                             <ul>
+                                 <li><a href="index.html#filosofia-mente">Mente, Lenguaje y Realidad</a></li>
+                                 <li><a href="index.html#ciencias-cognitivas">Mente Encarnada y Cognición</a></li>
+                                 <li><a href="index.html#inteligencia-artificial">IA y Sistemas Complejos</a></li>
+                                 <li><a href="Feno_style.html">Aproximación Fenomenológica</a></li>
+                                 <li><a href="index.html#epistemologia">Epistemología del Conocer</a></li>
+                                 <li><a href="index.html#trazado-vida">Sentido de Vida y Muerte</a></li>
+                                 <li><a href="conocer_fv.html">Conocer, FV</a></li>
+                             </ul>
+                         </div>
+                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>Autores y Referentes</h3>
+                             <ul>
+                                 <li><a href="PAPERS_VARELA.HTML">Publicaciones de Varela</a></li>
+                                 <li><a href="CITAS.HTML">Fragmentos de Mentes</a></li>
+                                 <li><a href="MAPEO_FILO_MENTE_CHILE.HTML">Mapeo Filosofía Mente (Chile)</a></li>
+                             </ul>
+                         </div>
+                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0l-1.07-1.07m15.482 0l1.07 1.07m-1.07-1.07l-1.07 1.07m1.07-1.07l-1.07 1.07m-1.07-1.07l-1.07 1.07m1.07-1.07l-1.07 1.07M12 6.873l-1.07 1.07m2.14 0l-1.07-1.07m-1.07 1.07l-1.07-1.07m2.14 0l-1.07 1.07m-1.07 1.07l-1.07-1.07m2.14 0l-1.07 1.07" /></svg>Reflexiones Culturales</h3>
+                                 <ul>
+                                     <li><a href="peliculas.html">Reflexiones en el Cine</a></li>
+                                     <li><a href="MUSICA.HTML">Letras de Canciones</a></li>
+                                 </ul>
+                         </div>
+                     </div>
+                 </li>
+     
+                 <li><a href="#">
+                     <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" /></svg>
+                     Cartografías del Saber</a>
+                     <div class="mega-menu glassmorphism">
+                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 20.25h12A2.25 2.25 0 0020.25 18V5.75A2.25 2.25 0 0018 3.5H6A2.25 2.25 0 003.75 5.75v12.5A2.25 2.25 0 006 20.25z" /></svg>Visualización de Datos</h3>
+                             <ul>
+                                 <li><a href="index.html#analisis-redes">Introducción a las Redes</a></li>
+                                 <li><a href="index.html#elementos-comunes">Mapa Conceptual General</a></li>
+                                 <li><a href="RED POLITICOS.html">Red de Políticos</a></li>
+                                 <li><a href="varios graficos.html">Colección de Gráficos</a></li>
+                                 <li><a href="GRAFICO DE LINEAS Y TREEMAP.html">Líneas y Treemaps</a></li>
+                                 <li><a href="treemap_ias.html">Treemap de IAs</a></li>
+                                  <li><a href="INFLACION ARGENTINA RESPONSIVA.html">INFLACION EN ARGENTINA</a></li>                                         
+                             </ul>
+                         </div>
+                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" /></svg>Mapas Conceptuales</h3>
+                             <ul>
+                                 <li><a href="MAPA_MENTAL_TRABAJO.HTML">Mapa Mental "Trabajo"</a></li>
+                                 <li><a href="VARELA_CARTOGRAFIA.HTML">Cartografía Varela (3D)</a></li>
+                                 <li><a href="cartografia_varela_01.html">Cartografía Varela (2D)</a></li>
+                                 <li><a href="Explorando la Visualización Filosófica.HTML">Visualización Filosófica</a></li>
+                             </ul>
+                         </div>
+                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>Herramientas Digitales y IA</h3>
+                             <ul>
+                                 <li><a href="Herramientas_Investigacion_definitiva.html">Guía de Herramientas</a></li>
+                                 <li><a href="IAS_BUSQUEDA.HTML">Buscador de IAs</a></li>
+                                 <li><a href="googleias.html">IAs de Google</a></li>
+                                 <li><a href="IAs.html">Red de IAs</a></li>
+                                 <li><a href="index.html#voyant-tools">Análisis con Voyant Tools</a></li>
+                                 <li><a href="Paper_web.html">Plantilla Web para Papers</a></li>
+                             </ul>
+                         </div>
+                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>Recursos y Proyectos</h3>
+                             <ul>
+                                 <li><a href="MI_BIBLIOTECA.HTML">Biblioteca Humanidades</a></li>
+                                 <li><a href="BIBLIOTECA_CIENCIAS.HTML">Biblioteca Ciencias</a></li>
+                                 <li><a href="BIBLIOTECA SHADOW.html">Bibliotecas Sombra</a></li>
+                                 <li><a href="FUENTES_FINANCIAMIENTO.HTML">Fuentes de Financiamiento</a></li>
+                                 <li><a href="FONDOS.HTML">DEEP Financiamiento</a></li>
+                                 <li><a href="FONDECYT.HTML">Análisis Proyectos Fondecyt</a></li>
+                                 <li><a href="Empleos_IES.html">Empleos en Educación Superior</a></li>
+                                 <li><a href="Pedagogia-Biologia.html">Pedagogías en Biología (Chile)</a></li>
+                                 <li><a href="QF.HTML">Química y Farmacia (Chile)</a></li>
+                                 <li><a href="tiny_houses_web.html">Tiny Houses (Chile)</a></li>                                        
+                             </ul>
+                         </div>
+                     </div>
+                 </li>
+
+                 <li><a href="#">
+                     <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h6M9 11.25h6m-6 4.5h6M6.75 21v-5.625a2.25 2.25 0 012.25-2.25h6a2.25 2.25 0 012.25 2.25V21M6.75 3v2.25A2.25 2.25 0 009 7.5h6a2.25 2.25 0 002.25-2.25V3" /></svg>
+                     Laboratorio</a>
+                     <div class="mega-menu glassmorphism">
+                         <div>
+                             <h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9l-3.375-3.375A7.5 7.5 0 007.5 21l3.375-3.375m0-3.75L13.5 7.5" /></svg>Proyectos y Noticias</h3>
+                             <ul>
+                                 <li><a href="LEOLIB NEWS BLACK.HTML">Leolib News</a></li>
+                                 <li><a href="CHAT_LEO.HTML">Chat Leo</a></li>
+                                 <li><a href="vida mente cosmos web deepresearcheada.html">VIDA MENTE COSMOS DEEP</a></li>
+                             </ul>
+                         </div>
+                         <div>
+                             <h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 3h.008v.008H8.25v-.008zm0 3h.008v.008H8.25v-.008zm3-6h.008v.008H11.25v-.008zm0 3h.008v.008H11.25v-.008zm0 3h.008v.008H11.25v-.008zm3-6h.008v.008H14.25v-.008zm0 3h.008v.008H14.25v-.008zm0 3h.008v.008H14.25v-.008zM4.5 21V5.625c0-1.036.84-1.875 1.875-1.875h11.25c1.035 0 1.875.84 1.875 1.875V21m-18 0h18M4.5 21V9M19.5 21V9" /></svg>Herramientas y Calculadoras</h3>
+                             <ul>
+                                 <li><a href="CALCULADORA COMPRAS MOLECULAR RESPONSIVA.html">Calculadora Biología Molecular</a></li>
+                                 <li><a href=" Histologia Calculadora.html">Calculadora Histología</a></li>
+                                 <li><a href="CALCULADORA COMPRAS BLOT.HTML">Calculadora Western Blot</a></li>
+                                 <li><a href="PLANTILLA CALCULADORA LABORATORIO.HTML">Plantilla Calculadora General</a></li>
+                                 <li><a href="COTIZACION_yupielei.html">Cotización W-H-M</a></li>
+                             </ul>
+                         </div>
+                         <div>
+                             <h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0l-1.07-1.07m15.482 0l1.07 1.07m-1.07-1.07l-1.07 1.07m1.07-1.07l-1.07 1.07m-1.07-1.07l-1.07 1.07m1.07-1.07l-1.07 1.07M12 6.873l-1.07 1.07m2.14 0l-1.07-1.07m-1.07 1.07l-1.07-1.07m2.14 0l-1.07 1.07m-1.07 1.07l-1.07-1.07m2.14 0l-1.07 1.07" /></svg>Académico y Docencia</h3>
+                             <ul>
+                                 <li><a href="horario_2025.html">Horario 2025</a></li>
+                                 <li><a href="HORARIOS_LAB.HTML">Horarios Lab</a></li>
+                                 <li><a href="INTEGRAL1_noq.HTML">Integral 1</a></li>
+                                 <li><a href="red 2.html">Red Tesis Enseñanza Cs.</a></li>
+                                 <li><a href="red3.html">Red Tesis Ejemplos</a></li>
+                                 <li><a href="LAB1 BIOMOLECULAS.html">LAB I Biomoléculas</a></li>
+                             </ul>
+                         </div>
+                         <div>
+                             <h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z" /></svg>Desarrollo y Pruebas</h3>
+                             <ul>
+                                 <li><a href="fondosX2.html">Dashboard Fondos</a></li>
+                                 <li><a href="web.moderna.html">Web Moderna (Test)</a></li>
+                                 <li><a href="web.three.html">Web Three.js (Test)</a></li>
+                                 <li><a href="totem.html">Totem 1</a></li>
+                                 <li><a href="totem2.html">Totem 2</a></li>
+                                 <li><a href="PROBANDO.HTML">Probando 1</a></li>
+                                 <li><a href="probando2gemini.html">Probando 2</a></li>
+                                 <li><a href="web caos orden.html">Web Caos y Orden</a></li>
+                                 <li><a href="AI- ESCRITURA- INCLUYE SHADOW FINAL.html">AI Escritura Incluye Shadow Final</a></li>
+                             </ul>
+                         </div>
+                     </div>
+                 </li>
+                 
+                 <li><a href="#contacto">
+                     <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                     Contacto</a></li>
+            </ul>
+            <button class="menu-toggle" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
     </nav>
 
-    <div class="title">Treemap Interactivo de Apps</div>
-    <div class="legend" id="legend"></div>
-    <div id="chart"></div>
+    <div class="main-container" id="inicio">
+        <div class="hero">
+            <div class="hero-content">
+                <h1>Treemap Interactivo de IAs</h1>
+                <p>Una visualización jerárquica de diversas aplicaciones de inteligencia artificial, clasificadas por su función principal. Haz clic en cualquier recuadro para explorar la herramienta.</p>
+            </div>
+        </div>
 
+        <div class="layout-grid">
+            <main class="content">
+                
+                <section id="treemap-section" class="glassmorphism" data-animate>
+                    <h2>Mapa de Aplicaciones</h2>
+                    <div id="chart-container">
+                        <div class="legend" id="legend"></div>
+                        <div id="chart"></div>
+                    </div>
+                </section>
+                </main>
+        </div>
+        <footer class="footer" id="contacto">
+            <h2>Contacto</h2>
+            <p>Este espacio es una cartografía personal y una invitación al diálogo.</p>
+            <p style="margin-top:1.5rem; font-size: 0.9em;">La vida es terriblemente bella cuando los jugadores juegan. | 2025</p>
+        </footer>
+    </div>
+    
     <script>
-        const data = {
-            name: "Apps",
-            children: [
-                {
-                    name: "Generación y Edición Multimedia",
-                    children: [
-                        { name: "Adobe Firefly", url: "https:// puefirefly.adobe.com/" },
-                        { name: "BlinkShot", url: "https://www.blinkshot.io/" },
-                        { name: "EffectTextureMaker", url: "https://mebiusbox.github.io/contents/EffectTextureMaker/" },
-                        { name: "EverArt", url: "https://www.everart.ai/home" },
-                        { name: "Freepik AI Upscaler", url: "https://www.freepik.com/pikaso/upscaler" },
-                        { name: "Hailuo AI", url: "https://hailuoai.video/" },
-                        { name: "HeyGen", url: "https://app.heygen.com/home" },
-                        { name: "Masterpiece X", url: "https://app.masterpiecex.com/generate" },
-                        { name: "Opus Clip", url: "https://clip.opus.pro/dashboard" },
-                        { name: "Pika", url: "https://pika.art/" },
-                        { name: "Scenario", url: "https://app.scenario.com/" },
-                        { name: "Submagic", url: "https://app.submagic.co/?login=g" },
-                        { name: "Suno", url: "https://suno.com/" },
-                        { name: "Udio AI Music Generator", url: "https://www.udio.com/home" },
-                        { name: "VisualMath AI", url: "https://visualmath-ai.vercel.app/" },
-                        { name: "Clideo", url: "https://clideo.com/es/account/projects" },
-                        { name: "Leonardo.AI", url: "https://app.leonardo.ai/" }
-                    ]
-                },
-                {
-                    name: "Asistentes y Herramientas Virtuales",
-                    children: [
-                        { name: "Abacus.AI Teams", url: "https://apps.abacus.ai/chatllm/" },
-                        { name: "ChainGPT", url: "https://www.chaingpt.org/" },
-                        { name: "Character.AI", url: "https://character.ai/" },
-                        { name: "Dante AI", url: "https://chat.dante-ai.com/sign-up" },
-                        { name: "DeepSeek", url: "https://chat.deepseek.com/" },
-                        { name: "Le Chat - Mistral AI", url: "https://chat.mistral.ai/chat" },
-                        { name: "Llama Tutor", url: "https://llamatutor.together.ai/" },
-                        { name: "NoteGPT", url: "https://notegpt.io/workspace/create" },
-                        { name: "Talk To Ultravox", url: "https://huggingface.co/spaces/freddyaboulton/talk-to-ultravox" },
-                        { name: "TRELLIS", url: "https://huggingface.co/spaces/JeffreyXiang/TRELLIS" }
-                    ]
-                },
-                {
-                    name: "Educación, Ciencia e Investigación",
-                    children: [
-                        { name: "Ai2", url: "https://allenai.org/" },
-                        { name: "Elicit", url: "https://elicit.com/" },
-                        { name: "Essential AI", url: "https://essential.ai/" },
-                        { name: "Gamma", url: "https://gamma.app/" },
-                        { name: "Google AI Studio", url: "https://aistudio.google.com/starter-apps" },
-                        { name: "Illuminate", url: "https://illuminate.google.com/home?pli=1" },
-                        { name: "Litmaps", url: "https://app.litmaps.com/" },
-                        { name: "NotebookLM", url: "https://notebooklm.google.com/" },
-                        { name: "OpenAlex", url: "https://openalex.org/" },
-                        { name: "OpenRead", url: "https://www.openread.academy/" },
-                        { name: "PubMed", url: "https://pubmed.ncbi.nlm.nih.gov/" },
-                        { name: "Research Rabbit", url: "https://researchrabbitapp.com/home" },
-                        { name: "SciSpace", url: "https://typeset.io/es" },
-                        { name: "Scite", url: "https://scite.ai/users/leo-torres-j6kp4/welcome" },
-                        { name: "Rerun", url: "https://rerun.io/" }
-                    ]
-                },
-                {
-                    name: "Codificación y Desarrollo Tecnológico",
-                    children: [
-                        { name: "Botpress", url: "https://app.botpress.cloud/workspaces/wkspace_01JEHQYTZXRFQD16NT5B0C42J4/home" },
-                        { name: "CustomGPT.ai", url: "https://app.customgpt.ai/login" },
-                        { name: "Mendable", url: "https://www.mendable.ai/onboarding/createOrg" },
-                        { name: "Replit", url: "https://replit.com/~" },
-                        { name: "Vercel", url: "https://vercel.com/leandro-torres-projects" },
-                        { name: "Microsoft Copilot", url: "https://copilot.microsoft.com/#code=M.C508_BL2.2.U.c90c51b1-d241-c9a6-f30f-4db102a2515b" },
-                        { name: "MP Repo", url: "https://310.ai/mp/repo" },
-                        { name: "Hedra", url: "https://www.hedra.com/" },
-                        { name: "Grep", url: "https://grep.app/" },
-                        { name: "Toolify", url: "https://www.toolify.ai/" },
-                        { name: "Glide", url: "https://go.glideapps.com/o/n1JM5uck9Uj8xEzf0QjG?signUp=&utm_source=community&utm_medium=referral&utm_campaign=forum-header" }
-                    ]
-                },
-                {
-                    name: "Texto y Escritura Asistida",
-                    children: [
-                        { name: "EssayFlow", url: "https://essayflow.ai/?ref=taaft&utm_source=taaft&utm_medium=referral" },
-                        { name: "Jenni", url: "https://app.jenni.ai/" },
-                        { name: "MagicQuill", url: "https://huggingface.co/spaces/AI4Editing/MagicQuill" },
-                        { name: "Cohesive", url: "https://cohesive.so/" }
-                    ]
-                }
-            ]
-        };
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicializar fondo Three.js
+            if (typeof THREE !== 'undefined') {
+                initThreeJS();
+            } else {
+                console.error("Three.js no ha sido cargado");
+            }
 
-        const color = d3.scaleOrdinal()
-            .domain(data.children.map(d => d.name))
-            .range(["#00CCCC", "#CC00CC", "#00CC00", "#CCCC00", "#CC6600"]); // Neon sobrio
+            // Configurar Navegación y otros listeners
+            setupNavigation();
+            setupScrollAnimations();
+            
+            // Inicializar el gráfico Treemap
+            if (typeof d3 !== 'undefined') {
+                initTreemapChart();
+            } else {
+                console.error("D3.js no ha sido cargado");
+            }
 
-        function renderChart() {
-            const width = window.innerWidth * 0.9;
-            const height = window.innerHeight * 0.8;
+            // Manejar redimensionamiento de ventana
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    if (typeof d3 !== 'undefined') {
+                        initTreemapChart(); // Redibujar el treemap al cambiar tamaño
+                    }
+                }, 250);
+            });
+        });
 
-            d3.select("svg").remove();
+        // --- LÓGICA DEL TREEMAP ---
+        function initTreemapChart() {
+            const data = {
+                name: "Apps",
+                children: [
+                    {
+                        name: "Generación y Edición Multimedia",
+                        children: [
+                            { name: "Adobe Firefly", url: "https://firefly.adobe.com/" },
+                            { name: "BlinkShot", url: "https://www.blinkshot.io/" },
+                            { name: "EffectTextureMaker", url: "https://mebiusbox.github.io/contents/EffectTextureMaker/" },
+                            { name: "EverArt", url: "https://www.everart.ai/home" },
+                            { name: "Freepik AI Upscaler", url: "https://www.freepik.com/pikaso/upscaler" },
+                            { name: "Hailuo AI", url: "https://hailuoai.video/" },
+                            { name: "HeyGen", url: "https://app.heygen.com/home" },
+                            { name: "Masterpiece X", url: "https://app.masterpiecex.com/generate" },
+                            { name: "Opus Clip", url: "https://clip.opus.pro/dashboard" },
+                            { name: "Pika", url: "https://pika.art/" },
+                            { name: "Scenario", url: "https://app.scenario.com/" },
+                            { name: "Submagic", url: "https://app.submagic.co/?login=g" },
+                            { name: "Suno", url: "https://suno.com/" },
+                            { name: "Udio AI Music Generator", url: "https://www.udio.com/home" },
+                            { name: "VisualMath AI", url: "https://visualmath-ai.vercel.app/" },
+                            { name: "Clideo", url: "https://clideo.com/es/account/projects" },
+                            { name: "Leonardo.AI", url: "https://app.leonardo.ai/" }
+                        ]
+                    },
+                    {
+                        name: "Asistentes y Herramientas Virtuales",
+                        children: [
+                            { name: "Abacus.AI Teams", url: "https://apps.abacus.ai/chatllm/" },
+                            { name: "ChainGPT", url: "https://www.chaingpt.org/" },
+                            { name: "Character.AI", url: "https://character.ai/" },
+                            { name: "Dante AI", url: "https://chat.dante-ai.com/sign-up" },
+                            { name: "DeepSeek", url: "https://chat.deepseek.com/" },
+                            { name: "Le Chat - Mistral AI", url: "https://chat.mistral.ai/chat" },
+                            { name: "Llama Tutor", url: "https://llamatutor.together.ai/" },
+                            { name: "NoteGPT", url: "https://notegpt.io/workspace/create" },
+                            { name: "Talk To Ultravox", url: "https://huggingface.co/spaces/freddyaboulton/talk-to-ultravox" },
+                            { name: "TRELLIS", url: "https://huggingface.co/spaces/JeffreyXiang/TRELLIS" }
+                        ]
+                    },
+                    {
+                        name: "Educación, Ciencia e Investigación",
+                        children: [
+                            { name: "Ai2", url: "https://allenai.org/" },
+                            { name: "Elicit", url: "https://elicit.com/" },
+                            { name: "Essential AI", url: "https://essential.ai/" },
+                            { name: "Gamma", url: "https://gamma.app/" },
+                            { name: "Google AI Studio", url: "https://aistudio.google.com/starter-apps" },
+                            { name: "Illuminate", url: "https://illuminate.google.com/home?pli=1" },
+                            { name: "Litmaps", url: "https://app.litmaps.com/" },
+                            { name: "NotebookLM", url: "https://notebooklm.google.com/" },
+                            { name: "OpenAlex", url: "https://openalex.org/" },
+                            { name: "OpenRead", url: "https://www.openread.academy/" },
+                            { name: "PubMed", url: "https://pubmed.ncbi.nlm.nih.gov/" },
+                            { name: "Research Rabbit", url: "https://researchrabbitapp.com/home" },
+                            { name: "SciSpace", url: "https://typeset.io/es" },
+                            { name: "Scite", url: "https://scite.ai/users/leo-torres-j6kp4/welcome" },
+                            { name: "Rerun", url: "https://rerun.io/" }
+                        ]
+                    },
+                    {
+                        name: "Codificación y Desarrollo Tecnológico",
+                        children: [
+                            { name: "Botpress", url: "https://app.botpress.cloud/workspaces/wkspace_01JEHQYTZXRFQD16NT5B0C42J4/home" },
+                            { name: "CustomGPT.ai", url: "https://app.customgpt.ai/login" },
+                            { name: "Mendable", url: "https://www.mendable.ai/onboarding/createOrg" },
+                            { name: "Replit", url: "https://replit.com/~" },
+                            { name: "Vercel", url: "https://vercel.com/leandro-torres-projects" },
+                            { name: "Microsoft Copilot", url: "https://copilot.microsoft.com/" },
+                            { name: "MP Repo", url: "https://310.ai/mp/repo" },
+                            { name: "Hedra", url: "https://www.hedra.com/" },
+                            { name: "Grep", url: "https://grep.app/" },
+                            { name: "Toolify", url: "https://www.toolify.ai/" },
+                            { name: "Glide", url: "https://go.glideapps.com/o/n1JM5uck9Uj8xEzf0QjG" }
+                        ]
+                    },
+                    {
+                        name: "Texto y Escritura Asistida",
+                        children: [
+                            { name: "EssayFlow", url: "https://essayflow.ai/" },
+                            { name: "Jenni", url: "https://app.jenni.ai/" },
+                            { name: "MagicQuill", url: "https://huggingface.co/spaces/AI4Editing/MagicQuill" },
+                            { name: "Cohesive", url: "https://cohesive.so/" }
+                        ]
+                    }
+                ]
+            };
+            
+            // Paleta de colores alineada con la identidad visual O.C.V.M.
+            const color = d3.scaleOrdinal()
+                .domain(data.children.map(d => d.name))
+                .range(['#6366f1', '#22d3ee', '#a78bfa', '#f472b6', '#34d399', '#fbbf24']);
+
+            const chartContainer = document.getElementById('chart');
+            const width = chartContainer.clientWidth;
+            const height = window.innerHeight * 0.6; // Ajustar altura para mejor visualización
+
+            d3.select("#chart").select("svg").remove(); // Limpiar SVG anterior
 
             const treemap = d3.treemap()
                 .size([width, height])
-                .padding(2);
+                .padding(3); // Aumentar padding para mejor separación
 
             const root = d3.hierarchy(data)
-                .sum(d => (d.children ? 0 : 1));
+                .sum(d => (d.children ? 0 : 1)) // El tamaño se basa en el número de apps
+                .sort((a, b) => b.value - a.value);
+            
             treemap(root);
 
             const svg = d3.select("#chart")
                 .append("svg")
                 .attr("width", width)
-                .attr("height", height)
-                .style("background", "rgba(0, 0, 0, 0.9)");
+                .attr("height", height);
 
             const nodes = svg
                 .selectAll("g")
@@ -389,24 +748,31 @@
                 .attr("width", d => d.x1 - d.x0)
                 .attr("height", d => d.y1 - d.y0)
                 .attr("fill", d => color(d.parent.data.name))
-                .style("stroke", "var(--neon-green)")
-                .style("stroke-width", 2)
                 .on("click", (event, d) => {
                     window.open(d.data.url, "_blank");
                 });
-
+            
             nodes.append("text")
-                .attr("x", 5)
-                .attr("y", 15)
-                .text(d => d.data.name)
+                .selectAll('tspan')
+                .data(d => d.data.name.split(/(?=[A-Z][^A-Z])/g)) // Intenta dividir por mayúsculas para mejor ajuste
+                .enter().append('tspan')
+                .attr("x", 4)
+                .attr("y", (d, i) => 13 + i * 10)
+                .text(d => d)
                 .each(function(d) {
-                    const bbox = this.getBBox();
-                    const rectWidth = d.x1 - d.x0;
-                    const rectHeight = d.y1 - d.y0;
-                    if (bbox.width > rectWidth - 10 || bbox.height > rectHeight - 10) {
-                        d3.select(this).remove();
+                    const group = d3.select(this.parentNode.parentNode);
+                    const rect = group.select('rect');
+                    const rectWidth = parseFloat(rect.attr('width'));
+                    const rectHeight = parseFloat(rect.attr('height'));
+                    
+                    if (this.getComputedTextLength() > rectWidth - 8) {
+                        d3.select(this).text(d.substring(0, Math.floor(rectWidth / this.getComputedTextLength() * d.length) - 3) + '...');
+                    }
+                    if (rectHeight < 25 && this.getBBox().y > 13) {
+                       d3.select(this).remove();
                     }
                 });
+
 
             const legend = d3.select("#legend");
             legend.selectAll(".legend-item").remove();
@@ -414,16 +780,27 @@
                 const item = legend.append("div").attr("class", "legend-item");
                 item.append("div")
                     .attr("class", "legend-color")
-                    .style("background", color(category.name));
-                item.append("span")
-                    .text(category.name)
-                    .style("color", "var(--neon-green)")
-                    .style("text-shadow", "0 0 5px var(--neon-cyan)");
+                    .style("background-color", color(category.name));
+                item.append("span").text(category.name);
             });
         }
 
-        window.addEventListener("resize", renderChart);
-        renderChart();
+
+        // --- THREE.JS BACKGROUND (CÓDIGO ORIGINAL DE LA PLANTILLA) ---
+        let scene, camera, renderer, points, lines;
+        function initThreeJS(){ try { scene = new THREE.Scene(); camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000); camera.position.z = 50; renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("bg-canvas"), alpha: true }); renderer.setSize(window.innerWidth, window.innerHeight); const pointCount = 200; const positions = new Float32Array(pointCount * 3); const pointGeo = new THREE.BufferGeometry(); for (let i = 0; i < pointCount; i++) { positions[i * 3] = (Math.random() - 0.5) * 400; positions[i * 3 + 1] = (Math.random() - 0.5) * 400; positions[i * 3 + 2] = (Math.random() - 0.5) * 400; } pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3)); const pointMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.5, transparent: true, opacity: 0.8 }); points = new THREE.Points(pointGeo, pointMaterial); scene.add(points); regenerateLines(); window.addEventListener("resize", onWindowResize, false); document.addEventListener('mousemove', onMouseMove, false); renderer.domElement.addEventListener('click', onCanvasClick, false); animate(); } catch (error) { console.error('Error initializing Three.js:', error); } }
+        function onWindowResize(){ if(camera && renderer) { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); } }
+        let mouseX = 0, mouseY = 0; function onMouseMove(event) { mouseX = (event.clientX - window.innerWidth / 2) / 100; mouseY = (event.clientY - window.innerHeight / 2) / 100; }
+        function animate(){ requestAnimationFrame(animate); if(scene && camera && renderer && points && lines) { points.rotation.y += 0.0005; lines.rotation.y += 0.0005; camera.position.x += (mouseX - camera.position.x) * 0.05; camera.position.y += (-mouseY - camera.position.y) * 0.05; camera.lookAt(scene.position); renderer.render(scene, camera); } }
+        function onCanvasClick(event) { const mouse = new THREE.Vector2(); mouse.x = (event.clientX / window.innerWidth) * 2 - 1; mouse.y = -(event.clientY / window.innerHeight) * 2 + 1; const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5); vector.unproject(camera); const dir = vector.sub(camera.position).normalize(); const distance = -camera.position.z / dir.z; const pos = camera.position.clone().add(dir.multiplyScalar(distance)); addPoint(pos); }
+        function addPoint(position) { const oldPositions = points.geometry.attributes.position.array; const newPointCount = oldPositions.length / 3 + 1; const newPositions = new Float32Array(newPointCount * 3); newPositions.set(oldPositions); newPositions[oldPositions.length] = position.x; newPositions[oldPositions.length + 1] = position.y; newPositions[oldPositions.length + 2] = position.z; points.geometry.setAttribute('position', new THREE.BufferAttribute(newPositions, 3)); points.geometry.attributes.position.needsUpdate = true; regenerateLines(); }
+        function regenerateLines() { if (lines) scene.remove(lines); const pointPositions = points.geometry.attributes.position.array; const pointCount = pointPositions.length / 3; const linePositions = []; for (let i = 0; i < pointCount; i++) { for (let j = i + 1; j < pointCount; j++) { const dx = pointPositions[i * 3] - pointPositions[j * 3]; const dy = pointPositions[i * 3 + 1] - pointPositions[j * 3 + 1]; const dz = pointPositions[i * 3 + 2] - pointPositions[j * 3 + 2]; const dist = Math.sqrt(dx * dx + dy * dy + dz * dz); if (dist < 50) { linePositions.push(pointPositions[i * 3], pointPositions[i * 3 + 1], pointPositions[i * 3 + 2]); linePositions.push(pointPositions[j * 3], pointPositions[j * 3 + 1], pointPositions[j * 3 + 2]); } } } const lineGeo = new THREE.BufferGeometry(); lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3)); const lineMaterial = new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.3, transparent: true }); lines = new THREE.LineSegments(lineGeo, lineMaterial); scene.add(lines); }
+
+        // --- NAVIGATION SCRIPTS (CÓDIGO ORIGINAL DE LA PLANTILLA) ---
+        function setupNavigation(){ const menuToggleBtn = document.getElementById('menu-toggle-btn'); const navMenu = document.getElementById('nav-menu'); menuToggleBtn.addEventListener('click', (e) => { e.stopPropagation(); document.body.classList.toggle('menu-open'); }); navMenu.addEventListener('click', (e) => { if (e.target.tagName === 'A' && window.innerWidth <= 1024) { document.body.classList.remove('menu-open'); } }); if (window.matchMedia('(min-width: 1025px)').matches) { const menuItems = document.querySelectorAll('.nav-container > li'); menuItems.forEach(item => { const megaMenu = item.querySelector('.mega-menu'); if (megaMenu) { let leaveTimeout; const showMenu = () => { clearTimeout(leaveTimeout); document.querySelectorAll('.mega-menu.is-active').forEach(m => { if (m !== megaMenu) m.classList.remove('is-active'); }); megaMenu.classList.add('is-active'); }; const startHideTimer = () => { leaveTimeout = setTimeout(() => megaMenu.classList.remove('is-active'), 250); }; item.addEventListener('mouseenter', showMenu); item.addEventListener('mouseleave', startHideTimer); } }); } }
+
+        // --- SCROLL ANIMATION (CÓDIGO ORIGINAL DE LA PLANTILLA) ---
+        function setupScrollAnimations(){ const animatedSections = document.querySelectorAll('[data-animate]'); const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('is-visible'); const elementsToAnimate = entry.target.querySelectorAll('h2, h3, p, .visualization-container, iframe, #chart-container'); elementsToAnimate.forEach((el, index) => { el.style.transitionDelay = `${index * 150}ms`; }); observer.unobserve(entry.target); } }); }, { threshold: 0.1 }); animatedSections.forEach(section => observer.observe(section)); }
     </script>
 </body>
 </html>
