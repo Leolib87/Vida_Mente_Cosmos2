@@ -500,8 +500,8 @@
         let scene, camera, renderer, points, lines, gameOfLifeCells;
         let mouseX = 0, mouseY = 0;
         let gameOfLifeGrid;
-        const GOL_GRID_SIZE = 50;
-        const GOL_CELL_SIZE = 1.6;
+        const GOL_GRID_SIZE = 100;
+        const GOL_CELL_SIZE = 2.0;
         const GOL_UPDATE_INTERVAL = 8;
         let golFrameCount = 0;
         
@@ -569,27 +569,22 @@
         }
 
         function createGameOfLifeGrid() {
-            // Paleta de colores azules y morados de O.C.V.M.
-            const ocvmBlues = [0x818cf8, 0x6366f1, 0x4f46e5];
-
             gameOfLifeGrid = Array(GOL_GRID_SIZE).fill(null).map(() => Array(GOL_GRID_SIZE).fill(0));
             gameOfLifeCells = Array(GOL_GRID_SIZE).fill(null).map(() => Array(GOL_GRID_SIZE).fill(null));
             
             const geometry = new THREE.PlaneGeometry(GOL_CELL_SIZE * 0.8, GOL_CELL_SIZE * 0.8);
+            const material = new THREE.MeshBasicMaterial({
+                color: 0x6366f1, // Tono azul único de O.C.V.M.
+                transparent: true,
+                opacity: 0.8
+            });
             
             for (let i = 0; i < GOL_GRID_SIZE; i++) {
                 for (let j = 0; j < GOL_GRID_SIZE; j++) {
                     gameOfLifeGrid[i][j] = Math.random() > 0.75 ? 1 : 0;
                     
-                    // Asigna un color aleatorio de la paleta a cada célula
-                    const randomColor = ocvmBlues[Math.floor(Math.random() * ocvmBlues.length)];
-                    
-                    const material = new THREE.MeshBasicMaterial({
-                        color: randomColor,
-                        transparent: true,
-                        opacity: gameOfLifeGrid[i][j] ? 0.8 : 0.05
-                    });
-                    const cell = new THREE.Mesh(geometry, material);
+                    const cell = new THREE.Mesh(geometry, material.clone());
+                    cell.material.opacity = gameOfLifeGrid[i][j] ? 0.8 : 0.05;
                     cell.position.set((j - GOL_GRID_SIZE / 2) * GOL_CELL_SIZE, (i - GOL_GRID_SIZE / 2) * GOL_CELL_SIZE, 0);
                     gameOfLifeCells[i][j] = cell;
                     scene.add(cell);
