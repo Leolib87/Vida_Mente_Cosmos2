@@ -696,17 +696,17 @@
                 const width = d.x1 - d.x0;
                 const height = d.y1 - d.y0;
 
-                // Solo añadir texto si el área es suficientemente grande
-                if (width > 40 && height > 20) {
+                // Condición ajustada para ser más permisiva en pantallas pequeñas
+                if (width > 30 && height > 18) {
                     const foreignObject = node.append("foreignObject")
                         .attr("width", width)
                         .attr("height", height)
-                        .attr("pointer-events", "none"); // Evita que intercepte clics
+                        .attr("pointer-events", "none");
 
                     const textDiv = foreignObject.append("xhtml:div")
                         .attr("class", "treemap-text-container")
-                        // Ajuste dinámico del tamaño de la fuente
-                        .style("font-size", `${Math.max(8, Math.min(12, width / 8, height / 3))}px`);
+                        // Fórmula de tamaño de fuente ajustada para mejor escalabilidad
+                        .style("font-size", `${Math.max(7, Math.min(12, width / 7, height / 2.8))}px`);
                     
                     textDiv.html(d.data.name);
                 }
