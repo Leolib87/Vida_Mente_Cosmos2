@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciencia Cognitiva Enactiva: ¿Revisionismo o Revolución? | O.C.V.M.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true, theme: 'dark', darkMode: true,
+            themeVariables: {
+                'background': 'transparent',
+                'primaryColor': '#1f2937',
+                'primaryTextColor': '#e5e7eb',
+                'lineColor': '#818cf8',
+                'secondaryColor': '#22d3ee',
+                'tertiaryColor': '#f472b6'
+            }
+        });
+    </script>
+    <style>
+        :root {
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --tertiary: #f472b6; /* Magenta */
+            --quaternary: #34d399; /* Verde */
+            --primary-text: #e5e7eb;
+            --primary-glow: #818cf8;
+            --secondary-glow: #22d3ee;
+            --font-main: 'Inter', sans-serif;
+            --nav-height: 70px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            background-color: #000000;
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+        
+        #bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.4;
+        }
+
+        #bg-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.menu-open { overflow: hidden; }
+        
+        nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            z-index: 1000; display: flex; justify-content: center; align-items: center;
+            padding: 0 5%; pointer-events: auto;
+        }
+        .nav-content { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .nav-logo a {
+            font-size: 1.3em; font-weight: 700; color: #fff; text-decoration: none;
+            text-shadow: 0 0 8px var(--primary-glow); display: flex; align-items: center; gap: 0.75rem;
+        }
+        .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
+        nav .nav-container > li { position: relative; height: 100%; display: flex; align-items: center; }
+        nav .nav-container > li > a {
+            color: var(--primary-text); text-decoration: none; font-size: clamp(0.9em, 1.2vw, 1.05em); font-weight: 500;
+            transition: color 0.3s ease, text-shadow 0.3s ease; padding: 0 1rem; display: flex; align-items: center; gap: 8px;
+        }
+        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a { color: #FFFFFF; text-shadow: 0 0 12px var(--primary-glow); }
+        .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; }
+
+        .hero {
+            min-height: 50vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; position: relative; padding: 1rem;
+        }
+        .hero-content { position: relative; z-index: 2; animation: fadeIn 2s ease-in; }
+        .hero h1 {
+            font-size: clamp(2.2rem, 7vw, 4.5rem); font-weight: 700; color: #fff;
+            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(129, 140, 248, 0.7);
+            animation: pulse-glow 3s infinite alternate;
+        }
+        .hero p { font-size: clamp(1rem, 2.5vw, 1.2rem); max-width: 800px; margin: 1.5rem auto 0; text-shadow: 0 0 5px #000; }
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .main-container { 
+            width: 100%; max-width: 1200px; margin: 0 auto; 
+            padding: var(--nav-height) clamp(1rem, 5vw, 4rem) 1rem; pointer-events: none;
+        }
+        main, .footer, .hero-content { pointer-events: auto; }
+        main p, .footer p, main li { user-select: text; cursor: default; }
+        
+        /* Justified text */
+        .section p, .section li {
+            text-align: justify;
+        }
+
+        .tab-container { width: 100%; }
+        .tab-buttons {
+            display: flex; flex-wrap: wrap; gap: 0.5rem;
+            border-bottom: 1px solid rgba(129, 140, 248, 0.3); margin-bottom: 2rem;
+        }
+        .tab-button {
+            padding: 0.75rem 1.5rem; cursor: pointer; background-color: transparent; border: none;
+            color: var(--primary-text); font-weight: 500; font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+            border-bottom: 3px solid transparent; transition: all 0.3s ease; opacity: 0.7;
+        }
+        .tab-button:hover { opacity: 1; background-color: rgba(129, 140, 248, 0.1); }
+        .tab-button.active {
+            color: #fff; border-bottom-color: var(--primary); opacity: 1;
+            text-shadow: 0 0 8px var(--primary-glow);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeInContent 0.5s ease-in-out; }
+        @keyframes fadeInContent {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section { padding: clamp(1rem, 3vw, 2rem); border-radius: 12px; }
+        
+        h2 {
+            font-size: clamp(1.5rem, 5vw, 2.2rem); color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);
+            border-bottom: 1px solid var(--primary-glow); padding-bottom: 1rem; margin-bottom: 1.5rem;
+        }
+        h3 { font-size: clamp(1.2rem, 4vw, 1.5rem); color: var(--primary-glow); margin: 2rem 0 1rem 0; }
+        
+        /* Keyword Highlighting */
+        .hl-enactive { color: var(--primary); font-weight: 600; }
+        .hl-cyber { color: var(--secondary); font-weight: 600; }
+        .hl-maturana { color: var(--tertiary); font-weight: 600; }
+        .hl-varela { color: var(--quaternary); font-weight: 600; }
+        .hl-concept { color: #f59e0b; font-weight: 600; } /* Naranja para conceptos generales */
+        
+        blockquote {
+            border-left: 4px solid var(--primary); padding-left: 1.5rem; margin: 1.5rem 0;
+            font-style: italic; color: #d1d5db; background-color: rgba(31, 41, 55, 0.3);
+            border-radius: 0 8px 8px 0; padding: 1rem;
+        }
+        .reference-list { list-style-type: none; padding-left: 0; }
+        .reference-list li {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+            text-indent: -1.5rem;
+        }
+        .reference-list li::before {
+            content: '»';
+            color: var(--primary);
+            margin-right: 0.75rem;
+            font-weight: bold;
+        }
+
+        .footer { text-align: center; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
+        
+        /* D3 Background Particles */
+        .circle-substrate { fill: var(--secondary-glow); }
+        .circle-enzyme { fill: var(--tertiary); }
+        .circle-link { fill: var(--primary-glow); }
+
+        /* Mobile Menu */
+        @media (max-width: 1024px) {
+            .nav-container { display: none; }
+            .menu-toggle {
+                display: block; position: relative; z-index: 1001;
+                width: 30px; height: 22px; background: none; border: none; cursor: pointer;
+            }
+            .icon-bar {
+                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
+                margin: 6px 0; transition: all 0.3s ease-in-out; border-radius: 2px;
+            }
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+        }
+        @media (min-width: 1025px) { .menu-toggle { display: none; } }
+    </style>
+</head>
+<body>
+    <div id="bg-container">
+        <svg id="bg-svg"></svg>
+    </div>
+    
+    <nav class="glassmorphism">
+        <div class="nav-content">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-8 w-8 md:h-10 md:w-10 rounded-full">
+                    <span>O.C.V.M.</span>
+                </a>
+            </div>
+            <ul class="nav-container" id="nav-menu">
+                <li><a href="index.html">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+                    Inicio</a></li>
+            </ul>
+             <button class="menu-toggle" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container" id="inicio">
+        <div class="hero">
+            <div class="hero-content">
+                <h1>Ciencia Cognitiva Enactiva: ¿Revisionismo o Revolución?</h1>
+                <p>Un análisis profundo del paper de Mario Villalobos (2013), explorando las raíces y tensiones del paradigma enactivo en su diálogo con la autopoiesis y la cibernética.</p>
+            </div>
+        </div>
+
+        <main class="content">
+            <div class="tab-container glassmorphism rounded-xl p-4 sm:p-6 lg:p-8">
+                <div class="tab-buttons">
+                    <button class="tab-button active" data-tab="tab1">Introducción</button>
+                    <button class="tab-button" data-tab="tab2">Ontología de Maturana</button>
+                    <button class="tab-button" data-tab="tab3">Giro de Varela</button>
+                    <button class="tab-button" data-tab="tab4">Tensión y Desafíos</button>
+                    <button class="tab-button" data-tab="tab5">Diagrama</button>
+                    <button class="tab-button" data-tab="tab6">Notas</button>
+                    <button class="tab-button" data-tab="tab7">Referencias</button>
+                </div>
+
+                <div id="tab1" class="tab-content active section">
+                    <h2>Introducción: Un Paradigma Híbrido</h2>
+                    <p>El <span class="hl-enactive">enfoque enactivo</span> es comúnmente visto como un proyecto revolucionario en las ciencias cognitivas, gracias a movimientos teóricos audaces como el rechazo a las <span class="hl-concept">representaciones cognitivas</span> o la asunción de una profunda continuidad entre <span class="hl-concept">vida y mente</span>. Sin embargo, al adoptar una perspectiva histórica más amplia que incluye la tradición de la <span class="hl-cyber">cibernética</span>, esta imagen cambia.</p>
+                    <p>Ubicado en el contexto del cambio paradigmático entre la <span class="hl-cyber">cibernética de primer orden</span> y la de <span class="hl-cyber">segundo orden</span>, y especialmente en relación con la <span class="hl-maturana">teoría autopoiética</span> de Maturana (un antecedente directo), el paradigma enactivo se revela como un proyecto más bien <span class="hl-enactive">conservador o revisionista</span>. Se presenta como un paradigma híbrido donde coexisten elementos originales y progresistas con componentes que revisan y reincorporan ideas que la revolución de la cibernética de segundo orden había intentado erradicar.</p>
+                    <p>Este trabajo busca ofrecer una interpretación alternativa del enfoque enactivo, no para juzgarlo, sino para comprender mejor su identidad, sus desafíos presentes y futuros. La tesis central es que este componente revisionista genera una cierta <span class="hl-concept">inestabilidad teórica</span> que podría ser problemática para su consistencia interna a largo plazo.</p>
+                </div>
+
+                <div id="tab2" class="tab-content section">
+                    <h2>La Revolución de Maturana: Clausura y Determinismo</h2>
+                    <p>La <span class="hl-maturana">teoría autopoiética</span> de Maturana emerge de un marco ontológico donde los seres vivos son concebidos como sistemas deterministas y funcionalmente cerrados sobre sí mismos. Estos dos principios tienen prioridad ontológica sobre la noción misma de <span class="hl-maturana">autopoiesis</span>.</p>
+                    <h3>1. Seres Vivos como Sistemas Estructuralmente Determinados</h3>
+                    <p>El principio de <span class="hl-maturana">determinismo estructural</span>, ya insinuado por Ashby, postula que los seres vivos, como cualquier sistema físico, se comportan de una manera específica en un momento dado porque su estructura físico-química no les permite otra acción. No hay elección. Al igual que un río corre hacia el mar sin el propósito de hacerlo, los seres vivos viven sin el propósito de vivir. Son sistemas sin propósito (<span class="hl-concept">apurpositivos</span>).</p>
+                    <blockquote>"Un ser vivo no es un sistema dirigido a un objetivo." - H. Maturana (1970)</blockquote>
+                    <p>La <span class="hl-concept">teleología</span>, por tanto, no es una propiedad del sistema vivo, sino una herramienta explicativa del observador. La definición de "máquinas autopoiéticas" refuerza esta idea: una organización cerrada y peculiar de procesos trivialmente mecánicos.</p>
+                    <h3>2. Seres Vivos como Sistemas Funcionalmente Cerrados</h3>
+                    <p>La organización funcional de un ser vivo es un <span class="hl-maturana">circuito cerrado</span> sin entradas ni salidas. Lo que un observador identifica como "ambiente" es, para la dinámica interna del organismo, solo un paso más en su continuo cambio de estados. El sistema nervioso, por ejemplo, no actúa "sobre" un ambiente, sino que mantiene constantes los estados de sus propias superficies receptoras.</p>
+                    <blockquote>"En la organización de los sistemas vivos, el papel de las superficies efectoras [...] es solo mantener constante el conjunto de estados de las superficies receptoras, no actuar sobre un ambiente." - Maturana (1970)</blockquote>
+                    <p>Desde esta perspectiva de <span class="hl-maturana">clausura operacional</span>, el sistema es "transparente" al ambiente. Por lo tanto, cualquier descripción <span class="hl-concept">intencional</span> (dirigida a) o <span class="hl-concept">intensional</span> (con contenido semántico) carece de fundamento. La idea de que los sistemas vivos procesan <span class="hl-concept">información</span> o construyen <span class="hl-concept">representaciones</span> del mundo no tiene sentido, ya que el "mundo" no existe como tal para el sistema.</p>
+                </div>
+
+                <div id="tab3" class="tab-content section">
+                    <h2>El Giro de Varela: Propósito y Adaptatividad</h2>
+                    <p>Poco después de colaborar con Maturana, <span class="hl-varela">Francisco Varela</span> comenzó a revisar la estricta postura anti-teleológica. Este proceso culminó en una reformulación completa de la autopoiesis, reintroduciendo el propósito y la intencionalidad.</p>
+                    <h3>1. De Máquinas Autopoiéticas a Propósitos Naturales</h3>
+                    <p>Inspirado por la fenomenología de Hans Jonas, Varela propuso una "inversión Jonas-autopoiesis". La <span class="hl-maturana">autopoiesis</span> ya no era solo un mecanismo, sino una <span class="hl-varela">teleología encarnada</span>. La condición misma de ser un sistema autopoiético es su propósito intrínseco. Este movimiento, según sus autores, "reintroduce al sujeto en la biología".</p>
+                    <blockquote>"La teleología, entendida como teleología intrínseca, resulta ser [para el organismo] su condición sine qua non." - Weber & Varela (2002)</blockquote>
+                    <p>Este giro revive, en cierto modo, el proyecto original de la <span class="hl-cyber">cibernética clásica</span> de naturalizar la teleología, pero con una justificación fenomenológica y ontológica completamente nueva.</p>
+                    <h3>2. Adaptatividad: El Regreso del Control</h3>
+                    <p>Para articular esta nueva visión, Ezequiel Di Paolo introdujo el concepto de <span class="hl-varela">adaptatividad</span>: la capacidad de un organismo para regularse a sí mismo, controlando sus intercambios internos y externos para mantener su viabilidad. Las propiedades de la adaptatividad son el <span class="hl-concept">auto-monitoreo</span> y el <span class="hl-concept">control</span> de la regulación interna y los intercambios externos. Villalobos señala que esto suena sorprendentemente similar a las nociones de la <span class="hl-cyber">cibernética de primer orden</span>, donde los seres vivos eran vistos como sistemas de control que se regulan a través de mecanismos de monitoreo.</p>
+                </div>
+
+                <div id="tab4" class="tab-content section">
+                    <h2>Tensión y Desafíos: El Caballo de Troya Representacional</h2>
+                    <p>La introducción de la <span class="hl-varela">adaptatividad</span>, con su énfasis en el <span class="hl-concept">control</span> y la <span class="hl-concept">anticipación</span>, crea una profunda tensión interna en el <span class="hl-enactive">enfoque enactivo</span> y su firme postura anti-representacionalista.</p>
+                    <h3>El Problema de la Anticipación</h3>
+                    <p>Si un sistema adaptativo puede "responder a escenarios futuros de viabilidad", como afirma Di Paolo, surge una pregunta fundamental: ¿cómo puede un organismo responder a un evento futuro que, por definición, no está presente? La única manera lógica es que el organismo manipule algo que <span class="hl-concept">"está en lugar de"</span> dicho evento. Este "algo" es, funcionalmente, una <span class="hl-concept">representación</span>, por mínima o no-clásica que sea.</p>
+                    <blockquote>"La charla sobre representación [...] es el pegamento que une el telos (propósito) al mecanismo." - Clark & Grush (1999)</blockquote>
+                    <p>Villalobos argumenta que es difícil concebir un mecanismo genuinamente anticipatorio que no sea, en algún nivel, representacional. O el evento futuro está literalmente 'presente' (lo cual es una contradicción), o se trata con una 're-presentación' de dicho evento.</p>
+                    <h3>Amistades Peligrosas: El Caso de la Teoría de la Emulación</h3>
+                    <p>Esta tensión se hace evidente en la recepción de la <span class="hl-concept">Teoría de la Emulación</span> de Grush, que postula "modelos internos" para el control motor y la anticipación. Evan Thompson, cofundador del enactivismo, la describe como un <span class="hl-enactive">"suplemento amistoso"</span>, argumentando que no separa percepción y acción y reconoce la autonomía del agente. Sin embargo, al aceptar una teoría que califica explícitamente sus mecanismos como <span class="hl-concept">representaciones internas</span>, Thompson parece hacer una concesión fundamental. Esto abre la puerta a que cualquier teoría representacionalista pueda "vestirse" con lenguaje enactivo para ser aceptada, socavando el pilar anti-representacionalista del paradigma.</p>
+                </div>
+
+                <div id="tab5" class="tab-content section">
+                    <h2>Diagrama Conceptual: Evolución y Tensión</h2>
+                    <p>El siguiente diagrama ilustra la trayectoria conceptual desde la cibernética clásica hasta el enactivismo, destacando el punto de inflexión revolucionario de Maturana y el posterior movimiento "revisionista" de Varela, que reintroduce conceptos de la cibernética de primer orden, creando la tensión central del paradigma.</p>
+                    <div class="mermaid flex justify-center items-center p-4">
+                        graph TD
+                            A["<span class='hl-cyber'>Cibernética de 1er Orden</span><br><i>Control, Teleología, Información</i>"] --> B{Punto de Inflexión};
+                            B --> C["<span class='hl-cyber'>Cibernética de 2º Orden</span><br><b>(<span class='hl-maturana'>Maturana</span>)</b><br><i>Clausura, Determinismo, Anti-Teleología</i>"];
+                            C --> D["<b><span class='hl-maturana'>Teoría Autopoiética</span></b><br><i>La vida como red que se auto-produce</i>"];
+                            D --> E["<b><span class='hl-enactive'>Enfoque Enactivo</span></b><br><b>(<span class='hl-varela'>Varela</span>)</b><br><i>Autonomía, Adaptatividad, Sentido</i>"];
+                            E --"Reintroduce conceptos <br> (Teleología, Control)"--> A;
+
+                            subgraph "Revolución de Maturana"
+                                C
+                                D
+                            end
+
+                            subgraph "Revisión de Varela"
+                                E
+                            end
+                    </div>
+                </div>
+
+                <div id="tab6" class="tab-content section">
+                    <h2>Notas del Autor</h2>
+                    <ol class="list-decimal list-inside space-y-4">
+                        <li>Aunque en los primeros trabajos enactivos no aparece la palabra <span class="hl-maturana">autopoiesis</span>, nociones clave como <span class="hl-maturana">clausura de la red nerviosa</span>, <span class="hl-maturana">acoplamiento estructural</span> y <span class="hl-maturana">deriva natural</span> provienen de la teoría de Maturana. Varela luego recupera y reinterpreta el concepto para el programa enactivo.</li>
+                        <li>Para una reconstrucción histórica y autobiográfica de la teoría autopoiética, ver Maturana (2002) y Maturana & Pörksen (2004).</li>
+                        <li>La teoría de Maturana pertenece a la tradición <span class="hl-cyber">cibernética</span> como una teoría del observador, pero no por seguir el formalismo matemático de Ashby, cuyo análisis funcional en términos de inputs/outputs es explícitamente rechazado.</li>
+                        <li>Esta interpretación del enactivismo como <span class="hl-enactive">revisionista</span> es una alternativa a la auto-interpretación del programa, que tiende a presentarse como una síntesis virtuosa y un nuevo comienzo.</li>
+                        <li>Incluso las versiones más radicales del enactivismo, como la de Hutto y Myin (REC), conservan un carácter conservador al mantener la <span class="hl-concept">teleología</span> y la noción de <span class="hl-concept">información como co-variación</span>.</li>
+                        <li>Es crucial distinguir la <span class="hl-maturana">clausura funcional</span> de Maturana (en sistemas vivos y nerviosos) de la <span class="hl-maturana">clausura organizacional</span> de la autopoiesis (solo en sistemas vivos) y de la <span class="hl-cyber">clausura transformacional</span> de Ashby (una propiedad de sistemas formales abstractos).</li>
+                        <li>Maturana enfatiza la naturaleza <span class="hl-concept">mecanicista</span> de los seres vivos para prevenir interpretaciones vitalistas o teleológicas, no para sugerir que la mecánica clásica es suficiente para entenderlos.</li>
+                        <li>La crítica de Maturana no es que el ser vivo tenga un ambiente idiosincrático, sino que cuestiona la idea misma de que el organismo *tenga* un ambiente o mundo externo como referente operacional.</li>
+                        <li>El renacimiento de la <span class="hl-concept">teleología</span> en el enactivismo es un movimiento regresivo en su contenido general (respecto a la cibernética de 2º orden), pero su justificación (fenomenología, sistemas complejos) y alcance (ontológico) son completamente nuevos.</li>
+                    </ol>
+                </div>
+
+                <div id="tab7" class="tab-content section">
+                    <h2>Referencias</h2>
+                    <ul class="reference-list">
+                        <li>Ashby, W. R. (1956). An introduction to cybernetics.</li>
+                        <li>Ashby, W. R. (1960). Design for a brain, 2nd edition.</li>
+                        <li>Beer, S. (1980). Preface to Autopoiesis: the organization of the living.</li>
+                        <li>Bich, L. & Arnellos, A. (2012). Autopoiesis, autonomy, and organizational biology.</li>
+                        <li>Chemero, A. (2009). Radical embodied cognitive science.</li>
+                        <li>Clark, A. (1997). Being there: Putting brain, body and world together again.</li>
+                        <li>Clark, A., & Grush, R. (1999). Towards a cognitive robotics.</li>
+                        <li>Di Paolo, E. A. (2005). Autopoiesis, adaptivity, teleology, agency.</li>
+                        <li>Di Paolo, E. A., Rohde, M. & De Jaegher, H. (2010). Horizons for the enactive mind.</li>
+                        <li>Dupuy, J-F. (2009). On the origins of cognitive science.</li>
+                        <li>Foglia, L. & Grush, R. (2011). The limitations of a purely enactive account of imagery.</li>
+                        <li>Froese, T. (2010). From cybernetics to second-order cybernetics.</li>
+                        <li>Froese, T. (2011). From second-order cybernetics to enactive cognitive science.</li>
+                        <li>Froese, T., & Stewart, J. (2010). Life after Ashby.</li>
+                        <li>Froese, T., & Stewart, J. (2012). Enactive cognitive science and biology of cognition.</li>
+                        <li>Grush, R. (2004). The emulation theory of representation.</li>
+                        <li>Hutto, D. (2011). Philosophy of mind's new lease on life.</li>
+                        <li>Hutto, D. D., & Myin, E. (2013). Radicalizing enactivism.</li>
+                        <li>Jonas, H. (1966). The phenomenon of life.</li>
+                        <li>Kelso, S. (1995). Dynamic patterns.</li>
+                        <li>Maturana, H. (1970/1980). Biology of cognition.</li>
+                        <li>Maturana, H. (1975). The organization of the living.</li>
+                        <li>Maturana, H. (1981). Autopoiesis.</li>
+                        <li>Maturana, H. (1987a). Everything is said by an observer.</li>
+                        <li>Maturana, H.R. (1987b). Ontology of observing.</li>
+                        <li>Maturana, H. (2002). Autopoiesis, structural coupling and cognition: a history.</li>
+                        <li>Maturana, H. (2011). Ultrastability... autopoiesis?</li>
+                        <li>Maturana, H. & Varela, F. (1973). De máquinas y seres vivos.</li>
+                        <li>Maturana, H. R., & Pörksen, B. (2004). From being to doing.</li>
+                        <li>Müller, A. & Müller, K. (Eds.) (2007). An unfinished revolution.</li>
+                        <li>Rosenblueth, A., Wiener, N., & Bigelow, J. (1943). Behaviour, purpose, teleology.</li>
+                        <li>Thompson, E. (2007). Mind in life.</li>
+                        <li>Thompson, E. (2011). Replies to commentaries.</li>
+                        <li>Varela, F. (1979). Principles of biological autonomy.</li>
+                        <li>Varela, F. (1981). Describing the logic of the living.</li>
+                        <li>Varela, F. (1984). Living ways of sense-making.</li>
+                        <li>Varela, F., Thompson, E., & Rosch, E. (1991). The embodied mind.</li>
+                        <li>Weber, A. & Varela, F. (2002). Life after Kant.</li>
+                        <li>Wheeler, M. (2005). Reconstructing the Cognitive World.</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+        <footer class="footer" id="contacto">
+            <h2>Contacto</h2>
+            <p>Este espacio es una cartografía personal y una invitación al diálogo.</p>
+            <p style="margin-top:1.5rem; font-size: 0.9em;">La vida es terriblemente bella cuando los jugadores juegan. | 2025</p>
+        </footer>
+    </div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    initAutopoiesisBackgroundFromOriginal();
+    setupNavigation();
+    setupTabs();
+});
+
+// --- AUTOPOIESIS BACKGROUND (From User's Original Model) ---
+function initAutopoiesisBackgroundFromOriginal() {
+    const svg = d3.select("#bg-svg");
+    let width, height, cols, rows;
+    const cellSize = 15; // Adjusted for a more spacious background look
+    let grid, substrates, enzymes, links;
+    
+    // Fixed parameters for ambient background
+    const substrateDensity = 0.35;
+    const enzymeCount = 30;
+    const substrateSpeed = 10;
+    const decayRate = 0.002;
+    
+    let animationFrameId;
+
+    function resetSimulation() {
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        
+        width = window.innerWidth;
+        height = window.innerHeight;
+
+        // --- FIX: Add a guard clause to prevent errors on initialization ---
+        if (width < cellSize || height < cellSize) {
+            svg.selectAll("*").remove(); // Clear SVG just in case
+            return; // Exit if the window is too small to create a grid
+        }
+        // --- END FIX ---
+
+        svg.attr("width", width).attr("height", height);
+        
+        cols = Math.floor(width / cellSize);
+        rows = Math.floor(height / cellSize);
+
+        grid = Array(cols).fill(null).map(() => Array(rows).fill(0));
+        substrates = [];
+        enzymes = [];
+        links = [];
+
+        const substrateCount = Math.floor(cols * rows * substrateDensity);
+        for (let i = 0; i < substrateCount; i++) {
+            let x, y;
+            do {
+                x = Math.floor(Math.random() * cols);
+                y = Math.floor(Math.random() * rows);
+            } while (grid[x][y] !== 0);
+            grid[x][y] = 1; // 1 for substrate
+            substrates.push({ x, y });
+        }
+
+        for (let i = 0; i < enzymeCount; i++) {
+            let x, y;
+            do {
+                x = Math.floor(Math.random() * cols);
+                y = Math.floor(Math.random() * rows);
+            } while (grid[x][y] !== 0);
+            grid[x][y] = 2; // 2 for enzyme
+            enzymes.push({ x, y });
+        }
+        animate();
+    }
+
+    function moveSubstrates() {
+        substrates.forEach(s => {
+            if (Math.random() < substrateSpeed / 20) {
+                const dir = Math.floor(Math.random() * 4);
+                const newX = s.x + [1, 0, -1, 0][dir];
+                const newY = s.y + [0, 1, 0, -1][dir];
+                if (isValid(newX, newY) && grid[newX][newY] === 0) {
+                    grid[s.x][s.y] = 0;
+                    s.x = newX; s.y = newY;
+                    grid[s.x][s.y] = 1;
+                }
+            }
+        });
+    }
+
+    function interact() {
+        enzymes.forEach(e => {
+            const neighbors = getNeighbors(e.x, e.y);
+            const substrateNeighbors = neighbors.filter(n => grid[n.x][n.y] === 1);
+            if (substrateNeighbors.length >= 2) {
+                const s1 = substrateNeighbors[0];
+                const s2 = substrateNeighbors[1];
+                grid[s1.x][s1.y] = 3; // 3 for link
+                grid[s2.x][s2.y] = 0;
+                substrates = substrates.filter(s => !(s.x === s1.x && s.y === s1.y) && !(s.x === s2.x && s.y === s2.y));
+                links.push({ x: s1.x, y: s1.y });
+            }
+        });
+        disintegrateLinks();
+    }
+
+    function disintegrateLinks() {
+        links = links.filter(l => {
+            if (Math.random() < decayRate) {
+                grid[l.x][l.y] = 1;
+                substrates.push({ x: l.x, y: l.y });
+                return false;
+            }
+            return true;
+        });
+    }
+
+    function updateVisualization() {
+        const data = [
+            ...substrates.map(d => ({ type: "substrate", id: `s-${d.x}-${d.y}`, x: d.x, y: d.y })),
+            ...enzymes.map(d => ({ type: "enzyme", id: `e-${d.x}-${d.y}`, x: d.x, y: d.y })),
+            ...links.map(d => ({ type: "link", id: `l-${d.x}-${d.y}`, x: d.x, y: d.y }))
+        ];
+        const circles = svg.selectAll("circle").data(data, d => d.id);
+        
+        circles.exit().remove();
+        
+        circles.enter().append("circle")
+            .attr("r", cellSize / 3) // smaller radius for background
+            .attr("class", d => `circle-${d.type}`)
+            .merge(circles)
+            .attr("cx", d => d.x * cellSize + cellSize / 2)
+            .attr("cy", d => d.y * cellSize + cellSize / 2);
+    }
+
+    function getNeighbors(x, y) {
+        const neighbors = [];
+        for (let dx of [-1, 0, 1]) {
+            for (let dy of [-1, 0, 1]) {
+                if (dx === 0 && dy === 0) continue;
+                const nx = x + dx; const ny = y + dy;
+                if (isValid(nx, ny)) neighbors.push({ x: nx, y: ny });
+            }
+        }
+        return neighbors;
+    }
+
+    function isValid(x, y) {
+        return x >= 0 && x < cols && y >= 0 && y < rows;
+    }
+
+    function animate() {
+        moveSubstrates();
+        interact();
+        updateVisualization();
+        animationFrameId = requestAnimationFrame(animate);
+    }
+
+    window.addEventListener("resize", resetSimulation);
+    resetSimulation();
+}
+
+
+// --- NAVIGATION & UI SCRIPTS ---
+function setupNavigation() {
+    const menuToggleBtn = document.getElementById('menu-toggle-btn');
+    if (menuToggleBtn) {
+        menuToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('menu-open');
+        });
+    }
+}
+
+function setupTabs() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tabId = button.getAttribute('data-tab');
+
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+
+            button.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        });
+    });
+}
+</script>
+</body>
+</html>
