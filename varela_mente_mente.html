@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Problema Mente-Mente | Las Ideas de Francisco Varela</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --primary-text: #e5e7eb;
+            --primary-glow: #818cf8;
+            --secondary-glow: #22d3ee;
+            --font-main: 'Inter', sans-serif;
+            --nav-height: 64px; /* Ajustado a la altura de la barra de navegación original */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: #000000;
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+        
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            cursor: crosshair;
+        }
+
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Estilos para la barra de navegación fija */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .nav-link {
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+            color: var(--primary-text);
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #FFFFFF;
+            text-shadow: 0 0 12px var(--primary-glow);
+            font-weight: 600;
+        }
+
+        .content-section {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            min-height: 100vh; /* Asegura que cada sección ocupe la pantalla */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .content-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        h1, h2, h3, h4 {
+            pointer-events: auto;
+        }
+        
+        h1 {
+            font-size: clamp(2.5rem, 8vw, 4.5rem); font-weight: 700; color: #fff;
+            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(129, 140, 248, 0.7);
+            animation: pulse-glow 3s infinite alternate;
+        }
+
+        h2.section-title {
+             font-size: clamp(1.8rem, 5vw, 2.5rem); color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);
+             border-bottom: 1px solid var(--primary-glow); padding-bottom: 1rem; margin-bottom: 1.5rem;
+        }
+
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
+        }
+
+        .highlight { color: var(--primary-glow); font-weight: bold; }
+        
+        .timeline-bar { transition: all 0.5s ease-in-out; }
+        .timeline-chunk { transition: all 0.5s ease-in-out; }
+        .narrative-line {
+            position: absolute; top: 50%; left: 0; height: 2px;
+            background-color: var(--secondary);
+            transform-origin: left; transform: scaleX(0);
+            transition: transform 1.5s ease-in-out;
+        }
+        .flip-card {
+            transform-style: preserve-3d;
+            transition: transform 0.8s;
+        }
+        .flip-card.is-flipped { transform: rotateY(180deg); }
+        .flip-card-face {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .flip-card-back { transform: rotateY(180deg); }
+    </style>
+</head>
+<body class="antialiased">
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+
+    <header class="glassmorphism">
+        <nav class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-white" style="text-shadow: 0 0 8px var(--primary-glow);">El problema Mente-Mente</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#section-1" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Inicio</a>
+                        <a href="#section-2" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Dos Mentes</a>
+                        <a href="#section-3" class="nav-link px-3 py-2 rounded-md text-sm font-medium">El Yo Fragmentado</a>
+                        <a href="#section-4" class="nav-link px-3 py-2 rounded-md text-sm font-medium">La Ilusión</a>
+                        <a href="#section-5" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Ambigüedad</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-5xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        
+        <section id="section-1" class="content-section">
+            <h1>Del Cuerpo a la Experiencia:</h1>
+            <h2 class="mt-2 text-2xl md:text-3xl font-semibold" style="color: var(--secondary); text-shadow: 0 0 8px var(--secondary-glow);">El Problema Mente-Mente</h2>
+            <p class="mt-6 text-lg max-w-3xl">
+                En esta exploración de las ideas de Francisco Varela, nos adentramos en una de las preguntas más profundas de la ciencia cognitiva moderna. Varela postula que el tradicional "problema mente-cuerpo" está, en esencia, resuelto. La verdadera frontera no es cómo la materia produce cognición, sino cómo se relaciona la explicación científica de la mente con la experiencia vivida y directa que todos poseemos. A esto lo llamó el <strong class="highlight">problema mente-mente</strong>. Esta aplicación interactiva desglosa sus argumentos clave.
+            </p>
+        </section>
+
+        <section id="section-2" class="content-section py-20">
+            <h2 class="section-title text-center">Dos Mentes, Una Realidad</h2>
+            <p class="mt-4 text-center text-lg max-w-3xl mx-auto">
+                Varela distingue dos "mentes" que coexisten pero no se agotan mutuamente. Comprender esta distinción es clave para abordar el problema mente-mente. No se trata de una jerarquía, sino de dos dominios distintos que se relacionan de una forma compleja.
+            </p>
+            <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                <div class="glassmorphism p-8 rounded-xl">
+                    <div class="flex items-center">
+                        <span class="text-4xl mr-4">⚙️</span>
+                        <h3 class="text-2xl font-semibold" style="color: var(--primary-glow);">La Mente Cognitiva</h3>
+                    </div>
+                    <p class="mt-4">
+                        Es el objeto de estudio de la ciencia. Se describe en términos de procesos computacionales, redes neuronales, propiedades emergentes y mecanismos biológicos. Es la explicación de <strong>cómo</strong> surgen capacidades como la memoria, la percepción o el lenguaje. Es una descripción externalista y mecanicista.
+                    </p>
+                </div>
+                <div class="glassmorphism p-8 rounded-xl">
+                    <div class="flex items-center">
+                        <span class="text-4xl mr-4">👁️</span>
+                        <h3 class="text-2xl font-semibold" style="color: var(--primary-glow);">La Mente Fenomenológica</h3>
+                    </div>
+                    <p class="mt-4">
+                        Es nuestra experiencia directa, inmediata y vivida. Es la "textura" de la conciencia: la cualidad de ver un color, sentir una emoción o escuchar una melodía. No es una explicación, sino el fenómeno mismo. Es el <strong>qué</strong> de la experiencia, accesible a través de la introspección y la reflexión.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-3" class="content-section py-20">
+            <h2 class="section-title text-center">El Yo Fragmentado: Una Conclusión Científica</h2>
+            <p class="mt-4 text-center text-lg max-w-3xl mx-auto">
+                Contrario a nuestra intuición de un "yo" unificado y continuo, Varela argumenta que uno de los mayores descubrimientos de la ciencia cognitiva es la <strong class="highlight">desunión del yo</strong>. La mente cognitiva no opera como una entidad central, sino como una sociedad de módulos o agentes fragmentados que compiten y colaboran.
+            </p>
+            <div class="mt-12 glassmorphism p-8 rounded-xl">
+                <h4 class="text-xl font-semibold text-center" style="color: var(--primary-glow);">Lección de un Robot: El caso de "Hengiz"</h4>
+                <p class="mt-2 text-center">Varela utiliza el ejemplo de los robots autónomos de Rob Brooks para ilustrar este principio. Estos robots no tienen un procesador central, sino capas de comportamiento completas que interactúan de forma caótica para producir una acción coherente. Haga clic en las capas para explorar.</p>
+                <div class="mt-8 flex flex-col items-center justify-center space-y-2 p-4 bg-black/30 rounded-lg">
+                    <div id="layer-info" class="w-full text-center mb-4 h-12 font-medium transition-opacity duration-300" style="color: var(--secondary);">Seleccione una capa para ver su función.</div>
+                    <div class="layer-btn w-full max-w-xs p-3 bg-indigo-500/30 text-indigo-200 rounded-lg text-center cursor-pointer hover:bg-indigo-500/50 transition" data-info="EVITAR: Un ciclo completo de percepción-acción para esquivar obstáculos. Es una unidad autónoma.">Capa 3: EVITAR</div>
+                    <div class="layer-btn w-full max-w-xs p-3 bg-cyan-500/30 text-cyan-200 rounded-lg text-center cursor-pointer hover:bg-cyan-500/50 transition" data-info="DEAMBULAR: Un modo de ser que permite al robot moverse sin un objetivo fijo, explorando su entorno.">Capa 2: DEAMBULAR</div>
+                    <div class="layer-btn w-full max-w-xs p-3 bg-sky-500/30 text-sky-200 rounded-lg text-center cursor-pointer hover:bg-sky-500/50 transition" data-info="EXPLORAR: La capa más básica que permite al robot simplemente 'estar ahí' y moverse.">Capa 1: EXPLORAR</div>
+                </div>
+                <p class="mt-6 text-center text-sm text-gray-400">Este diseño fragmentado, sin un "jefe" central, es lo que le da al robot su autonomía y resiliencia, un principio que Varela aplica al cerebro humano.</p>
+            </div>
+        </section>
+
+        <section id="section-4" class="content-section py-20">
+            <h2 class="section-title text-center">La Ilusión de Continuidad</h2>
+            <p class="mt-4 text-center text-lg max-w-3xl mx-auto">
+                Si nuestro yo cognitivo es una serie de "momentos" discontinuos que surgen y desaparecen cada ~300 milisegundos, ¿por qué nos sentimos como un ser continuo y estable? Varela explora dos ideas clave para resolver esta paradoja.
+            </p>
+            <div class="mt-12 glassmorphism p-8 rounded-xl">
+                <h4 class="text-xl font-semibold text-center" style="color: var(--primary-glow);">Visualización de la Experiencia</h4>
+                <p id="timeline-instruction" class="mt-2 text-center">A continuación se muestra nuestra percepción de la experiencia como un flujo continuo. Pulse el botón para revelar la estructura subyacente que propone la ciencia cognitiva.</p>
+                
+                <div id="timeline-container" class="relative w-full h-16 mt-8 flex items-center justify-center">
+                    <div id="timeline-bar" class="w-full h-8 rounded-lg flex items-center justify-between px-1" style="background: linear-gradient(to right, var(--primary), var(--secondary));">
+                    </div>
+                    <div id="narrative-line" class="narrative-line"></div>
+                </div>
+
+                <div class="mt-8 text-center">
+                    <button id="toggle-continuity-btn" class="bg-indigo-500 text-white font-semibold py-2 px-6 rounded-lg hover:bg-indigo-600 transition shadow-lg shadow-indigo-500/30">
+                        Revelar Discontinuidad
+                    </button>
+                </div>
+
+                <div id="explanation-box" class="mt-6 text-center transition-opacity duration-500 opacity-0">
+                    <h5 id="explanation-title" class="font-semibold text-lg" style="color: var(--primary-glow);"></h5>
+                    <p id="explanation-text" class="mt-1"></p>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-5" class="content-section py-20 flex flex-col items-center justify-center">
+            <h2 class="section-title text-center">Hacia una Filosofía de la Ambigüedad</h2>
+            <p class="mt-4 text-center text-lg max-w-3xl mx-auto">
+                En lugar de una proyección unidireccional (de lo cognitivo a lo fenoménico), Varela, inspirado en Merleau-Ponty, propone una relación circular, ambigua y sin jerarquías. No podemos apoyarnos completamente en la ciencia ni en la experiencia; estamos en una oscilación constante entre ambas.
+            </p>
+            <div class="mt-12 flex flex-col items-center">
+                <div class="relative w-72 h-40" style="perspective: 1000px;">
+                     <div id="flip-card" class="flip-card absolute w-full h-full">
+                        <div class="flip-card-face absolute w-full h-full flex items-center justify-center glassmorphism p-6 rounded-xl text-center">
+                            <div>
+                                <span class="text-4xl">⚙️</span>
+                                <p class="mt-2 font-semibold text-lg">Mente Cognitiva (Explicación)</p>
+                            </div>
+                        </div>
+                        <div class="flip-card-back absolute w-full h-full flex items-center justify-center glassmorphism p-6 rounded-xl text-center">
+                             <div>
+                                <span class="text-4xl">👁️</span>
+                                <p class="mt-2 font-semibold text-lg">Mente Fenomenológica (Experiencia)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button id="flip-btn" class="mt-8 bg-cyan-500 text-white font-semibold py-2 px-6 rounded-lg hover:bg-cyan-600 transition shadow-lg shadow-cyan-500/30">
+                    Oscilar
+                </button>
+                <p class="mt-4 text-center max-w-xl">
+                    Esta "ambigüedad" significa que ninguna perspectiva tiene la última palabra. La comprensión surge del movimiento incesante entre la explicación científica y la exploración de nuestra propia experiencia vivida.
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center p-10 border-t border-gray-800">
+        <p style="color: var(--primary-glow);">Aplicación interactiva basada en la conferencia de Francisco Varela sobre el problema Mente-Mente.</p>
+        <p class="mt-1 opacity-70">Diseñado para la exploración conceptual. | 2025</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- THREE.JS BACKGROUND ---
+            let scene, camera, renderer, points;
+            try {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+                camera.position.z = 50;
+
+                renderer = new THREE.WebGLRenderer({
+                    canvas: document.getElementById("bg-canvas"),
+                    alpha: true
+                });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+                const pointCount = 200;
+                const positions = new Float32Array(pointCount * 3);
+                const pointGeo = new THREE.BufferGeometry();
+                for (let i = 0; i < pointCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 400;
+                }
+                pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+                const pointMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.5, transparent: true, opacity: 0.8 });
+                points = new THREE.Points(pointGeo, pointMaterial);
+                scene.add(points);
+
+                window.addEventListener("resize", () => {
+                    if(camera && renderer) {
+                        camera.aspect = window.innerWidth / window.innerHeight;
+                        camera.updateProjectionMatrix();
+                        renderer.setSize(window.innerWidth, window.innerHeight);
+                    }
+                });
+                
+                let mouseX = 0, mouseY = 0;
+                document.addEventListener('mousemove', (event) => {
+                    mouseX = (event.clientX - window.innerWidth / 2) / 100;
+                    mouseY = (event.clientY - window.innerHeight / 2) / 100;
+                });
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    if(scene && camera && renderer && points) {
+                        points.rotation.y += 0.0005;
+                        camera.position.x += (mouseX - camera.position.x) * 0.05;
+                        camera.position.y += (-mouseY - camera.position.y) * 0.05;
+                        camera.lookAt(scene.position);
+                        renderer.render(scene, camera);
+                    }
+                }
+                animate();
+            } catch (error) {
+                console.error('Error initializing Three.js:', error);
+            }
+
+            // --- PAGE INTERACTIVITY ---
+            const sections = document.querySelectorAll('.content-section');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        const id = entry.target.getAttribute('id');
+                        navLinks.forEach(link => {
+                            link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+                        });
+                    }
+                });
+            }, { rootMargin: '-50% 0px -50% 0px' }); // Activa el link cuando la sección está en el centro
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            // Section 3: Fragmented Self
+            const layerBtns = document.querySelectorAll('.layer-btn');
+            const layerInfo = document.getElementById('layer-info');
+            layerBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    layerInfo.style.opacity = '0';
+                    setTimeout(() => {
+                        layerInfo.textContent = btn.dataset.info;
+                        layerInfo.style.opacity = '1';
+                    }, 300);
+                });
+            });
+
+            // Section 4: Illusion of Continuity
+            const toggleContinuityBtn = document.getElementById('toggle-continuity-btn');
+            const timelineBar = document.getElementById('timeline-bar');
+            const timelineInstruction = document.getElementById('timeline-instruction');
+            const explanationBox = document.getElementById('explanation-box');
+            const explanationTitle = document.getElementById('explanation-title');
+            const explanationText = document.getElementById('explanation-text');
+            const narrativeLine = document.getElementById('narrative-line');
+            let isDiscontinuous = false;
+
+            const createChunks = () => {
+                timelineBar.innerHTML = '';
+                for (let i = 0; i < 10; i++) {
+                    const chunk = document.createElement('div');
+                    chunk.className = 'timeline-chunk h-8 rounded';
+                    chunk.style.width = '8%';
+                    chunk.style.backgroundColor = 'var(--primary)';
+                    timelineBar.appendChild(chunk);
+                }
+                timelineBar.style.background = 'none';
+                timelineBar.classList.add('justify-between');
+            };
+
+            const showExplanation = (title, text) => {
+                explanationBox.style.opacity = '0';
+                setTimeout(() => {
+                    explanationTitle.textContent = title;
+                    explanationText.textContent = text;
+                    explanationBox.style.opacity = '1';
+                }, 300);
+            };
+            
+            toggleContinuityBtn.addEventListener('click', () => {
+                isDiscontinuous = !isDiscontinuous;
+                if (isDiscontinuous) {
+                    toggleContinuityBtn.textContent = 'Ocultar Discontinuidad';
+                    timelineInstruction.textContent = 'La experiencia es en realidad una serie de "momentos" o fragmentos cognitivos. El espacio entre ellos representa una transición caótica y rápida.';
+                    createChunks();
+                    showExplanation('El "Centro de Gravedad Narrativo"', 'Para crear una sensación de continuidad, nuestra mente teje una historia (la línea turquesa) que conecta estos momentos discretos. Es una reconstrucción, no un flujo ininterrumpido.');
+                    setTimeout(() => { narrativeLine.style.transform = 'scaleX(1)'; }, 100);
+
+                } else {
+                    toggleContinuityBtn.textContent = 'Revelar Discontinuidad';
+                    timelineInstruction.textContent = 'A continuación se muestra nuestra percepción de la experiencia como un flujo continuo. Pulse el botón para revelar la estructura subyacente.';
+                    timelineBar.innerHTML = '';
+                    timelineBar.style.background = 'linear-gradient(to right, var(--primary), var(--secondary))';
+                    timelineBar.classList.remove('justify-between');
+                    explanationBox.style.opacity = '0';
+                    narrativeLine.style.transform = 'scaleX(0)';
+                }
+            });
+
+            // Section 5: Ambiguity
+            const flipBtn = document.getElementById('flip-btn');
+            const flipCard = document.getElementById('flip-card');
+            flipBtn.addEventListener('click', () => {
+                flipCard.classList.toggle('is-flipped');
+            });
+            setInterval(() => {
+                 if (document.querySelector('#section-5').classList.contains('visible')) {
+                    flipCard.classList.toggle('is-flipped');
+                 }
+            }, 3000);
+
+        });
+    </script>
+</body>
+</html>
