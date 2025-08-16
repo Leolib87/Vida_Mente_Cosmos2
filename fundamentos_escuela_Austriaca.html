@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fundamentos de la Escuela Austríaca | O.C.V.M.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --primary-text: #e5e7eb;
+            --primary-glow: #818cf8;
+            --secondary-glow: #22d3ee;
+            --font-main: 'Inter', sans-serif;
+            --nav-height: 70px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: #000000;
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+        
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            cursor: crosshair;
+        }
+
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.menu-open {
+            overflow: hidden;
+        }
+        
+        nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+            padding: 0 5%;
+            pointer-events: auto;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .nav-logo a {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            text-shadow: 0 0 8px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
+        nav .nav-container > li { position: relative; height: 100%; display: flex; align-items: center; }
+        nav .nav-container > li > a {
+            color: var(--primary-text); text-decoration: none; font-size: clamp(0.9em, 1.2vw, 1.05em); font-weight: 500;
+            transition: color 0.3s ease, text-shadow 0.3s ease; padding: 0 1rem; display: flex; align-items: center; gap: 8px;
+        }
+        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a { color: #FFFFFF; text-shadow: 0 0 12px var(--primary-glow); }
+        
+        .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; }
+        
+        .hero {
+            min-height: 80vh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; position: relative;
+            padding: 1rem;
+            padding-top: var(--nav-height);
+        }
+        .hero-content { position: relative; z-index: 2; animation: fadeIn 2s ease-in; }
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 5.5rem); font-weight: 700; color: #fff;
+            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(129, 140, 248, 0.7);
+            animation: pulse-glow 3s infinite alternate;
+        }
+        .hero p.subtitle { font-size: clamp(1.2rem, 3vw, 1.8rem); color: var(--secondary-glow); text-shadow: 0 0 8px var(--secondary-glow); margin-top: 0.5rem; }
+        .hero p.description { font-size: clamp(1rem, 2.5vw, 1.2rem); max-width: 800px; margin: 1.5rem auto 0; text-shadow: 0 0 5px #000; }
+        
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .main-container { 
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto; 
+            padding: 1rem clamp(1rem, 5vw, 4rem) 1rem;
+            pointer-events: none;
+        }
+        
+        main, .footer, .section, .hero-content {
+            pointer-events: auto;
+        }
+
+        main p, .footer p, main li, main blockquote {
+            user-select: text;
+            cursor: default;
+        }
+
+        .layout-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 2rem; }
+        
+        .section {
+            padding: clamp(1.5rem, 5vw, 2.5rem);
+            border-radius: 12px; margin-bottom: 2rem; position: relative;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .section:hover { transform: translateY(-5px); box-shadow: 0 0 40px rgba(129, 140, 248, 0.2); }
+        
+        .section h2, .section .tab-nav, .section .tab-content {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .section.is-visible h2, .section.is-visible .tab-nav, .section.is-visible .tab-content-container {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        h2 {
+            font-size: clamp(1.5rem, 5vw, 2.2rem); color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);
+            border-bottom: 1px solid var(--primary-glow); padding-bottom: 1rem; margin-bottom: 1.5rem;
+        }
+        h3 { font-size: clamp(1.4rem, 4vw, 1.9rem); color: var(--primary-glow); margin: 2.5rem 0 1.5rem 0; }
+        h4 { font-size: clamp(1.2rem, 3vw, 1.5rem); color: var(--secondary-glow); margin-bottom: 1rem; margin-top: 2rem; }
+        
+        /* --- ESTILOS PARA TABS Y CONTENIDO --- */
+        .color-personaje { color: #F59E0B; font-weight: 600; } /* Mustard Yellow */
+        .color-concepto { color: var(--primary-glow); font-style: italic; font-weight: 500;}
+        .color-idea { color: #a7f3d0; } /* Mint green */
+
+        .tab-nav {
+            display: flex;
+            flex-wrap: wrap;
+            border-bottom: 1px solid rgba(129, 140, 248, 0.3);
+            margin-bottom: 2rem;
+        }
+        .tab-button {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--primary-text);
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-bottom: -1px;
+        }
+        .tab-button:hover {
+            color: #fff;
+            background-color: rgba(129, 140, 248, 0.1);
+        }
+        .tab-button.active {
+            color: var(--primary-glow);
+            border-bottom-color: var(--primary-glow);
+            text-shadow: 0 0 8px var(--primary-glow);
+            font-weight: 600;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeInContent 0.6s ease forwards;
+        }
+        @keyframes fadeInContent {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-content .card {
+            background-color: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        .tab-content .quote-block {
+            border-left: 3px solid var(--primary-glow);
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #c7d2fe;
+        }
+
+        .tab-content ul {
+            list-style-position: inside;
+            padding-left: 0.5rem;
+        }
+        .tab-content li {
+            margin-bottom: 0.75rem;
+        }
+        
+        .footer { text-align: center; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
+        
+        @media (min-width: 1025px) {
+            .menu-toggle { display: none; }
+            .nav-container { display: flex; }
+        }
+
+        @media (max-width: 1024px) {
+            .nav-content { justify-content: space-between; }
+            .nav-container {
+                position: fixed;
+                top: var(--nav-height);
+                left: 0;
+                width: 100%;
+                height: calc(100vh - var(--nav-height));
+                background: rgba(17, 24, 39, 0.95);
+                backdrop-filter: blur(15px);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+                transform: translateY(-110%);
+                overflow-y: auto;
+                padding: 2rem;
+            }
+            body.menu-open .nav-container {
+                transform: translateY(0);
+            }
+
+            nav .nav-container > li { width: 100%; height: auto; text-align: center; }
+            nav .nav-container > li > a { padding: 1rem; width: 100%; font-size: 1.5em;}
+            
+            .menu-toggle {
+                display: block; position: relative; z-index: 1001;
+                width: 30px; height: 22px;
+                background: none; border: none; cursor: pointer;
+            }
+            .icon-bar {
+                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
+                margin: 6px 0; transition: all 0.3s ease-in-out;
+                border-radius: 2px;
+            }
+
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+    <nav class="glassmorphism">
+        <div class="nav-content">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-8 w-8 md:h-10 md:w-10 rounded-full">
+                    <span>O.C.V.M.</span>
+                </a>
+            </div>
+            <ul class="nav-container" id="nav-menu">
+                <li><a href="index.html">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+                    Inicio</a></li>
+                <li><a href="#contacto">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                    Contacto</a></li>
+            </ul>
+            <button class="menu-toggle" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container" id="inicio">
+        <div class="hero">
+            <div class="hero-content">
+                <h1>Fundamentos de la Escuela Austríaca</h1>
+                <p class="subtitle">Una charla de Martín Krause (FPP-UC 2012)</p>
+                <p class="description">
+                    Una exploración de los principios centrales que distinguen a la Escuela Austríaca, desde la subjetividad del valor hasta su visión del ciclo económico y los desarrollos contemporáneos.
+                </p>
+            </div>
+        </div>
+
+        <div class="layout-grid">
+            <main class="content">
+                
+                <section id="escuela-austriaca-contenido" class="glassmorphism" data-animate>
+                    <h2>Análisis de la Escuela</h2>
+                    
+                    <div class="tab-nav">
+                        <button class="tab-button active" onclick="changeTab(event, 'introduccion')">Introducción</button>
+                        <button class="tab-button" onclick="changeTab(event, 'valor-subjetivo')">El Valor Subjetivo</button>
+                        <button class="tab-button" onclick="changeTab(event, 'principios')">Principios y Capital</button>
+                        <button class="tab-button" onclick="changeTab(event, 'ciclos-socialismo')">Ciclos y Socialismo</button>
+                        <button class="tab-button" onclick="changeTab(event, 'desarrollos')">Desarrollos Actuales</button>
+                        <button class="tab-button" onclick="changeTab(event, 'preguntas')">Preguntas</button>
+                    </div>
+
+                    <div class="tab-content-container">
+                        <div id="introduccion" class="tab-content active">
+                            <h3>Austríacos vs. Chicago: Anécdotas y Fundamentos</h3>
+                            <p class="mb-4">Particularmente me da este placer venir a presentarla acá, un país que es el reducto de los <span class="color-personaje">Chicago Boys</span>. La primera anécdota es cómo esta gente de los <span class="color-personaje">Chicago Boys</span> son sectarios respecto de nosotros, los austríacos. <span class="color-personaje">Friedrich Hayek</span> fue a la Universidad de Chicago y no lo aceptaron en el departamento de economía; fue profesor en lo que se llamaba el "Committee of Social Thought". Sin embargo, <span class="color-personaje">Hayek</span>, en una de las cosas más perdurables que ha hecho, generó la <span class="color-concepto">Mont Pelerin Society</span> en 1946, e invitó a todos los <span class="color-personaje">Chicago Boys</span>. Él estuvo magnánimo en eso: a él lo dejan afuera, pero él los invita.</p>
+                            
+                            <h4>¿Qué es una "Escuela"?</h4>
+                            <p class="mb-4">Entiendo que lo que llamamos una escuela es un conjunto de autores y un conjunto de teorías. Las teorías tienen como objetivo explicar la realidad. Acá nos encontramos con un conjunto de teorías que tienen el objetivo de explicarnos y dejarnos entender la realidad.</p>
+
+                            <h4>¿Es una Ideología?</h4>
+                            <p class="mb-4">Muchos etiquetan a los austríacos como una ideología por el hecho de que casi todos son liberales. Es cierto que fueron derivando claramente a <span class="color-concepto">posiciones liberales</span>, que son de filosofía política, no ya de ciencia económica. ¿Es inevitable que, siguiendo estos principios, derivaran en ser políticamente liberales? En buena medida, es bastante probable que sí, lo mismo diría para la escuela de Chicago.</p>
+                        </div>
+
+                        <div id="valor-subjetivo" class="tab-content">
+                            <h3>La Revolución del Valor Subjetivo</h3>
+                            <p class="mb-4">Atribuimos el nacimiento de la economía como ciencia a <span class="color-personaje">Adam Smith</span>. Él empieza a tener una actitud científica, queriendo entender qué es lo que pasa en vez de opinar acerca de lo que debería ser. Hasta ese momento, se discutía en términos de lo que debería ser, la economía era parte de la ética: ¿qué es un <span class="color-concepto">precio justo</span>? ¿Es correcto cobrar interés?</p>
+                            <blockquote class="quote-block">
+                                La actitud científica de <span class="color-personaje">Smith</span> es: "Yo no quiero saber si un precio es justo o no es justo. Yo quiero saber qué es un precio. ¿Cómo se forma? Quiero entender qué es el interés, qué papel cumple".
+                            </blockquote>
+                            <p class="mb-4"><span class="color-personaje">Smith</span> se pregunta: ¿por qué las cosas se intercambian en la relación en la cual se intercambian? Había que desarrollar una <span class="color-concepto">teoría del valor</span>. Él plantea una <span class="color-concepto">teoría del costo de producción</span>: el valor de las cosas depende de su costo. <span class="color-personaje">David Ricardo</span> lleva esto más allá, planteando el papel del trabajo como origen del valor. Y luego, <span class="color-personaje">Carlos Marx</span> lleva esta teoría a su conclusión lógica: si todo el valor proviene del trabajo, la ganancia del capitalista proviene del trabajo (<span class="color-concepto">plusvalía</span>). Por lo tanto, hay que expropiar a los expropiadores.</p>
+                            
+                            <h4>El Error de la Teoría del Valor-Trabajo</h4>
+                            <p class="mb-4">Sin embargo, esa teoría es incorrecta. Si yo me pusiera a fabricar un auto en la puerta de mi casa, tardaría dos años. Si le pregunto a mi vecino cuánto vale, me dirá: "Para mí no vale nada". ¡Pero le metí dos años de trabajo! "Sí, pero para mí no vale nada". <span class="color-idea">Y en este "para mí" está la esencia del problema.</span></p>
+                            <blockquote class="quote-block">
+                                El valor no está en algo objetivo (horas de trabajo, materiales). El valor está acá, en la evaluación que tiene cada uno de nosotros sobre la utilidad de las cosas que observamos.
+                            </blockquote>
+
+                            <h4>La Revolución Marginalista</h4>
+                            <p class="mb-4">Esto da origen a la Escuela Austríaca y a la <span class="color-concepto">Revolución Marginalista</span>, atribuida a tres autores: <span class="color-personaje">Carl Menger</span> (austríaco), <span class="color-personaje">William Stanley Jevons</span> (inglés) y <span class="color-personaje">Léon Walras</span> (franco-suizo). Ellos establecen la teoría aceptada del valor: <span class="color-idea">valoramos aquella unidad que está en el margen, la última unidad sobre la cual tenemos que decidir.</span></p>
+                            <p><span class="color-personaje">Menger</span> pone el ejemplo del hombre en el desierto. La primera jarra de agua tiene un tremendo valor para calmar la sed. La segunda, un valor un poco inferior, para mojarse la cabeza. La tercera, para bañarse. La cuarta, para el camello. El valor lo da la satisfacción de la <span class="color-concepto">necesidad marginal</span>, la menos urgente.</p>
+                        </div>
+                        
+                        <div id="principios" class="tab-content">
+                            <h3>Implicaciones, Individualismo y Capital</h3>
+                            <h4>Implicaciones en Políticas Públicas</h4>
+                            <p class="mb-4">Si el valor es subjetivo, cada uno tiene una <span class="color-concepto">escala de valores</span> diferente e intransferible. Nunca encontrarán dos listas de prioridades idénticas. Esto plantea dilemas serios: ¿qué es <span class="color-concepto">eficiente</span>? Si el valor fuera objetivo (trabajo), la eficiencia sería producir más con menos trabajo. Pero con valoraciones subjetivas, ¿cómo se define?</p>
+                            <p class="mb-4"><span class="color-personaje">Vilfredo Pareto</span> establece un criterio: una situación es más eficiente si algunos mejoran sin que nadie empeore. Pero esto tiene límites. Para los austríacos, si las valoraciones son subjetivas, yo no las puedo conocer. Solo puedo conocer las <span class="color-concepto">preferencias reveladas en la acción</span>. Esto cuestiona intervenciones como el salario mínimo. Si dos personas acuerdan un salario, ¿quién puede decir que no es correcto basándose en un criterio externo?</p>
+
+                            <h4>Individualismo Metodológico</h4>
+                            <p class="mb-4">Analizamos las situaciones en base a la <span class="color-concepto">acción individual</span>, porque es lo único que existe. No actúan los grupos. Decimos "la hinchada de Boca le pegó al réferi", pero fue una mano específica. Decimos "Argentina exporta carne", pero yo, argentino, no exporto nada. Son acciones individuales que simplificamos en el lenguaje. La economía estudia cómo los individuos utilizan medios escasos para alcanzar fines subjetivos.</p>
+
+                            <h4>Capital, Interés y Tiempo</h4>
+                            <p class="mb-4"><span class="color-personaje">Eugen von Böhm-Bawerk</span> explica el interés como la distinta valoración entre satisfacer una necesidad en el presente y en el futuro: la <span class="color-concepto">preferencia temporal</span>. Siempre preferimos satisfacer una necesidad antes que después. Solo posponemos la satisfacción ante la obtención de un premio, y a eso llamamos interés.</p>
+                            <p class="mb-4">Esto introduce la idea del tiempo en la producción. Todo proceso productivo tiene una <span class="color-concepto">estructura temporal</span> (hoy lo llaman "cadena de valor"). El pan que comimos hoy empezó con la genética de la semilla. <span class="color-personaje">Böhm-Bawerk</span> también critica la teoría de la explotación de <span class="color-personaje">Marx</span>: no es el trabajo el que da valor, sino que las preferencias de los consumidores transmiten valor al trabajo. <span class="color-idea">El capitalista no es un explotador, es un benefactor que adelanta fondos y asume el riesgo.</span></p>
+                        </div>
+
+                        <div id="ciclos-socialismo" class="tab-content">
+                            <h3>El Ciclo Económico y la Imposibilidad del Socialismo</h3>
+                            <h4>La Teoría Austríaca del Ciclo Económico</h4>
+                            <p class="mb-4">Desarrollada por <span class="color-personaje">Ludwig von Mises</span> y luego por <span class="color-personaje">Hayek</span>, esta teoría argumenta que los ciclos económicos se deben a una <span class="color-idea">baja artificial de la tasa de interés</span>, ocasionada por una expansión del crédito. Esto genera una desviación de la "tasa natural" de interés.</p>
+                            <div class="card">
+                                <p>Cuando se expande artificialmente el crédito, ocurren dos fenómenos:</p>
+                                <ul class="list-disc mt-2">
+                                    <li><span class="color-concepto">Malinversión:</span> Proyectos de inversión que antes no eran rentables ahora lo parecen, especialmente proyectos a más largo plazo. Se invierte en etapas más alejadas del consumo final.</li>
+                                    <li><span class="color-concepto">Sobreconsumo:</span> La tasa de interés baja también fomenta el consumo (ej. compras en cuotas).</li>
+                                </ul>
+                                <p class="mt-2">Esto genera un "crack" en la estructura temporal de la producción, porque se estimula al mismo tiempo el consumo final y la inversión a largo plazo, creando una burbuja. Cuando la autoridad monetaria sube la tasa para controlar la situación, se produce la crisis y se revela que esos proyectos no eran sostenibles.</p>
+                            </div>
+                            <img src="https://placehold.co/800x400/111827/e5e7eb?text=Gráfico+Tasa+de+Interés+Reserva+Federal" alt="Gráfico de la tasa de interés de la Reserva Federal" class="w-full rounded-lg my-4">
+                            <p class="text-center text-sm italic">Representación del ciclo de subidas y bajadas de la tasa de interés de la Fed, que según la teoría austríaca, genera los ciclos de auge y recesión.</p>
+
+                            <h4>La Imposibilidad del Cálculo Económico en el Socialismo</h4>
+                            <p class="mb-4">En 1922, <span class="color-personaje">Mises</span> argumentó en su libro "Socialismo" que este sistema es económicamente imposible. No por una cuestión filosófica, sino de análisis económico.</p>
+                            <blockquote class="quote-block">
+                                ¿Cómo funciona la asignación de recursos en el mercado? A través del sistema de precios. El problema es que los precios son el resultado de intercambios de derechos de propiedad. Como el socialismo niega el derecho de propiedad, no habrá precios. Y si no hay precios, ¿cómo se va a producir el <span class="color-concepto">cálculo económico</span>?
+                            </blockquote>
+                            <p>El socialismo enfrenta dos problemas insuperables:</p>
+                            <ul class="list-disc ml-4">
+                                <li><span class="color-concepto">Problema de Información:</span> Sin precios, no hay forma de saber las valoraciones y preferencias de la gente. ¿Construimos un puente a la Isla de Pascua? ¿De madera, acero o platino? Sin precios, la decisión es puramente política y arbitraria.</li>
+                                <li><span class="color-concepto">Problema de Incentivos:</span> Si el objetivo es la igualdad material, ¿cuál es la motivación para el esfuerzo? Debe ser un incentivo espiritual ("<span class="color-concepto">el hombre nuevo</span>"). Esto puede funcionar en crisis (guerra), pero no en la vida normal. La URSS tuvo que reintroducir los incentivos materiales, reconociendo el fracaso.</li>
+                            </ul>
+                        </div>
+                        
+                        <div id="desarrollos" class="tab-content">
+                            <h3>Autores Clave y Desarrollos Contemporáneos</h3>
+                            <h4>Friedrich Hayek y el Problema del Conocimiento</h4>
+                            <p class="mb-4">Derivado del debate sobre el socialismo, <span class="color-personaje">Hayek</span> plantea que el problema principal es cómo una sociedad aprovecha el <span class="color-concepto">conocimiento que está disperso</span> entre todos sus miembros y que nunca puede estar concentrado en una sola mente. El mercado y el sistema de precios actúan como un gran sistema de telecomunicaciones que transmite esa información dispersa.</p>
+                            <blockquote class="quote-block">
+                                <span class="color-personaje">Hayek</span> tenía esta frase: "Todo economista que sea solo economista es un mal economista". Los austríacos siempre tuvieron esta visión multidisciplinaria.
+                            </blockquote>
+
+                            <h4>Otros Autores y "Vecinos"</h4>
+                            <ul class="list-disc ml-4 mb-4">
+                                <li><span class="color-personaje">Joseph Schumpeter:</span> Sobre el papel del emprendedor y la <span class="color-concepto">destrucción creativa</span>.</li>
+                                <li><span class="color-personaje">Israel Kirzner:</span> Desarrolló la función del emprendedor como aquel que está alerta a las oportunidades de ganancia no descubiertas.</li>
+                                <li><span class="color-personaje">Murray Rothbard:</span> Llevó las ideas al campo de la filosofía política, desarrollando el anarcocapitalismo.</li>
+                                <li><span class="color-idea">Vecinos intelectuales:</span> Figuras como <span class="color-personaje">Milton Friedman</span>, <span class="color-personaje">Ronald Coase</span>, <span class="color-personaje">Gary Becker</span>, <span class="color-personaje">James Buchanan</span> y <span class="color-personaje">Elinor Ostrom</span>, aunque de otras escuelas, compartieron el espíritu de la <span class="color-concepto">Mont Pelerin Society</span>.</li>
+                            </ul>
+
+                            <h4>¿En qué andan los Austríacos ahora?</h4>
+                            <div class="card">
+                                <ul class="list-disc">
+                                    <li><span class="color-concepto">Teoría del Ciclo:</span> Sigue siendo un área central, analizando crisis recientes como la de 2008.</li>
+                                    <li><span class="color-concepto">Instituciones Monetarias:</span> Debates sobre patrón oro, libre elección de moneda (<span class="color-idea">Free Banking</span>) o sistemas de encaje al 100%.</li>
+                                    <li><span class="color-concepto">Empresarialidad:</span> Aplicación de principios austríacos al management (<span class="color-idea">Market-Based Management</span>).</li>
+                                    <li><span class="color-concepto">Uso del Conocimiento:</span> Desarrollos como los <span class="color-idea">mercados predictivos</span> y el <span class="color-idea">crowdsourcing</span>, que buscan aprovechar el conocimiento disperso.</li>
+                                    <li><span class="color-concepto">Órdenes Espontáneos:</span> Estudio de normas e instituciones que emergen sin un diseño central (<span class="color-personaje">Peter Boettke</span>).</li>
+                                    <li><span class="color-concepto">Debate con el Paternalismo Libertario:</span> Crítica a la idea de "empujar" (<span class="color-idea">Nudge</span>) a la gente a tomar decisiones "correctas", argumentando que nadie puede saber qué es lo mejor para los demás.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div id="preguntas" class="tab-content">
+                            <h3>Preguntas y Respuestas</h3>
+                            <div class="space-y-6">
+                                <div class="card">
+                                    <h4>1. ¿Qué se está estudiando en la relación entre economía y derecho (Law & Economics)?</h4>
+                                    <p>A los austríacos les interesan las normas que evolucionan espontáneamente (<span class="color-concepto">órdenes espontáneos</span>), en contraste con el enfoque de Chicago, más utilitarista y basado en un análisis costo-beneficio. Un austríaco diría que ese cálculo es imposible de hacer porque las utilidades son subjetivas. El criterio de eficiencia es si una norma otorga mayor grado de libertad para que la gente exprese sus preferencias.</p>
+                                </div>
+                                <div class="card">
+                                    <h4>2. ¿Cuál fue la respuesta de Hayek sobre cómo salir de la Gran Depresión?</h4>
+                                    <p>La respuesta de <span class="color-personaje">Hayek</span> fue la que lo condenó políticamente. Mientras <span class="color-personaje">Keynes</span> proponía cómo salir del pozo (gastar), <span class="color-personaje">Hayek</span> argumentaba cómo no caer en él (no manipular el crédito). Una vez en la crisis, <span class="color-personaje">Hayek</span> decía: "<span class="color-idea">no hay que hacer nada, hay que dejar que el mercado se recomponga</span>". En medio de la peor crisis, decir "no acción" era políticamente inaceptable.</p>
+                                </div>
+                                <div class="card">
+                                    <h4>3. ¿Cómo juegan el error empresarial y la serendipia en la teoría austríaca?</h4>
+                                    <p>Esto es básicamente el trabajo de <span class="color-personaje">Israel Kirzner</span> sobre el <span class="color-concepto">descubrimiento empresarial</span>. Los austríacos ven la economía no en equilibrio, sino como un <span class="color-concepto">proceso de mercado</span>. Los emprendedores son los que movilizan las aguas, descubriendo oportunidades (errores de otros, nuevas combinaciones) que otros no vieron, en un proceso de alerta constante que tiende a coordinar el mercado.</p>
+                                </div>
+                                <div class="card">
+                                    <h4>4. ¿Por qué no mencionó a autores como Jesús Huerta de Soto o Juan Ramón Rallo?</h4>
+                                    <p>Están muy enfrascados en la discusión sobre el sistema financiero y monetario, particularmente en el debate entre <span class="color-concepto">Free Banking</span> y un sistema con <span class="color-concepto">encaje bancario del 100%</span>. Este último busca evitar las corridas bancarias y las crisis sistémicas, pero implicaría una contracción del crédito muy importante.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+        <footer class="footer" id="contacto">
+            <h2>Contacto</h2>
+            <p>Este espacio es una cartografía personal y una invitación al diálogo.</p>
+            <p style="margin-top:1.5rem; font-size: 0.9em;">La vida es terriblemente bella cuando los jugadores juegan. | 2025</p>
+        </footer>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof THREE !== 'undefined') {
+                initThreeJS();
+            } else {
+                console.error("Three.js not loaded");
+            }
+            setupNavigation();
+            setupScrollAnimations();
+        });
+
+        let scene, camera, renderer, points, lines;
+        function initThreeJS() {
+            try {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+                camera.position.z = 50;
+                renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("bg-canvas"), alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                const pointCount = 200;
+                const positions = new Float32Array(pointCount * 3);
+                const pointGeo = new THREE.BufferGeometry();
+                for (let i = 0; i < pointCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 400;
+                }
+                pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                const pointMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.5, transparent: true, opacity: 0.8 });
+                points = new THREE.Points(pointGeo, pointMaterial);
+                scene.add(points);
+                regenerateLines();
+                window.addEventListener("resize", onWindowResize, false);
+                document.addEventListener('mousemove', onMouseMove, false);
+                renderer.domElement.addEventListener('click', onCanvasClick, false);
+                animate();
+            } catch (error) {
+                console.error('Error initializing Three.js:', error);
+            }
+        }
+        function onWindowResize() {
+            if(camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+        let mouseX = 0, mouseY = 0;
+        function onMouseMove(event) {
+            mouseX = (event.clientX - window.innerWidth / 2) / 100;
+            mouseY = (event.clientY - window.innerHeight / 2) / 100;
+        }
+        function animate() {
+            requestAnimationFrame(animate);
+            if(scene && camera && renderer && points && lines) {
+                points.rotation.y += 0.0005;
+                lines.rotation.y += 0.0005;
+                camera.position.x += (mouseX - camera.position.x) * 0.05;
+                camera.position.y += (-mouseY - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+                renderer.render(scene, camera);
+            }
+        }
+        function onCanvasClick(event) {
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+            vector.unproject(camera);
+            const dir = vector.sub(camera.position).normalize();
+            const distance = -camera.position.z / dir.z;
+            const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+            addPoint(pos);
+        }
+        function addPoint(position) {
+            const oldPositions = points.geometry.attributes.position.array;
+            const newPointCount = oldPositions.length / 3 + 1;
+            const newPositions = new Float32Array(newPointCount * 3);
+            newPositions.set(oldPositions);
+            newPositions[oldPositions.length] = position.x;
+            newPositions[oldPositions.length + 1] = position.y;
+            newPositions[oldPositions.length + 2] = position.z;
+            points.geometry.setAttribute('position', new THREE.BufferAttribute(newPositions, 3));
+            points.geometry.attributes.position.needsUpdate = true;
+            regenerateLines();
+        }
+        function regenerateLines() {
+            if (lines) scene.remove(lines);
+            const pointPositions = points.geometry.attributes.position.array;
+            const pointCount = pointPositions.length / 3;
+            const linePositions = [];
+            for (let i = 0; i < pointCount; i++) {
+                for (let j = i + 1; j < pointCount; j++) {
+                    const dx = pointPositions[i * 3] - pointPositions[j * 3];
+                    const dy = pointPositions[i * 3 + 1] - pointPositions[j * 3 + 1];
+                    const dz = pointPositions[i * 3 + 2] - pointPositions[j * 3 + 2];
+                    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    if (dist < 50) {
+                        linePositions.push(pointPositions[i * 3], pointPositions[i * 3 + 1], pointPositions[i * 3 + 2]);
+                        linePositions.push(pointPositions[j * 3], pointPositions[j * 3 + 1], pointPositions[j * 3 + 2]);
+                    }
+                }
+            }
+            const lineGeo = new THREE.BufferGeometry();
+            lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.3, transparent: true });
+            lines = new THREE.LineSegments(lineGeo, lineMaterial);
+            scene.add(lines);
+        }
+
+        function setupNavigation() {
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            const navMenu = document.getElementById('nav-menu');
+            menuToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.body.classList.toggle('menu-open');
+            });
+            navMenu.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A' && window.innerWidth <= 1024) {
+                   document.body.classList.remove('menu-open');
+                }
+            });
+        }
+
+        function setupScrollAnimations() {
+            const animatedSections = document.querySelectorAll('[data-animate]');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        const elementsToAnimate = entry.target.querySelectorAll('h2, .tab-nav, .tab-content-container');
+                        elementsToAnimate.forEach((el, index) => {
+                           el.style.transitionDelay = `${index * 150}ms`;
+                        });
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            animatedSections.forEach(section => observer.observe(section));
+        }
+
+        function changeTab(event, tabID) {
+            let tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            let tabButtons = document.getElementsByClassName('tab-button');
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove('active');
+            }
+            document.getElementById(tabID).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+    </script>
+</body>
+</html>
