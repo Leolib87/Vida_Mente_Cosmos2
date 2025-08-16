@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antonio Escotado: Los Enemigos de la Realidad | O.C.V.M.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --primary-text: #e5e7eb;
+            --primary-glow: #818cf8;
+            --secondary-glow: #22d3ee;
+            --font-main: 'Inter', sans-serif;
+            --nav-height: 70px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: #000000;
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+        
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            cursor: crosshair;
+        }
+
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.menu-open {
+            overflow: hidden;
+        }
+        
+        nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+            padding: 0 5%;
+            pointer-events: auto;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .nav-logo a {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            text-shadow: 0 0 8px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
+        nav .nav-container > li { position: relative; height: 100%; display: flex; align-items: center; }
+        nav .nav-container > li > a {
+            color: var(--primary-text); text-decoration: none; font-size: clamp(0.9em, 1.2vw, 1.05em); font-weight: 500;
+            transition: color 0.3s ease, text-shadow 0.3s ease; padding: 0 1rem; display: flex; align-items: center; gap: 8px;
+        }
+        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a { color: #FFFFFF; text-shadow: 0 0 12px var(--primary-glow); }
+        
+        .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; }
+        
+        .hero {
+            min-height: 80vh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; position: relative;
+            padding: 1rem;
+            padding-top: var(--nav-height);
+        }
+        .hero-content { position: relative; z-index: 2; animation: fadeIn 2s ease-in; }
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 5.5rem); font-weight: 700; color: #fff;
+            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(129, 140, 248, 0.7);
+            animation: pulse-glow 3s infinite alternate;
+        }
+        .hero p.subtitle { font-size: clamp(1.2rem, 3vw, 1.8rem); color: var(--secondary-glow); text-shadow: 0 0 8px var(--secondary-glow); margin-top: 0.5rem; }
+        .hero p.description { font-size: clamp(1rem, 2.5vw, 1.2rem); max-width: 800px; margin: 1.5rem auto 0; text-shadow: 0 0 5px #000; }
+        
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .main-container { 
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto; 
+            padding: 1rem clamp(1rem, 5vw, 4rem) 1rem;
+            pointer-events: none;
+        }
+        
+        main, .footer, .section, .hero-content {
+            pointer-events: auto;
+        }
+
+        main p, .footer p, main li, main blockquote {
+            user-select: text;
+            cursor: default;
+        }
+
+        .layout-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 2rem; }
+        
+        .section {
+            padding: clamp(1.5rem, 5vw, 2.5rem);
+            border-radius: 12px; margin-bottom: 2rem; position: relative;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .section:hover { transform: translateY(-5px); box-shadow: 0 0 40px rgba(129, 140, 248, 0.2); }
+        
+        .section h2, .section .tab-nav, .section .tab-content {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .section.is-visible h2, .section.is-visible .tab-nav, .section.is-visible .tab-content-container {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        h2 {
+            font-size: clamp(1.5rem, 5vw, 2.2rem); color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);
+            border-bottom: 1px solid var(--primary-glow); padding-bottom: 1rem; margin-bottom: 1.5rem;
+        }
+        h3 { font-size: clamp(1.4rem, 4vw, 1.9rem); color: var(--primary-glow); margin: 2.5rem 0 1.5rem 0; }
+        h4 { font-size: clamp(1.2rem, 3vw, 1.5rem); color: var(--secondary-glow); margin-bottom: 1rem; margin-top: 2rem; }
+        
+        /* --- ESTILOS PARA TABS Y CONTENIDO --- */
+        .color-personaje { color: #F59E0B; font-weight: 600; } /* Mustard Yellow */
+        .color-concepto { color: var(--primary-glow); font-style: italic; font-weight: 500;}
+        .color-idea { color: #a7f3d0; } /* Mint green */
+
+        .tab-nav {
+            display: flex;
+            flex-wrap: wrap;
+            border-bottom: 1px solid rgba(129, 140, 248, 0.3);
+            margin-bottom: 2rem;
+        }
+        .tab-button {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--primary-text);
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-bottom: -1px;
+        }
+        .tab-button:hover {
+            color: #fff;
+            background-color: rgba(129, 140, 248, 0.1);
+        }
+        .tab-button.active {
+            color: var(--primary-glow);
+            border-bottom-color: var(--primary-glow);
+            text-shadow: 0 0 8px var(--primary-glow);
+            font-weight: 600;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeInContent 0.6s ease forwards;
+        }
+        @keyframes fadeInContent {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-content .card {
+            background-color: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        .tab-content .quote-block {
+            border-left: 3px solid var(--primary-glow);
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #c7d2fe;
+        }
+
+        .tab-content ul {
+            list-style-position: inside;
+            padding-left: 0.5rem;
+        }
+        .tab-content li {
+            margin-bottom: 0.75rem;
+        }
+        
+        .footer { text-align: center; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
+        
+        @media (min-width: 1025px) {
+            .menu-toggle { display: none; }
+            .nav-container { display: flex; }
+        }
+
+        @media (max-width: 1024px) {
+            .nav-content { justify-content: space-between; }
+            .nav-container {
+                position: fixed;
+                top: var(--nav-height);
+                left: 0;
+                width: 100%;
+                height: calc(100vh - var(--nav-height));
+                background: rgba(17, 24, 39, 0.95);
+                backdrop-filter: blur(15px);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+                transform: translateY(-110%);
+                overflow-y: auto;
+                padding: 2rem;
+            }
+            body.menu-open .nav-container {
+                transform: translateY(0);
+            }
+
+            nav .nav-container > li { width: 100%; height: auto; text-align: center; }
+            nav .nav-container > li > a { padding: 1rem; width: 100%; font-size: 1.5em;}
+            
+            .menu-toggle {
+                display: block; position: relative; z-index: 1001;
+                width: 30px; height: 22px;
+                background: none; border: none; cursor: pointer;
+            }
+            .icon-bar {
+                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
+                margin: 6px 0; transition: all 0.3s ease-in-out;
+                border-radius: 2px;
+            }
+
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+    <nav class="glassmorphism">
+        <div class="nav-content">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-8 w-8 md:h-10 md:w-10 rounded-full">
+                    <span>O.C.V.M.</span>
+                </a>
+            </div>
+            <ul class="nav-container" id="nav-menu">
+                <li><a href="index.html">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+                    Inicio</a></li>
+                <li><a href="#contacto">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                    Contacto</a></li>
+            </ul>
+            <button class="menu-toggle" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container" id="inicio">
+        <div class="hero">
+            <div class="hero-content">
+                <h1>Los Enemigos de la Realidad</h1>
+                <p class="subtitle">Una charla de Antonio Escotado</p>
+                <p class="description">
+                    Un recorrido histórico y filosófico sobre el conflicto milenario entre las sociedades comerciales y las clericales-militares, y la paradójica relación de Occidente con el capitalismo.
+                </p>
+            </div>
+        </div>
+
+        <div class="layout-grid">
+            <main class="content">
+                
+                <section id="escotado-contenido" class="glassmorphism" data-animate>
+                    <h2>Análisis de la Charla</h2>
+                    
+                    <div class="tab-nav">
+                        <button class="tab-button active" onclick="changeTab(event, 'introduccion')">Introducción</button>
+                        <button class="tab-button" onclick="changeTab(event, 'dos-modelos')">Dos Modelos de Sociedad</button>
+                        <button class="tab-button" onclick="changeTab(event, 'pobrismo')">El Auge del Pobrismo</button>
+                        <button class="tab-button" onclick="changeTab(event, 'renacimiento')">El Renacer Comercial</button>
+                        <button class="tab-button" onclick="changeTab(event, 'paradoja')">La Paradoja del Capitalismo</button>
+                        <button class="tab-button" onclick="changeTab(event, 'preguntas')">Preguntas y Respuestas</button>
+                    </div>
+
+                    <div class="tab-content-container">
+                        <div id="introduccion" class="tab-content active">
+                            <h3>Presentación de Antonio Escotado</h3>
+                            <p class="mb-4">Es difícil resumir la intensa vida de <span class="color-personaje">Antonio Escotado Espinosa</span>. Doctor en Derecho, su tesis sobre <span class="color-personaje">Hegel</span>, "La conciencia infeliz", ya fue controvertida. Profesor de Filosofía y Metodología de la Ciencia, pensador y ensayista reconocido, su obra es prolífica, incluyendo títulos como "Caos y orden" y "Los enemigos del comercio". Es también un reconocido traductor de <span class="color-personaje">Newton</span>, <span class="color-personaje">Hobbes</span> y <span class="color-personaje">Jefferson</span>.</p>
+                            <p class="mb-4">Se ha dicho que es la persona más experta sobre la historia de las drogas, con su monumental "Historia general de las drogas". Habla con naturalidad de su vida privada, sus siete hijos y su separación. Se define como <span class="color-concepto">psiconauta</span>, un curioso intelectual que ha llevado una vida bohemia y libre. Considera que la ignorancia es el mal del siglo, con su consecuencia perversa: el dogmatismo.</p>
+                            <blockquote class="quote-block">
+                                Cuando en alguna entrevista le han preguntado sobre cuál es el principal mal de nuestra sociedad, ha respondido que la falta de esperanza, la falta de entusiasmo y la falta de un sano desacuerdo con lo que hay.
+                            </blockquote>
+                            <p>El profesor <span class="color-personaje">Escotado</span> ya ejercía como un provocador del pensamiento y del entusiasmo de sus estudiantes mucho antes de los debates actuales sobre el rol del docente. Es una suerte que hoy esté aquí.</p>
+                        </div>
+
+                        <div id="dos-modelos" class="tab-content">
+                            <h3>Dos Modelos de Sociedad: Clerical-Militar vs. Comercial</h3>
+                            <p class="mb-4"><span class="color-personaje">Antonio Escotado:</span> Mi libro "Los enemigos del comercio" es una investigación histórica para entenderme a mí mismo, que he sido más rojo que la muleta de un torero. ¿Qué me faltaba entender? No me había dado cuenta de que llevamos 2.500 años litigando con dos modelos básicos de sociedades: una que podríamos llamar <span class="color-concepto">clerical-militar o sublime</span>, y otra que podemos llamar <span class="color-concepto">comercial o prosaica</span>.</p>
+                            
+                            <h4>Atenas vs. Esparta</h4>
+                            <p class="mb-4">Atenas era básicamente una sociedad comercial. El gran legislador <span class="color-personaje">Solón</span> insistió en que su prosperidad dependía de no extender en demasía la proporción de esclavos sobre libres. Su rival era Esparta, una sociedad clerical-militar que vivía de explotar al pueblo mesenio. Su legislador, <span class="color-personaje">Licurgo</span>, disuadió cualquier iniciativa comercial, prohibiendo la moneda tradicional e imponiendo una de hierro. Esparta era la canonización del heroísmo de la guerra, el verdugo de las democracias.</p>
+                            <blockquote class="quote-block">
+                                No tenemos ninguna democracia que no sea sociedad comercial, porque solo una sociedad comercial tiene una clase media de tamaño suficiente como para admitir periódicas elecciones.
+                            </blockquote>
+
+                            <h4>Roma vs. Cartago</h4>
+                            <p class="mb-4">Tres siglos después, el conflicto se repite entre Cartago y Roma. Roma es una sociedad muy parecida a la espartana, la canonización del amo; no sabe vivir sin esclavos. Los cartagineses eran un imperio comercial. Roma vivió exclusivamente de conquistar vecinos. La gran tragedia que acabará con ese imperio es que los vecinos ricos se acaban.</p>
+                            <p>En la literatura latina no hay un solo dato sobre el salario de una profesión civil. El trabajo lo verifican esclavos. El precio de un esclavo dependía de si sabía leer, escribir o tenía un oficio. Un esclavo competente valía lo que un BMW de gama alta. Esta mano de obra mueve a toda la antigüedad, con la excepción de Atenas.</p>
+                        </div>
+                        
+                        <div id="pobrismo" class="tab-content">
+                            <h3>La Desintegración de Roma y el Auge del Pobrismo</h3>
+                            <p class="mb-4">En tiempos de <span class="color-personaje">Marco Aurelio</span>, el imperio ya ha saqueado todo y no sabe vivir del trabajo. La inmensa mayoría del cuerpo social son esclavos, y la mayoría de los "libres" también lo son, obligados a prestaciones involuntarias que los llevan a la ruina. Roma se convierte en un inmenso <span class="color-concepto">economato</span>, con una economía de mera subsistencia y una circulación monetaria interrumpida.</p>
+                            
+                            <h4>El Origen del Comunismo</h4>
+                            <p class="mb-4">En la periferia del imperio surge lo que llamo <span class="color-concepto">pobrismo</span>, que se origina en la secta judía de los <span class="color-personaje">esenios</span>. Vienen con una interpretación concreta del séptimo mandamiento: <span class="color-idea">hurtar es comerciar</span>. El que practica el comercio, roba. Cuando los esenios se convierten en la secta ebonita (de "evion", hombre pobre), impulsada por <span class="color-personaje">Juan Bautista</span> y <span class="color-personaje">Jesús de Nazaret</span>, predican no ya que el comercio es un hurto, sino que la propiedad privada es un robo. Ahí empieza, a mi juicio, el comunismo.</p>
+                            <blockquote class="quote-block">
+                                El que nosotros consideramos tal, el que reelabora <span class="color-personaje">Carlos Marx</span>, es la enseñanza que vertebra los evangelios. Allí se dice que hay oposición entre Dios y el dinero, que un rico no podrá entrar en el cielo.
+                            </blockquote>
+                            
+                            <h4>La Edad Media: Seis Siglos de Comunismo Militante</h4>
+                            <p class="mb-4">Con la cristianización del Imperio Romano, nos pasamos 1000 años esperando el Juicio Final. La patrística (<span class="color-personaje">San Agustín</span>, <span class="color-personaje">San Jerónimo</span>, etc.) racionaliza el comunismo, explicando que en toda compraventa hay un perdedor. La Edad Media fueron seis siglos de comunismo militante. La sociedad comercial desapareció por completo. Un estudio digital de documentos medievales mostró que la palabra "negotiator" (hombre de negocios) apareció 119 veces en cinco siglos.</p>
+                            <p>El territorio se embosca, cada zona está obligada a la autosuficiencia. El origen de la economía europea es el tráfico con cautivos, vendiendo a la gente joven a bizantinos y árabes. El esclavo se convierte en siervo, y surge el rito del <span class="color-concepto">homenaje</span>: para existir, es necesario arrodillarse y decirle a otro "soy tu hombre para siempre".</p>
+                        </div>
+
+                        <div id="renacimiento" class="tab-content">
+                            <h3>Las Ganzúas de la Modernidad y el Renacer Comercial</h3>
+                            <p class="mb-4">En ese mundo aparecen dos cosas que funcionan como ganzúas para abrir la puerta que la sociedad clerical-militar había cerrado:</p>
+                            <ul class="list-disc ml-4 mb-4">
+                                <li><span class="color-idea">La Letra de Cambio:</span> Una manera rápida y secreta de desplazar cualquier tipo de propiedad, probable descubrimiento de los judíos.</li>
+                                <li><span class="color-idea">La Contabilidad de Partida Doble:</span> Inventada por el monje <span class="color-personaje">Luca Pacioli</span>, permite una contabilidad científica en vez del "cuento del dedito".</li>
+                            </ul>
+                            <p class="mb-4">Al mismo tiempo, hombres denodados se niegan a ser siervos y forman caravanas acorazadas, creando las primeras relaciones terrestres. Los altos en su camino son los <span class="color-concepto">Burgos</span> (ciudades), donde con solo residir un año y un día, se quita el vínculo de dependencia. Con los Burgos y los caravaneros se restaura la circulación monetaria.</p>
+                            
+                            <h4>El Cambio de Mentalidad</h4>
+                            <p class="mb-4">Cuando empieza a haber posibilidad de cobrar dinero por trabajar, hay un brote de entusiasmo. Un letargo que dominaba las ciencias y técnicas se convierte en actividad. El momento fundamental de cambio coincide con la Reforma y la Contrarreforma. Tanto reformistas (<span class="color-personaje">Lutero</span>, <span class="color-personaje">Calvino</span>) como contrarreformistas (jesuitas) están de acuerdo en que <span class="color-idea">el cristianismo tiene que dejar de ser pobrista</span>.</p>
+                            <blockquote class="quote-block">
+                                Se le dice al fiel: "estás obligado a ser un profesional competente, estás obligado a ganarte la vida bien, estás obligado a ser rico, estás obligado a prosperar". El cristianismo ha renunciado a ser comunista.
+                            </blockquote>
+                            <p>La evolución va hacia las democracias, pero con dos modelos: la <span class="color-concepto">democracia prosaica</span> (EEUU, Inglaterra) y la <span class="color-concepto">democracia patético-enfática o sublime</span> (desde <span class="color-personaje">Rousseau</span> y la Revolución Francesa), donde la masa encarna en un solo individuo que legisla.</p>
+                        </div>
+                        
+                        <div id="paradoja" class="tab-content">
+                            <h3>La Paradoja del Capitalismo: Vencer sin Convencer</h3>
+                            <p class="mb-4">¿Por qué el capitalismo privado ha acabado venciendo y, sin embargo, genera tantos resquemores? ¿Por qué, a pesar de reconocemos que nos ha hecho salir de la miseria, nos parece bárbaro y miserable?</p>
+                            <p class="mb-4">Sospecho que lo que hace del capitalismo un sistema difícil de tragar es que está basado en la destrucción, pero en una <span class="color-concepto">destrucción que crea</span>. Lo que da prosperidad es una <span class="color-idea">destrucción creativa</span>, que si les digo la palabra la van a entender en seguida: <span class="color-concepto">Innovación</span>.</p>
+                            <blockquote class="quote-block">
+                                El capitalismo ha ido descubriendo nuevos métodos para hacer lo antiguo, nuevas cosas que no se habían descubierto. El mundo actual tiene muy poco que ver con el de la Edad Media. ¿Por qué? Porque ha prosperado la innovación.
+                            </blockquote>
+                            <p class="mb-4">Hemos subido aproximadamente un 500% en renta per cápita en 250 años. Y sin embargo, en nuestros corazones todavía se dice que las desigualdades crecen. La maquinaria de producción masiva beneficia fundamentalmente a las masas. Quienes realmente se han ido de la película son los pontífices, los señores feudales, los autócratas.</p>
+                            <h4>La Nostalgia del Amo y el Siervo</h4>
+                            <p class="mb-4">¿Por qué no queremos ver esto? A mí me parece que tenemos una <span class="color-idea">nostalgia del amo y del siervo</span>. Con el capitalismo privado se han acabado los amos y los siervos. El siervo, según el cristiano, está más cerca del cielo. El amo es superior. Tenemos motivos para querer la tranquila vida del siervo y más motivos aún para querer la superior vida del amo. Hemos llegado a una cultura donde eso ya no existe. Fuerzas impersonales que guían la invención han creado una sociedad donde continuamente se inventan cosas que van dejando viejas las anteriores. Da un poco de susto, es un poco escalofriante, pero si lo que queríamos era tener más de todo, nunca jamás ha habido nada ni remotamente parecido a la plenitud del presente.</p>
+                        </div>
+
+                        <div id="preguntas" class="tab-content">
+                            <h3>Preguntas y Respuestas</h3>
+                            <div class="space-y-6">
+                                <div class="card">
+                                    <h4>1. Sobre el equilibrio entre libres y esclavos de Solón, ¿es ese el problema actual?</h4>
+                                    <p><span class="color-personaje">Escotado:</span> Sí, desde luego. Hay una nostalgia secreta del amo y el esclavo. Nadie se atreve a decirlo, pero en la práctica nos conducimos como si así fuera. Los consultorios psicológicos están llenos de personas que querrían ser amos o esclavos, pero les ha tocado una realidad donde lo máximo es conseguir el respeto de los vecinos. Ha llegado un momento donde las esperanzas humanas se han contraído mucho.</p>
+                                </div>
+                                <div class="card">
+                                    <h4>2. ¿No dice el Sermón de la Montaña "pobres" en vez de "pobres de espíritu"?</h4>
+                                    <p><span class="color-personaje">Escotado:</span> Me lo he leído en griego. No hay duda de que dice "benditos sean los pobres de espíritu" (micros pneuma, poca alma), y luego los afligidos, humildes y perseguidos. Pero no olvidemos que la vida pública de Jesús empieza y termina expulsando a los mercaderes del templo, un acto que cortocircuita el funcionamiento de Jerusalén y que lleva a que los notables decidan matarle.</p>
+                                </div>
+                                <div class="card">
+                                    <h4>3. ¿Por qué los países democráticos siguen usando a inmigrantes como "nuevos esclavos"?</h4>
+                                    <p><span class="color-personaje">Escotado:</span> Es una dinámica de intereses. A nosotros nos interesa que nos trabaje un señor de Ecuador, pero a ellos les interesa mucho más venir. España es un país de emigrantes. Mis padres se fueron a Francia, Suiza, Alemania y volvieron enriquecidos. Es lo que está pasando ahora. Todavía prospera la sociedad clerical-militar en lugares como Corea del Norte, Cuba o Irán. Nosotros hemos entrado en esa dinámica de innovación impersonal que por un lado pasma por su eficacia y por otro estremece.</p>
+                                </div>
+                                <div class="card">
+                                    <h4>4. ¿Qué papel tienen lo militar y lo religioso en nuestra sociedad comercial?</h4>
+                                    <p><span class="color-personaje">Escotado:</span> Lo militar va en franca decadencia. Se está volviendo casi virtual. Es de esperar que en el futuro se resuelvan los asuntos con las relaciones voluntarias. Auguro un porvenir bastante negro al ejército. Conquista mucho más el comercio que las armas. América no es una nación militar como Roma; es la punta de lanza de la sociedad comercial.</p>
+                                </div>
+                                <div class="card">
+                                    <h4>5. ¿Por qué el capitalismo no convence si nos ha dado este nivel de vida?</h4>
+                                    <p><span class="color-personaje">Escotado:</span> La idea de que el capitalismo "salvaje" explotaba al obrero no es así. Ese capitalismo se basa en que el obrero al fin es capaz de trabajar para sí mismo, mientras que durante 2000 años estaba obligado a trabajar para otro. El obrero es lo que llamamos empresario. El empresario trabaja cinco veces más que el empleado. Un mundo de empleados puros no es viable, es el fracaso del socialismo marxista.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+        <footer class="footer" id="contacto">
+            <h2>Contacto</h2>
+            <p>Este espacio es una cartografía personal y una invitación al diálogo.</p>
+            <p style="margin-top:1.5rem; font-size: 0.9em;">La vida es terriblemente bella cuando los jugadores juegan. | 2025</p>
+        </footer>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof THREE !== 'undefined') {
+                initThreeJS();
+            } else {
+                console.error("Three.js not loaded");
+            }
+            setupNavigation();
+            setupScrollAnimations();
+        });
+
+        let scene, camera, renderer, points, lines;
+        function initThreeJS() {
+            try {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+                camera.position.z = 50;
+                renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("bg-canvas"), alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                const pointCount = 200;
+                const positions = new Float32Array(pointCount * 3);
+                const pointGeo = new THREE.BufferGeometry();
+                for (let i = 0; i < pointCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 400;
+                }
+                pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                const pointMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.5, transparent: true, opacity: 0.8 });
+                points = new THREE.Points(pointGeo, pointMaterial);
+                scene.add(points);
+                regenerateLines();
+                window.addEventListener("resize", onWindowResize, false);
+                document.addEventListener('mousemove', onMouseMove, false);
+                renderer.domElement.addEventListener('click', onCanvasClick, false);
+                animate();
+            } catch (error) {
+                console.error('Error initializing Three.js:', error);
+            }
+        }
+        function onWindowResize() {
+            if(camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+        let mouseX = 0, mouseY = 0;
+        function onMouseMove(event) {
+            mouseX = (event.clientX - window.innerWidth / 2) / 100;
+            mouseY = (event.clientY - window.innerHeight / 2) / 100;
+        }
+        function animate() {
+            requestAnimationFrame(animate);
+            if(scene && camera && renderer && points && lines) {
+                points.rotation.y += 0.0005;
+                lines.rotation.y += 0.0005;
+                camera.position.x += (mouseX - camera.position.x) * 0.05;
+                camera.position.y += (-mouseY - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+                renderer.render(scene, camera);
+            }
+        }
+        function onCanvasClick(event) {
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+            vector.unproject(camera);
+            const dir = vector.sub(camera.position).normalize();
+            const distance = -camera.position.z / dir.z;
+            const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+            addPoint(pos);
+        }
+        function addPoint(position) {
+            const oldPositions = points.geometry.attributes.position.array;
+            const newPointCount = oldPositions.length / 3 + 1;
+            const newPositions = new Float32Array(newPointCount * 3);
+            newPositions.set(oldPositions);
+            newPositions[oldPositions.length] = position.x;
+            newPositions[oldPositions.length + 1] = position.y;
+            newPositions[oldPositions.length + 2] = position.z;
+            points.geometry.setAttribute('position', new THREE.BufferAttribute(newPositions, 3));
+            points.geometry.attributes.position.needsUpdate = true;
+            regenerateLines();
+        }
+        function regenerateLines() {
+            if (lines) scene.remove(lines);
+            const pointPositions = points.geometry.attributes.position.array;
+            const pointCount = pointPositions.length / 3;
+            const linePositions = [];
+            for (let i = 0; i < pointCount; i++) {
+                for (let j = i + 1; j < pointCount; j++) {
+                    const dx = pointPositions[i * 3] - pointPositions[j * 3];
+                    const dy = pointPositions[i * 3 + 1] - pointPositions[j * 3 + 1];
+                    const dz = pointPositions[i * 3 + 2] - pointPositions[j * 3 + 2];
+                    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    if (dist < 50) {
+                        linePositions.push(pointPositions[i * 3], pointPositions[i * 3 + 1], pointPositions[i * 3 + 2]);
+                        linePositions.push(pointPositions[j * 3], pointPositions[j * 3 + 1], pointPositions[j * 3 + 2]);
+                    }
+                }
+            }
+            const lineGeo = new THREE.BufferGeometry();
+            lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.3, transparent: true });
+            lines = new THREE.LineSegments(lineGeo, lineMaterial);
+            scene.add(lines);
+        }
+
+        function setupNavigation() {
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            const navMenu = document.getElementById('nav-menu');
+            menuToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.body.classList.toggle('menu-open');
+            });
+            navMenu.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A' && window.innerWidth <= 1024) {
+                   document.body.classList.remove('menu-open');
+                }
+            });
+        }
+
+        function setupScrollAnimations() {
+            const animatedSections = document.querySelectorAll('[data-animate]');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        const elementsToAnimate = entry.target.querySelectorAll('h2, .tab-nav, .tab-content-container');
+                        elementsToAnimate.forEach((el, index) => {
+                           el.style.transitionDelay = `${index * 150}ms`;
+                        });
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            animatedSections.forEach(section => observer.observe(section));
+        }
+
+        function changeTab(event, tabID) {
+            let tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            let tabButtons = document.getElementsByClassName('tab-button');
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove('active');
+            }
+            document.getElementById(tabID).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+    </script>
+</body>
+</html>
