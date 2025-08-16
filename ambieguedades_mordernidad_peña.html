@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Las Ambigüedades de la Modernidad - Carlos Peña</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-button.active {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-300">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <!-- Header -->
+        <header class="text-center mb-8 md:mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">Las Ambigüedades de la Modernidad</h1>
+            <p class="text-xl md:text-2xl text-blue-400">Una Conferencia de Carlos Peña</p>
+            <p class="max-w-3xl mx-auto mt-4 text-gray-400">
+                Análisis de los desafíos a nuestras concepciones sobre lo humano y la trascendencia, planteados desde la globalización, la tecnociencia, el transhumanismo y los cambios sociales que definen nuestra era.
+            </p>
+        </header>
+
+        <!-- Tabs Navigation -->
+        <div class="mb-8 border-b border-gray-700">
+            <nav class="flex flex-wrap -mb-px" aria-label="Tabs">
+                <button class="tab-button active text-lg whitespace-nowrap mr-2 md:mr-8 py-4 px-1 border-b-2 font-medium border-transparent hover:text-blue-400 hover:border-blue-400 transition-colors" onclick="changeTab(event, 'introduccion')">
+                    Introducción
+                </button>
+                <button class="tab-button text-lg whitespace-nowrap mr-2 md:mr-8 py-4 px-1 border-b-2 font-medium border-transparent hover:text-blue-400 hover:border-blue-400 transition-colors" onclick="changeTab(event, 'sociedad-moderna')">
+                    ¿Qué es una Sociedad Moderna?
+                </button>
+                <button class="tab-button text-lg whitespace-nowrap mr-2 md:mr-8 py-4 px-1 border-b-2 font-medium border-transparent hover:text-blue-400 hover:border-blue-400 transition-colors" onclick="changeTab(event, 'ambiguedades')">
+                    Dimensiones de la Ambigüedad
+                </button>
+                <button class="tab-button text-lg whitespace-nowrap mr-2 md:mr-8 py-4 px-1 border-b-2 font-medium border-transparent hover:text-blue-400 hover:border-blue-400 transition-colors" onclick="changeTab(event, 'sintesis')">
+                    Síntesis
+                </button>
+                <button class="tab-button text-lg whitespace-nowrap py-4 px-1 border-b-2 font-medium border-transparent hover:text-blue-400 hover:border-blue-400 transition-colors" onclick="changeTab(event, 'preguntas')">
+                    Preguntas y Respuestas
+                </button>
+            </nav>
+        </div>
+
+        <!-- Tabs Content -->
+        <main>
+            <!-- Introducción Tab -->
+            <div id="introduccion" class="tab-content active">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                    <h2 class="text-3xl font-bold text-white mb-4">La Paradoja Central: Felicidad Privada, Malestar Público</h2>
+                    <p class="mb-4 text-lg leading-relaxed">
+                        Carlos Peña inicia su exposición destacando una sorprendente ambivalencia en la sociedad chilena contemporánea: una alta satisfacción con la vida personal y familiar (casi el 80% se declara feliz) que coexiste con un profundo malestar y desconfianza hacia las instituciones y la vida pública.
+                    </p>
+                    <p class="mb-4 text-lg leading-relaxed">
+                        Esta dualidad, entre la plenitud en la esfera íntima y la insatisfacción en la colectiva, es el síntoma principal de lo que él denomina las "ambigüedades de la modernidad", tema de su libro homónimo.
+                    </p>
+                    <div class="mt-6 border-l-4 border-blue-500 pl-4">
+                        <h3 class="text-2xl font-semibold text-white mb-2">Plan de la Exposición</h3>
+                        <ol class="list-decimal list-inside space-y-2 text-lg">
+                            <li>
+                                <span class="font-semibold">Definir la Modernidad:</span> Explicar en qué consiste una sociedad moderna y cómo Chile ha transitado hacia ella, dejando atrás su estructura tradicional.
+                            </li>
+                            <li>
+                                <span class="font-semibold">Explorar las Ambigüedades:</span> Identificar y describir tres dimensiones clave donde esta ambivalencia se manifiesta: la legitimidad, la abundancia y el consumo.
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ¿Qué es una Sociedad Moderna? Tab -->
+            <div id="sociedad-moderna" class="tab-content">
+                 <div class="bg-gray-800 p-6 rounded-lg shadow-lg space-y-8">
+                    <div>
+                        <h2 class="text-3xl font-bold text-white mb-4">El Tránsito de la Comunidad a la Sociedad</h2>
+                        <p class="mb-6 text-lg leading-relaxed">
+                            Para definir lo moderno, Peña recurre a la sociología clásica, destacando el tránsito de un modelo de "Comunidad" (Gemeinschaft) a uno de "Sociedad" (Gesellschaft), según la conceptualización de Ferdinand Tönnies. Este cambio implica la disolución de la conciencia colectiva, la pérdida de peso de la tradición y la aparición de élites que ya no se fundan en el linaje.
+                        </p>
+                        
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="border border-gray-700 p-4 rounded-lg bg-gray-800/50">
+                                <h3 class="text-2xl font-semibold text-blue-400 mb-2">Comunidad (Tradicional)</h3>
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li>Fuerte cohesión social.</li>
+                                    <li>Conciencia moral y destino compartidos.</li>
+                                    <li>Vínculos basados en la herencia, la tradición y la pertenencia irreflexiva (familia, barrio, iglesia).</li>
+                                    <li>La subjetividad está comprometida con el grupo.</li>
+                                </ul>
+                            </div>
+                            <div class="border border-gray-700 p-4 rounded-lg bg-gray-800/50">
+                                <h3 class="text-2xl font-semibold text-green-400 mb-2">Sociedad (Moderna)</h3>
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li>Asociación de individuos unidos por el contrato y el intercambio.</li>
+                                    <li>Disolución de la conciencia colectiva.</li>
+                                    <li>Individualización y diferenciación de conciencias morales.</li>
+                                    <li>Relaciones mediadas por la voluntad y el mercado.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-2xl font-semibold text-white mb-4">Perspectivas Clásicas sobre la Modernidad</h3>
+                        <div class="space-y-4">
+                            <p><strong class="text-blue-300">Henry Maine:</strong> Describe el paso del <span class="font-semibold">estatus</span> (posición social involuntaria) al <span class="font-semibold">contrato</span> (posición definida por el intercambio voluntario).</p>
+                            <p><strong class="text-blue-300">Émile Durkheim:</strong> Habla del tránsito de una <span class="font-semibold">solidaridad mecánica</span> (vínculos prerreflexivos) a una <span class="font-semibold">solidaridad orgánica</span> (vínculos basados en la división del trabajo).</p>
+                            <p><strong class="text-blue-300">Alexis de Tocqueville:</strong> En "La Democracia en América", observa que las relaciones mediadas por el dinero <span class="font-semibold">liberan la subjetividad</span>. El individuo ya no compromete su destino total (como el inquilino a su patrón), solo una parte de su tiempo, manteniendo su vida interior a salvo.</p>
+                            <p><strong class="text-blue-300">Georg Simmel:</strong> En "La Filosofía del Dinero", argumenta que la economía monetaria es la <span class="font-semibold">base de la libertad</span>. No la libertad de elegir de Friedman, sino que la interacción abstracta del mercado, al no comprometer la subjetividad, crea un "yo interior", un espacio de autonomía que es un fenómeno puramente moderno.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-2xl font-semibold text-white mb-4">Instituciones y Sentimientos Modernos</h3>
+                        <div class="grid md:grid-cols-2 gap-6">
+                             <div class="border border-gray-700 p-4 rounded-lg bg-gray-800/50">
+                                <h4 class="text-xl font-semibold text-blue-400 mb-2">Pilares Institucionales</h4>
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li><strong>Capitalismo:</strong> El sistema de intercambio por excelencia.</li>
+                                    <li><strong>Estado Nacional:</strong> Agencia que monopoliza la fuerza en un territorio.</li>
+                                    <li><strong>Cultura Mediatizada:</strong> Comunicación que no requiere copresencia (desde la imprenta a internet).</li>
+                                </ul>
+                            </div>
+                             <div class="border border-gray-700 p-4 rounded-lg bg-gray-800/50">
+                                <h4 class="text-xl font-semibold text-green-400 mb-2">La Nostalgia por la Comunidad</h4>
+                                <p>La modernización viene acompañada de una sensación de pérdida: falta de cohesión, relaciones más frías. Es una nostalgia por los vínculos abrigados y consoladores de la comunidad, una queja tan antigua como la modernidad misma (ej. Rousseau en "La Nueva Eloísa" criticando el comercio frente a la virtud).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dimensiones de la Ambigüedad Tab -->
+            <div id="ambiguedades" class="tab-content">
+                <div class="space-y-8">
+                    <!-- Card 1: Consumo y Abundancia -->
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <h3 class="text-3xl font-bold text-white mb-3">1. La Paradoja del Consumo y la Abundancia</h3>
+                        <p class="text-lg mb-4">Conforme aumenta el bienestar, aumenta paradójicamente la insatisfacción. El consumo es como lo "abyecto": nos atrae y nos repugna, generando placer y una gigantesca sombra de culpa.</p>
+                        <ul class="list-disc list-inside space-y-3 text-gray-300">
+                            <li><strong class="text-blue-300">Bienes Posicionales:</strong> Cuando un bien que distinguía a una minoría (ej. un título universitario, antes un "sucedáneo de nobleza") se masifica, pierde su valor de distinción. Quienes acceden a él tardíamente se frustran. Bourdieu llama a esto <span class="font-semibold">"efecto de histéresis"</span> (llegar tarde).</li>
+                            <li><strong class="text-blue-300">Comprar Distinción, no Cosas:</strong> No consumimos para satisfacer necesidades naturales, sino para diferenciarnos. La moda no busca la belleza, sino inventar distinciones.</li>
+                            <li><strong class="text-blue-300">Deseo Diferido:</strong> El consumo no sacia el deseo, lo perpetúa. Es un motor que moviliza el deseo vacío que antes se canalizaba en utopías y sueños colectivos. Donde hay consumo, las utopías no interesan.</li>
+                            <li><strong class="text-blue-300">Malestar Exitoso:</strong> Este desasosiego no es un fracaso del modelo, sino la expresión más elocuente de su éxito. Tocqueville ya observó que la Revolución Francesa estalló cuando Francia mejor estaba.</li>
+                        </ul>
+                    </div>
+                    <!-- Card 2: Autonomía -->
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <h3 class="text-3xl font-bold text-white mb-3">2. La Ambigüedad de la Autonomía</h3>
+                        <p class="text-lg mb-4">La modernidad exalta el ideal del individuo como un ser racional capaz de conducir su propia vida. Sin embargo, la misma cultura moderna se encarga de corroer y desmentir este ideal.</p>
+                         <ul class="list-disc list-inside space-y-3 text-gray-300">
+                            <li><strong class="text-blue-300">Freud y las Heridas Narcisistas:</strong> Demuestra que "el hombre no es dueño en su propia casa", ya que está conducido por fuerzas inconscientes, dinamitando la idea de un control racional total.</li>
+                            <li><strong class="text-blue-300">La Paradoja de Kant:</strong> En "¿Qué es la Ilustración?", invita a "servirse de la propia razón" para salir del pupilaje. Pero en su "Crítica de la Razón Pura", argumenta que el "yo" es una suposición que no podemos conocer en sí misma (apercepción trascendental), cuestionando la base misma de la autonomía.</li>
+                            <li><strong class="text-blue-300">Foucault y "Las Meninas":</strong> Analiza la obra de Velázquez para mostrar que el sujeto tiene un punto ciego respecto de sí mismo, haciendo imposible el gesto moderno de auto-representación total, como un cuadro de Magritte donde el paisaje es una pintura.</li>
+                        </ul>
+                    </div>
+                    <!-- Card 3: Legitimidad -->
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <h3 class="text-3xl font-bold text-white mb-3">3. La Ambigüedad de la Legitimidad</h3>
+                        <p class="text-lg mb-4">En un mundo pluralista, la legitimidad de las decisiones públicas no puede fundarse en una única moral. La modernidad resuelve esto vaciando la legitimidad de contenido sustantivo.</p>
+                         <ul class="list-disc list-inside space-y-3 text-gray-300">
+                            <li><strong class="text-blue-300">Legitimidad Procedimental:</strong> Lo que hace a una decisión legítima no es su contenido, sino el procedimiento formal a través del cual se tomó. El "precio justo" de la escolástica, basado en la moral, es reemplazado por el precio que resulta del procedimiento del mercado.</li>
+                            <li><strong class="text-blue-300">La Paradoja del Creyente:</strong> La sociedad moderna permite la diversidad de convicciones en la esfera privada, pero exige que sean irrelevantes en la esfera pública.</li>
+                            <li><strong class="text-blue-300">"Dictadura del Relativismo":</strong> Esta neutralidad genera insatisfacción, pues las convicciones más profundas son toleradas solo a condición de ser inofensivas. Ratzinger lo llamó así: parece democracia, pero en la esfera pública todo es equivalente a todo.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Síntesis Tab -->
+            <div id="sintesis" class="tab-content">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                    <h2 class="text-3xl font-bold text-white mb-4">Síntesis Final del Ponente</h2>
+                    <p class="mb-6 text-lg leading-relaxed">
+                        Carlos Peña concluye que la modernidad es un tránsito de la <span class="font-semibold text-blue-400">comunidad a la sociedad</span>, una forma de interacción abstracta mediada por el mercado que produce una fuerte individuación y disuelve la conciencia colectiva. Esta condición genera tres ambivalencias culturales fundamentales:
+                    </p>
+                    <div class="space-y-4">
+                        <div class="border border-gray-700 p-4 rounded-lg">
+                            <h3 class="text-xl font-semibold text-white">1. Abundancia y Escasez</h3>
+                            <p>La sociedad moderna es la primera en producir abundancia al mismo ritmo que la sensación de miseria y escasez, debido a la paradoja del bienestar y la naturaleza de los bienes posicionales.</p>
+                        </div>
+                         <div class="border border-gray-700 p-4 rounded-lg">
+                            <h3 class="text-xl font-semibold text-white">2. Afirmación y Corrosión del Sujeto</h3>
+                            <p>Alienta a cada individuo a ser autor de su propia vida (autonomía), pero al mismo tiempo, toda la cultura moderna se esmera en demostrar que el "yo" es una ilusión o una construcción imposible de verificar.</p>
+                        </div>
+                         <div class="border border-gray-700 p-4 rounded-lg">
+                            <h3 class="text-xl font-semibold text-white">3. Legitimidad y Vacío</h3>
+                            <p>No podemos prescindir de la legitimidad para la vida en común, pero la vaciamos de todo contenido moral o religioso, reduciéndola a meros procedimientos formales, lo que la hace profundamente insatisfactoria.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preguntas y Respuestas Tab -->
+            <div id="preguntas" class="tab-content">
+                <div class="space-y-6">
+                    <!-- Pregunta 1 -->
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <h4 class="text-xl font-semibold text-white mb-2">1. ¿Qué rol juega la "nación" en la modernidad?</h4>
+                        <p class="text-gray-300">Hay dos concepciones: la <strong class="text-blue-300">francesa</strong> (moderna), que ve la nación como una comunidad artificial unida por la ley, y la <strong class="text-blue-300">alemana</strong> (tribal), que la ve como una comunidad de sangre y tierra. Esta última es un resabio pre-moderno que amenaza a la modernidad al anular al individuo.</p>
+                    </div>
+                    <!-- Pregunta 2 -->
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <h4 class="text-xl font-semibold text-white mb-2">2. ¿Cómo se articula la autonomía con la desigualdad?</h4>
+                        <p class="text-gray-300">La gente no rechaza la desigualdad, sino la <strong class="text-blue-300">inmerecida</strong>. Se anhela una <strong class="text-blue-300">desigualdad merecida</strong>, fruto del esfuerzo y las elecciones. El ideal normativo moderno es corregir la "suerte bruta" (azar) y estimular la "suerte opcional" (decisiones), pues en esto descansa la dignidad.</p>
+                    </div>
+                    <!-- Pregunta 3 -->
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <h4 class="text-xl font-semibold text-white mb-2">3. ¿Cómo se relaciona la modernidad con la ciencia?</h4>
+                        <p class="text-gray-300">La confianza positivista en que "la ciencia nos hará libres" se ha abandonado. Hoy, la relación es ambivalente: <strong class="text-blue-300">anhelamos la ciencia</strong> para curar dolencias, pero al mismo tiempo <strong class="text-blue-300">sentimos que nos amenaza</strong>. La bioética surge de esta tensión entre lo técnicamente posible y lo éticamente deseable.</p>
+                    </div>
+                    <!-- Pregunta 4 -->
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <h4 class="text-xl font-semibold text-white mb-2">4. Si la intimidad es moderna, ¿por qué hoy se expone tanto?</h4>
+                        <p class="text-gray-300">La paradoja es que creemos que el misterio está en la intimidad, cuando en lo privado somos muy parecidos. <strong class="text-blue-300">Lo único original que tenemos es lo que hacemos cuando nos mostramos ante los demás</strong> (Hannah Arendt). El anhelo no es de intimidad, sino de "ser visto", de escenificarse en la esfera pública.</p>
+                    </div>
+                    <!-- Pregunta 5 -->
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <h4 class="text-xl font-semibold text-white mb-2">5. ¿Somos manipulados por la publicidad?</h4>
+                        <p class="text-gray-300">La idea de "necesidades falsas" es errónea. <strong class="text-blue-300">Las necesidades humanas son fundamentalmente simbólicas</strong>. No consumimos para satisfacer necesidades materiales, sino para construir identidad y diferenciarnos. La vida es un esfuerzo por distinguirse, y el consumo es una de sus herramientas.</p>
+                    </div>
+                    <!-- Pregunta 6 -->
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <h4 class="text-xl font-semibold text-white mb-2">6. ¿Qué lugar queda para el sentido de la vida?</h4>
+                        <p class="text-gray-300">La búsqueda de sentido es inevitable, impulsada por nuestra finitud. Lo propio de la modernidad es que <strong class="text-blue-300">delega en cada individuo esa búsqueda</strong>. La tragedia es que, aunque la búsqueda es ineludible, nunca tenemos la certeza de haber encontrado el sentido.</p>
+                    </div>
+                    <!-- Pregunta 7 -->
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <h4 class="text-xl font-semibold text-white mb-2">7. ¿Qué es la posmodernidad?</h4>
+                        <p class="text-gray-300">No es una época distinta, sino <strong class="text-blue-300">la modernidad radicalizada</strong>. Es la consecuencia de llevar los procesos modernos (individualización, disolución de grandes relatos) a su extremo. Es la modernidad corroyéndose a sí misma.</p>
+                    </div>
+                    <!-- Pregunta 8 -->
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <h4 class="text-xl font-semibold text-white mb-2">8. ¿Cómo se gobierna una sociedad moderna?</h4>
+                        <p class="text-gray-300">Estas sociedades viven en una dialéctica de <strong class="text-blue-300">progreso y desilusión</strong>. La política ya no es una promesa escatológica de un mundo nuevo. El talento político consiste en gestionar esas oleadas, capturar la sensibilidad de las mayorías y ofrecer remedio a sus temores. El "gran líder" que conduce a un horizonte histórico ha desaparecido porque ya no hay público para ese discurso.</p>
+                    </div>
+                    <!-- Pregunta 9 -->
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <h4 class="text-xl font-semibold text-white mb-2">9. ¿Puede la subjetividad ser libre si es una ficción?</h4>
+                        <p class="text-gray-300">No podemos prescindir de la ficción ni del orden simbólico; dejaríamos de ser humanos. Citando a Chesterton: "Si la Cenicienta no tuviera que irse a las 12, no existiría como Cenicienta". <strong class="text-blue-300">La ficción, la fantasía, es la condición de lo que somos</strong>. La libertad no reside en escapar de la ficción, sino en la forma en que la habitamos.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Tab switching logic
+        function changeTab(event, tabID) {
+            let tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+
+            let tabButtons = document.getElementsByClassName('tab-button');
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove('active');
+            }
+
+            document.getElementById(tabID).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+    </script>
+</body>
+</html>
