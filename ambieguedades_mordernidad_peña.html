@@ -3,275 +3,627 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Las Ambigüedades de la Modernidad - Carlos Peña</title>
+    <title>Las Ambigüedades de la Modernidad | O.C.V.M.</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
+        :root {
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --primary-text: #e5e7eb;
+            --primary-glow: #818cf8;
+            --secondary-glow: #22d3ee;
+            --font-main: 'Inter', sans-serif;
+            --nav-height: 70px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
         body {
-            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+        
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            cursor: crosshair;
+        }
+
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.menu-open {
+            overflow: hidden;
+        }
+        
+        nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+            padding: 0 5%;
+            pointer-events: auto;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .nav-logo a {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            text-shadow: 0 0 8px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
+        nav .nav-container > li { position: relative; height: 100%; display: flex; align-items: center; }
+        nav .nav-container > li > a {
+            color: var(--primary-text); text-decoration: none; font-size: clamp(0.9em, 1.2vw, 1.05em); font-weight: 500;
+            transition: color 0.3s ease, text-shadow 0.3s ease; padding: 0 1rem; display: flex; align-items: center; gap: 8px;
+        }
+        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a { color: #FFFFFF; text-shadow: 0 0 12px var(--primary-glow); }
+        
+        .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; }
+        
+        .hero {
+            min-height: 80vh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; position: relative;
+            padding: 1rem;
+            padding-top: var(--nav-height);
+        }
+        .hero-content { position: relative; z-index: 2; animation: fadeIn 2s ease-in; }
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 5.5rem); font-weight: 700; color: #fff;
+            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(129, 140, 248, 0.7);
+            animation: pulse-glow 3s infinite alternate;
+        }
+        .hero p.subtitle { font-size: clamp(1.2rem, 3vw, 1.8rem); color: var(--secondary-glow); text-shadow: 0 0 8px var(--secondary-glow); margin-top: 0.5rem; }
+        .hero p.description { font-size: clamp(1rem, 2.5vw, 1.2rem); max-width: 800px; margin: 1.5rem auto 0; text-shadow: 0 0 5px #000; }
+        
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .main-container { 
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto; 
+            padding: 1rem clamp(1rem, 5vw, 4rem) 1rem;
+            pointer-events: none;
+        }
+        
+        main, .footer, .section, .hero-content {
+            pointer-events: auto;
+        }
+
+        main p, .footer p, main li, main blockquote {
+            user-select: text;
+            cursor: default;
+        }
+
+        .layout-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 2rem; }
+        
+        .section {
+            padding: clamp(1.5rem, 5vw, 2.5rem);
+            border-radius: 12px; margin-bottom: 2rem; position: relative;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .section:hover { transform: translateY(-5px); box-shadow: 0 0 40px rgba(129, 140, 248, 0.2); }
+        
+        .section h2, .section .tab-nav, .section .tab-content {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .section.is-visible h2, .section.is-visible .tab-nav, .section.is-visible .tab-content-container {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        h2 {
+            font-size: clamp(1.5rem, 5vw, 2.2rem); color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);
+            border-bottom: 1px solid var(--primary-glow); padding-bottom: 1rem; margin-bottom: 1.5rem;
+        }
+        h3 { font-size: clamp(1.4rem, 4vw, 1.9rem); color: var(--primary-glow); margin: 2.5rem 0 1.5rem 0; }
+        h4 { font-size: clamp(1.2rem, 3vw, 1.5rem); color: var(--secondary-glow); margin-bottom: 1rem; margin-top: 2rem; }
+        
+        /* --- ESTILOS PARA TABS --- */
+        .tab-nav {
+            display: flex;
+            flex-wrap: wrap;
+            border-bottom: 1px solid rgba(129, 140, 248, 0.3);
+            margin-bottom: 2rem;
+        }
+        .tab-button {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--primary-text);
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-bottom: -1px;
+        }
+        .tab-button:hover {
+            color: #fff;
+            background-color: rgba(129, 140, 248, 0.1);
+        }
+        .tab-button.active {
+            color: var(--primary-glow);
+            border-bottom-color: var(--primary-glow);
+            text-shadow: 0 0 8px var(--primary-glow);
+            font-weight: 600;
         }
         .tab-content {
             display: none;
         }
         .tab-content.active {
             display: block;
+            animation: fadeInContent 0.6s ease forwards;
         }
-        .tab-button.active {
-            border-color: #3b82f6;
-            color: #3b82f6;
+        @keyframes fadeInContent {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-content .highlight {
+            color: var(--secondary-glow);
             font-weight: 600;
+        }
+        .tab-content .card {
+            background-color: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        .tab-content .quote-block {
+            border-left: 3px solid var(--primary-glow);
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #c7d2fe;
+        }
+
+        .tab-content ul {
+            list-style-position: inside;
+            padding-left: 0.5rem;
+        }
+        .tab-content li {
+            margin-bottom: 0.75rem;
+        }
+        
+        .footer { text-align: center; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
+        
+        @media (min-width: 1025px) {
+            .menu-toggle { display: none; }
+            .nav-container { display: flex; }
+        }
+
+        @media (max-width: 1024px) {
+            .nav-content { justify-content: space-between; }
+            .nav-container {
+                position: fixed;
+                top: var(--nav-height);
+                left: 0;
+                width: 100%;
+                height: calc(100vh - var(--nav-height));
+                background: rgba(17, 24, 39, 0.95);
+                backdrop-filter: blur(15px);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+                transform: translateY(-110%);
+                overflow-y: auto;
+                padding: 2rem;
+            }
+            body.menu-open .nav-container {
+                transform: translateY(0);
+            }
+
+            nav .nav-container > li { width: 100%; height: auto; text-align: center; }
+            nav .nav-container > li > a { padding: 1rem; width: 100%; font-size: 1.5em;}
+            
+            .menu-toggle {
+                display: block; position: relative; z-index: 1001;
+                width: 30px; height: 22px;
+                background: none; border: none; cursor: pointer;
+            }
+            .icon-bar {
+                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
+                margin: 6px 0; transition: all 0.3s ease-in-out;
+                border-radius: 2px;
+            }
+
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
         }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-300">
+<body>
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+    <nav class="glassmorphism">
+        <div class="nav-content">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-8 w-8 md:h-10 md:w-10 rounded-full">
+                    <span>O.C.V.M.</span>
+                </a>
+            </div>
+            <ul class="nav-container" id="nav-menu">
+                <li><a href="index.html">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+                    Inicio</a></li>
+                <li><a href="#contacto">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                    Contacto</a></li>
+            </ul>
+            <button class="menu-toggle" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
+    </nav>
 
-    <div class="container mx-auto p-4 md:p-8">
-        <!-- Header -->
-        <header class="text-center mb-8 md:mb-12">
-            <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">Las Ambigüedades de la Modernidad</h1>
-            <p class="text-xl md:text-2xl text-blue-400">Una Conferencia de Carlos Peña</p>
-            <p class="max-w-3xl mx-auto mt-4 text-gray-400">
-                Análisis de los desafíos a nuestras concepciones sobre lo humano y la trascendencia, planteados desde la globalización, la tecnociencia, el transhumanismo y los cambios sociales que definen nuestra era.
-            </p>
-        </header>
-
-        <!-- Tabs Navigation -->
-        <div class="mb-8 border-b border-gray-700">
-            <nav class="flex flex-wrap -mb-px" aria-label="Tabs">
-                <button class="tab-button active text-lg whitespace-nowrap mr-2 md:mr-8 py-4 px-1 border-b-2 font-medium border-transparent hover:text-blue-400 hover:border-blue-400 transition-colors" onclick="changeTab(event, 'introduccion')">
-                    Introducción
-                </button>
-                <button class="tab-button text-lg whitespace-nowrap mr-2 md:mr-8 py-4 px-1 border-b-2 font-medium border-transparent hover:text-blue-400 hover:border-blue-400 transition-colors" onclick="changeTab(event, 'sociedad-moderna')">
-                    ¿Qué es una Sociedad Moderna?
-                </button>
-                <button class="tab-button text-lg whitespace-nowrap mr-2 md:mr-8 py-4 px-1 border-b-2 font-medium border-transparent hover:text-blue-400 hover:border-blue-400 transition-colors" onclick="changeTab(event, 'ambiguedades')">
-                    Dimensiones de la Ambigüedad
-                </button>
-                <button class="tab-button text-lg whitespace-nowrap mr-2 md:mr-8 py-4 px-1 border-b-2 font-medium border-transparent hover:text-blue-400 hover:border-blue-400 transition-colors" onclick="changeTab(event, 'sintesis')">
-                    Síntesis
-                </button>
-                <button class="tab-button text-lg whitespace-nowrap py-4 px-1 border-b-2 font-medium border-transparent hover:text-blue-400 hover:border-blue-400 transition-colors" onclick="changeTab(event, 'preguntas')">
-                    Preguntas y Respuestas
-                </button>
-            </nav>
+    <div class="main-container" id="inicio">
+        <div class="hero">
+            <div class="hero-content">
+                <h1>Las Ambigüedades de la Modernidad</h1>
+                <p class="subtitle">Una Conferencia de Carlos Peña</p>
+                <p class="description">
+                    Análisis de los desafíos a nuestras concepciones sobre lo humano y la trascendencia, planteados desde la globalización, la tecnociencia, el transhumanismo y los cambios sociales que definen nuestra era.
+                </p>
+            </div>
         </div>
 
-        <!-- Tabs Content -->
-        <main>
-            <!-- Introducción Tab -->
-            <div id="introduccion" class="tab-content active">
-                <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                    <h2 class="text-3xl font-bold text-white mb-4">La Paradoja Central: Felicidad Privada, Malestar Público</h2>
-                    <p class="mb-4 text-lg leading-relaxed">
-                        Carlos Peña inicia su exposición destacando una sorprendente ambivalencia en la sociedad chilena contemporánea: una alta satisfacción con la vida personal y familiar (casi el 80% se declara feliz) que coexiste con un profundo malestar y desconfianza hacia las instituciones y la vida pública.
-                    </p>
-                    <p class="mb-4 text-lg leading-relaxed">
-                        Esta dualidad, entre la plenitud en la esfera íntima y la insatisfacción en la colectiva, es el síntoma principal de lo que él denomina las "ambigüedades de la modernidad", tema de su libro homónimo.
-                    </p>
-                    <div class="mt-6 border-l-4 border-blue-500 pl-4">
-                        <h3 class="text-2xl font-semibold text-white mb-2">Plan de la Exposición</h3>
-                        <ol class="list-decimal list-inside space-y-2 text-lg">
-                            <li>
-                                <span class="font-semibold">Definir la Modernidad:</span> Explicar en qué consiste una sociedad moderna y cómo Chile ha transitado hacia ella, dejando atrás su estructura tradicional.
-                            </li>
-                            <li>
-                                <span class="font-semibold">Explorar las Ambigüedades:</span> Identificar y describir tres dimensiones clave donde esta ambivalencia se manifiesta: la legitimidad, la abundancia y el consumo.
-                            </li>
-                        </ol>
+        <div class="layout-grid">
+            <main class="content">
+                
+                <section id="conferencia-contenido" class="glassmorphism" data-animate>
+                    <h2>Análisis de la Conferencia</h2>
+                    
+                    <div class="tab-nav">
+                        <button class="tab-button active" onclick="changeTab(event, 'introduccion')">Introducción</button>
+                        <button class="tab-button" onclick="changeTab(event, 'sociedad-moderna')">¿Qué es una Sociedad Moderna?</button>
+                        <button class="tab-button" onclick="changeTab(event, 'ambiguedades')">Dimensiones de la Ambigüedad</button>
+                        <button class="tab-button" onclick="changeTab(event, 'sintesis')">Síntesis</button>
+                        <button class="tab-button" onclick="changeTab(event, 'preguntas')">Preguntas y Respuestas</button>
                     </div>
-                </div>
-            </div>
 
-            <!-- ¿Qué es una Sociedad Moderna? Tab -->
-            <div id="sociedad-moderna" class="tab-content">
-                 <div class="bg-gray-800 p-6 rounded-lg shadow-lg space-y-8">
-                    <div>
-                        <h2 class="text-3xl font-bold text-white mb-4">El Tránsito de la Comunidad a la Sociedad</h2>
-                        <p class="mb-6 text-lg leading-relaxed">
-                            Para definir lo moderno, Peña recurre a la sociología clásica, destacando el tránsito de un modelo de "Comunidad" (Gemeinschaft) a uno de "Sociedad" (Gesellschaft), según la conceptualización de Ferdinand Tönnies. Este cambio implica la disolución de la conciencia colectiva, la pérdida de peso de la tradición y la aparición de élites que ya no se fundan en el linaje.
-                        </p>
-                        
-                        <div class="grid md:grid-cols-2 gap-6">
-                            <div class="border border-gray-700 p-4 rounded-lg bg-gray-800/50">
-                                <h3 class="text-2xl font-semibold text-blue-400 mb-2">Comunidad (Tradicional)</h3>
-                                <ul class="list-disc list-inside space-y-2">
-                                    <li>Fuerte cohesión social.</li>
-                                    <li>Conciencia moral y destino compartidos.</li>
-                                    <li>Vínculos basados en la herencia, la tradición y la pertenencia irreflexiva (familia, barrio, iglesia).</li>
-                                    <li>La subjetividad está comprometida con el grupo.</li>
-                                </ul>
-                            </div>
-                            <div class="border border-gray-700 p-4 rounded-lg bg-gray-800/50">
-                                <h3 class="text-2xl font-semibold text-green-400 mb-2">Sociedad (Moderna)</h3>
-                                <ul class="list-disc list-inside space-y-2">
-                                    <li>Asociación de individuos unidos por el contrato y el intercambio.</li>
-                                    <li>Disolución de la conciencia colectiva.</li>
-                                    <li>Individualización y diferenciación de conciencias morales.</li>
-                                    <li>Relaciones mediadas por la voluntad y el mercado.</li>
-                                </ul>
+                    <div class="tab-content-container">
+                        <div id="introduccion" class="tab-content active">
+                            <h3>La Paradoja Central: Felicidad Privada, Malestar Público</h3>
+                            <p class="mb-4">El tema para los que nos han seguido durante todos los encuentros han sido los desafíos a nuestras concepciones históricas sobre el humano y la trascendencia que se plantean desde la globalización, desde la tecnociencia, los experimentos genéticos y los descubrimientos extraplanetarios, entre otros. Son los retos, por ejemplo, que asume el transhumanismo de que habla Luc Ferry y que ponen en tensión aún más las categorías de la modernidad.</p>
+                            <p class="mb-4">Un hombre moderno experimenta al mismo tiempo una sensación de felicidad y de plenitud cuando se trata de su vida personal, a tal extremo que casi el 80% de quienes viven en Chile se manifiestan felices con su vida personal. Pero al mismo tiempo de declarar que están felices, contentos, plenos con su vida personal y su vida íntima, declaran con el mismo énfasis que están molestos con las instituciones y sienten que la vida pública no vale demasiado la pena, que es una fuente de amargura y de malestar.</p>
+                            <blockquote class="quote-block">
+                                Desde el punto de vista de la subjetividad, se manifiesta como un diagnóstico de plenitud respecto de la vida personal, pero de profunda insatisfacción respecto de las instituciones, que yo creo es el estado de ánimo más persistente que hoy día uno puede constatar en Chile. Esta es la ambivalencia a la que aludo.
+                            </blockquote>
+                            
+                            <h4>Plan de la Exposición</h4>
+                            <div class="card">
+                                <ol class="list-decimal list-inside space-y-2">
+                                    <li><span class="highlight">Definir la Modernidad:</span> Explicar en qué consiste una sociedad moderna y cómo Chile ha transitado de ser una sociedad más bien tradicional a ser una sociedad moderna.</li>
+                                    <li><span class="highlight">Explorar las Ambigüedades:</span> Identificar y describir tres dimensiones de la cultura moderna que son profundamente ambiguas: la legitimidad, la abundancia y el consumo.</li>
+                                </ol>
                             </div>
                         </div>
-                    </div>
 
-                    <div>
-                        <h3 class="text-2xl font-semibold text-white mb-4">Perspectivas Clásicas sobre la Modernidad</h3>
-                        <div class="space-y-4">
-                            <p><strong class="text-blue-300">Henry Maine:</strong> Describe el paso del <span class="font-semibold">estatus</span> (posición social involuntaria) al <span class="font-semibold">contrato</span> (posición definida por el intercambio voluntario).</p>
-                            <p><strong class="text-blue-300">Émile Durkheim:</strong> Habla del tránsito de una <span class="font-semibold">solidaridad mecánica</span> (vínculos prerreflexivos) a una <span class="font-semibold">solidaridad orgánica</span> (vínculos basados en la división del trabajo).</p>
-                            <p><strong class="text-blue-300">Alexis de Tocqueville:</strong> En "La Democracia en América", observa que las relaciones mediadas por el dinero <span class="font-semibold">liberan la subjetividad</span>. El individuo ya no compromete su destino total (como el inquilino a su patrón), solo una parte de su tiempo, manteniendo su vida interior a salvo.</p>
-                            <p><strong class="text-blue-300">Georg Simmel:</strong> En "La Filosofía del Dinero", argumenta que la economía monetaria es la <span class="font-semibold">base de la libertad</span>. No la libertad de elegir de Friedman, sino que la interacción abstracta del mercado, al no comprometer la subjetividad, crea un "yo interior", un espacio de autonomía que es un fenómeno puramente moderno.</p>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 class="text-2xl font-semibold text-white mb-4">Instituciones y Sentimientos Modernos</h3>
-                        <div class="grid md:grid-cols-2 gap-6">
-                             <div class="border border-gray-700 p-4 rounded-lg bg-gray-800/50">
-                                <h4 class="text-xl font-semibold text-blue-400 mb-2">Pilares Institucionales</h4>
-                                <ul class="list-disc list-inside space-y-2">
-                                    <li><strong>Capitalismo:</strong> El sistema de intercambio por excelencia.</li>
-                                    <li><strong>Estado Nacional:</strong> Agencia que monopoliza la fuerza en un territorio.</li>
-                                    <li><strong>Cultura Mediatizada:</strong> Comunicación que no requiere copresencia (desde la imprenta a internet).</li>
-                                </ul>
+                        <div id="sociedad-moderna" class="tab-content">
+                            <h3>El Tránsito de la Comunidad a la Sociedad</h3>
+                            <p class="mb-6">Quien mejor describe el paso a lo moderno es un alemán, <strong class="highlight">Ferdinand Tönnies</strong>, que escribió un famoso libro que se llama <em class="highlight">"Gemeinschaft und Gesellschaft"</em>, o sea, comunidad y sociedad. Sostiene que lo moderno consiste en un tránsito de lo que él llama comunidad a lo que él llama sociedad.</p>
+                            
+                            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                                <div class="card">
+                                    <h4 style="color: var(--primary-glow);">Comunidad (Gemeinschaft)</h4>
+                                    <ul class="list-disc">
+                                        <li>Fuertemente cohesionados porque comparten una misma conciencia moral y un mismo sentido del destino.</li>
+                                        <li>Una comunidad de destino espiritual.</li>
+                                        <li>Pertenencia irreflexiva a grupos como el barrio, la iglesia, el sindicato.</li>
+                                    </ul>
+                                </div>
+                                <div class="card">
+                                    <h4 style="color: var(--secondary-glow);">Sociedad (Gesellschaft)</h4>
+                                    <ul class="list-disc">
+                                        <li>Una asociación de individuos que ya no comparten una misma conciencia moral, unidos simplemente mediante el intercambio y el contrato.</li>
+                                        <li>La tradición se disuelve, los argumentos de autoridad pierden peso.</li>
+                                        <li>Los sujetos se individualizan, y las relaciones pasan a estar mediadas por la voluntad.</li>
+                                    </ul>
+                                </div>
                             </div>
-                             <div class="border border-gray-700 p-4 rounded-lg bg-gray-800/50">
-                                <h4 class="text-xl font-semibold text-green-400 mb-2">La Nostalgia por la Comunidad</h4>
-                                <p>La modernización viene acompañada de una sensación de pérdida: falta de cohesión, relaciones más frías. Es una nostalgia por los vínculos abrigados y consoladores de la comunidad, una queja tan antigua como la modernidad misma (ej. Rousseau en "La Nueva Eloísa" criticando el comercio frente a la virtud).</p>
+
+                            <h4>Perspectivas Clásicas sobre la Modernidad</h4>
+                            <div class="space-y-4 card">
+                                <p><strong class="highlight">Henry Maine:</strong> Describe esto como el paso desde el <strong class="highlight">estatus</strong> (posición social anclada en factores involuntarios) al <strong class="highlight">contrato</strong> (posición que se establece mediante intercambio).</p>
+                                <p><strong class="highlight">Émile Durkheim:</strong> Describe esto como el paso de una <strong class="highlight">solidaridad mecánica</strong> (vínculos prerreflexivos) a una <strong class="highlight">solidaridad orgánica</strong> (vínculos basados en la división del trabajo y el intercambio).</p>
+                                <p><strong class="highlight">Alexis de Tocqueville:</strong> En "La democracia en América", observa que en la sociedad americana, como todo está mediado por el dinero, ser siervo es comprometer solo una pequeña parte de la subjetividad, dejando todo el resto a salvo. Cuando las relaciones sociales están mediadas por el contrato y el intercambio, la subjetividad de las personas va quedando a salvo.</p>
+                                <p><strong class="highlight">Georg Simmel:</strong> En "La filosofía del dinero", argumenta que la economía monetaria es la base de la libertad, no porque se ejercita la libertad al comprar, sino porque el dinero, al permitir relaciones sociales donde la subjetividad queda a salvo, va generando lo que hoy día llamamos <strong class="highlight">vida interior o intimidad</strong>, un yo que solo usted domina. Y ese yo interior es un fenómeno moderno.</p>
+                            </div>
+                        </div>
+
+                        <div id="ambiguedades" class="tab-content">
+                            <div class="space-y-8">
+                                <div class="card">
+                                    <h3>1. La Ambigüedad de la Abundancia y el Consumo</h3>
+                                    <p class="mb-4">La ambigüedad del consumo o de la abundancia es que conforme aumenta el bienestar, que es un fenómeno típicamente moderno, aumenta al mismo tiempo la insatisfacción. El consumo se parece a lo que los psicoanalistas llaman lo abyecto: nos atrae y nos repugna al mismo tiempo.</p>
+                                    <blockquote class="quote-block">Nunca en Chile había existido un mayor nivel de bienestar que hoy día y, sin embargo, nunca las personas habían sentido mayores carencias que hoy día. Esto que la literatura describe como la paradoja del bienestar es una segunda dimensión de la ambivalencia.</blockquote>
+                                    <ul class="list-disc">
+                                        <li><strong class="highlight">Bienes Posicionales:</strong> El consumo se traslada a bienes que usted apetece porque lo distinguen de los demás. Cuando usted masifica los bienes posicionales (ej. un título universitario), dejan de proporcionar la distinción que antes proporcionaban. En consecuencia, cuando usted accede al bien posicional, lo hace solo para frustrarse. Bourdieu lo llama <strong class="highlight">efecto de histéresis</strong>.</li>
+                                        <li><strong class="highlight">Comprar Distinción:</strong> La gente cuando consume desea distinguirse. La gente compra distinción, no compra cosas. La moda no tiene por objeto la belleza; elabora, inventa distinciones.</li>
+                                        <li><strong class="highlight">Deseo Diferido:</strong> Las sociedades modernas prometen satisfacer lo que usted desea solo para que usted descubra, cuando lo alcanza, que su deseo queda insatisfecho. Usted consume solo para descubrir que su deseo, en vez de ser satisfecho, fue diferido.</li>
+                                    </ul>
+                                </div>
+                                <div class="card">
+                                    <h3>2. La Ambigüedad de la Autonomía</h3>
+                                    <p class="mb-4">Quizás no hay otro ideal más moderno que el ideal de autonomía: la convicción de que ser un individuo es ser un ente capaz de conducir su propia vida. Pero este es un ideal ambiguo, porque la misma reflexión moderna se empeña en demostrar que eso no es posible.</p>
+                                    <ul class="list-disc">
+                                        <li><strong class="highlight">Freud y las Heridas Narcisistas:</strong> Demuestra que "el hombre no es dueño en su propia casa", porque está conducido por recuerdos remotos de los que es inconsciente.</li>
+                                        <li><strong class="highlight">La Paradoja de Kant:</strong> En "¿Qué es la Ilustración?", invita a "servirse de tu sola razón". Pero en la "Crítica de la razón pura", prueba que el "yo" podría ser nada más que una suposición que no podemos conocer en sí misma.</li>
+                                        <li><strong class="highlight">Foucault y "Las Meninas":</strong> Analiza la obra de Velázquez para mostrar que el esfuerzo por afirmarse uno mismo como sujeto es imposible porque el sujeto tiene un punto ciego respecto de sí mismo.</li>
+                                    </ul>
+                                </div>
+                                <div class="card">
+                                    <h3>3. La Ambigüedad de la Legitimidad</h3>
+                                    <p class="mb-4">En la modernidad, el pluralismo de convicciones impide fundar la legitimidad en una única moral o religión. La solución moderna es vaciar la legitimidad de contenido sustantivo y hacerla puramente procedimental.</p>
+                                    <ul class="list-disc">
+                                        <li><strong class="highlight">Legitimidad Procedimental:</strong> Lo propio de lo moderno es fundar la legitimidad en el procedimiento de producción de las decisiones, pero no en su contenido. El precio justo es el que resulta de la libre competencia. Una ley es legítima si sigue el procedimiento democrático.</li>
+                                        <li><strong class="highlight">La Paradoja del Creyente:</strong> La sociedad moderna alienta que usted tenga sus convicciones, a condición de que no importen en la esfera pública. Le permite el ejercicio de la convicción a condición de que sea totalmente inofensiva.</li>
+                                        <li><strong class="highlight">"Dictadura del Relativismo":</strong> Esta neutralidad genera insatisfacción. Ratzinger lo llamó así: parece democracia, pero en realidad es relativismo total porque en la esfera pública todo es equivalente a todo.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="sintesis" class="tab-content">
+                            <h3>Síntesis Final</h3>
+                            <p class="mb-6">
+                               Lo moderno es una forma de interacción abstracta, mediada por intercambios cuyo paradigma es el mercado, donde hay una fuerte individuación y una disolución de la conciencia colectiva. Esto genera tres ambivalencias culturales:
+                            </p>
+                            <div class="space-y-4">
+                                <div class="card">
+                                    <h4>1. Abundancia y Escasez</h4>
+                                    <p>La sociedad moderna es la primera formación humana que produce la abundancia al mismo ritmo que la miseria (cultural), por la paradoja del bienestar y el efecto de los bienes posicionales.</p>
+                                </div>
+                                <div class="card">
+                                    <h4>2. Afirmación y Corrosión del Sujeto</h4>
+                                    <p>Alienta la autonomía, que cada uno sea autor de su vida, pero al mismo tiempo toda la cultura moderna se esmera por demostrar que eso es un sueño, una ilusión imposible.</p>
+                                </div>
+                                <div class="card">
+                                    <h4>3. Legitimidad y Vacío</h4>
+                                    <p>No podemos prescindir de la legitimidad, pero la vaciamos de contenido moral o religioso, reduciéndola a meros procedimientos formales, lo que la hace muy insatisfactoria para un creyente.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="preguntas" class="tab-content">
+                            <div class="space-y-6">
+                                <div class="card">
+                                    <h4>1. ¿Qué rol juega la "nación" en la modernidad?</h4>
+                                    <p>Hay dos concepciones: la <strong class="highlight">francesa</strong> (moderna), que ve la nación como una comunidad artificial unida por la ley, y la <strong class="highlight">alemana</strong> (tribal y pre-moderna), que la ve como una comunidad de sangre y tierra. Esta última siempre es una forma tribal porque supone la anulación del individuo.</p>
+                                </div>
+                                <div class="card">
+                                    <h4>2. ¿Cómo se articula la autonomía con la desigualdad?</h4>
+                                    <p>La gente no reclama igualdad, reclama desigualdad. Lo que ocurre es que reclama <strong class="highlight">desigualdad merecida</strong>. A la gente no le repugna la desigualdad, le repugna la inmerecida. El ideal normativo es que la historia de cada ser humano dependa de su <strong class="highlight">suerte opcional</strong> (lo que eligió) y no de la <strong class="highlight">suerte bruta</strong> (lo que le tocó).</p>
+                                </div>
+                                <div class="card">
+                                    <h4>3. ¿Cómo se relaciona la modernidad con la ciencia?</h4>
+                                    <p>La confianza positivista en que "la ciencia nos hará libres" se ha abandonado. Hoy, la relación es ambivalente: <strong class="highlight">anhelamos la ciencia</strong> para curar dolencias, pero al mismo tiempo <strong class="highlight">sentimos que nos amenaza</strong>. La bioética surge de esta tensión entre lo técnicamente posible y lo éticamente deseable.</p>
+                                </div>
+                                <div class="card">
+                                    <h4>4. Si la intimidad es moderna, ¿por qué hoy se expone tanto?</h4>
+                                    <p>Creemos que nuestro verdadero secreto está en la intimidad, cuando la verdad es que lo único original que tenemos es lo que hacemos cuando nos mostramos ante los demás. En la intimidad no hay misterio alguno. Lo que hay es un anhelo de <strong class="highlight">ser visto</strong> más que un anhelo de intimidad.</p>
+                                </div>
+                                <div class="card">
+                                    <h4>5. ¿Somos manipulados por la publicidad?</h4>
+                                    <p>No creo en la idea de que somos personas levemente estúpidas, teledirigidas por la publicidad. La idea de "necesidades falsas" es falsa. Las necesidades humanas son fundamentalmente <strong class="highlight">simbólicas</strong>. Somos consumidores de símbolos, de diferencias, de signos. La vida es el esfuerzo por distinguirse.</p>
+                                </div>
+                                <div class="card">
+                                    <h4>6. ¿Qué lugar queda para el sentido de la vida?</h4>
+                                    <p>La búsqueda de sentido es inevitable, y su motivo es la finitud. Lo propio de la modernidad es que <strong class="highlight">delega en cada uno esa búsqueda</strong>. La tragedia consiste en que, aunque la búsqueda es ineludible, nunca sabemos si lo hemos alcanzado.</p>
+                                </div>
+                                <div class="card">
+                                    <h4>7. ¿Qué es la posmodernidad?</h4>
+                                    <p>No es una época distinta, sino <strong class="highlight">la modernidad radicalizada</strong>. Son los procesos modernos (individuación, disolución de grandes relatos) llevados a tal extremo que llegamos a la fragmentación. Es propio de la modernidad corroerse a sí misma.</p>
+                                </div>
+                                <div class="card">
+                                    <h4>8. ¿Cómo se gobierna una sociedad moderna?</h4>
+                                    <p>Estas sociedades viven en una dialéctica de <strong class="highlight">progreso y desilusión</strong>. La política ya no es una promesa de construir una sociedad nueva. El talento político consiste en gestionar esas oleadas, capturar la sensibilidad de las mayorías y ofrecer remedio a sus temores. El "gran líder" que conduce a un horizonte histórico ha desaparecido porque ya no hay público para ese discurso.</p>
+                                </div>
+                                <div class="card">
+                                    <h4>9. ¿Puede la subjetividad ser libre si es una ficción?</h4>
+                                    <p>No podemos prescindir de la ficción, del orden simbólico; dejaríamos de ser humanos. Citando a Chesterton: si la Cenicienta no tuviera que irse a las 12, no existiría como Cenicienta. <strong class="highlight">La fantasía, la ficción, es la condición de lo que somos.</strong></p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                </section>
 
-            <!-- Dimensiones de la Ambigüedad Tab -->
-            <div id="ambiguedades" class="tab-content">
-                <div class="space-y-8">
-                    <!-- Card 1: Consumo y Abundancia -->
-                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                        <h3 class="text-3xl font-bold text-white mb-3">1. La Paradoja del Consumo y la Abundancia</h3>
-                        <p class="text-lg mb-4">Conforme aumenta el bienestar, aumenta paradójicamente la insatisfacción. El consumo es como lo "abyecto": nos atrae y nos repugna, generando placer y una gigantesca sombra de culpa.</p>
-                        <ul class="list-disc list-inside space-y-3 text-gray-300">
-                            <li><strong class="text-blue-300">Bienes Posicionales:</strong> Cuando un bien que distinguía a una minoría (ej. un título universitario, antes un "sucedáneo de nobleza") se masifica, pierde su valor de distinción. Quienes acceden a él tardíamente se frustran. Bourdieu llama a esto <span class="font-semibold">"efecto de histéresis"</span> (llegar tarde).</li>
-                            <li><strong class="text-blue-300">Comprar Distinción, no Cosas:</strong> No consumimos para satisfacer necesidades naturales, sino para diferenciarnos. La moda no busca la belleza, sino inventar distinciones.</li>
-                            <li><strong class="text-blue-300">Deseo Diferido:</strong> El consumo no sacia el deseo, lo perpetúa. Es un motor que moviliza el deseo vacío que antes se canalizaba en utopías y sueños colectivos. Donde hay consumo, las utopías no interesan.</li>
-                            <li><strong class="text-blue-300">Malestar Exitoso:</strong> Este desasosiego no es un fracaso del modelo, sino la expresión más elocuente de su éxito. Tocqueville ya observó que la Revolución Francesa estalló cuando Francia mejor estaba.</li>
-                        </ul>
-                    </div>
-                    <!-- Card 2: Autonomía -->
-                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                        <h3 class="text-3xl font-bold text-white mb-3">2. La Ambigüedad de la Autonomía</h3>
-                        <p class="text-lg mb-4">La modernidad exalta el ideal del individuo como un ser racional capaz de conducir su propia vida. Sin embargo, la misma cultura moderna se encarga de corroer y desmentir este ideal.</p>
-                         <ul class="list-disc list-inside space-y-3 text-gray-300">
-                            <li><strong class="text-blue-300">Freud y las Heridas Narcisistas:</strong> Demuestra que "el hombre no es dueño en su propia casa", ya que está conducido por fuerzas inconscientes, dinamitando la idea de un control racional total.</li>
-                            <li><strong class="text-blue-300">La Paradoja de Kant:</strong> En "¿Qué es la Ilustración?", invita a "servirse de la propia razón" para salir del pupilaje. Pero en su "Crítica de la Razón Pura", argumenta que el "yo" es una suposición que no podemos conocer en sí misma (apercepción trascendental), cuestionando la base misma de la autonomía.</li>
-                            <li><strong class="text-blue-300">Foucault y "Las Meninas":</strong> Analiza la obra de Velázquez para mostrar que el sujeto tiene un punto ciego respecto de sí mismo, haciendo imposible el gesto moderno de auto-representación total, como un cuadro de Magritte donde el paisaje es una pintura.</li>
-                        </ul>
-                    </div>
-                    <!-- Card 3: Legitimidad -->
-                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                        <h3 class="text-3xl font-bold text-white mb-3">3. La Ambigüedad de la Legitimidad</h3>
-                        <p class="text-lg mb-4">En un mundo pluralista, la legitimidad de las decisiones públicas no puede fundarse en una única moral. La modernidad resuelve esto vaciando la legitimidad de contenido sustantivo.</p>
-                         <ul class="list-disc list-inside space-y-3 text-gray-300">
-                            <li><strong class="text-blue-300">Legitimidad Procedimental:</strong> Lo que hace a una decisión legítima no es su contenido, sino el procedimiento formal a través del cual se tomó. El "precio justo" de la escolástica, basado en la moral, es reemplazado por el precio que resulta del procedimiento del mercado.</li>
-                            <li><strong class="text-blue-300">La Paradoja del Creyente:</strong> La sociedad moderna permite la diversidad de convicciones en la esfera privada, pero exige que sean irrelevantes en la esfera pública.</li>
-                            <li><strong class="text-blue-300">"Dictadura del Relativismo":</strong> Esta neutralidad genera insatisfacción, pues las convicciones más profundas son toleradas solo a condición de ser inofensivas. Ratzinger lo llamó así: parece democracia, pero en la esfera pública todo es equivalente a todo.</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Síntesis Tab -->
-            <div id="sintesis" class="tab-content">
-                <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                    <h2 class="text-3xl font-bold text-white mb-4">Síntesis Final del Ponente</h2>
-                    <p class="mb-6 text-lg leading-relaxed">
-                        Carlos Peña concluye que la modernidad es un tránsito de la <span class="font-semibold text-blue-400">comunidad a la sociedad</span>, una forma de interacción abstracta mediada por el mercado que produce una fuerte individuación y disuelve la conciencia colectiva. Esta condición genera tres ambivalencias culturales fundamentales:
-                    </p>
-                    <div class="space-y-4">
-                        <div class="border border-gray-700 p-4 rounded-lg">
-                            <h3 class="text-xl font-semibold text-white">1. Abundancia y Escasez</h3>
-                            <p>La sociedad moderna es la primera en producir abundancia al mismo ritmo que la sensación de miseria y escasez, debido a la paradoja del bienestar y la naturaleza de los bienes posicionales.</p>
-                        </div>
-                         <div class="border border-gray-700 p-4 rounded-lg">
-                            <h3 class="text-xl font-semibold text-white">2. Afirmación y Corrosión del Sujeto</h3>
-                            <p>Alienta a cada individuo a ser autor de su propia vida (autonomía), pero al mismo tiempo, toda la cultura moderna se esmera en demostrar que el "yo" es una ilusión o una construcción imposible de verificar.</p>
-                        </div>
-                         <div class="border border-gray-700 p-4 rounded-lg">
-                            <h3 class="text-xl font-semibold text-white">3. Legitimidad y Vacío</h3>
-                            <p>No podemos prescindir de la legitimidad para la vida en común, pero la vaciamos de todo contenido moral o religioso, reduciéndola a meros procedimientos formales, lo que la hace profundamente insatisfactoria.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Preguntas y Respuestas Tab -->
-            <div id="preguntas" class="tab-content">
-                <div class="space-y-6">
-                    <!-- Pregunta 1 -->
-                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                        <h4 class="text-xl font-semibold text-white mb-2">1. ¿Qué rol juega la "nación" en la modernidad?</h4>
-                        <p class="text-gray-300">Hay dos concepciones: la <strong class="text-blue-300">francesa</strong> (moderna), que ve la nación como una comunidad artificial unida por la ley, y la <strong class="text-blue-300">alemana</strong> (tribal), que la ve como una comunidad de sangre y tierra. Esta última es un resabio pre-moderno que amenaza a la modernidad al anular al individuo.</p>
-                    </div>
-                    <!-- Pregunta 2 -->
-                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                        <h4 class="text-xl font-semibold text-white mb-2">2. ¿Cómo se articula la autonomía con la desigualdad?</h4>
-                        <p class="text-gray-300">La gente no rechaza la desigualdad, sino la <strong class="text-blue-300">inmerecida</strong>. Se anhela una <strong class="text-blue-300">desigualdad merecida</strong>, fruto del esfuerzo y las elecciones. El ideal normativo moderno es corregir la "suerte bruta" (azar) y estimular la "suerte opcional" (decisiones), pues en esto descansa la dignidad.</p>
-                    </div>
-                    <!-- Pregunta 3 -->
-                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                        <h4 class="text-xl font-semibold text-white mb-2">3. ¿Cómo se relaciona la modernidad con la ciencia?</h4>
-                        <p class="text-gray-300">La confianza positivista en que "la ciencia nos hará libres" se ha abandonado. Hoy, la relación es ambivalente: <strong class="text-blue-300">anhelamos la ciencia</strong> para curar dolencias, pero al mismo tiempo <strong class="text-blue-300">sentimos que nos amenaza</strong>. La bioética surge de esta tensión entre lo técnicamente posible y lo éticamente deseable.</p>
-                    </div>
-                    <!-- Pregunta 4 -->
-                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                        <h4 class="text-xl font-semibold text-white mb-2">4. Si la intimidad es moderna, ¿por qué hoy se expone tanto?</h4>
-                        <p class="text-gray-300">La paradoja es que creemos que el misterio está en la intimidad, cuando en lo privado somos muy parecidos. <strong class="text-blue-300">Lo único original que tenemos es lo que hacemos cuando nos mostramos ante los demás</strong> (Hannah Arendt). El anhelo no es de intimidad, sino de "ser visto", de escenificarse en la esfera pública.</p>
-                    </div>
-                    <!-- Pregunta 5 -->
-                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                        <h4 class="text-xl font-semibold text-white mb-2">5. ¿Somos manipulados por la publicidad?</h4>
-                        <p class="text-gray-300">La idea de "necesidades falsas" es errónea. <strong class="text-blue-300">Las necesidades humanas son fundamentalmente simbólicas</strong>. No consumimos para satisfacer necesidades materiales, sino para construir identidad y diferenciarnos. La vida es un esfuerzo por distinguirse, y el consumo es una de sus herramientas.</p>
-                    </div>
-                    <!-- Pregunta 6 -->
-                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                        <h4 class="text-xl font-semibold text-white mb-2">6. ¿Qué lugar queda para el sentido de la vida?</h4>
-                        <p class="text-gray-300">La búsqueda de sentido es inevitable, impulsada por nuestra finitud. Lo propio de la modernidad es que <strong class="text-blue-300">delega en cada individuo esa búsqueda</strong>. La tragedia es que, aunque la búsqueda es ineludible, nunca tenemos la certeza de haber encontrado el sentido.</p>
-                    </div>
-                    <!-- Pregunta 7 -->
-                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                        <h4 class="text-xl font-semibold text-white mb-2">7. ¿Qué es la posmodernidad?</h4>
-                        <p class="text-gray-300">No es una época distinta, sino <strong class="text-blue-300">la modernidad radicalizada</strong>. Es la consecuencia de llevar los procesos modernos (individualización, disolución de grandes relatos) a su extremo. Es la modernidad corroyéndose a sí misma.</p>
-                    </div>
-                    <!-- Pregunta 8 -->
-                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                        <h4 class="text-xl font-semibold text-white mb-2">8. ¿Cómo se gobierna una sociedad moderna?</h4>
-                        <p class="text-gray-300">Estas sociedades viven en una dialéctica de <strong class="text-blue-300">progreso y desilusión</strong>. La política ya no es una promesa escatológica de un mundo nuevo. El talento político consiste en gestionar esas oleadas, capturar la sensibilidad de las mayorías y ofrecer remedio a sus temores. El "gran líder" que conduce a un horizonte histórico ha desaparecido porque ya no hay público para ese discurso.</p>
-                    </div>
-                    <!-- Pregunta 9 -->
-                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                        <h4 class="text-xl font-semibold text-white mb-2">9. ¿Puede la subjetividad ser libre si es una ficción?</h4>
-                        <p class="text-gray-300">No podemos prescindir de la ficción ni del orden simbólico; dejaríamos de ser humanos. Citando a Chesterton: "Si la Cenicienta no tuviera que irse a las 12, no existiría como Cenicienta". <strong class="text-blue-300">La ficción, la fantasía, es la condición de lo que somos</strong>. La libertad no reside en escapar de la ficción, sino en la forma en que la habitamos.</p>
-                    </div>
-                </div>
-            </div>
-        </main>
+            </main>
+        </div>
+        <footer class="footer" id="contacto">
+            <h2>Contacto</h2>
+            <p>Este espacio es una cartografía personal y una invitación al diálogo.</p>
+            <p style="margin-top:1.5rem; font-size: 0.9em;">La vida es terriblemente bella cuando los jugadores juegan. | 2025</p>
+        </footer>
     </div>
-
     <script>
-        // Tab switching logic
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof THREE !== 'undefined') {
+                initThreeJS();
+            } else {
+                console.error("Three.js not loaded");
+            }
+            setupNavigation();
+            setupScrollAnimations();
+        });
+
+        let scene, camera, renderer, points, lines;
+        function initThreeJS() {
+            try {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+                camera.position.z = 50;
+                renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("bg-canvas"), alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                const pointCount = 200;
+                const positions = new Float32Array(pointCount * 3);
+                const pointGeo = new THREE.BufferGeometry();
+                for (let i = 0; i < pointCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 400;
+                }
+                pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                const pointMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.5, transparent: true, opacity: 0.8 });
+                points = new THREE.Points(pointGeo, pointMaterial);
+                scene.add(points);
+                regenerateLines();
+                window.addEventListener("resize", onWindowResize, false);
+                document.addEventListener('mousemove', onMouseMove, false);
+                renderer.domElement.addEventListener('click', onCanvasClick, false);
+                animate();
+            } catch (error) {
+                console.error('Error initializing Three.js:', error);
+            }
+        }
+        function onWindowResize() {
+            if(camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+        let mouseX = 0, mouseY = 0;
+        function onMouseMove(event) {
+            mouseX = (event.clientX - window.innerWidth / 2) / 100;
+            mouseY = (event.clientY - window.innerHeight / 2) / 100;
+        }
+        function animate() {
+            requestAnimationFrame(animate);
+            if(scene && camera && renderer && points && lines) {
+                points.rotation.y += 0.0005;
+                lines.rotation.y += 0.0005;
+                camera.position.x += (mouseX - camera.position.x) * 0.05;
+                camera.position.y += (-mouseY - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+                renderer.render(scene, camera);
+            }
+        }
+        function onCanvasClick(event) {
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+            vector.unproject(camera);
+            const dir = vector.sub(camera.position).normalize();
+            const distance = -camera.position.z / dir.z;
+            const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+            addPoint(pos);
+        }
+        function addPoint(position) {
+            const oldPositions = points.geometry.attributes.position.array;
+            const newPointCount = oldPositions.length / 3 + 1;
+            const newPositions = new Float32Array(newPointCount * 3);
+            newPositions.set(oldPositions);
+            newPositions[oldPositions.length] = position.x;
+            newPositions[oldPositions.length + 1] = position.y;
+            newPositions[oldPositions.length + 2] = position.z;
+            points.geometry.setAttribute('position', new THREE.BufferAttribute(newPositions, 3));
+            points.geometry.attributes.position.needsUpdate = true;
+            regenerateLines();
+        }
+        function regenerateLines() {
+            if (lines) scene.remove(lines);
+            const pointPositions = points.geometry.attributes.position.array;
+            const pointCount = pointPositions.length / 3;
+            const linePositions = [];
+            for (let i = 0; i < pointCount; i++) {
+                for (let j = i + 1; j < pointCount; j++) {
+                    const dx = pointPositions[i * 3] - pointPositions[j * 3];
+                    const dy = pointPositions[i * 3 + 1] - pointPositions[j * 3 + 1];
+                    const dz = pointPositions[i * 3 + 2] - pointPositions[j * 3 + 2];
+                    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    if (dist < 50) {
+                        linePositions.push(pointPositions[i * 3], pointPositions[i * 3 + 1], pointPositions[i * 3 + 2]);
+                        linePositions.push(pointPositions[j * 3], pointPositions[j * 3 + 1], pointPositions[j * 3 + 2]);
+                    }
+                }
+            }
+            const lineGeo = new THREE.BufferGeometry();
+            lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.3, transparent: true });
+            lines = new THREE.LineSegments(lineGeo, lineMaterial);
+            scene.add(lines);
+        }
+
+        function setupNavigation() {
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            const navMenu = document.getElementById('nav-menu');
+            menuToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.body.classList.toggle('menu-open');
+            });
+            navMenu.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A' && window.innerWidth <= 1024) {
+                   document.body.classList.remove('menu-open');
+                }
+            });
+        }
+
+        function setupScrollAnimations() {
+            const animatedSections = document.querySelectorAll('[data-animate]');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        const elementsToAnimate = entry.target.querySelectorAll('h2, .tab-nav, .tab-content-container');
+                        elementsToAnimate.forEach((el, index) => {
+                           el.style.transitionDelay = `${index * 150}ms`;
+                        });
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            animatedSections.forEach(section => observer.observe(section));
+        }
+
         function changeTab(event, tabID) {
             let tabContents = document.getElementsByClassName('tab-content');
             for (let i = 0; i < tabContents.length; i++) {
                 tabContents[i].classList.remove('active');
             }
-
             let tabButtons = document.getElementsByClassName('tab-button');
             for (let i = 0; i < tabButtons.length; i++) {
                 tabButtons[i].classList.remove('active');
             }
-
             document.getElementById(tabID).classList.add('active');
             event.currentTarget.classList.add('active');
         }
