@@ -21,9 +21,15 @@
             --nav-height: 70px;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        html { scroll-behavior: smooth; }
+        html {
+            scroll-behavior: smooth;
+        }
 
         body {
             background-color: #000000;
@@ -55,9 +61,14 @@
         }
         
         nav {
-            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: var(--nav-height);
             z-index: 1000;
-            display: flex; justify-content: center; align-items: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 0 5%;
             pointer-events: auto;
         }
@@ -80,37 +91,94 @@
             gap: 0.75rem;
         }
 
-        .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
-        nav .nav-container > li { position: relative; height: 100%; display: flex; align-items: center; }
-        nav .nav-container > li > a {
-            color: var(--primary-text); text-decoration: none; font-size: clamp(0.9em, 1.2vw, 1.05em); font-weight: 500;
-            transition: color 0.3s ease, text-shadow 0.3s ease; padding: 0 1rem; display: flex; align-items: center; gap: 8px;
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            list-style: none;
+            height: 100%;
+            gap: 0.5rem;
         }
-        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a { color: #FFFFFF; text-shadow: 0 0 12px var(--primary-glow); }
+        nav .nav-container > li {
+            position: relative;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+        nav .nav-container > li > a {
+            color: var(--primary-text);
+            text-decoration: none;
+            font-size: clamp(0.9em, 1.2vw, 1.05em);
+            font-weight: 500;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a {
+            color: #FFFFFF;
+            text-shadow: 0 0 12px var(--primary-glow);
+        }
         
-        .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; }
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            stroke-width: 1.5;
+        }
         
         .hero {
             min-height: 80vh;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            text-align: center; position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
             padding: 1rem;
             padding-top: var(--nav-height);
         }
-        .hero-content { position: relative; z-index: 2; animation: fadeIn 2s ease-in; }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            animation: fadeIn 2s ease-in;
+        }
         .hero h1 {
-            font-size: clamp(2.5rem, 8vw, 5.5rem); font-weight: 700; color: #fff;
+            font-size: clamp(2.5rem, 8vw, 5.5rem);
+            font-weight: 700;
+            color: #fff;
             text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(129, 140, 248, 0.7);
             animation: pulse-glow 3s infinite alternate;
         }
-        .hero p.subtitle { font-size: clamp(1.2rem, 3vw, 1.8rem); color: var(--secondary-glow); text-shadow: 0 0 8px var(--secondary-glow); margin-top: 0.5rem; }
-        .hero p.description { font-size: clamp(1rem, 2.5vw, 1.2rem); max-width: 900px; margin: 1.5rem auto 0; text-shadow: 0 0 5px #000; }
+        .hero p.subtitle {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            color: var(--secondary-glow);
+            text-shadow: 0 0 8px var(--secondary-glow);
+            margin-top: 0.5rem;
+        }
+        .hero p.description {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            max-width: 900px;
+            margin: 1.5rem auto 0;
+            text-shadow: 0 0 5px #000;
+        }
         
         @keyframes pulse-glow {
-            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
-            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
+            from {
+                text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow);
+            }
+            to {
+                text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow);
+            }
         }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
 
         .main-container { 
             width: 95%; 
@@ -129,20 +197,81 @@
             cursor: default;
         }
 
-        .layout-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 2rem; }
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
         
         .section {
             padding: clamp(1.5rem, 5vw, 2.5rem);
-            border-radius: 12px; margin-bottom: 2rem; position: relative;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            position: relative;
             transition: transform 0.4s ease, box-shadow 0.4s ease;
         }
-        .section:hover { transform: translateY(-5px); box-shadow: 0 0 40px rgba(129, 140, 248, 0.2); }
-        
-        h2 {
-            font-size: clamp(1.5rem, 5vw, 2.2rem); color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);
-            border-bottom: 1px solid var(--primary-glow); padding-bottom: 1rem; margin-bottom: 1.5rem;
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 40px rgba(129, 140, 248, 0.2);
         }
         
+        h2 {
+            font-size: clamp(1.5rem, 5vw, 2.2rem);
+            color: var(--primary-text);
+            text-shadow: 0 0 8px var(--secondary-glow);
+            border-bottom: 1px solid var(--primary-glow);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Estilos para pestañas */
+        .tab-nav {
+            display: flex;
+            flex-wrap: wrap;
+            border-bottom: 1px solid rgba(129, 140, 248, 0.3);
+            margin-bottom: 2rem;
+        }
+        .tab-button {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--primary-text);
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-bottom: -1px;
+        }
+        .tab-button:hover {
+            color: #fff;
+            background-color: rgba(129, 140, 248, 0.1);
+        }
+        .tab-button.active {
+            color: var(--primary-glow);
+            border-bottom-color: var(--primary-glow);
+            text-shadow: 0 0 8px var(--primary-glow);
+            font-weight: 600;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeInContent 0.6s ease forwards;
+        }
+        @keyframes fadeInContent {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* Contenedor principal con flexbox para el layout */
         .protein-viewer-layout {
             display: flex;
@@ -154,7 +283,7 @@
             display: flex;
             flex-direction: row;
             gap: 2rem;
-            align-items: flex-start; /* Alinea los elementos al inicio */
+            align-items: flex-start;
         }
         
         .protein-description {
@@ -165,14 +294,14 @@
             text-align: justify;
         }
 
-        /* Modificación clave para el comportamiento sticky */
+        /* Comportamiento sticky en escritorio */
         model-viewer {
             position: sticky;
-            top: var(--nav-height); /* Se pega debajo de la barra de navegación */
+            top: var(--nav-height);
             flex-shrink: 0;
             width: 100%;
             height: 500px;
-            max-width: 600px;
+            max-width: 450px; /* Tamaño reducido para escritorio */
             border-radius: 12px;
             background: #0d1117;
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -180,23 +309,25 @@
             --progress-bar-color: var(--primary-glow);
             --progress-bar-height: 4px;
         }
-        /* Ajuste del contenido de texto para que no se superponga con el modelo */
-        .protein-viewer-main-content .protein-description {
-            width: calc(100% - 600px - 2rem);
-        }
-
-
-        .footer { text-align: center; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
         
-        @media (min-width: 1025px) {
-            .menu-toggle { display: none; }
-            .nav-container { display: flex; }
-            .protein-viewer-main-content {
-                flex-direction: row;
-            }
+        /* Ajuste para el contenido de texto en escritorio */
+        .protein-viewer-main-content .protein-description {
+            width: calc(100% - 450px - 2rem);
         }
+
+        .footer {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: var(--primary-glow);
+            border-top: 1px solid var(--primary-text);
+            margin-top: 2rem;
+        }
+        
+        /* Adaptación para móviles */
         @media (max-width: 1024px) {
-            .nav-content { justify-content: space-between; }
+            .nav-content {
+                justify-content: space-between;
+            }
             .nav-container {
                 position: fixed;
                 top: var(--nav-height);
@@ -216,37 +347,63 @@
             body.menu-open .nav-container {
                 transform: translateY(0);
             }
-            nav .nav-container > li { width: 100%; height: auto; text-align: center; }
-            nav .nav-container > li > a { padding: 1rem; width: 100%; font-size: 1.5em;}
+            nav .nav-container > li {
+                width: 100%;
+                height: auto;
+                text-align: center;
+            }
+            nav .nav-container > li > a {
+                padding: 1rem;
+                width: 100%;
+                font-size: 1.5em;
+            }
             
             .menu-toggle {
-                display: block; position: relative; z-index: 1001;
-                width: 30px; height: 22px;
-                background: none; border: none; cursor: pointer;
+                display: block;
+                position: relative;
+                z-index: 1001;
+                width: 30px;
+                height: 22px;
+                background: none;
+                border: none;
+                cursor: pointer;
             }
             .icon-bar {
-                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
-                margin: 6px 0; transition: all 0.3s ease-in-out;
+                display: block;
+                width: 100%;
+                height: 3px;
+                background-color: var(--primary-text);
+                margin: 6px 0;
+                transition: all 0.3s ease-in-out;
                 border-radius: 2px;
             }
-            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
-            body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
-            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) {
+                transform: rotate(45deg) translate(7px, 7px);
+            }
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) {
+                opacity: 0;
+            }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) {
+                transform: rotate(-45deg) translate(7px, -7px);
+            }
 
-            /* Estilos para móviles */
             .protein-viewer-main-content {
                 flex-direction: column;
             }
+            
+            /* El visor se muestra primero en móviles */
             model-viewer {
-                position: static; /* En móviles, vuelve a su posición normal */
+                position: static;
                 width: 100%;
-                height: 350px;
+                height: 300px; /* Altura más pequeña para móviles */
                 max-width: none;
-                order: -1; /* Mueve el visor al principio */
+                order: -1;
+                margin-bottom: 2rem;
             }
             .protein-description {
-                width: 100%; /* Ajusta el ancho completo */
+                width: 100%;
                 margin-right: 0;
+                text-align: justify;
             }
         }
     </style>
@@ -265,7 +422,6 @@
                 <li><a href="index.html">
                     <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
                     Inicio</a></li>
-                <!-- Ejemplo de un mega-menú. Puedes añadir el contenido real aquí -->
                 <li><a href="#">
                     <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9.75L16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0020.25 18V5.75A2.25 2.25 0 0018 3.5H6A2.25 2.25 0 003.75 5.75v12.5A2.25 2.25 0 006 20.25z" /></svg>
                     Menú Ejemplo</a></li>
@@ -293,8 +449,37 @@
                 <section id="protein-viewer-section" class="glassmorphism p-6 md:p-8" data-animate>
                     <div class="protein-viewer-layout">
                         <h2>Modelo 3D de Proteína</h2>
+                        <div class="tab-nav">
+                            <button class="tab-button active" data-tab="tab1">Introducción</button>
+                            <button class="tab-button" data-tab="tab2">Descripción General</button>
+                            <button class="tab-button" data-tab="tab3">Mecanismo de Acción</button>
+                            <button class="tab-button" data-tab="tab4">Investigación Relacionada</button>
+                        </div>
                         <div class="protein-viewer-main-content">
-                             <div class="protein-description">
+                            <div class="protein-description">
+                                <div class="tab-content-container">
+                                    <div id="tab1" class="tab-content active">
+                                        <h3>Introducción</h3>
+                                        <p>Esta proteína es fundamental en diversos procesos biológicos. Su estructura tridimensional, visible en el visor, es clave para su función. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                                        <p>Conocer su forma nos permite entender cómo interactúa con otras moléculas, un paso crucial para el diseño de fármacos y la ingeniería de proteínas. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+                                    </div>
+                                    <div id="tab2" class="tab-content">
+                                        <h3>Descripción General</h3>
+                                        <p>La proteína está compuesta por múltiples dominios que cooperan entre sí. Cada dominio tiene una función específica, que contribuye a la actividad global de la molécula. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                                        <p>El dominio activo, por ejemplo, es donde ocurre la catálisis o la unión con su ligando. La visualización de este sitio es de gran interés para los investigadores. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                                    </div>
+                                    <div id="tab3" class="tab-content">
+                                        <h3>Mecanismo de Acción</h3>
+                                        <p>El mecanismo de acción de esta proteína implica una serie de cambios conformacionales que se inician al unirse a su ligando. Estos cambios son esenciales para transmitir la señal a través de la membrana celular o para catalizar una reacción. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                                        <p>Se ha propuesto un modelo "llave-cerradura" para su interacción, aunque estudios más recientes sugieren un modelo de "ajuste inducido". Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                                    </div>
+                                    <div id="tab4" class="tab-content">
+                                        <h3>Investigación Relacionada</h3>
+                                        <p>La investigación sobre esta proteína ha llevado a avances significativos en el campo de la biología estructural y la bioinformática. Se han utilizado técnicas como la cristalografía de rayos X y la microscopía electrónica para resolver su estructura. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                                        <p>Los estudios futuros se centrarán en la dinámica de la proteína y cómo su movimiento influye en su función. Esto podría revelar nuevas dianas terapéuticas. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                                    </div>
+                                </div>
+                                <br>
                                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
                                 <br><br>
                                 <p>Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis risus a elit. Etiam tempor. Ut ullamcorper, ligula eu tempor congue, eros est euismod turpis, id tincidunt sapien risus a quam. Maecenas fermentum consequat mi. Donec fermentum. Pellentesque malesuada nulla a mi. Duis sapien sem, aliquet nec, commodo eget, consequat quis, neque. Aliquam faucibus, elit ut dictum aliquet, felis nisl adipiscing sapien, sed malesuada diam lacus eget erat. Cras mollis scelerisque nunc. Nullam arcu. Aliquam consequat.</p>
@@ -338,6 +523,7 @@
             setupNavigation();
             setupScrollAnimations();
             setupModelViewer();
+            setupTabs();
         });
 
         // --- THREE.JS BACKGROUND ---
@@ -473,18 +659,33 @@
             animatedSections.forEach(section => observer.observe(section));
         }
 
+        // --- TABS SCRIPT ---
+        function setupTabs() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    button.classList.add('active');
+                    const targetTab = document.getElementById(button.dataset.tab);
+                    if (targetTab) {
+                        targetTab.classList.add('active');
+                    }
+                });
+            });
+        }
+
         // --- MODEL VIEWER SCRIPT ---
         function setupModelViewer() {
             const modelViewer = document.querySelector('model-viewer');
             if (modelViewer) {
-                let currentOrbit = 0;
-                window.addEventListener('scroll', () => {
+                const modelViewerScrollHandler = () => {
                     const scrollY = window.scrollY;
-                    
-                    // Aumentar la velocidad de rotación. Antes era scrollY / 50.
                     const newOrbit = scrollY / 20; 
                     modelViewer.cameraOrbit = `${newOrbit}deg 55deg 20m`;
-                });
+                };
+                window.addEventListener('scroll', modelViewerScrollHandler);
             }
         }
     </script>
