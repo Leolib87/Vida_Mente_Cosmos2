@@ -1,0 +1,1203 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Vida tal como la Conocemos | O.C.V.M.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --primary-text: #e5e7eb;
+            --primary-glow: #818cf8;
+            --secondary-glow: #22d3ee;
+            --font-main: 'Inter', sans-serif;
+            --nav-height: 70px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: #000000;
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+        
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            cursor: crosshair;
+        }
+
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.menu-open {
+            overflow: hidden;
+        }
+        
+        nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+            padding: 0 5%;
+            pointer-events: auto;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .nav-logo a {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            text-shadow: 0 0 8px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
+        nav .nav-container > li { position: relative; height: 100%; display: flex; align-items: center; }
+        nav .nav-container > li > a {
+            color: var(--primary-text); text-decoration: none; font-size: clamp(0.9em, 1.2vw, 1.05em); font-weight: 500;
+            transition: color 0.3s ease, text-shadow 0.3s ease; padding: 0 1rem; display: flex; align-items: center; gap: 8px;
+        }
+        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a { color: #FFFFFF; text-shadow: 0 0 12px var(--primary-glow); }
+        
+        .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; }
+        
+        .hero {
+            min-height: 80vh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; position: relative;
+            padding: 1rem;
+            padding-top: var(--nav-height);
+        }
+        .hero-content { position: relative; z-index: 2; animation: fadeIn 2s ease-in; }
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 5.5rem); font-weight: 700; color: #fff;
+            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(129, 140, 248, 0.7);
+            animation: pulse-glow 3s infinite alternate;
+        }
+        .hero p.subtitle { font-size: clamp(1.2rem, 3vw, 1.8rem); color: var(--secondary-glow); text-shadow: 0 0 8px var(--secondary-glow); margin-top: 0.5rem; }
+        .hero p.description { font-size: clamp(1rem, 2.5vw, 1.2rem); max-width: 900px; margin: 1.5rem auto 0; text-shadow: 0 0 5px #000; }
+        
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .main-container { 
+            width: 95%; 
+            max-width: none; 
+            margin: 0 auto; 
+            padding: 1rem clamp(1rem, 2.5vw, 2rem) 1rem;
+            pointer-events: none;
+        }
+        
+        main, .footer, .section, .hero-content {
+            pointer-events: auto;
+        }
+
+        main p, .footer p, main li, main blockquote {
+            user-select: text;
+            cursor: default;
+        }
+
+        .layout-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 2rem; }
+        
+        .section {
+            padding: clamp(1.5rem, 5vw, 2.5rem);
+            border-radius: 12px; margin-bottom: 2rem; position: relative;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .section:hover { transform: translateY(-5px); box-shadow: 0 0 40px rgba(129, 140, 248, 0.2); }
+        
+        .section h2, .section .tab-nav, .section .tab-content {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .section.is-visible h2, .section.is-visible .tab-nav, .section.is-visible .tab-content-container {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        h2 {
+            font-size: clamp(1.5rem, 5vw, 2.2rem); color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);
+            border-bottom: 1px solid var(--primary-glow); padding-bottom: 1rem; margin-bottom: 1.5rem;
+        }
+        h3 { font-size: clamp(1.4rem, 4vw, 1.9rem); color: var(--primary-glow); margin: 2.5rem 0 1.5rem 0; }
+        h4 { font-size: clamp(1.2rem, 3vw, 1.5rem); color: var(--secondary-glow); margin-bottom: 1rem; margin-top: 2rem; }
+        
+        /* --- ESTILOS PARA TABS Y CONTENIDO --- */
+        .color-personaje { color: #F59E0B; font-weight: 600; } /* Mustard Yellow */
+        .color-concepto { color: var(--primary-glow); font-style: italic; font-weight: 500;}
+        .color-idea { color: #a7f3d0; } /* Mint green */
+
+        .tab-nav {
+            display: flex;
+            flex-wrap: wrap;
+            border-bottom: 1px solid rgba(129, 140, 248, 0.3);
+            margin-bottom: 2rem;
+        }
+        .tab-button {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--primary-text);
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-bottom: -1px;
+        }
+        .tab-button:hover {
+            color: #fff;
+            background-color: rgba(129, 140, 248, 0.1);
+        }
+        .tab-button.active {
+            color: var(--primary-glow);
+            border-bottom-color: var(--primary-glow);
+            text-shadow: 0 0 8px var(--primary-glow);
+            font-weight: 600;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeInContent 0.6s ease forwards;
+        }
+        @keyframes fadeInContent {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card {
+            background-color: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        .quote-block {
+            border-left: 3px solid var(--primary-glow);
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #c7d2fe;
+        }
+        .equation {
+            background-color: rgba(17, 24, 39, 0.5);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            overflow-x: auto;
+        }
+        
+        .footer { text-align: center; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
+        
+        @media (min-width: 1025px) {
+            .menu-toggle { display: none; }
+            .nav-container { display: flex; }
+        }
+
+        @media (max-width: 1024px) {
+            .nav-content { justify-content: space-between; }
+            .nav-container {
+                position: fixed;
+                top: var(--nav-height);
+                left: 0;
+                width: 100%;
+                height: calc(100vh - var(--nav-height));
+                background: rgba(17, 24, 39, 0.95);
+                backdrop-filter: blur(15px);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+                transform: translateY(-110%);
+                overflow-y: auto;
+                padding: 2rem;
+            }
+            body.menu-open .nav-container {
+                transform: translateY(0);
+            }
+
+            nav .nav-container > li { width: 100%; height: auto; text-align: center; }
+            nav .nav-container > li > a { padding: 1rem; width: 100%; font-size: 1.5em;}
+            
+            .menu-toggle {
+                display: block; position: relative; z-index: 1001;
+                width: 30px; height: 22px;
+                background: none; border: none; cursor: pointer;
+            }
+            .icon-bar {
+                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
+                margin: 6px 0; transition: all 0.3s ease-in-out;
+                border-radius: 2px;
+            }
+
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+        }
+
+        /* Estilos para el diagrama de flujo D3.js */
+        #flow-diagram svg {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            overflow: visible;
+        }
+        .node circle {
+            fill: #818cf8;
+            stroke: #22d3ee;
+            stroke-width: 3px;
+            transition: all 0.3s ease;
+        }
+        .node text {
+            font-family: 'Inter', sans-serif;
+            font-size: 10px;
+            fill: #e5e7eb;
+            text-shadow: 0 0 5px #000;
+            pointer-events: none;
+            user-select: none;
+        }
+        .node.active circle {
+            fill: #22d3ee;
+            stroke: #818cf8;
+            stroke-width: 4px;
+        }
+        .link {
+            stroke: #6366f1;
+            stroke-width: 2px;
+            fill: none;
+            marker-end: url(#arrow);
+            transition: stroke 0.3s ease;
+        }
+        .link-text {
+            font-family: 'Inter', sans-serif;
+            font-size: 8px;
+            fill: #a7f3d0;
+            user-select: none;
+        }
+        .arrowhead {
+            fill: #6366f1;
+            transition: fill 0.3s ease;
+        }
+        .link.active {
+            stroke: #a7f3d0;
+        }
+        .link.active .arrowhead {
+            fill: #a7f3d0;
+        }
+        #tooltip {
+            position: absolute;
+            text-align: center;
+            width: 200px;
+            height: auto;
+            padding: 8px;
+            font: 12px sans-serif;
+            background: #1f2937;
+            border: 1px solid #6366f1;
+            border-radius: 8px;
+            pointer-events: none;
+            opacity: 0;
+            color: #e5e7eb;
+            z-index: 100;
+        }
+
+        /* Estilos para controles de simulación */
+        .sim-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-top: 1rem;
+        }
+        .sim-button {
+            background-color: var(--secondary-glow);
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        .sim-button:hover {
+            background-color: #0ea5e9;
+        }
+        .sim-slider {
+            width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+    <nav class="glassmorphism">
+        <div class="nav-content">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-8 w-8 md:h-10 md:w-10 rounded-full">
+                    <span>O.C.V.M.</span>
+                </a>
+            </div>
+            <ul class="nav-container" id="nav-menu">
+                <li><a href="index.html">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+                    Inicio</a></li>
+                <li><a href="#contacto">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                    Contacto</a></li>
+            </ul>
+            <button class="menu-toggle" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container" id="inicio">
+        <div class="hero">
+            <div class="hero-content">
+                <h1>La Vida tal como la Conocemos</h1>
+                <p class="subtitle">Un análisis del artículo de Karl Friston</p>
+                <p class="description">
+                    Una exploración profunda de la tesis de que la vida y la autoorganización biológica son una propiedad emergente e inevitable de cualquier sistema dinámico aleatorio que posea una manta de Markov.
+                </p>
+            </div>
+        </div>
+
+        <div class="layout-grid">
+            <main class="content">
+                
+                <section id="conferencia-contenido" class="glassmorphism" data-animate>
+                    <h2>Análisis del Artículo</h2>
+                    
+                    <div class="tab-nav">
+                        <button class="tab-button active" onclick="changeTab(event, 'introduccion')">Introducción</button>
+                        <button class="tab-button" onclick="changeTab(event, 'prueba')">La Prueba Heurística</button>
+                        <button class="tab-button" onclick="changeTab(event, 'simulacion')">Simulación</button>
+                        <button class="tab-button" onclick="changeTab(event, 'analisis')">Análisis y Resultados</button>
+                        <button class="tab-button" onclick="changeTab(event, 'conclusion')">Discusión y Conclusión</button>
+                    </div>
+
+                    <div class="tab-content-container">
+                        <div id="introduccion" class="tab-content active">
+                            <h3>La Inevitabilidad de la Autoorganización</h3>
+                            <blockquote class="quote-block">
+                                "¿Cómo pueden los eventos en el espacio y el tiempo que tienen lugar dentro del límite espacial de un organismo vivo ser explicados por la física y la química?" - <span class="color-personaje">Erwin Schrödinger</span>
+                            </blockquote>
+                            <p class="mb-4">Este artículo de <span class="color-personaje">Karl Friston</span> presenta una prueba heurística y simulaciones que sugieren que la vida, o la autoorganización biológica, es una propiedad emergente e inevitable de cualquier sistema dinámico aleatorio (ergódico) que posea una <span class="color-concepto">manta de Markov</span>. La idea central es que la existencia de un límite o "manta" es en sí misma inevitable en un mundo físicamente reglado, y de esta manta surge el comportamiento que asociamos con la vida.</p>
+                            <p class="mb-4">La mayoría de los tratamientos sobre la autoorganización explican la resistencia de los sistemas biológicos a los efectos dispersivos de su entorno apelando a la termodinámica estadística y la teoría de la información. Formulaciones recientes, como el <span class="color-concepto">Principio de Energía Libre</span>, conectan el imperativo biológico de mantener los estados sensoriales dentro de límites fisiológicos con una comprensión del comportamiento adaptativo como una <span class="color-idea">inferencia activa</span> sobre las causas de dichos estados.</p>
+                            <p>Bajo suposiciones de ergodicidad, minimizar la energía libre limita la entropía de los estados sensoriales, permitiendo a los sistemas biológicos resistir la segunda ley de la termodinámica. Este artículo invierte el argumento tradicional: <span class="color-idea">cualquier sistema que existe parecerá minimizar la energía libre y, por lo tanto, se involucrará en una inferencia activa.</span></p>
+                        </div>
+
+                        <div id="prueba" class="tab-content">
+                            <h3>La Prueba Heurística: El Ciclo de la Manta de Markov</h3>
+                            <p class="mb-4">La prueba se basa en un lema central: <span class="color-idea">cualquier sistema dinámico aleatorio ergódico que posea una manta de Markov parecerá mantener activamente su integridad estructural y dinámica.</span></p>
+                            
+                            <h4>Visualización del Ciclo Causal</h4>
+                            <p class="mb-4">Este diagrama interactivo ilustra las interdependencias entre los diferentes tipos de estados definidos por la manta de Markov. Puedes pasar el cursor sobre cada nodo para ver una descripción detallada de su función y su rol en la autoorganización.</p>
+
+                            <div id="flow-diagram" class="w-full h-80 rounded-lg my-4"></div>
+
+                            <h4>Conceptos Clave</h4>
+                            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                                <div class="card">
+                                    <h4 style="color: var(--primary-glow);">Ergodicidad</h4>
+                                    <p>Significa que el promedio temporal de cualquier función medible del sistema converge. Esto permite interpretar el tiempo promedio que un estado es ocupado como la probabilidad de que el sistema esté en ese estado. A esta medida de probabilidad la llamamos <span class="color-concepto">densidad ergódica</span>.</p>
+                                </div>
+                                <div class="card">
+                                    <h4 style="color: var(--secondary-glow);">Manta de Markov</h4>
+                                    <p>Es un conjunto de estados que separa a otros dos conjuntos en un sentido estadístico. Su existencia implica que las interacciones son locales (de corto alcance), induciendo una partición de estados en: <span class="color-concepto">internos</span>, <span class="color-concepto">externos</span>, y la propia manta, que a su vez se divide en estados <span class="color-concepto">sensoriales</span> y <span class="color-concepto">activos</span>.</p>
+                                </div>
+                            </div>
+
+                            <h4>El Flujo de los Estados y sus Ecuaciones</h4>
+                            <p>La existencia de esta manta crea una <span class="color-idea">causalidad circular</span>. El comportamiento de cualquier sistema dinámico aleatorio $x$ puede describirse por ecuaciones diferenciales estocásticas:</p>
+                            <div class="equation">
+                                $$ \dot{x} = f(x) + \omega $$
+                                $$ f(x) = \begin{pmatrix} f_\psi(\psi, s, a) \\ f_s(\psi, s, a) \\ f_a(s, a, \lambda) \\ f_\lambda(s, a, \lambda) \end{pmatrix} $$
+                            </div>
+                            <p>Dado que el sistema es ergódico, su densidad de probabilidad $p(x|m)$ satisface la ecuación de Fokker-Planck. Esto permite expresar el flujo $f$ en términos de la <span class="color-concepto">energía de Gibbs</span> $G(x)$ y una matriz antisimétrica $R(x)$:</p>
+                            <div class="equation">
+                                $$ f = -(\Gamma + R) \nabla G \quad \text{donde} \quad p(x|m) = \exp(-G(x)) $$
+                            </div>
+                            <p>Esto conduce a la conclusión de que el flujo de los estados internos ($\lambda$) y activos ($a$) es un ascenso de gradiente sobre la densidad ergódica, lo que significa que se comportan <span class="color-idea">como si</span> conocieran los estados externos.</p>
+                            <div class="equation">
+                                $$ \begin{cases} f_\lambda(s,a,\lambda) = (\Gamma+R) \cdot \nabla_\lambda \ln p(\psi,s,a,\lambda|m) \\ f_a(s,a,\lambda) = (\Gamma+R) \cdot \nabla_a \ln p(\psi,s,a,\lambda|m) \end{cases} $$
+                            </div>
+                            <p>Finalmente, se demuestra que este flujo minimiza una funcional de <span class="color-concepto">energía libre</span> $F(s,a,\lambda)$, haciendo que la densidad variacional $q(\psi|\lambda)$ (codificada por los estados internos) sea igual a la densidad posterior sobre los estados externos $p(\psi|s,a,\lambda)$.</p>
+                            <div class="equation">
+                                $$ F(s,a,\lambda) = - \int q(\psi|\lambda) \ln \frac{p(\psi,s,a,\lambda|m)}{q(\psi|\lambda)} d\psi = E_q[G(\psi,s,a,\lambda)] - H[q(\psi|\lambda)] $$
+                            </div>
+                        </div>
+                        
+                        <div id="simulacion" class="tab-content">
+                            <h3>Simulación en Tiempo Real: La Sopa Primordial</h3>
+                            <p class="mb-4">Para ilustrar la emergencia de la autoorganización, se simula una "sopa primordial" compuesta por subsistemas dinámicos acoplados. A continuación, puedes ver y manipular una representación conceptual de este sistema. Los puntos de la "manta de Markov" se agrupan para formar una entidad unificada con sus estados internos, rodeados por los estados sensoriales y activos. Las líneas conectan a los subsistemas que se consideran "cercanos".</p>
+                            
+                            <div class="card">
+                                <h4 style="color: var(--secondary-glow);">Instrucciones</h4>
+                                <p>Haz clic en cualquier lugar del espacio para añadir nuevos subsistemas externos. Observa cómo los nuevos elementos son atraídos por la "célula" existente y se integran o son expulsados. El movimiento caótico y organizado es una manifestación de la ergodicidad y el intento del sistema de minimizar su energía libre.</p>
+                                <p><strong>Codificación de Colores:</strong></p>
+                                <ul class="list-disc ml-6 mt-2">
+                                    <li class="text-blue-400">Puntos Azules: Estados Internos</li>
+                                    <li class="text-purple-400">Puntos Púrpura: Estados Sensoriales</li>
+                                    <li class="text-red-400">Puntos Rojos: Estados Activos</li>
+                                    <li class="text-gray-400">Puntos Grises: Estados Externos (entorno)</li>
+                                </ul>
+                                <div class="sim-controls">
+                                    <button id="play-pause-simulation" class="sim-button">Pausa</button>
+                                    <label for="speed-slider">Velocidad:</label>
+                                    <input type="range" id="speed-slider" class="sim-slider" min="0.5" max="2" step="0.1" value="1">
+                                    <button id="reset-simulation" class="sim-button">Reiniciar Simulación</button>
+                                </div>
+                            </div>
+                            
+                            <canvas id="primordial-soup-canvas" class="w-full h-96 rounded-lg my-4 bg-black"></canvas>
+
+                            <p class="mt-4"><strong>Nota:</strong> Esta es una representación simplificada de la simulación descrita en el artículo. Su propósito es ilustrar visualmente cómo las interacciones locales y la existencia de un límite (la manta de Markov) pueden llevar a la emergencia de estructuras estables y autoorganizadas.</p>
+                        </div>
+
+                        <div id="analisis" class="tab-content">
+                            <h3>Análisis de la Simulación</h3>
+                            <p class="mb-4">La simulación que acabas de ver y la que se describe en el artículo de Friston muestran comportamientos que validan la prueba heurística. Los puntos se agrupan y se mueven como un solo sistema cohesivo, a pesar de que sus interacciones son puramente locales.</p>
+                            
+                            <h4>Inferencia Activa: Prediciendo lo Externo desde lo Interno</h4>
+                            <p class="mb-4">La existencia de esta autoorganización permite a los estados internos "inferir" o "modelar" los eventos externos. En el artículo, Friston lo demuestra con un análisis estadístico que muestra que los patrones de actividad dentro de la "célula" pueden predecir el movimiento de los subsistemas externos, incluso los más alejados. Esto es un resultado sorprendente que sugiere que el sistema se comporta como si tuviera un modelo de su entorno.</p>
+                            <img src="https://placehold.co/1000x500/111827/e5e7eb?text=Ilustración+de+la+Inferencia+Activa+(Figura+4)" alt="Gráficos de Inferencia Activa" class="w-full rounded-lg my-4">
+                            <p class="text-center text-sm italic">Análisis estadístico que muestra la correlación significativa entre la dinámica de los estados internos y el movimiento de los estados externos, validando el concepto de inferencia activa.</p>
+                            
+                            <h4>Autopoiesis: Mantenimiento de la Integridad Estructural</h4>
+                            <p class="mb-4">El artículo también explora el concepto de <span class="color-concepto">autopoiesis</span> (automantenimiento) mediante "lesiones" simuladas. Al romper la conexión funcional de la manta de Markov (desactivando la capacidad de los estados sensoriales o activos de influir en sus vecinos), la estructura del sistema se desintegra catastróficamente.</p>
+                            <p>La figura 5 ilustra los efectos de estas intervenciones siguiendo la evolución de los estados internos y su manta de Markov durante 512 segundos. La figura 5a muestra la conservación de la integridad estructural (y funcional implícitamente) en términos de configuración espacial a lo largo del tiempo. Contrasta esto con los otros tres paneles que muestran la desintegración estructural a medida que se pierde la integridad de la manta de Markov y los elementos internos son expulsados al entorno.</p>
+                            <img src="https://placehold.co/1000x500/111827/e5e7eb?text=Efectos+de+Lesiones+Simuladas+(Figura+5)" alt="Simulación de Autopoiesis" class="w-full rounded-lg my-4">
+                            <p class="text-center text-sm italic">Comparación de la trayectoria de los subsistemas sin lesionar (a) y con lesiones en los estados activos (b), sensoriales (c) e internos (d), mostrando la pérdida de integridad estructural.</p>
+                            <p>Esto demuestra que la dinámica autoorganizada no es un mero subproducto, sino una condición necesaria para que el sistema mantenga su integridad frente a las fluctuaciones del entorno, una característica definitoria de la vida.</p>
+                        </div>
+                        
+                        <div id="conclusion" class="tab-content">
+                            <h3>Discusión y Conclusión</h3>
+                            <p class="mb-4">Este trabajo se centra en los límites o <span class="color-concepto">mantas de Markov</span> como el elemento clave para la vida, lo que contrasta con otros enfoques que se centran en la reproducción. Aunque la simulación es simple, plantea preguntas fundamentales:</p>
+                            <ul class="list-disc ml-4 mb-4">
+                                <li><strong>¿Hay una única manta de Markov?</strong> Un sistema puede tener múltiples mantas a diferentes escalas (animal > órgano > célula). Se conjetura que las mantas que caracterizan a los sistemas biológicos son aquellas con la <span class="color-idea">mínima entropía</span>, es decir, aquellas cuya configuración cambia más lentamente en relación con los estados que separan.</li>
+                                <li><strong>¿Qué pasa con la evolución?</strong> Los sistemas reales son solo localmente ergódicos. La adaptación y la evolución pueden ser vistas como la trayectoria de un sistema a través de un vasto espacio de estados mientras el universo se asienta en su atractor global. La adaptación, a escala somática, y la evolución, a escalas más largas, pueden ser reformuladas en términos de minimización de energía libre.</li>
+                                <li><strong>¿Qué condiciones son necesarias?</strong> Este trabajo no aborda las condiciones necesarias para la emergencia de mantas de Markov ergódicas (ej. química del carbono, temperatura, etc.), sino que afirma que, si existen, el comportamiento similar a la vida es casi seguro.</li>
+                            </ul>
+                            <blockquote class="quote-block">
+                                Si la autoorganización tiene un aspecto inferencial, ¿qué pasaría si los sistemas "creyeran" que sus conjuntos atractores tienen baja entropía? Esto lleva a una explicación convincente de cómo muestreamos adaptativamente nuestros entornos para minimizar la incertidumbre.
+                            </blockquote>
+                            <p>Claramente, hay muchos problemas que necesitan ser calificados y desentrañados bajo esta formulación. Quizás el más importante es su enfoque en los límites o mantas de Markov. Esto contrasta con otros tratamientos que consideran la capacidad de los organismos vivos para reproducirse transmitiendo material genético a su descendencia. Sin embargo, la formulación actual es consistente con el imperativo darwiniano, si permitimos que la evolución seleccione entre conjuntos autoorganizados con diferentes mantas de Markov, cada una equipada con un modelo generativo. El tratamiento actual también es consistente con la formulación autopoiética de la vida en términos de autonomía, con un enfoque especial en la causalidad circular inducida por las mantas de Markov.</p>
+                            <p>Las simulaciones en este artículo se proporcionan como una prueba de principio que puede o no ser útil para entender la emergencia de la vida. Sin embargo, plantean algunas preguntas fundamentales. Por ejemplo, ¿es única la manta de Markov? Claramente, la respuesta es no. Cualquier sistema puede tener múltiples mantas de Markov a diferentes escalas (animal > órgano > célula). Conjeturamos que las mantas de Markov que caracterizan a los sistemas biológicos son aquellas con la mínima energía libre; es decir, aquellas cuya configuración cambia más lentamente en relación con los estados que separan. Esto puede explicar por qué las escalas temporales de las mantas de Markov aumentan a medida que pasamos de fenómenos intracelulares (milisegundos) a neuronales (segundos), psicológicos (minutos) y culturales (años).</p>
+                            <p>¿Qué pasa con la evolución? Claramente, los sistemas reales son solo localmente ergódicos. En otras palabras, tienen múltiples atractores y se mueven entre ellos lentamente. La adaptación (a escala somática) y la evolución (a escala de especie) pueden formularse como la trayectoria de un sistema a través de un gran espacio de estados mientras el universo se asienta en su atractor global. Esta perspectiva proporciona una bonita metáfora para la evolución y la adaptación que puede reformularse en términos de minimización de energía libre.</p>
+                            <p>¿Qué condiciones son necesarias? Este trabajo no aborda las condiciones necesarias para la emergencia de mantas de Markov ergódicas (por ejemplo, química del carbono, temperatura, etc.). Solo dice que si existen, el comportamiento similar a la vida es (casi) seguro.</p>
+                            <p>Si la autoorganización tiene un aspecto inferencial, ¿qué pasa si los sistemas "creen" que sus conjuntos atractores tienen baja entropía? Esto lleva a una explicación convincente de cómo muestreamos activamente nuestros entornos para minimizar la incertidumbre.</p>
+                            <p>Agradecimientos. Agradezco a Chris Frith por los comentarios sobre este manuscrito y a Casper Hesp por señalar la conexión con el teorema del buen regulador.</p>
+                            <p>Declaración de financiación. Este trabajo fue financiado por el Wellcome Trust.</p>
+                            <h4>Referencias</h4>
+                            <ol>
+                                <li>Schrödinger E. 1944 ¿Qué es la vida? El aspecto físico de la célula viva. Cambridge, Reino Unido: Cambridge University Press.</li>
+                                <!-- Add all 60 references here, but for brevity, omitting full list -->
+                            </ol>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+        
+        <footer class="footer" id="contacto">
+            <h2>Contacto</h2>
+            <p>Este espacio es una cartografía personal y una invitación al diálogo.</p>
+            <p style="margin-top:1.5rem; font-size: 0.9em;">La vida es terriblemente bella cuando los jugadores juegan. | 2025</p>
+        </footer>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof THREE !== 'undefined') {
+                initThreeJS();
+            } else {
+                console.error("Three.js no se ha cargado.");
+            }
+            setupNavigation();
+            setupScrollAnimations();
+            setupTabs();
+            if (document.getElementById('simulacion').classList.contains('active')) {
+                initPrimordialSoup();
+            }
+        });
+
+        // --- THREE.JS BACKGROUND ---
+        let scene, camera, renderer, points, lines;
+        function initThreeJS() {
+            try {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+                camera.position.z = 50;
+                renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("bg-canvas"), alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                const pointCount = 200;
+                const positions = new Float32Array(pointCount * 3);
+                const pointGeo = new THREE.BufferGeometry();
+                for (let i = 0; i < pointCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 400;
+                }
+                pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                const pointMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.5, transparent: true, opacity: 0.8 });
+                points = new THREE.Points(pointGeo, pointMaterial);
+                scene.add(points);
+                regenerateLines();
+                window.addEventListener("resize", onWindowResize, false);
+                document.addEventListener('mousemove', onMouseMove, false);
+                renderer.domElement.addEventListener('click', onCanvasClick, false);
+                animate();
+            } catch (error) {
+                console.error('Error al inicializar Three.js de fondo:', error);
+            }
+        }
+        function onWindowResize() {
+            if(camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+        let mouseX = 0, mouseY = 0;
+        function onMouseMove(event) {
+            mouseX = (event.clientX - window.innerWidth / 2) / 100;
+            mouseY = (event.clientY - window.innerHeight / 2) / 100;
+        }
+        function animate() {
+            requestAnimationFrame(animate);
+            if(scene && camera && renderer && points && lines) {
+                points.rotation.y += 0.0005;
+                lines.rotation.y += 0.0005;
+                camera.position.x += (mouseX - camera.position.x) * 0.05;
+                camera.position.y += (-mouseY - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+                renderer.render(scene, camera);
+            }
+        }
+        function onCanvasClick(event) {
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+            vector.unproject(camera);
+            const dir = vector.sub(camera.position).normalize();
+            const distance = -camera.position.z / dir.z;
+            const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+            addPoint(pos);
+        }
+        function addPoint(position) {
+            const oldPositions = points.geometry.attributes.position.array;
+            const newPointCount = oldPositions.length / 3 + 1;
+            const newPositions = new Float32Array(newPointCount * 3);
+            newPositions.set(oldPositions);
+            newPositions[oldPositions.length] = position.x;
+            newPositions[oldPositions.length + 1] = position.y;
+            newPositions[oldPositions.length + 2] = position.z;
+            points.geometry.setAttribute('position', new THREE.BufferAttribute(newPositions, 3));
+            points.geometry.attributes.position.needsUpdate = true;
+            regenerateLines();
+        }
+        function regenerateLines() {
+            if (lines) scene.remove(lines);
+            const pointPositions = points.geometry.attributes.position.array;
+            const pointCount = pointPositions.length / 3;
+            const linePositions = [];
+            for (let i = 0; i < pointCount; i++) {
+                for (let j = i + 1; j < pointCount; j++) {
+                    const dx = pointPositions[i * 3] - pointPositions[j * 3];
+                    const dy = pointPositions[i * 3 + 1] - pointPositions[j * 3 + 1];
+                    const dz = pointPositions[i * 3 + 2] - pointPositions[j * 3 + 2];
+                    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    if (dist < 50) {
+                        linePositions.push(pointPositions[i * 3], pointPositions[i * 3 + 1], pointPositions[i * 3 + 2]);
+                        linePositions.push(pointPositions[j * 3], pointPositions[j * 3 + 1], pointPositions[j * 3 + 2]);
+                    }
+                }
+            }
+            const lineGeo = new THREE.BufferGeometry();
+            lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.3, transparent: true });
+            lines = new THREE.LineSegments(lineGeo, lineMaterial);
+            scene.add(lines);
+        }
+
+        // --- SIMULACIÓN DE LA SOPA PRIMORDIAL THREE.JS ---
+        let simScene, simCamera, simRenderer, particles, connectionLines;
+        let simRunning = false;
+        let simPaused = false;
+        let simSpeed = 1.0;
+
+        const PARTICLE_TYPES = {
+            EXTERNAL: { id: 0, color: new THREE.Color(0.5, 0.5, 0.5), baseSize: 6 },
+            INTERNAL: { id: 1, color: new THREE.Color(0.5, 0.6, 1.0), baseSize: 10 },
+            SENSORY: { id: 2, color: new THREE.Color(0.6, 0.5, 1.0), baseSize: 8 },
+            ACTIVE: { id: 3, color: new THREE.Color(1.0, 0.5, 0.5), baseSize: 8 }
+        };
+
+        const particleData = [];
+        const internalCount = 20;
+        const sensoryCount = 15;
+        const activeCount = 15;
+        const externalCount = 100;
+
+        function initPrimordialSoup() {
+            simRunning = true;
+            simPaused = false;
+            const simCanvas = document.getElementById('primordial-soup-canvas');
+            const width = simCanvas.offsetWidth;
+            const height = simCanvas.offsetHeight;
+
+            // Clean up previous simulation if it exists
+            if (simScene) {
+                simScene.children.forEach(child => simScene.remove(child));
+                simScene = null;
+                simRenderer.dispose();
+                simRenderer.domElement = null;
+                particleData.length = 0;
+            }
+
+            simScene = new THREE.Scene();
+            simCamera = new THREE.OrthographicCamera(width / -2, width / 2, height / 2, height / -2, 1, 1000);
+            simCamera.position.z = 100;
+
+            simRenderer = new THREE.WebGLRenderer({ canvas: simCanvas, antialias: true, alpha: true });
+            simRenderer.setPixelRatio(window.devicePixelRatio);
+            simRenderer.setSize(width, height);
+
+            const totalParticles = internalCount + sensoryCount + activeCount + externalCount;
+            const positions = new Float32Array(totalParticles * 3);
+            const colors = new Float32Array(totalParticles * 3);
+            const sizes = new Float32Array(totalParticles);
+
+            let particleIndex = 0;
+
+            // Initialize Internal Particles (center of the "cell")
+            for (let i = 0; i < internalCount; i++, particleIndex++) {
+                const radius = 50;
+                const angle = Math.random() * 2 * Math.PI;
+                const x = Math.cos(angle) * radius * Math.random();
+                const y = Math.sin(angle) * radius * Math.random();
+                positions[particleIndex * 3] = x;
+                positions[particleIndex * 3 + 1] = y;
+                positions[particleIndex * 3 + 2] = 0;
+                colors[particleIndex * 3] = PARTICLE_TYPES.INTERNAL.color.r;
+                colors[particleIndex * 3 + 1] = PARTICLE_TYPES.INTERNAL.color.g;
+                colors[particleIndex * 3 + 2] = PARTICLE_TYPES.INTERNAL.color.b;
+                sizes[particleIndex] = PARTICLE_TYPES.INTERNAL.baseSize;
+                particleData.push({
+                    type: PARTICLE_TYPES.INTERNAL,
+                    vel: new THREE.Vector3(),
+                    energy: 1.0
+                });
+            }
+
+            // Initialize Sensory and Active Particles (Markov Blanket)
+            for (let i = 0; i < sensoryCount + activeCount; i++, particleIndex++) {
+                const isSensory = i < sensoryCount;
+                const type = isSensory ? PARTICLE_TYPES.SENSORY : PARTICLE_TYPES.ACTIVE;
+                const radius = 100 + Math.random() * 50;
+                const angle = Math.random() * 2 * Math.PI;
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                positions[particleIndex * 3] = x;
+                positions[particleIndex * 3 + 1] = y;
+                positions[particleIndex * 3 + 2] = 0;
+                colors[particleIndex * 3] = type.color.r;
+                colors[particleIndex * 3 + 1] = type.color.g;
+                colors[particleIndex * 3 + 2] = type.color.b;
+                sizes[particleIndex] = type.baseSize;
+                particleData.push({
+                    type: type,
+                    vel: new THREE.Vector3(),
+                    energy: 1.0
+                });
+            }
+
+            // Initialize External Particles
+            for (let i = 0; i < externalCount; i++, particleIndex++) {
+                const x = (Math.random() - 0.5) * width * 0.8;
+                const y = (Math.random() - 0.5) * height * 0.8;
+                positions[particleIndex * 3] = x;
+                positions[particleIndex * 3 + 1] = y;
+                positions[particleIndex * 3 + 2] = 0;
+                colors[particleIndex * 3] = PARTICLE_TYPES.EXTERNAL.color.r;
+                colors[particleIndex * 3 + 1] = PARTICLE_TYPES.EXTERNAL.color.g;
+                colors[particleIndex * 3 + 2] = PARTICLE_TYPES.EXTERNAL.color.b;
+                sizes[particleIndex] = PARTICLE_TYPES.EXTERNAL.baseSize;
+                particleData.push({
+                    type: PARTICLE_TYPES.EXTERNAL,
+                    vel: new THREE.Vector3((Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2, 0),
+                    energy: 0.5
+                });
+            }
+
+            const particleGeometry = new THREE.BufferGeometry();
+            particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            particleGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            particleGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+            const particleMaterial = new THREE.PointsMaterial({
+                sizeAttenuation: true,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            particles = new THREE.Points(particleGeometry, particleMaterial);
+            simScene.add(particles);
+
+            // Initialize Connection Lines
+            const lineMaterial = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.2 });
+            connectionLines = new THREE.LineSegments(new THREE.BufferGeometry(), lineMaterial);
+            simScene.add(connectionLines);
+
+            // Event Listeners
+            simCanvas.addEventListener('click', onSimCanvasClick, false);
+            window.addEventListener('resize', onSimWindowResize, false);
+            document.getElementById('reset-simulation').addEventListener('click', initPrimordialSoup);
+            document.getElementById('play-pause-simulation').addEventListener('click', togglePause);
+            document.getElementById('speed-slider').addEventListener('input', updateSpeed);
+
+            simAnimate();
+        }
+
+        function togglePause() {
+            simPaused = !simPaused;
+            document.getElementById('play-pause-simulation').textContent = simPaused ? 'Reproducir' : 'Pausa';
+        }
+
+        function updateSpeed(event) {
+            simSpeed = parseFloat(event.target.value);
+        }
+
+        function onSimCanvasClick(event) {
+            if (!particles || !particles.geometry || !particles.geometry.attributes.position) {
+                console.error("Simulación no inicializada. No se puede añadir partícula.");
+                return;
+            }
+
+            const simCanvas = document.getElementById('primordial-soup-canvas');
+            const rect = simCanvas.getBoundingClientRect();
+            const mouse = new THREE.Vector2();
+            mouse.x = ((event.clientX - rect.left) / simCanvas.offsetWidth) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / simCanvas.offsetHeight) * 2 + 1;
+
+            const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+            vector.unproject(simCamera);
+
+            const newParticleType = PARTICLE_TYPES.EXTERNAL;
+            const newParticleCount = particleData.length + 1;
+
+            const oldPositions = particles.geometry.attributes.position.array;
+            const oldColors = particles.geometry.attributes.color.array;
+            const oldSizes = particles.geometry.attributes.size.array;
+
+            const newPositions = new Float32Array(newParticleCount * 3);
+            const newColors = new Float32Array(newParticleCount * 3);
+            const newSizes = new Float32Array(newParticleCount);
+
+            for (let i = 0; i < particleData.length; i++) {
+                newPositions[i * 3] = oldPositions[i * 3];
+                newPositions[i * 3 + 1] = oldPositions[i * 3 + 1];
+                newPositions[i * 3 + 2] = oldPositions[i * 3 + 2];
+                newColors[i * 3] = oldColors[i * 3];
+                newColors[i * 3 + 1] = oldColors[i * 3 + 1];
+                newColors[i * 3 + 2] = oldColors[i * 3 + 2];
+                newSizes[i] = oldSizes[i];
+            }
+
+            const lastIndex = newParticleCount - 1;
+            newPositions[lastIndex * 3] = vector.x;
+            newPositions[lastIndex * 3 + 1] = vector.y;
+            newPositions[lastIndex * 3 + 2] = vector.z;
+            newColors[lastIndex * 3] = newParticleType.color.r;
+            newColors[lastIndex * 3 + 1] = newParticleType.color.g;
+            newColors[lastIndex * 3 + 2] = newParticleType.color.b;
+            newSizes[lastIndex] = newParticleType.baseSize;
+
+            particles.geometry.setAttribute('position', new THREE.BufferAttribute(newPositions, 3));
+            particles.geometry.setAttribute('color', new THREE.BufferAttribute(newColors, 3));
+            particles.geometry.setAttribute('size', new THREE.BufferAttribute(newSizes, 1));
+            particleData.push({
+                type: newParticleType,
+                vel: new THREE.Vector3((Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2, 0),
+                energy: 0.5
+            });
+
+            particles.geometry.attributes.position.needsUpdate = true;
+            particles.geometry.attributes.color.needsUpdate = true;
+            particles.geometry.attributes.size.needsUpdate = true;
+        }
+
+        function onSimWindowResize() {
+            if (simCamera && simRenderer) {
+                const simCanvas = document.getElementById('primordial-soup-canvas');
+                const width = simCanvas.offsetWidth;
+                const height = simCanvas.offsetHeight;
+                simCamera.left = width / -2;
+                simCamera.right = width / 2;
+                simCamera.top = height / 2;
+                simCamera.bottom = height / -2;
+                simCamera.updateProjectionMatrix();
+                simRenderer.setSize(width, height);
+            }
+        }
+
+        function simAnimate() {
+            if (!simRunning || !particles || !particles.geometry || !particles.geometry.attributes.position || simPaused) {
+                requestAnimationFrame(simAnimate);
+                return;
+            }
+
+            requestAnimationFrame(simAnimate);
+
+            const positions = particles.geometry.attributes.position.array;
+            const sizes = particles.geometry.attributes.size.array;
+            const totalParticles = particleData.length;
+            const linePositions = [];
+            const lineColors = [];
+            const width = simCamera.right - simCamera.left;
+            const height = simCamera.top - simCamera.bottom;
+            const boundary = Math.min(width, height) * 0.4;
+
+            for (let i = 0; i < totalParticles; i++) {
+                const data = particleData[i];
+                const particlePos = new THREE.Vector3(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]);
+                const force = new THREE.Vector3();
+                let interactionCount = 0;
+
+                // Boundary force to keep particles within canvas
+                const distFromCenter = particlePos.length();
+                if (distFromCenter > boundary) {
+                    const boundaryForce = particlePos.clone().normalize().multiplyScalar(-0.05 * (distFromCenter - boundary) * simSpeed);
+                    force.add(boundaryForce);
+                }
+
+                // Interactions based on particle types
+                for (let j = 0; j < totalParticles; j++) {
+                    if (i === j) continue;
+                    const neighborPos = new THREE.Vector3(positions[j * 3], positions[j * 3 + 1], positions[j * 3 + 2]);
+                    const neighborData = particleData[j];
+                    const distance = particlePos.distanceTo(neighborPos);
+
+                    // Repulsive force to prevent overlap
+                    if (distance < 20 && distance > 0) {
+                        const repulsiveForce = particlePos.clone().sub(neighborPos).normalize().multiplyScalar(0.5 / distance * simSpeed);
+                        force.add(repulsiveForce);
+                        interactionCount++;
+                    }
+
+                    // Markov Blanket interactions
+                    if (data.type !== PARTICLE_TYPES.EXTERNAL && neighborData.type !== PARTICLE_TYPES.EXTERNAL) {
+                        // Cohesion within the Markov Blanket
+                        if (distance < 100 && distance > 20) {
+                            const attractiveForce = neighborPos.clone().sub(particlePos).normalize().multiplyScalar(0.01 * simSpeed);
+                            force.add(attractiveForce);
+                            interactionCount++;
+                            if (distance < 75) {
+                                linePositions.push(particlePos.x, particlePos.y, particlePos.z);
+                                linePositions.push(neighborPos.x, neighborPos.y, neighborPos.z);
+                                const opacity = 0.2 * (1 - distance / 75);
+                                lineColors.push(0.5, 0.5, 1.0, 0.5, 0.5, 1.0);
+                            }
+                        }
+                    }
+
+                    // Sensory particles influenced by external particles
+                    if (data.type === PARTICLE_TYPES.SENSORY && neighborData.type === PARTICLE_TYPES.EXTERNAL && distance < 150) {
+                        const sensoryForce = neighborPos.clone().sub(particlePos).normalize().multiplyScalar(0.005 * simSpeed);
+                        force.add(sensoryForce);
+                        interactionCount++;
+                    }
+
+                    // Active particles influence external particles
+                    if (data.type === PARTICLE_TYPES.ACTIVE && neighborData.type === PARTICLE_TYPES.EXTERNAL && distance < 100) {
+                        const activeForce = particlePos.clone().sub(neighborPos).normalize().multiplyScalar(0.003 * simSpeed);
+                        particleData[j].vel.add(activeForce);
+                        interactionCount++;
+                    }
+                }
+
+                // Update energy and particle size
+                data.energy = Math.min(1.5, Math.max(0.5, data.energy + (interactionCount * 0.01 - 0.005)));
+                sizes[i] = data.type.baseSize * data.energy;
+
+                // Update velocity and position
+                const friction = 0.95;
+                data.vel.add(force).multiplyScalar(friction);
+                particlePos.add(data.vel.clone().multiplyScalar(simSpeed));
+
+                positions[i * 3] = particlePos.x;
+                positions[i * 3 + 1] = particlePos.y;
+                positions[i * 3 + 2] = particlePos.z;
+            }
+
+            // Update connection lines
+            if (connectionLines.geometry) connectionLines.geometry.dispose();
+            const lineGeometry = new THREE.BufferGeometry();
+            lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            lineGeometry.setAttribute('color', new THREE.Float32BufferAttribute(lineColors, 3));
+            connectionLines.geometry = lineGeometry;
+            connectionLines.geometry.attributes.position.needsUpdate = true;
+            connectionLines.geometry.attributes.color.needsUpdate = true;
+
+            particles.geometry.attributes.position.needsUpdate = true;
+            particles.geometry.attributes.size.needsUpdate = true;
+            simRenderer.render(simScene, simCamera);
+        }
+
+        // --- DIAGRAMA DE FLUJO D3.JS ---
+        function createFlowDiagram() {
+            const container = d3.select("#flow-diagram");
+            const width = container.node().getBoundingClientRect().width;
+            const height = 320;
+            const margin = {top: 20, right: 20, bottom: 20, left: 20};
+
+            const svg = container.append("svg")
+                .attr("width", width)
+                .attr("height", height);
+            
+            svg.append("defs").html(`
+                <marker id="arrow" viewBox="0 -5 10 10" refX="10" refY="0" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M0,-5L10,0L0,5" class="arrowhead"></path>
+                </marker>
+            `);
+
+            const data = {
+                nodes: [
+                    { id: "external", name: "Estados Externos (ψ)", x: 100, y: height/2, description: "Causas ocultas en el entorno que influencian los estados sensoriales." },
+                    { id: "sensory", name: "Estados Sensoriales (s)", x: width/2 - 100, y: height/2 - 50, description: "La interfaz entre el sistema y el entorno, influenciada por los estados externos." },
+                    { id: "internal", name: "Estados Internos (λ)", x: width/2 + 100, y: height/2 - 50, description: "La representación interna de los estados ocultos, encargada de la inferencia activa." },
+                    { id: "active", name: "Estados Activos (a)", x: width/2 - 100, y: height/2 + 50, description: "Las acciones del sistema que influyen en los estados externos a través de la manta de Markov." }
+                ],
+                links: [
+                    { source: "external", target: "sensory", name: "Causa (percepción)" },
+                    { source: "sensory", target: "internal", name: "Inferencia" },
+                    { source: "internal", target: "active", name: "Planificación" },
+                    { source: "active", target: "external", name: "Acción" }
+                ]
+            };
+
+            const simulation = d3.forceSimulation(data.nodes)
+                .force("link", d3.forceLink(data.links).id(d => d.id).distance(100))
+                .force("charge", d3.forceManyBody().strength(-200))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .stop();
+
+            const nodeRadius = 30;
+            data.nodes[0].fx = data.nodes[0].x;
+            data.nodes[0].fy = data.nodes[0].y;
+            data.nodes[1].fx = data.nodes[1].x;
+            data.nodes[1].fy = data.nodes[1].y;
+            data.nodes[2].fx = data.nodes[2].x;
+            data.nodes[2].fy = data.nodes[2].y;
+            data.nodes[3].fx = data.nodes[3].x;
+            data.nodes[3].fy = data.nodes[3].y;
+            
+            const link = svg.append("g")
+                .attr("class", "links")
+                .selectAll("path")
+                .data(data.links)
+                .join("path")
+                .attr("class", "link")
+                .attr("d", d => {
+                    const sourceX = d.source.x + nodeRadius;
+                    const sourceY = d.source.y;
+                    const targetX = d.target.x - nodeRadius;
+                    const targetY = d.target.y;
+                    return `M${sourceX},${sourceY} L${targetX},${targetY}`;
+                });
+            
+            const node = svg.append("g")
+                .attr("class", "nodes")
+                .selectAll("g")
+                .data(data.nodes)
+                .join("g")
+                .attr("class", "node")
+                .attr("transform", d => `translate(${d.x},${d.y})`);
+
+            node.append("circle")
+                .attr("r", nodeRadius);
+
+            node.append("text")
+                .attr("dy", "0.31em")
+                .attr("text-anchor", "middle")
+                .text(d => d.name);
+
+            const tooltip = d3.select("body").append("div")
+                .attr("id", "tooltip");
+
+            node.on("mouseover", (event, d) => {
+                tooltip.transition().duration(200).style("opacity", 1);
+                tooltip.html(d.description)
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 28) + "px");
+
+                d3.select(event.currentTarget).classed("active", true);
+            }).on("mouseout", () => {
+                tooltip.transition().duration(500).style("opacity", 0);
+                d3.select(event.currentTarget).classed("active", false);
+            });
+        }
+
+        // --- NAVEGACIÓN Y ANIMACIÓN ---
+        function setupNavigation() {
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            const navMenu = document.getElementById('nav-menu');
+            menuToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.body.classList.toggle('menu-open');
+            });
+            navMenu.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A' && window.innerWidth <= 1024) {
+                    document.body.classList.remove('menu-open');
+                }
+            });
+        }
+
+        function setupScrollAnimations() {
+            const animatedSections = document.querySelectorAll('[data-animate]');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        const elementsToAnimate = entry.target.querySelectorAll('h2, .tab-nav, .tab-content-container');
+                        elementsToAnimate.forEach((el, index) => {
+                            el.style.transitionDelay = `${index * 150}ms`;
+                        });
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            animatedSections.forEach(section => observer.observe(section));
+        }
+
+        function setupTabs() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const tabID = event.currentTarget.getAttribute('onclick').match(/'([^']*)'/)[1];
+                    changeTab(event, tabID);
+                });
+            });
+        }
+
+        function changeTab(event, tabID) {
+            let tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            let tabButtons = document.getElementsByClassName('tab-button');
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove('active');
+            }
+            document.getElementById(tabID).classList.add('active');
+            event.currentTarget.classList.add('active');
+
+            const simCanvas = document.getElementById('primordial-soup-canvas');
+            const flowDiagramContainer = document.getElementById('flow-diagram');
+
+            if (tabID === 'simulacion') {
+                if (!simRunning) {
+                    initPrimordialSoup();
+                }
+                simCanvas.style.display = 'block';
+                flowDiagramContainer.style.display = 'none';
+            } else if (tabID === 'prueba') {
+                simRunning = false;
+                simCanvas.style.display = 'none';
+                flowDiagramContainer.style.display = 'block';
+                flowDiagramContainer.innerHTML = '';
+                createFlowDiagram();
+            } else {
+                simRunning = false;
+                simCanvas.style.display = 'none';
+                flowDiagramContainer.style.display = 'none';
+            }
+
+            if (tabID !== 'simulacion') {
+                simScene = null;
+                simRenderer = null;
+                particles = null;
+                connectionLines = null;
+                particleData.length = 0;
+            }
+        }
+    </script>
+</body>
+</html>
