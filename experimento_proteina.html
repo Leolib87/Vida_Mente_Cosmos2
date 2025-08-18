@@ -143,47 +143,6 @@
             border-bottom: 1px solid var(--primary-glow); padding-bottom: 1rem; margin-bottom: 1.5rem;
         }
         
-        /* Estilos para pestañas */
-        .tab-nav {
-            display: flex;
-            flex-wrap: wrap;
-            border-bottom: 1px solid rgba(129, 140, 248, 0.3);
-            margin-bottom: 2rem;
-        }
-        .tab-button {
-            padding: 1rem 1.5rem;
-            cursor: pointer;
-            background: none;
-            border: none;
-            border-bottom: 3px solid transparent;
-            color: var(--primary-text);
-            font-size: clamp(0.9rem, 2vw, 1.1rem);
-            font-weight: 500;
-            transition: all 0.3s ease;
-            margin-bottom: -1px;
-        }
-        .tab-button:hover {
-            color: #fff;
-            background-color: rgba(129, 140, 248, 0.1);
-        }
-        .tab-button.active {
-            color: var(--primary-glow);
-            border-bottom-color: var(--primary-glow);
-            text-shadow: 0 0 8px var(--primary-glow);
-            font-weight: 600;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-            animation: fadeInContent 0.6s ease forwards;
-        }
-        @keyframes fadeInContent {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
         /* Contenedor principal con flexbox para el layout */
         .protein-viewer-layout {
             display: flex;
@@ -334,37 +293,8 @@
                 <section id="protein-viewer-section" class="glassmorphism p-6 md:p-8" data-animate>
                     <div class="protein-viewer-layout">
                         <h2>Modelo 3D de Proteína</h2>
-                        <div class="tab-nav">
-                            <button class="tab-button active" data-tab="tab1">Introducción</button>
-                            <button class="tab-button" data-tab="tab2">Descripción General</button>
-                            <button class="tab-button" data-tab="tab3">Mecanismo de Acción</button>
-                            <button class="tab-button" data-tab="tab4">Investigación Relacionada</button>
-                        </div>
                         <div class="protein-viewer-main-content">
                              <div class="protein-description">
-                                <div class="tab-content-container">
-                                    <div id="tab1" class="tab-content active">
-                                        <h3>Introducción</h3>
-                                        <p>Esta proteína es fundamental en diversos procesos biológicos. Su estructura tridimensional, visible en el visor, es clave para su función. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                                        <p>Conocer su forma nos permite entender cómo interactúa con otras moléculas, un paso crucial para el diseño de fármacos y la ingeniería de proteínas. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
-                                    </div>
-                                    <div id="tab2" class="tab-content">
-                                        <h3>Descripción General</h3>
-                                        <p>La proteína está compuesta por múltiples dominios que cooperan entre sí. Cada dominio tiene una función específica, que contribuye a la actividad global de la molécula. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                                        <p>El dominio activo, por ejemplo, es donde ocurre la catálisis o la unión con su ligando. La visualización de este sitio es de gran interés para los investigadores. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                                    </div>
-                                    <div id="tab3" class="tab-content">
-                                        <h3>Mecanismo de Acción</h3>
-                                        <p>El mecanismo de acción de esta proteína implica una serie de cambios conformacionales que se inician al unirse a su ligando. Estos cambios son esenciales para transmitir la señal a través de la membrana celular o para catalizar una reacción. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                                        <p>Se ha propuesto un modelo "llave-cerradura" para su interacción, aunque estudios más recientes sugieren un modelo de "ajuste inducido". Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                                    </div>
-                                    <div id="tab4" class="tab-content">
-                                        <h3>Investigación Relacionada</h3>
-                                        <p>La investigación sobre esta proteína ha llevado a avances significativos en el campo de la biología estructural y la bioinformática. Se han utilizado técnicas como la cristalografía de rayos X y la microscopía electrónica para resolver su estructura. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                                        <p>Los estudios futuros se centrarán en la dinámica de la proteína y cómo su movimiento influye en su función. Esto podría revelar nuevas dianas terapéuticas. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                                    </div>
-                                </div>
-                                <br>
                                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
                                 <br><br>
                                 <p>Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis risus a elit. Etiam tempor. Ut ullamcorper, ligula eu tempor congue, eros est euismod turpis, id tincidunt sapien risus a quam. Maecenas fermentum consequat mi. Donec fermentum. Pellentesque malesuada nulla a mi. Duis sapien sem, aliquet nec, commodo eget, consequat quis, neque. Aliquam faucibus, elit ut dictum aliquet, felis nisl adipiscing sapien, sed malesuada diam lacus eget erat. Cras mollis scelerisque nunc. Nullam arcu. Aliquam consequat.</p>
@@ -408,7 +338,6 @@
             setupNavigation();
             setupScrollAnimations();
             setupModelViewer();
-            setupTabs();
         });
 
         // --- THREE.JS BACKGROUND ---
@@ -544,23 +473,6 @@
             animatedSections.forEach(section => observer.observe(section));
         }
 
-        // --- TABS SCRIPT ---
-        function setupTabs() {
-            const tabButtons = document.querySelectorAll('.tab-button');
-            const tabContents = document.querySelectorAll('.tab-content');
-            tabButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    tabButtons.forEach(btn => btn.classList.remove('active'));
-                    tabContents.forEach(content => content.classList.remove('active'));
-                    button.classList.add('active');
-                    const targetTab = document.getElementById(button.dataset.tab);
-                    if (targetTab) {
-                        targetTab.classList.add('active');
-                    }
-                });
-            });
-        }
-
         // --- MODEL VIEWER SCRIPT ---
         function setupModelViewer() {
             const modelViewer = document.querySelector('model-viewer');
@@ -568,6 +480,8 @@
                 let currentOrbit = 0;
                 window.addEventListener('scroll', () => {
                     const scrollY = window.scrollY;
+                    
+                    // Aumentar la velocidad de rotación. Antes era scrollY / 50.
                     const newOrbit = scrollY / 20; 
                     modelViewer.cameraOrbit = `${newOrbit}deg 55deg 20m`;
                 });
