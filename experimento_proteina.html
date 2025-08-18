@@ -206,7 +206,7 @@
             text-align: justify;
         }
 
-        /* Modificación clave para el comportamiento sticky en escritorio */
+        /* Modificación clave para el comportamiento sticky */
         model-viewer {
             position: sticky;
             top: var(--nav-height); /* Se pega debajo de la barra de navegación */
@@ -221,7 +221,6 @@
             --progress-bar-color: var(--primary-glow);
             --progress-bar-height: 4px;
         }
-        
         /* Ajuste del contenido de texto para que no se superponga con el modelo */
         .protein-viewer-main-content .protein-description {
             width: calc(100% - 600px - 2rem);
@@ -278,41 +277,17 @@
             /* Estilos para móviles */
             .protein-viewer-main-content {
                 flex-direction: column;
-                position: relative;
-                z-index: 10;
-                background: rgba(0, 0, 0, 0.7); /* Fondo semi-transparente para la legibilidad */
-                backdrop-filter: blur(5px);
-            }
-            .protein-description {
-                width: 100%;
-                margin-right: 0;
-                text-align: justify;
-                padding: 1rem; /* Añadir padding para que el texto no toque los bordes */
-            }
-            .tab-nav {
-                padding: 0 1rem;
-            }
-            .tab-content-container {
-                padding: 0 1rem;
             }
             model-viewer {
-                position: fixed; /* En móviles, el visor se fija al fondo */
-                top: 0;
-                left: 0;
+                position: static; /* En móviles, vuelve a su posición normal */
                 width: 100%;
-                height: 100%;
+                height: 350px;
                 max-width: none;
-                order: -1;
-                z-index: -1;
-                pointer-events: none; /* No interactuable */
-                opacity: 0.3; /* Levemente opaco */
-                background: none; /* Eliminar el fondo */
-                border: none;
-                --progress-bar-color: transparent;
+                order: -1; /* Mueve el visor al principio */
             }
-            .protein-description h3, .protein-description p {
-                opacity: 1; /* Asegurar que el texto sea visible */
-                transform: none;
+            .protein-description {
+                width: 100%; /* Ajusta el ancho completo */
+                margin-right: 0;
             }
         }
     </style>
@@ -366,7 +341,7 @@
                             <button class="tab-button" data-tab="tab4">Investigación Relacionada</button>
                         </div>
                         <div class="protein-viewer-main-content">
-                            <div class="protein-description">
+                             <div class="protein-description">
                                 <div class="tab-content-container">
                                     <div id="tab1" class="tab-content active">
                                         <h3>Introducción</h3>
