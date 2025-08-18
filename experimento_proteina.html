@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="Visor interactivo de modelos 3D de proteínas generados con ChimeraX">
+  <meta name="keywords" content="proteínas, modelos 3D, ChimeraX, visualización, ciencia">
+  <meta name="author" content="Tu Nombre">
+  <title>Visor de Proteínas 3D</title>
+  <link rel="icon" type="image/png" href="https://via.placeholder.com/32x32.png?text=3D">
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.1.1/model-viewer.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background-color: #0a0a1a;
+      color: #ffffff;
+      font-family: 'Inter', sans-serif;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      padding: 20px 0;
+      border-bottom: 2px solid #818cf8;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+      color: #d1d5db;
+    }
+    nav {
+      margin: 20px 0;
+      text-align: center;
+    }
+    nav a {
+      color: #818cf8;
+      text-decoration: none;
+      margin: 0 15px;
+      font-size: 1.1rem;
+      transition: color 0.3s;
+    }
+    nav a:hover {
+      color: #6366f1;
+    }
+    .content {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .description {
+      width: 55%;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #d1d5db;
+      text-align: justify;
+      padding-right: 20px;
+    }
+    model-viewer {
+      position: fixed;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40%;
+      max-width: 800px;
+      height: 600px;
+      --progress-bar-color: #818cf8;
+    }
+    footer {
+      text-align: center;
+      padding: 20px 0;
+      margin-top: 40px;
+      border-top: 2px solid #818cf8;
+      color: #d1d5db;
+    }
+    footer p {
+      margin: 5px 0;
+    }
+    @media (max-width: 800px) {
+      .content {
+        flex-direction: column;
+      }
+      .description {
+        width: 100%;
+        padding-right: 0;
+      }
+      model-viewer {
+        position: static;
+        width: 100%;
+        max-width: 560px;
+        height: 300px;
+        margin-bottom: 20px;
+        transform: none;
+      }
+    }
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 1.8rem;
+      }
+      nav a {
+        font-size: 1rem;
+        margin: 0 10px;
+      }
+      .description {
+        font-size: 14px;
+        padding: 0 10px;
+      }
+      model-viewer {
+        height: 340px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Visor de Proteínas 3D</h1>
+    <nav>
+      <a href="#home" aria-label="Ir a la página de inicio">Inicio</a>
+      <a href="#models" aria-label="Ver modelos 3D">Modelos</a>
+      <a href="#about" aria-label="Acerca de este proyecto">Acerca de</a>
+    </nav>
+  </header>
+  <main>
+    <section class="content">
+      <div class="description">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        <br><br>
+        Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis risus a elit. Etiam tempor. Ut ullamcorper, ligula eu tempor congue, eros est euismod turpis, id tincidunt sapien risus a quam. Maecenas fermentum consequat mi. Donec fermentum. Pellentesque malesuada nulla a mi. Duis sapien sem, aliquet nec, commodo eget, consequat quis, neque. Aliquam faucibus, elit ut dictum aliquet, felis nisl adipiscing sapien, sed malesuada diam lacus eget erat. Cras mollis scelerisque nunc. Nullam arcu. Aliquam consequat.
+        <br><br>
+        Fusce convallis, mauris imperdiet gravida bibendum, nisl lorem eleifend nisi, sit amet lacinia odio sem nec elit. Aenean placerat, tortor sed sodales adipiscing, nulla turpis adipiscing elit, et pulvinar nisl odio non libero. Suspendisse potenti. Sed euismod, sem ut malesuada sagittis, nulla neque consequat leo, ut adipiscing eros magna ut nisl. Vivamus facilisis risus id tortor. Sed accumsan, orci a interdum dictum, nulla ipsum iaculis eros, in laoreet sem nisl in sapien. Integer ac eros. Morbi blandit. Nam nulla magna, rhoncus quis, placerat id, commodo ut, velit. Vivamus mollis, pede at rhoncus condimentum, justo arcu mollis felis, in porta sapien tortor vel ipsum.
+        <br><br>
+        Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
+        <br><br>
+        At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
+        <br><br>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      </div>
+      <model-viewer
+        src="https://corsproxy.io/?https://drive.google.com/uc?export=download&id=1rECvFfErhzxHWcXtD0hV_O_oE4CIkGIG"
+        alt="Modelo 3D generado con ChimeraX"
+        shadow-intensity="1"
+        camera-controls
+        touch-action="none"
+        auto-rotate
+        ar
+        disable-zoom
+        exposure="0.8"
+        camera-orbit="48deg 55deg 10m">
+        <div slot="progress-bar" style="background-color: #818cf8;"></div>
+      </model-viewer>
+    </section>
+  </main>
+  <footer>
+    <p>© 2025 Visor de Proteínas 3D. Todos los derechos reservados.</p>
+    <p>Contacto: <a href="mailto:contacto@ejemplo.com" style="color: #818cf8;">contacto@ejemplo.com</a></p>
+  </footer>
+  <script>
+    const modelViewer = document.querySelector('model-viewer');
+    window.addEventListener('scroll', () => {
+      const scrollY = window.scrollY;
+      modelViewer.cameraOrbit = `${scrollY / 2 % 360}deg 55deg 10m`;
+    });
+  </script>
+</body>
+</html>
