@@ -301,7 +301,7 @@
             flex-shrink: 0;
             width: 100%;
             height: 500px;
-            max-width: 450px; /* Tamaño reducido para escritorio */
+            max-width: 450px;
             border-radius: 12px;
             background: #0d1117;
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -386,16 +386,16 @@
             body.menu-open .menu-toggle .icon-bar:nth-child(3) {
                 transform: rotate(-45deg) translate(7px, -7px);
             }
-
+            
+            /* En móvil, el visor aparece primero y luego el texto */
             .protein-viewer-main-content {
                 flex-direction: column;
             }
             
-            /* El visor se muestra primero en móviles */
             model-viewer {
                 position: static;
                 width: 100%;
-                height: 300px; /* Altura más pequeña para móviles */
+                height: 300px;
                 max-width: none;
                 order: -1;
                 margin-bottom: 2rem;
