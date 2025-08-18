@@ -21,15 +21,9 @@
             --nav-height: 70px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        html {
-            scroll-behavior: smooth;
-        }
+        html { scroll-behavior: smooth; }
 
         body {
             background-color: #000000;
@@ -61,14 +55,9 @@
         }
         
         nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            height: var(--nav-height);
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
             z-index: 1000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: flex; justify-content: center; align-items: center;
             padding: 0 5%;
             pointer-events: auto;
         }
@@ -91,99 +80,42 @@
             gap: 0.75rem;
         }
 
-        .nav-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            list-style: none;
-            height: 100%;
-            gap: 0.5rem;
-        }
-        nav .nav-container > li {
-            position: relative;
-            height: 100%;
-            display: flex;
-            align-items: center;
-        }
+        .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
+        nav .nav-container > li { position: relative; height: 100%; display: flex; align-items: center; }
         nav .nav-container > li > a {
-            color: var(--primary-text);
-            text-decoration: none;
-            font-size: clamp(0.9em, 1.2vw, 1.05em);
-            font-weight: 500;
-            transition: color 0.3s ease, text-shadow 0.3s ease;
-            padding: 0 1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            color: var(--primary-text); text-decoration: none; font-size: clamp(0.9em, 1.2vw, 1.05em); font-weight: 500;
+            transition: color 0.3s ease, text-shadow 0.3s ease; padding: 0 1rem; display: flex; align-items: center; gap: 8px;
         }
-        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a {
-            color: #FFFFFF;
-            text-shadow: 0 0 12px var(--primary-glow);
-        }
+        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a { color: #FFFFFF; text-shadow: 0 0 12px var(--primary-glow); }
         
-        .nav-icon {
-            width: 20px;
-            height: 20px;
-            stroke-width: 1.5;
-        }
+        .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; }
         
         .hero {
             min-height: 80vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            position: relative;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; position: relative;
             padding: 1rem;
             padding-top: var(--nav-height);
         }
-        .hero-content {
-            position: relative;
-            z-index: 2;
-            animation: fadeIn 2s ease-in;
-        }
+        .hero-content { position: relative; z-index: 2; animation: fadeIn 2s ease-in; }
         .hero h1 {
-            font-size: clamp(2.5rem, 8vw, 5.5rem);
-            font-weight: 700;
-            color: #fff;
+            font-size: clamp(2.5rem, 8vw, 5.5rem); font-weight: 700; color: #fff;
             text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(129, 140, 248, 0.7);
             animation: pulse-glow 3s infinite alternate;
         }
-        .hero p.subtitle {
-            font-size: clamp(1.2rem, 3vw, 1.8rem);
-            color: var(--secondary-glow);
-            text-shadow: 0 0 8px var(--secondary-glow);
-            margin-top: 0.5rem;
-        }
-        .hero p.description {
-            font-size: clamp(1rem, 2.5vw, 1.2rem);
-            max-width: 900px;
-            margin: 1.5rem auto 0;
-            text-shadow: 0 0 5px #000;
-        }
+        .hero p.subtitle { font-size: clamp(1.2rem, 3vw, 1.8rem); color: var(--secondary-glow); text-shadow: 0 0 8px var(--secondary-glow); margin-top: 0.5rem; }
+        .hero p.description { font-size: clamp(1rem, 2.5vw, 1.2rem); max-width: 900px; margin: 1.5rem auto 0; text-shadow: 0 0 5px #000; }
         
         @keyframes pulse-glow {
-            from {
-                text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow);
-            }
-            to {
-                text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow);
-            }
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
         }
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .main-container {
-            width: 95%;
-            max-width: none;
-            margin: 0 auto;
+        .main-container { 
+            width: 95%; 
+            max-width: none; 
+            margin: 0 auto; 
             padding: 1rem clamp(1rem, 2.5vw, 2rem) 1rem;
             pointer-events: none;
         }
@@ -197,32 +129,18 @@
             cursor: default;
         }
 
-        .layout-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2rem;
-            margin-top: 2rem;
-        }
+        .layout-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 2rem; }
         
         .section {
             padding: clamp(1.5rem, 5vw, 2.5rem);
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            position: relative;
+            border-radius: 12px; margin-bottom: 2rem; position: relative;
             transition: transform 0.4s ease, box-shadow 0.4s ease;
         }
-        .section:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0 40px rgba(129, 140, 248, 0.2);
-        }
+        .section:hover { transform: translateY(-5px); box-shadow: 0 0 40px rgba(129, 140, 248, 0.2); }
         
         h2 {
-            font-size: clamp(1.5rem, 5vw, 2.2rem);
-            color: var(--primary-text);
-            text-shadow: 0 0 8px var(--secondary-glow);
-            border-bottom: 1px solid var(--primary-glow);
-            padding-bottom: 1rem;
-            margin-bottom: 1.5rem;
+            font-size: clamp(1.5rem, 5vw, 2.2rem); color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);
+            border-bottom: 1px solid var(--primary-glow); padding-bottom: 1rem; margin-bottom: 1.5rem;
         }
         
         /* Estilos para pestañas */
@@ -262,14 +180,8 @@
             animation: fadeInContent 0.6s ease forwards;
         }
         @keyframes fadeInContent {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Contenedor principal con flexbox para el layout */
@@ -283,7 +195,7 @@
             display: flex;
             flex-direction: row;
             gap: 2rem;
-            align-items: flex-start;
+            align-items: flex-start; /* Alinea los elementos al inicio */
         }
         
         .protein-description {
@@ -294,10 +206,10 @@
             text-align: justify;
         }
 
-        /* Comportamiento sticky en escritorio */
+        /* Modificación clave para el comportamiento sticky */
         model-viewer {
             position: sticky;
-            top: var(--nav-height);
+            top: var(--nav-height); /* Se pega debajo de la barra de navegación */
             flex-shrink: 0;
             width: 100%;
             height: 500px;
@@ -309,25 +221,23 @@
             --progress-bar-color: var(--primary-glow);
             --progress-bar-height: 4px;
         }
-        
-        /* Ajuste para el contenido de texto en escritorio */
+        /* Ajuste del contenido de texto para que no se superponga con el modelo */
         .protein-viewer-main-content .protein-description {
             width: calc(100% - 600px - 2rem);
         }
 
-        .footer {
-            text-align: center;
-            padding: 2.5rem 1rem;
-            color: var(--primary-glow);
-            border-top: 1px solid var(--primary-text);
-            margin-top: 2rem;
-        }
+
+        .footer { text-align: center; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
         
-        /* Adaptación para móviles */
-        @media (max-width: 1024px) {
-            .nav-content {
-                justify-content: space-between;
+        @media (min-width: 1025px) {
+            .menu-toggle { display: none; }
+            .nav-container { display: flex; }
+            .protein-viewer-main-content {
+                flex-direction: row;
             }
+        }
+        @media (max-width: 1024px) {
+            .nav-content { justify-content: space-between; }
             .nav-container {
                 position: fixed;
                 top: var(--nav-height);
@@ -347,86 +257,37 @@
             body.menu-open .nav-container {
                 transform: translateY(0);
             }
-            nav .nav-container > li {
-                width: 100%;
-                height: auto;
-                text-align: center;
-            }
-            nav .nav-container > li > a {
-                padding: 1rem;
-                width: 100%;
-                font-size: 1.5em;
-            }
+            nav .nav-container > li { width: 100%; height: auto; text-align: center; }
+            nav .nav-container > li > a { padding: 1rem; width: 100%; font-size: 1.5em;}
             
             .menu-toggle {
-                display: block;
-                position: relative;
-                z-index: 1001;
-                width: 30px;
-                height: 22px;
-                background: none;
-                border: none;
-                cursor: pointer;
+                display: block; position: relative; z-index: 1001;
+                width: 30px; height: 22px;
+                background: none; border: none; cursor: pointer;
             }
             .icon-bar {
-                display: block;
-                width: 100%;
-                height: 3px;
-                background-color: var(--primary-text);
-                margin: 6px 0;
-                transition: all 0.3s ease-in-out;
+                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
+                margin: 6px 0; transition: all 0.3s ease-in-out;
                 border-radius: 2px;
             }
-            body.menu-open .menu-toggle .icon-bar:nth-child(1) {
-                transform: rotate(45deg) translate(7px, 7px);
-            }
-            body.menu-open .menu-toggle .icon-bar:nth-child(2) {
-                opacity: 0;
-            }
-            body.menu-open .menu-toggle .icon-bar:nth-child(3) {
-                transform: rotate(-45deg) translate(7px, -7px);
-            }
-            
-            /* Contenido principal en móviles */
-            .protein-viewer-layout {
-                position: relative;
-                z-index: 10;
-                background: rgba(0, 0, 0, 0.7);
-                backdrop-filter: blur(5px);
-                border-radius: 12px;
-            }
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+
+            /* Estilos para móviles */
             .protein-viewer-main-content {
                 flex-direction: column;
             }
-            
-            /* El visor se muestra como fondo rotativo */
             model-viewer {
-                position: fixed;
-                top: 0;
-                left: 0;
+                position: static; /* En móviles, vuelve a su posición normal */
                 width: 100%;
-                height: 100%;
+                height: 350px;
                 max-width: none;
-                order: -1;
-                z-index: -1;
-                pointer-events: none;
-                opacity: 0.3;
-                background: none;
-                border: none;
-                --progress-bar-color: transparent;
+                order: -1; /* Mueve el visor al principio */
             }
-
             .protein-description {
-                width: 100%;
+                width: 100%; /* Ajusta el ancho completo */
                 margin-right: 0;
-                text-align: justify;
-                padding: 1rem;
-            }
-            .tab-nav {
-                padding: 0 1rem;
-            }
-            .tab-content-container {
-                padding: 0 1rem;
             }
         }
     </style>
@@ -480,7 +341,7 @@
                             <button class="tab-button" data-tab="tab4">Investigación Relacionada</button>
                         </div>
                         <div class="protein-viewer-main-content">
-                            <div class="protein-description">
+                             <div class="protein-description">
                                 <div class="tab-content-container">
                                     <div id="tab1" class="tab-content active">
                                         <h3>Introducción</h3>
@@ -704,6 +565,7 @@
         function setupModelViewer() {
             const modelViewer = document.querySelector('model-viewer');
             if (modelViewer) {
+                let currentOrbit = 0;
                 window.addEventListener('scroll', () => {
                     const scrollY = window.scrollY;
                     const newOrbit = scrollY / 20; 
