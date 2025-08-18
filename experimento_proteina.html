@@ -1,168 +1,578 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="description" content="Visor interactivo de modelos 3D de proteínas generados con ChimeraX">
-  <meta name="keywords" content="proteínas, modelos 3D, ChimeraX, visualización, ciencia">
-  <meta name="author" content="Tu Nombre">
-  <title>Visor de Proteínas 3D</title>
-  <link rel="icon" type="image/png" href="https://via.placeholder.com/32x32.png?text=3D">
-  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.1.1/model-viewer.min.js"></script>
-  <style>
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background-color: #0a0a1a;
-      color: #ffffff;
-      font-family: 'Inter', sans-serif;
-      padding: 20px;
-    }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    header {
-      text-align: center;
-      padding: 20px 0;
-      border-bottom: 2px solid #818cf8;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 2.5rem;
-      color: #d1d5db;
-    }
-    nav {
-      margin: 20px 0;
-      text-align: center;
-    }
-    nav a {
-      color: #818cf8;
-      text-decoration: none;
-      margin: 0 15px;
-      font-size: 1.1rem;
-      transition: color 0.3s;
-    }
-    nav a:hover {
-      color: #6366f1;
-    }
-    .content {
-      display: flex;
-      flex-wrap: wrap;
-    }
-    .description {
-      width: 55%;
-      font-size: 16px;
-      line-height: 1.5;
-      color: #d1d5db;
-      text-align: justify;
-      padding-right: 20px;
-    }
-    model-viewer {
-      position: fixed;
-      right: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 40%;
-      max-width: 800px;
-      height: 600px;
-      --progress-bar-color: #818cf8;
-    }
-    footer {
-      text-align: center;
-      padding: 20px 0;
-      margin-top: 40px;
-      border-top: 2px solid #818cf8;
-      color: #d1d5db;
-    }
-    footer p {
-      margin: 5px 0;
-    }
-    @media (max-width: 800px) {
-      .content {
-        flex-direction: column;
-      }
-      .description {
-        width: 100%;
-        padding-right: 0;
-      }
-      model-viewer {
-        position: static;
-        width: 100%;
-        max-width: 560px;
-        height: 300px;
-        margin-bottom: 20px;
-        transform: none;
-      }
-    }
-    @media (max-width: 600px) {
-      header h1 {
-        font-size: 1.8rem;
-      }
-      nav a {
-        font-size: 1rem;
-        margin: 0 10px;
-      }
-      .description {
-        font-size: 14px;
-        padding: 0 10px;
-      }
-      model-viewer {
-        height: 340px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Visor de Proteínas 3D | O.C.V.M.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.1.1/model-viewer.min.js"></script>
+    <style>
+        :root {
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --primary-text: #e5e7eb;
+            --primary-glow: #818cf8;
+            --secondary-glow: #22d3ee;
+            --font-main: 'Inter', sans-serif;
+            --nav-height: 70px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: #000000;
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+        
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            cursor: crosshair;
+        }
+
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.menu-open {
+            overflow: hidden;
+        }
+        
+        nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+            padding: 0 5%;
+            pointer-events: auto;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .nav-logo a {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            text-shadow: 0 0 8px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
+        nav .nav-container > li { position: relative; height: 100%; display: flex; align-items: center; }
+        nav .nav-container > li > a {
+            color: var(--primary-text); text-decoration: none; font-size: clamp(0.9em, 1.2vw, 1.05em); font-weight: 500;
+            transition: color 0.3s ease, text-shadow 0.3s ease; padding: 0 1rem; display: flex; align-items: center; gap: 8px;
+        }
+        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a { color: #FFFFFF; text-shadow: 0 0 12px var(--primary-glow); }
+        
+        .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; }
+        
+        .hero {
+            min-height: 80vh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; position: relative;
+            padding: 1rem;
+            padding-top: var(--nav-height);
+        }
+        .hero-content { position: relative; z-index: 2; animation: fadeIn 2s ease-in; }
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 5.5rem); font-weight: 700; color: #fff;
+            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(129, 140, 248, 0.7);
+            animation: pulse-glow 3s infinite alternate;
+        }
+        .hero p.subtitle { font-size: clamp(1.2rem, 3vw, 1.8rem); color: var(--secondary-glow); text-shadow: 0 0 8px var(--secondary-glow); margin-top: 0.5rem; }
+        .hero p.description { font-size: clamp(1rem, 2.5vw, 1.2rem); max-width: 900px; margin: 1.5rem auto 0; text-shadow: 0 0 5px #000; }
+        
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .main-container { 
+            width: 95%; 
+            max-width: none; 
+            margin: 0 auto; 
+            padding: 1rem clamp(1rem, 2.5vw, 2rem) 1rem;
+            pointer-events: none;
+        }
+        
+        main, .footer, .section, .hero-content, model-viewer {
+            pointer-events: auto;
+        }
+
+        main p, .footer p, main li, main blockquote {
+            user-select: text;
+            cursor: default;
+        }
+
+        .layout-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 2rem; }
+        
+        .section {
+            padding: clamp(1.5rem, 5vw, 2.5rem);
+            border-radius: 12px; margin-bottom: 2rem; position: relative;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .section:hover { transform: translateY(-5px); box-shadow: 0 0 40px rgba(129, 140, 248, 0.2); }
+        
+        h2 {
+            font-size: clamp(1.5rem, 5vw, 2.2rem); color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);
+            border-bottom: 1px solid var(--primary-glow); padding-bottom: 1rem; margin-bottom: 1.5rem;
+        }
+        
+        /* Estilos para pestañas */
+        .tab-nav {
+            display: flex;
+            flex-wrap: wrap;
+            border-bottom: 1px solid rgba(129, 140, 248, 0.3);
+            margin-bottom: 2rem;
+        }
+        .tab-button {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--primary-text);
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-bottom: -1px;
+        }
+        .tab-button:hover {
+            color: #fff;
+            background-color: rgba(129, 140, 248, 0.1);
+        }
+        .tab-button.active {
+            color: var(--primary-glow);
+            border-bottom-color: var(--primary-glow);
+            text-shadow: 0 0 8px var(--primary-glow);
+            font-weight: 600;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeInContent 0.6s ease forwards;
+        }
+        @keyframes fadeInContent {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Contenedor principal con flexbox para el layout */
+        .protein-viewer-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .protein-viewer-main-content {
+            display: flex;
+            flex-direction: row;
+            gap: 2rem;
+            align-items: flex-start; /* Alinea los elementos al inicio */
+        }
+        
+        .protein-description {
+            flex: 1;
+            font-size: 16px;
+            line-height: 1.5;
+            color: #d1d5db;
+            text-align: justify;
+        }
+
+        /* Modificación clave para el comportamiento sticky */
+        model-viewer {
+            position: sticky;
+            top: var(--nav-height); /* Se pega debajo de la barra de navegación */
+            flex-shrink: 0;
+            width: 100%;
+            height: 500px;
+            max-width: 600px;
+            border-radius: 12px;
+            background: #0d1117;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            --poster-color: transparent;
+            --progress-bar-color: var(--primary-glow);
+            --progress-bar-height: 4px;
+        }
+        /* Ajuste del contenido de texto para que no se superponga con el modelo */
+        .protein-viewer-main-content .protein-description {
+            width: calc(100% - 600px - 2rem);
+        }
+
+
+        .footer { text-align: center; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
+        
+        @media (min-width: 1025px) {
+            .menu-toggle { display: none; }
+            .nav-container { display: flex; }
+            .protein-viewer-main-content {
+                flex-direction: row;
+            }
+        }
+        @media (max-width: 1024px) {
+            .nav-content { justify-content: space-between; }
+            .nav-container {
+                position: fixed;
+                top: var(--nav-height);
+                left: 0;
+                width: 100%;
+                height: calc(100vh - var(--nav-height));
+                background: rgba(17, 24, 39, 0.95);
+                backdrop-filter: blur(15px);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+                transform: translateY(-110%);
+                overflow-y: auto;
+                padding: 2rem;
+            }
+            body.menu-open .nav-container {
+                transform: translateY(0);
+            }
+            nav .nav-container > li { width: 100%; height: auto; text-align: center; }
+            nav .nav-container > li > a { padding: 1rem; width: 100%; font-size: 1.5em;}
+            
+            .menu-toggle {
+                display: block; position: relative; z-index: 1001;
+                width: 30px; height: 22px;
+                background: none; border: none; cursor: pointer;
+            }
+            .icon-bar {
+                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
+                margin: 6px 0; transition: all 0.3s ease-in-out;
+                border-radius: 2px;
+            }
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+
+            /* Estilos para móviles */
+            .protein-viewer-main-content {
+                flex-direction: column;
+            }
+            model-viewer {
+                position: static; /* En móviles, vuelve a su posición normal */
+                width: 100%;
+                height: 350px;
+                max-width: none;
+                order: -1; /* Mueve el visor al principio */
+            }
+            .protein-description {
+                width: 100%; /* Ajusta el ancho completo */
+                margin-right: 0;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>Visor de Proteínas 3D</h1>
-    <nav>
-      <a href="#home" aria-label="Ir a la página de inicio">Inicio</a>
-      <a href="#models" aria-label="Ver modelos 3D">Modelos</a>
-      <a href="#about" aria-label="Acerca de este proyecto">Acerca de</a>
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+    <nav class="glassmorphism">
+        <div class="nav-content">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-8 w-8 md:h-10 md:w-10 rounded-full">
+                    <span>O.C.V.M.</span>
+                </a>
+            </div>
+            <ul class="nav-container" id="nav-menu">
+                <li><a href="index.html">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+                    Inicio</a></li>
+                <!-- Ejemplo de un mega-menú. Puedes añadir el contenido real aquí -->
+                <li><a href="#">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9.75L16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0020.25 18V5.75A2.25 2.25 0 0018 3.5H6A2.25 2.25 0 003.75 5.75v12.5A2.25 2.25 0 006 20.25z" /></svg>
+                    Menú Ejemplo</a></li>
+                <li><a href="#contacto">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                    Contacto</a></li>
+            </ul>
+            <button class="menu-toggle" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
     </nav>
-  </header>
-  <main>
-    <section class="content">
-      <div class="description">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-        <br><br>
-        Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis risus a elit. Etiam tempor. Ut ullamcorper, ligula eu tempor congue, eros est euismod turpis, id tincidunt sapien risus a quam. Maecenas fermentum consequat mi. Donec fermentum. Pellentesque malesuada nulla a mi. Duis sapien sem, aliquet nec, commodo eget, consequat quis, neque. Aliquam faucibus, elit ut dictum aliquet, felis nisl adipiscing sapien, sed malesuada diam lacus eget erat. Cras mollis scelerisque nunc. Nullam arcu. Aliquam consequat.
-        <br><br>
-        Fusce convallis, mauris imperdiet gravida bibendum, nisl lorem eleifend nisi, sit amet lacinia odio sem nec elit. Aenean placerat, tortor sed sodales adipiscing, nulla turpis adipiscing elit, et pulvinar nisl odio non libero. Suspendisse potenti. Sed euismod, sem ut malesuada sagittis, nulla neque consequat leo, ut adipiscing eros magna ut nisl. Vivamus facilisis risus id tortor. Sed accumsan, orci a interdum dictum, nulla ipsum iaculis eros, in laoreet sem nisl in sapien. Integer ac eros. Morbi blandit. Nam nulla magna, rhoncus quis, placerat id, commodo ut, velit. Vivamus mollis, pede at rhoncus condimentum, justo arcu mollis felis, in porta sapien tortor vel ipsum.
-        <br><br>
-        Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
-        <br><br>
-        At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
-        <br><br>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-      </div>
-      <model-viewer
-        src="https://corsproxy.io/?https://drive.google.com/uc?export=download&id=1rECvFfErhzxHWcXtD0hV_O_oE4CIkGIG"
-        alt="Modelo 3D generado con ChimeraX"
-        shadow-intensity="1"
-        camera-controls
-        touch-action="none"
-        auto-rotate
-        ar
-        disable-zoom
-        exposure="0.8"
-        camera-orbit="48deg 55deg 10m">
-        <div slot="progress-bar" style="background-color: #818cf8;"></div>
-      </model-viewer>
-    </section>
-  </main>
-  <footer>
-    <p>© 2025 Visor de Proteínas 3D. Todos los derechos reservados.</p>
-    <p>Contacto: <a href="mailto:contacto@ejemplo.com" style="color: #818cf8;">contacto@ejemplo.com</a></p>
-  </footer>
-  <script>
-    const modelViewer = document.querySelector('model-viewer');
-    window.addEventListener('scroll', () => {
-      const scrollY = window.scrollY;
-      modelViewer.cameraOrbit = `${scrollY / 2 % 360}deg 55deg 10m`;
-    });
-  </script>
+    <div class="main-container" id="inicio">
+        <div class="hero">
+            <div class="hero-content">
+                <h1>Visor de Proteínas 3D</h1>
+                <p class="subtitle">Explora la arquitectura molecular de la vida</p>
+                <p class="description">
+                    Una herramienta interactiva para la visualización de estructuras moleculares.
+                </p>
+            </div>
+        </div>
+        <div class="layout-grid">
+            <main class="content">
+                <section id="protein-viewer-section" class="glassmorphism p-6 md:p-8" data-animate>
+                    <div class="protein-viewer-layout">
+                        <h2>Modelo 3D de Proteína</h2>
+                        <div class="tab-nav">
+                            <button class="tab-button active" data-tab="tab1">Introducción</button>
+                            <button class="tab-button" data-tab="tab2">Descripción General</button>
+                            <button class="tab-button" data-tab="tab3">Mecanismo de Acción</button>
+                            <button class="tab-button" data-tab="tab4">Investigación Relacionada</button>
+                        </div>
+                        <div class="protein-viewer-main-content">
+                             <div class="protein-description">
+                                <div class="tab-content-container">
+                                    <div id="tab1" class="tab-content active">
+                                        <h3>Introducción</h3>
+                                        <p>Esta proteína es fundamental en diversos procesos biológicos. Su estructura tridimensional, visible en el visor, es clave para su función. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                                        <p>Conocer su forma nos permite entender cómo interactúa con otras moléculas, un paso crucial para el diseño de fármacos y la ingeniería de proteínas. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+                                    </div>
+                                    <div id="tab2" class="tab-content">
+                                        <h3>Descripción General</h3>
+                                        <p>La proteína está compuesta por múltiples dominios que cooperan entre sí. Cada dominio tiene una función específica, que contribuye a la actividad global de la molécula. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                                        <p>El dominio activo, por ejemplo, es donde ocurre la catálisis o la unión con su ligando. La visualización de este sitio es de gran interés para los investigadores. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                                    </div>
+                                    <div id="tab3" class="tab-content">
+                                        <h3>Mecanismo de Acción</h3>
+                                        <p>El mecanismo de acción de esta proteína implica una serie de cambios conformacionales que se inician al unirse a su ligando. Estos cambios son esenciales para transmitir la señal a través de la membrana celular o para catalizar una reacción. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                                        <p>Se ha propuesto un modelo "llave-cerradura" para su interacción, aunque estudios más recientes sugieren un modelo de "ajuste inducido". Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                                    </div>
+                                    <div id="tab4" class="tab-content">
+                                        <h3>Investigación Relacionada</h3>
+                                        <p>La investigación sobre esta proteína ha llevado a avances significativos en el campo de la biología estructural y la bioinformática. Se han utilizado técnicas como la cristalografía de rayos X y la microscopía electrónica para resolver su estructura. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                                        <p>Los estudios futuros se centrarán en la dinámica de la proteína y cómo su movimiento influye en su función. Esto podría revelar nuevas dianas terapéuticas. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                                    </div>
+                                </div>
+                                <br>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                                <br><br>
+                                <p>Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis risus a elit. Etiam tempor. Ut ullamcorper, ligula eu tempor congue, eros est euismod turpis, id tincidunt sapien risus a quam. Maecenas fermentum consequat mi. Donec fermentum. Pellentesque malesuada nulla a mi. Duis sapien sem, aliquet nec, commodo eget, consequat quis, neque. Aliquam faucibus, elit ut dictum aliquet, felis nisl adipiscing sapien, sed malesuada diam lacus eget erat. Cras mollis scelerisque nunc. Nullam arcu. Aliquam consequat.</p>
+                                <br><br>
+                                <p>Fusce convallis, mauris imperdiet gravida bibendum, nisl lorem eleifend nisi, sit amet lacinia odio sem nec elit. Aenean placerat, tortor sed sodales adipiscing, nulla turpis adipiscing elit, et pulvinar nisl odio non libero. Suspendisse potenti. Sed euismod, sem ut malesuada sagittis, nulla neque consequat leo, ut adipiscing eros magna ut nisl. Vivamus facilisis risus id tortor. Sed accumsan, orci a interdum dictum, nulla ipsum iaculis eros, in laoreet sem nisl in sapien. Integer ac eros. Morbi blandit. Nam nulla magna, rhoncus quis, placerat id, commodo ut, velit. Vivamus mollis, pede at rhoncus condimentum, justo arcu mollis felis, in porta sapien tortor vel ipsum.</p>
+                                <br><br>
+                                <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.</p>
+                                <br><br>
+                                <p>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.</p>
+                                <br><br>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                            </div>
+                            <model-viewer
+                                src="https://corsproxy.io/?https://drive.google.com/uc?export=download&id=1rECvFfErhzxHWcXtD0hV_O_oE4CIkGIG"
+                                alt="Modelo 3D generado con ChimeraX"
+                                shadow-intensity="1"
+                                camera-controls
+                                touch-action="none"
+                                ar
+                                disable-zoom
+                                exposure="0.8"
+                                camera-orbit="48deg 55deg 20m">
+                            </model-viewer>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+        <footer class="footer" id="contacto">
+            <p>© 2025 O.C.V.M. Todos los derechos reservados.</p>
+            <p>Contacto: <a href="mailto:contacto@ocvm.com" style="color: var(--primary-glow);">contacto@ocvm.com</a></p>
+        </footer>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof THREE !== 'undefined') {
+                initThreeJS();
+            } else {
+                console.error("Three.js no se ha cargado.");
+            }
+            setupNavigation();
+            setupScrollAnimations();
+            setupModelViewer();
+            setupTabs();
+        });
+
+        // --- THREE.JS BACKGROUND ---
+        let scene, camera, renderer, points, lines;
+        function initThreeJS() {
+            try {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+                camera.position.z = 50;
+                renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("bg-canvas"), alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                const pointCount = 200;
+                const positions = new Float32Array(pointCount * 3);
+                const pointGeo = new THREE.BufferGeometry();
+                for (let i = 0; i < pointCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 400;
+                }
+                pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                const pointMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.5, transparent: true, opacity: 0.8 });
+                points = new THREE.Points(pointGeo, pointMaterial);
+                scene.add(points);
+                regenerateLines();
+                window.addEventListener("resize", onWindowResize, false);
+                document.addEventListener('mousemove', onMouseMove, false);
+                renderer.domElement.addEventListener('click', onCanvasClick, false);
+                animate();
+            } catch (error) {
+                console.error('Error al inicializar Three.js de fondo:', error);
+            }
+        }
+        function onWindowResize() {
+            if(camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+        let mouseX = 0, mouseY = 0;
+        function onMouseMove(event) {
+            mouseX = (event.clientX - window.innerWidth / 2) / 100;
+            mouseY = (event.clientY - window.innerHeight / 2) / 100;
+        }
+        function animate() {
+            requestAnimationFrame(animate);
+            if(scene && camera && renderer && points && lines) {
+                points.rotation.y += 0.0005;
+                lines.rotation.y += 0.0005;
+                camera.position.x += (mouseX - camera.position.x) * 0.05;
+                camera.position.y += (-mouseY - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+                renderer.render(scene, camera);
+            }
+        }
+        function onCanvasClick(event) {
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+            vector.unproject(camera);
+            const dir = vector.sub(camera.position).normalize();
+            const distance = -camera.position.z / dir.z;
+            const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+            addPoint(pos);
+        }
+        function addPoint(position) {
+            const oldPositions = points.geometry.attributes.position.array;
+            const newPointCount = oldPositions.length / 3 + 1;
+            const newPositions = new Float32Array(newPointCount * 3);
+            newPositions.set(oldPositions);
+            newPositions[oldPositions.length] = position.x;
+            newPositions[oldPositions.length + 1] = position.y;
+            newPositions[oldPositions.length + 2] = position.z;
+            points.geometry.setAttribute('position', new THREE.BufferAttribute(newPositions, 3));
+            points.geometry.attributes.position.needsUpdate = true;
+            regenerateLines();
+        }
+        function regenerateLines() {
+            if (lines) scene.remove(lines);
+            const pointPositions = points.geometry.attributes.position.array;
+            const pointCount = pointPositions.length / 3;
+            const linePositions = [];
+            for (let i = 0; i < pointCount; i++) {
+                for (let j = i + 1; j < pointCount; j++) {
+                    const dx = pointPositions[i * 3] - pointPositions[j * 3];
+                    const dy = pointPositions[i * 3 + 1] - pointPositions[j * 3 + 1];
+                    const dz = pointPositions[i * 3 + 2] - pointPositions[j * 3 + 2];
+                    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    if (dist < 50) {
+                        linePositions.push(pointPositions[i * 3], pointPositions[i * 3 + 1], pointPositions[i * 3 + 2]);
+                        linePositions.push(pointPositions[j * 3], pointPositions[j * 3 + 1], pointPositions[j * 3 + 2]);
+                    }
+                }
+            }
+            const lineGeo = new THREE.BufferGeometry();
+            lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.3, transparent: true });
+            lines = new THREE.LineSegments(lineGeo, lineMaterial);
+            scene.add(lines);
+        }
+
+        // --- NAVIGATION SCRIPTS ---
+        function setupNavigation() {
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            const navMenu = document.getElementById('nav-menu');
+            menuToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.body.classList.toggle('menu-open');
+            });
+            navMenu.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A' && window.innerWidth <= 1024) {
+                    document.body.classList.remove('menu-open');
+                }
+            });
+        }
+
+        // --- SCROLL ANIMATION ---
+        function setupScrollAnimations() {
+            const animatedSections = document.querySelectorAll('[data-animate]');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        const elementsToAnimate = entry.target.querySelectorAll('h2, .tab-nav, .tab-content-container');
+                        elementsToAnimate.forEach((el, index) => {
+                            el.style.transitionDelay = `${index * 150}ms`;
+                        });
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            animatedSections.forEach(section => observer.observe(section));
+        }
+
+        // --- TABS SCRIPT ---
+        function setupTabs() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    button.classList.add('active');
+                    const targetTab = document.getElementById(button.dataset.tab);
+                    if (targetTab) {
+                        targetTab.classList.add('active');
+                    }
+                });
+            });
+        }
+
+        // --- MODEL VIEWER SCRIPT ---
+        function setupModelViewer() {
+            const modelViewer = document.querySelector('model-viewer');
+            if (modelViewer) {
+                let currentOrbit = 0;
+                window.addEventListener('scroll', () => {
+                    const scrollY = window.scrollY;
+                    const newOrbit = scrollY / 20; 
+                    modelViewer.cameraOrbit = `${newOrbit}deg 55deg 20m`;
+                });
+            }
+        }
+    </script>
 </body>
 </html>
