@@ -5,11 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Visor de Proteínas 3D | O.C.V.M.</title>
+    <!-- Tailwind CSS para la maquetación flexible -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fuente Inter de Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Librerías para el fondo y el visor 3D -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.1.1/model-viewer.min.js"></script>
     <style>
+        /* Variables de colores y fuentes para consistencia */
         :root {
             --primary: #818cf8;
             --primary-dark: #6366f1;
@@ -21,9 +25,16 @@
             --nav-height: 70px;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* Reset y estilos generales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        html { scroll-behavior: smooth; }
+        html {
+            scroll-behavior: smooth;
+        }
 
         body {
             background-color: #000000;
@@ -32,7 +43,8 @@
             line-height: 1.8;
             overflow-x: hidden;
         }
-        
+
+        /* Fondo dinámico con Three.js */
         #bg-canvas {
             position: fixed;
             top: 0;
@@ -43,6 +55,7 @@
             cursor: crosshair;
         }
 
+        /* Efecto de cristal esmerilado */
         .glassmorphism {
             background: rgba(17, 24, 39, 0.8);
             backdrop-filter: blur(12px);
@@ -53,11 +66,17 @@
         body.menu-open {
             overflow: hidden;
         }
-        
+
+        /* Barra de navegación */
         nav {
-            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: var(--nav-height);
             z-index: 1000;
-            display: flex; justify-content: center; align-items: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 0 5%;
             pointer-events: auto;
         }
@@ -68,7 +87,7 @@
             align-items: center;
             width: 100%;
         }
-        
+
         .nav-logo a {
             font-size: 1.3em;
             font-weight: 700;
@@ -80,46 +99,112 @@
             gap: 0.75rem;
         }
 
-        .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
-        nav .nav-container > li { position: relative; height: 100%; display: flex; align-items: center; }
-        nav .nav-container > li > a {
-            color: var(--primary-text); text-decoration: none; font-size: clamp(0.9em, 1.2vw, 1.05em); font-weight: 500;
-            transition: color 0.3s ease, text-shadow 0.3s ease; padding: 0 1rem; display: flex; align-items: center; gap: 8px;
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            list-style: none;
+            height: 100%;
+            gap: 0.5rem;
         }
-        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a { color: #FFFFFF; text-shadow: 0 0 12px var(--primary-glow); }
-        
-        .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; }
-        
+
+        nav .nav-container > li {
+            position: relative;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        nav .nav-container > li > a {
+            color: var(--primary-text);
+            text-decoration: none;
+            font-size: clamp(0.9em, 1.2vw, 1.05em);
+            font-weight: 500;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a {
+            color: #FFFFFF;
+            text-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            stroke-width: 1.5;
+        }
+
         .hero {
             min-height: 80vh;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            text-align: center; position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
             padding: 1rem;
             padding-top: var(--nav-height);
         }
-        .hero-content { position: relative; z-index: 2; animation: fadeIn 2s ease-in; }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            animation: fadeIn 2s ease-in;
+        }
+
         .hero h1 {
-            font-size: clamp(2.5rem, 8vw, 5.5rem); font-weight: 700; color: #fff;
+            font-size: clamp(2.5rem, 8vw, 5.5rem);
+            font-weight: 700;
+            color: #fff;
             text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(129, 140, 248, 0.7);
             animation: pulse-glow 3s infinite alternate;
         }
-        .hero p.subtitle { font-size: clamp(1.2rem, 3vw, 1.8rem); color: var(--secondary-glow); text-shadow: 0 0 8px var(--secondary-glow); margin-top: 0.5rem; }
-        .hero p.description { font-size: clamp(1rem, 2.5vw, 1.2rem); max-width: 900px; margin: 1.5rem auto 0; text-shadow: 0 0 5px #000; }
-        
-        @keyframes pulse-glow {
-            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
-            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
-        }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .main-container { 
-            width: 95%; 
-            max-width: none; 
-            margin: 0 auto; 
+        .hero p.subtitle {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            color: var(--secondary-glow);
+            text-shadow: 0 0 8px var(--secondary-glow);
+            margin-top: 0.5rem;
+        }
+
+        .hero p.description {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            max-width: 900px;
+            margin: 1.5rem auto 0;
+            text-shadow: 0 0 5px #000;
+        }
+
+        @keyframes pulse-glow {
+            from {
+                text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow);
+            }
+            to {
+                text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Contenedor principal para el contenido */
+        .main-container {
+            width: 95%;
+            max-width: none;
+            margin: 0 auto;
             padding: 1rem clamp(1rem, 2.5vw, 2rem) 1rem;
             pointer-events: none;
         }
-        
+
         main, .footer, .section, .hero-content, model-viewer {
             pointer-events: auto;
         }
@@ -129,20 +214,35 @@
             cursor: default;
         }
 
-        .layout-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 2rem; }
-        
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
         .section {
             padding: clamp(1.5rem, 5vw, 2.5rem);
-            border-radius: 12px; margin-bottom: 2rem; position: relative;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            position: relative;
             transition: transform 0.4s ease, box-shadow 0.4s ease;
         }
-        .section:hover { transform: translateY(-5px); box-shadow: 0 0 40px rgba(129, 140, 248, 0.2); }
-        
-        h2 {
-            font-size: clamp(1.5rem, 5vw, 2.2rem); color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);
-            border-bottom: 1px solid var(--primary-glow); padding-bottom: 1rem; margin-bottom: 1.5rem;
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 40px rgba(129, 140, 248, 0.2);
         }
-        
+
+        h2 {
+            font-size: clamp(1.5rem, 5vw, 2.2rem);
+            color: var(--primary-text);
+            text-shadow: 0 0 8px var(--secondary-glow);
+            border-bottom: 1px solid var(--primary-glow);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
         /* Estilos para pestañas */
         .tab-nav {
             display: flex;
@@ -150,6 +250,7 @@
             border-bottom: 1px solid rgba(129, 140, 248, 0.3);
             margin-bottom: 2rem;
         }
+
         .tab-button {
             padding: 1rem 1.5rem;
             cursor: pointer;
@@ -162,26 +263,37 @@
             transition: all 0.3s ease;
             margin-bottom: -1px;
         }
+
         .tab-button:hover {
             color: #fff;
             background-color: rgba(129, 140, 248, 0.1);
         }
+
         .tab-button.active {
             color: var(--primary-glow);
             border-bottom-color: var(--primary-glow);
             text-shadow: 0 0 8px var(--primary-glow);
             font-weight: 600;
         }
+
         .tab-content {
             display: none;
         }
+
         .tab-content.active {
             display: block;
             animation: fadeInContent 0.6s ease forwards;
         }
+
         @keyframes fadeInContent {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Contenedor principal con flexbox para el layout */
@@ -193,27 +305,15 @@
 
         .protein-viewer-main-content {
             display: flex;
-            flex-direction: row;
+            flex-direction: column; /* Por defecto, en columna para móviles */
             gap: 2rem;
-            align-items: flex-start; /* Alinea los elementos al inicio */
-        }
-        
-        .protein-description {
-            flex: 1;
-            font-size: 16px;
-            line-height: 1.5;
-            color: #d1d5db;
-            text-align: justify;
+            align-items: flex-start;
         }
 
-        /* Modificación clave para el comportamiento sticky */
+        /* Visor de modelos 3D */
         model-viewer {
-            position: sticky;
-            top: var(--nav-height); /* Se pega debajo de la barra de navegación */
-            flex-shrink: 0;
             width: 100%;
-            height: 500px;
-            max-width: 600px;
+            height: 350px; /* Altura optimizada para móvil */
             border-radius: 12px;
             background: #0d1117;
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -221,23 +321,54 @@
             --progress-bar-color: var(--primary-glow);
             --progress-bar-height: 4px;
         }
-        /* Ajuste del contenido de texto para que no se superponga con el modelo */
-        .protein-viewer-main-content .protein-description {
-            width: calc(100% - 600px - 2rem);
+
+        /* Descripción de la proteína */
+        .protein-description {
+            flex-grow: 1; /* Ocupa el espacio restante en escritorio */
+            font-size: 16px;
+            line-height: 1.5;
+            color: #d1d5db;
+            text-align: justify;
         }
 
+        /* Media Query para escritorio (a partir de 1024px) */
+        @media (min-width: 1024px) {
+            .nav-container {
+                display: flex;
+            }
 
-        .footer { text-align: center; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
-        
-        @media (min-width: 1025px) {
-            .menu-toggle { display: none; }
-            .nav-container { display: flex; }
+            .menu-toggle {
+                display: none;
+            }
+
             .protein-viewer-main-content {
-                flex-direction: row;
+                flex-direction: row; /* En fila para escritorio */
+                align-items: flex-start;
+            }
+            
+            /* El visor de proteínas se hace sticky en escritorio */
+            model-viewer {
+                position: sticky;
+                top: calc(var(--nav-height) + 1rem); /* Espacio desde la barra de navegación */
+                flex-basis: 600px; /* Ancho fijo para el visor */
+                height: 500px; /* Altura mayor para escritorio */
+                flex-shrink: 0;
+            }
+
+            /* Se ajusta el ancho de la descripción para que se acomode al lado del visor */
+            .protein-description {
+                flex-grow: 1;
+                flex-shrink: 1;
+                width: auto;
             }
         }
-        @media (max-width: 1024px) {
-            .nav-content { justify-content: space-between; }
+
+        /* Media Query para móvil (menos de 1024px) */
+        @media (max-width: 1023px) {
+            .nav-content {
+                justify-content: space-between;
+            }
+
             .nav-container {
                 position: fixed;
                 top: var(--nav-height);
@@ -254,40 +385,58 @@
                 overflow-y: auto;
                 padding: 2rem;
             }
+
             body.menu-open .nav-container {
                 transform: translateY(0);
             }
-            nav .nav-container > li { width: 100%; height: auto; text-align: center; }
-            nav .nav-container > li > a { padding: 1rem; width: 100%; font-size: 1.5em;}
-            
-            .menu-toggle {
-                display: block; position: relative; z-index: 1001;
-                width: 30px; height: 22px;
-                background: none; border: none; cursor: pointer;
+
+            nav .nav-container > li {
+                width: 100%;
+                height: auto;
+                text-align: center;
             }
+
+            nav .nav-container > li > a {
+                padding: 1rem;
+                width: 100%;
+                font-size: 1.5em;
+            }
+
+            .menu-toggle {
+                display: block;
+                position: relative;
+                z-index: 1001;
+                width: 30px;
+                height: 22px;
+                background: none;
+                border: none;
+                cursor: pointer;
+            }
+            
             .icon-bar {
-                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
-                margin: 6px 0; transition: all 0.3s ease-in-out;
+                display: block;
+                width: 100%;
+                height: 3px;
+                background-color: var(--primary-text);
+                margin: 6px 0;
+                transition: all 0.3s ease-in-out;
                 border-radius: 2px;
             }
-            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
-            body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
-            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
 
-            /* Estilos para móviles */
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) {
+                transform: rotate(45deg) translate(7px, 7px);
+            }
+            
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) {
+                opacity: 0;
+            }
+            
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) {
+                transform: rotate(-45deg) translate(7px, -7px);
+            }
+            
             .protein-viewer-main-content {
                 flex-direction: column;
-            }
-            model-viewer {
-                position: static; /* En móviles, vuelve a su posición normal */
-                width: 100%;
-                height: 350px;
-                max-width: none;
-                order: -1; /* Mueve el visor al principio */
-            }
-            .protein-description {
-                width: 100%; /* Ajusta el ancho completo */
-                margin-right: 0;
             }
         }
     </style>
@@ -334,14 +483,15 @@
                 <section id="protein-viewer-section" class="glassmorphism p-6 md:p-8" data-animate>
                     <div class="protein-viewer-layout">
                         <h2>Modelo 3D de Proteína</h2>
-                        <div class="tab-nav">
-                            <button class="tab-button active" data-tab="tab1">Introducción</button>
-                            <button class="tab-button" data-tab="tab2">Descripción General</button>
-                            <button class="tab-button" data-tab="tab3">Mecanismo de Acción</button>
-                            <button class="tab-button" data-tab="tab4">Investigación Relacionada</button>
-                        </div>
                         <div class="protein-viewer-main-content">
-                             <div class="protein-description">
+                            <!-- El texto ahora está primero para que aparezca a la izquierda en escritorio y arriba en móvil -->
+                            <div class="protein-description">
+                                <div class="tab-nav">
+                                    <button class="tab-button active" data-tab="tab1">Introducción</button>
+                                    <button class="tab-button" data-tab="tab2">Descripción General</button>
+                                    <button class="tab-button" data-tab="tab3">Mecanismo de Acción</button>
+                                    <button class="tab-button" data-tab="tab4">Investigación Relacionada</button>
+                                </div>
                                 <div class="tab-content-container">
                                     <div id="tab1" class="tab-content active">
                                         <h3>Introducción</h3>
@@ -377,6 +527,7 @@
                                 <br><br>
                                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
                             </div>
+                            <!-- El visor 3D ahora está después del texto, manteniendo la distribución en fila en escritorio -->
                             <model-viewer
                                 src="https://corsproxy.io/?https://drive.google.com/uc?export=download&id=1rECvFfErhzxHWcXtD0hV_O_oE4CIkGIG"
                                 alt="Modelo 3D generado con ChimeraX"
@@ -413,13 +564,18 @@
 
         // --- THREE.JS BACKGROUND ---
         let scene, camera, renderer, points, lines;
+
         function initThreeJS() {
             try {
                 scene = new THREE.Scene();
                 camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
                 camera.position.z = 50;
-                renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("bg-canvas"), alpha: true });
+                renderer = new THREE.WebGLRenderer({
+                    canvas: document.getElementById("bg-canvas"),
+                    alpha: true
+                });
                 renderer.setSize(window.innerWidth, window.innerHeight);
+
                 const pointCount = 200;
                 const positions = new Float32Array(pointCount * 3);
                 const pointGeo = new THREE.BufferGeometry();
@@ -429,10 +585,16 @@
                     positions[i * 3 + 2] = (Math.random() - 0.5) * 400;
                 }
                 pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-                const pointMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.5, transparent: true, opacity: 0.8 });
+                const pointMaterial = new THREE.PointsMaterial({
+                    color: 0x818cf8,
+                    size: 1.5,
+                    transparent: true,
+                    opacity: 0.8
+                });
                 points = new THREE.Points(pointGeo, pointMaterial);
                 scene.add(points);
                 regenerateLines();
+
                 window.addEventListener("resize", onWindowResize, false);
                 document.addEventListener('mousemove', onMouseMove, false);
                 renderer.domElement.addEventListener('click', onCanvasClick, false);
@@ -441,21 +603,26 @@
                 console.error('Error al inicializar Three.js de fondo:', error);
             }
         }
+
         function onWindowResize() {
-            if(camera && renderer) {
+            if (camera && renderer) {
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
             }
         }
-        let mouseX = 0, mouseY = 0;
+
+        let mouseX = 0,
+            mouseY = 0;
+
         function onMouseMove(event) {
             mouseX = (event.clientX - window.innerWidth / 2) / 100;
             mouseY = (event.clientY - window.innerHeight / 2) / 100;
         }
+
         function animate() {
             requestAnimationFrame(animate);
-            if(scene && camera && renderer && points && lines) {
+            if (scene && camera && renderer && points && lines) {
                 points.rotation.y += 0.0005;
                 lines.rotation.y += 0.0005;
                 camera.position.x += (mouseX - camera.position.x) * 0.05;
@@ -464,6 +631,7 @@
                 renderer.render(scene, camera);
             }
         }
+
         function onCanvasClick(event) {
             const mouse = new THREE.Vector2();
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -475,6 +643,7 @@
             const pos = camera.position.clone().add(dir.multiplyScalar(distance));
             addPoint(pos);
         }
+
         function addPoint(position) {
             const oldPositions = points.geometry.attributes.position.array;
             const newPointCount = oldPositions.length / 3 + 1;
@@ -487,6 +656,7 @@
             points.geometry.attributes.position.needsUpdate = true;
             regenerateLines();
         }
+
         function regenerateLines() {
             if (lines) scene.remove(lines);
             const pointPositions = points.geometry.attributes.position.array;
@@ -506,7 +676,11 @@
             }
             const lineGeo = new THREE.BufferGeometry();
             lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
-            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.3, transparent: true });
+            const lineMaterial = new THREE.LineBasicMaterial({
+                color: 0x22d3ee,
+                opacity: 0.3,
+                transparent: true
+            });
             lines = new THREE.LineSegments(lineGeo, lineMaterial);
             scene.add(lines);
         }
@@ -515,15 +689,19 @@
         function setupNavigation() {
             const menuToggleBtn = document.getElementById('menu-toggle-btn');
             const navMenu = document.getElementById('nav-menu');
-            menuToggleBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                document.body.classList.toggle('menu-open');
-            });
-            navMenu.addEventListener('click', (e) => {
-                if (e.target.tagName === 'A' && window.innerWidth <= 1024) {
-                    document.body.classList.remove('menu-open');
-                }
-            });
+            if (menuToggleBtn) {
+                menuToggleBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.body.classList.toggle('menu-open');
+                });
+            }
+            if (navMenu) {
+                navMenu.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'A' && window.innerWidth <= 1023) {
+                        document.body.classList.remove('menu-open');
+                    }
+                });
+            }
         }
 
         // --- SCROLL ANIMATION ---
@@ -540,7 +718,9 @@
                         observer.unobserve(entry.target);
                     }
                 });
-            }, { threshold: 0.1 });
+            }, {
+                threshold: 0.1
+            });
             animatedSections.forEach(section => observer.observe(section));
         }
 
@@ -565,11 +745,13 @@
         function setupModelViewer() {
             const modelViewer = document.querySelector('model-viewer');
             if (modelViewer) {
-                let currentOrbit = 0;
                 window.addEventListener('scroll', () => {
-                    const scrollY = window.scrollY;
-                    const newOrbit = scrollY / 20; 
-                    modelViewer.cameraOrbit = `${newOrbit}deg 55deg 20m`;
+                    // La animación de órbita solo se aplica en escritorio
+                    if (window.innerWidth >= 1024) {
+                        const scrollY = window.scrollY;
+                        const newOrbit = scrollY / 20;
+                        modelViewer.cameraOrbit = `${newOrbit}deg 55deg 20m`;
+                    }
                 });
             }
         }
