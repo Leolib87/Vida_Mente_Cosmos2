@@ -57,7 +57,7 @@
 
         /* Efecto Glassmorphism para elementos semitransparentes */
         .glassmorphism {
-            background: rgba(17, 24, 39, 0.8);
+            background: rgba(0, 0, 0, 0.8); /* Fondo negro solicitado por el usuario */
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -189,8 +189,8 @@
 
         /* Contenedor principal para el contenido */
         .main-container { 
-            width: 95%; 
-            max-width: 1200px; /* Ancho máximo para el contenido principal */
+            width: 100%;
+            max-width: none;
             margin: 0 auto; 
             padding: 1rem clamp(1rem, 2.5vw, 2rem) 1rem;
             pointer-events: none;
@@ -220,6 +220,7 @@
             margin-bottom: 2rem;
             position: relative;
             transition: transform 0.4s ease, box-shadow 0.4s ease;
+            border: none;
         }
         .section:hover {
             transform: translateY(-5px);
@@ -317,8 +318,8 @@
             height: 300px;
             max-width: 100%;
             border-radius: 12px;
-            background: #0d1117;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #000000;
+            border: none;
             --poster-color: transparent;
             --progress-bar-color: var(--primary-glow);
             --progress-bar-height: 4px;
@@ -339,16 +340,20 @@
                 flex-direction: row; /* Vuelve a la fila en pantallas medianas y grandes */
             }
 
+            .protein-description {
+                flex: 1; /* Permite que el texto se estire para llenar el espacio */
+                width: auto;
+            }
+
             model-viewer {
-                width: 450px;
+                flex: 1; /* Permite que el visor se estire para llenar el espacio */
+                width: auto;
                 height: 500px;
                 position: sticky; /* Sticky en escritorio */
                 top: calc(var(--nav-height) + 2rem);
             }
             
-            .protein-description {
-                width: calc(100% - 450px - 2rem); /* Ajusta el ancho para el texto */
-            }
+            /* Eliminamos los anchos fijos para que flexbox los maneje dinámicamente */
         }
         
         /* Adaptación para navegacion en móviles */
@@ -463,19 +468,7 @@
                             <button class="tab-button" data-tab="tab4">Investigación Relacionada</button>
                         </div>
                         <div class="protein-viewer-main-content">
-                            <!-- Visor 3D de proteína -->
-                            <model-viewer
-                                src="https://corsproxy.io/?https://drive.google.com/uc?export=download&id=1WgEMUePxBp2rSqIYa8CTHRIqfgj7ogFB"
-                                alt="Modelo 3D generado con ChimeraX"
-                                shadow-intensity="1"
-                                camera-controls
-                                touch-action="none"
-                                ar
-                                disable-zoom
-                                exposure="0.8"
-                                camera-orbit="48deg 55deg 20m">
-                            </model-viewer>
-                            <!-- Contenido de la descripción -->
+                            <!-- Contenido de la descripción (ahora a la izquierda) -->
                             <div class="protein-description">
                                 <div class="tab-content-container">
                                     <div id="tab1" class="tab-content active">
@@ -511,6 +504,18 @@
                                 <br>
                                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
                             </div>
+                            <!-- Visor 3D de proteína (ahora a la derecha) -->
+                            <model-viewer
+                                src="https://corsproxy.io/?https://drive.google.com/uc?export=download&id=1WgEMUePxBp2rSqIYa8CTHRIqfgj7ogFB"
+                                alt="Modelo 3D generado con ChimeraX"
+                                shadow-intensity="1"
+                                camera-controls
+                                touch-action="none"
+                                ar
+                                disable-zoom
+                                exposure="0.8"
+                                camera-orbit="48deg 55deg 20m">
+                            </model-viewer>
                         </div>
                     </div>
                 </section>
