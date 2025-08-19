@@ -200,7 +200,7 @@
             pointer-events: auto;
         }
 
-        main p, .footer p, main li, main blockquote {
+        main p, .footer p, main li, main block-quote {
             user-select: text;
             cursor: default;
         }
@@ -296,6 +296,15 @@
             gap: 2rem;
             align-items: flex-start;
         }
+
+        /* Asignamos un orden a los elementos para controlar la posición */
+        .protein-viewer-main-content model-viewer {
+            order: 1; /* El modelo 3D siempre primero en móviles */
+        }
+
+        .protein-viewer-main-content .protein-description {
+            order: 2; /* La descripción siempre segunda en móviles */
+        }
         
         /* Asegura que todo el texto se vea justificado */
         .protein-description {
@@ -338,6 +347,14 @@
         @media (min-width: 768px) {
             .protein-viewer-main-content {
                 flex-direction: row; /* Vuelve a la fila en pantallas medianas y grandes */
+            }
+
+            .protein-viewer-main-content model-viewer {
+                order: 2; /* El modelo 3D se mueve a la derecha */
+            }
+
+            .protein-viewer-main-content .protein-description {
+                order: 1; /* La descripción se mueve a la izquierda */
             }
 
             .protein-description {
@@ -468,7 +485,19 @@
                             <button class="tab-button" data-tab="tab4">Investigación Relacionada</button>
                         </div>
                         <div class="protein-viewer-main-content">
-                            <!-- Contenido de la descripción (ahora a la izquierda) -->
+                            <!-- Visor 3D de proteína -->
+                            <model-viewer
+                                src="https://corsproxy.io/?https://drive.google.com/uc?export=download&id=1WgEMUePxBp2rSqIYa8CTHRIqfgj7ogFB"
+                                alt="Modelo 3D generado con ChimeraX"
+                                shadow-intensity="1"
+                                camera-controls
+                                touch-action="none"
+                                ar
+                                disable-zoom
+                                exposure="0.8"
+                                camera-orbit="48deg 55deg 20m">
+                            </model-viewer>
+                            <!-- Contenido de la descripción -->
                             <div class="protein-description">
                                 <div class="tab-content-container">
                                     <div id="tab1" class="tab-content active">
@@ -504,18 +533,6 @@
                                 <br>
                                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
                             </div>
-                            <!-- Visor 3D de proteína (ahora a la derecha) -->
-                            <model-viewer
-                                src="https://corsproxy.io/?https://drive.google.com/uc?export=download&id=1WgEMUePxBp2rSqIYa8CTHRIqfgj7ogFB"
-                                alt="Modelo 3D generado con ChimeraX"
-                                shadow-intensity="1"
-                                camera-controls
-                                touch-action="none"
-                                ar
-                                disable-zoom
-                                exposure="0.8"
-                                camera-orbit="48deg 55deg 20m">
-                            </model-viewer>
                         </div>
                     </div>
                 </section>
