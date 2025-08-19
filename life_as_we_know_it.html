@@ -169,16 +169,16 @@
         }
 
         .main-container {
-            width: 100%;
-            padding: 0 0.5rem; /* Ajustado para bordes mínimos */
-            margin: 0 auto;
+            width: 100vw; /* Ocupa todo el ancho del viewport */
+            padding: 0; /* Sin padding lateral */
+            margin: 0; /* Sin márgenes */
             pointer-events: none;
         }
 
         @media (min-width: 768px) {
             .main-container {
-                padding: 0 1rem; /* Ajustado para bordes mínimos en tabletas y escritorio */
-                max-width: 1200px;
+                padding: 0; /* Sin padding en tabletas y escritorio */
+                max-width: none; /* No limita el ancho */
             }
         }
         
@@ -197,6 +197,13 @@
             grid-template-columns: 1fr;
             gap: 1.5rem;
             margin-top: 2rem;
+            padding: 0 1rem; /* Añade un padding interno para el contenido de la grid */
+        }
+        
+        @media (min-width: 768px) {
+            .layout-grid {
+                padding: 0 5%;
+            }
         }
         
         .section {
@@ -449,8 +456,8 @@
             }
 
             .main-container {
-                width: 100%;
-                padding: 0.5rem;
+                width: 100vw;
+                padding: 0;
             }
 
             .section {
@@ -1070,9 +1077,6 @@
             const newParticleCount = particleData.length + 1;
 
             const newPositions = new Float32Array(newParticleCount * 3);
-            const newColors = new Float32Array(newParticleCount * 3);
-            const newSizes = new Float32Array(newParticleCount);
-
             newPositions.set(oldPositions);
             newColors.set(oldColors);
             newSizes.set(oldSizes);
