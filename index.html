@@ -156,7 +156,7 @@
             text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(129, 140, 248, 0.7);
             animation: pulse-glow 3s infinite alternate;
         }
-        .hero p { font-size: clamp(1rem, 2.5vw, 1.3rem); max-width: 800px; margin: 1.5rem auto 0; text-shadow: 0 0 5px #000; }
+        .hero p { font-size: clamp(1rem, 2.5vw, 1.3rem); max-width: 800px; margin: 1.5rem auto 0; text-shadow: 0 0 5px #000; text-align: justify; }
         @keyframes pulse-glow {
             from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
             to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
@@ -177,6 +177,7 @@
         main p, .footer p {
             user-select: text; /* Allow text selection */
             cursor: default; /* Use default cursor to avoid I-beam on click */
+            text-align: justify; /* Justify all main text */
         }
 
         .layout-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 2rem; }
@@ -188,13 +189,13 @@
         }
         .section:hover { transform: translateY(-5px); box-shadow: 0 0 40px rgba(129, 140, 248, 0.2); }
         
-        .section h2, .section h3, .section p, .section .visualization-container, .section iframe {
+        .section h2, .section h3, .section p, .section .visualization-container {
              opacity: 0;
              transform: translateY(20px);
              transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
 
-        .section.is-visible h2, .section.is-visible h3, .section.is-visible p, .section.is-visible .visualization-container, .section.is-visible iframe {
+        .section.is-visible h2, .section.is-visible h3, .section.is-visible p, .section.is-visible .visualization-container {
             opacity: 1;
             transform: translateY(0);
         }
@@ -240,9 +241,8 @@
             stroke-opacity: 0.4; 
             transition: stroke-opacity 0.3s ease;
         }
-        iframe { width: 100%; height: 600px; border: 1px solid rgba(129, 140, 248, 0.3); border-radius: 8px; }
         
-        .footer { text-align: center; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
+        .footer { text-align: justify; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
         
         @media (min-width: 1025px) {
             .menu-toggle { display: none; }
@@ -381,7 +381,7 @@
                                 <li><a href="NUMEROS_BIOLOGOS.HTML">Números Importantes en Biología Celular</a></li>
                                 <li><a href="CURSO_BIOLOGIA_CELULAR.HTML">Curso Biología Celular</a></li>
                                 <li><a href="HISTOLOGIA.html">Histología y Tejidos</a></li>
-                                <li><a href="https://leolib87.github.io/Histologia_Embriologia/">Guía Interactiva Histologia-Embriologia</a></li>                                
+                                <li><a href="https://leolib87.github.io/Histologia_Embriologia/">Guía Interactiva Histologia-Embriologia</a></li>                                 
                                 <li><a href="cuerpo humano completo plantilla Lt.html">Anatomía Humana</a></li>
                             </ul>
                         </div>
@@ -392,7 +392,7 @@
                                 <li><a href="Autopoiesis_Fractal00.html">Simulación Autopoiesis (Fractal)</a></li>
                                 <li><a href="life_as_we_know_it.html">Life as We Know it - Karl Friston</a></li>
                                 <li><a href="Paper_Varela_1974.html">Paper de Varela (1974)</a></li>
-                                <li><a href="enactivism_revisionism.html">Enactivismo ¿Revisionismo o Revolucion? (1974)</a></li>                                
+                                <li><a href="enactivism_revisionism.html">Enactivismo ¿Revisionismo o Revolucion? (1974)</a></li>                                 
                             </ul>
                         </div>
                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>Herramientas de Investigación</h3>
@@ -413,8 +413,8 @@
                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>Filosofía y Cognición</h3>
                             <ul>
                                 <li><a href="filosofia_mente.html">Mente, Lenguaje y Realidad</a></li>
-                                <li><a href=" Ciencia_conciencia.html">Ciencia de la Conciencia</a></li>                               
-                                <li><a href="chemero.html">Metodologias Corporizadas Radicales</a></li>                       
+                                <li><a href=" Ciencia_conciencia.html">Ciencia de la Conciencia</a></li>                                 
+                                <li><a href="chemero.html">Metodologias Corporizadas Radicales</a></li>                                
                                 <li><a href="Intencionalidad_freeman.html">Intencionalidad- Walter Freeman</a></li>
                                 <li><a href="schopenhauer.html">Arthur Schopenhauer</a></li>
                                 <li><a href="varela_mente_mente.html">El Problema Mente-Mente - Francisco Varela </a></li>
@@ -423,7 +423,6 @@
                                 <li><a href="#inteligencia-artificial">IA y Sistemas Complejos</a></li>
                                 <li><a href="Feno_style.html">Aproximación Fenomenológica</a></li>
                                 <li><a href="#epistemologia">Epistemología del Conocer</a></li>
-                                <li><a href="#trazado-vida">Sentido de Vida y Muerte</a></li>
                                 <li><a href="conocer_fv.html">Conocer, FV</a></li>
                             </ul>
                         </div>
@@ -435,22 +434,22 @@
                             </ul>
                         </div>
                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0l-1.07-1.07m15.482 0l1.07 1.07m-1.07-1.07l-1.07 1.07m1.07-1.07l-1.07 1.07m-1.07-1.07l-1.07 1.07m1.07-1.07l-1.07 1.07M12 6.873l-1.07 1.07m2.14 0l-1.07-1.07m-1.07 1.07l-1.07-1.07m2.14 0l-1.07 1.07m-1.07 1.07l-1.07-1.07m2.14 0l-1.07 1.07" /></svg>Reflexiones Culturales</h3>
-                                <ul>
-                                    <li><a href="ambieguedades_mordernidad_peña.html">Las Ambiguedades de la Modernidad - Carlos Peña </a></li>
-                                    <li><a href="camino-de-servidumbre.html">Hayek- Camino de Servidumbre - Carlos Peña y Alejandro Vigo</a></li>
-                                    <li><a href="enemigos-de-la-realidad.html">Los Enemigos de la Realidad- Antonio Escohotado</a></li>
-                                    <li><a href="por_que importan_humanidades.html">¿Por que importan las Humanidades?- Carlos Peña</a></li>
-                                    <li><a href="escohotado_peirano.html">Verdad y Propaganda- Escohotado y Peirano</a></li>
-                                    <li><a href="Delirio Americano_Carlos_Granes _Carlos_Peña.html">Delirio Americano: Carlos Granes conversa con Carlos Peña</a></li>
-                                    <li><a href="peliculas.html">Reflexiones en el Cine</a></li>                                    
-                                    <li><a href="CINE_TIEMPO.html">Linea dr Tiempo Cine de Ciencia Ficciòn</a></li>                                   
-                                    <li><a href="MUSICA.HTML">Letras de Canciones</a></li>
-                                    <li><a href=" Dead_Flag.html">The Dead Flag Blues</a></li>
-                                    <li><a href="fundamentos_escuela_Austriaca.html">Fundamentos de la Escuela Austriaca- Martin Krause</a></li>
+                            <ul>
+                                <li><a href="ambieguedades_mordernidad_peña.html">Las Ambiguedades de la Modernidad - Carlos Peña </a></li>
+                                <li><a href="camino-de-servidumbre.html">Hayek- Camino de Servidumbre - Carlos Peña y Alejandro Vigo</a></li>
+                                <li><a href="enemigos-de-la-realidad.html">Los Enemigos de la Realidad- Antonio Escohotado</a></li>
+                                <li><a href="por_que importan_humanidades.html">¿Por que importan las Humanidades?- Carlos Peña</a></li>
+                                <li><a href="escohotado_peirano.html">Verdad y Propaganda- Escohotado y Peirano</a></li>
+                                <li><a href="Delirio Americano_Carlos_Granes _Carlos_Peña.html">Delirio Americano: Carlos Granes conversa con Carlos Peña</a></li>
+                                <li><a href="peliculas.html">Reflexiones en el Cine</a></li>                                 
+                                <li><a href="CINE_TIEMPO.html">Linea dr Tiempo Cine de Ciencia Ficciòn</a></li>                                
+                                <li><a href="MUSICA.HTML">Letras de Canciones</a></li>
+                                <li><a href=" Dead_Flag.html">The Dead Flag Blues</a></li>
+                                <li><a href="fundamentos_escuela_Austriaca.html">Fundamentos de la Escuela Austriaca- Martin Krause</a></li>
 
-                                   
-                                   
-                                </ul>
+                                
+                                
+                            </ul>
                         </div>
                     </div>
                 </li>
@@ -462,7 +461,7 @@
                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 20.25h12A2.25 2.25 0 0020.25 18V5.75A2.25 2.25 0 0018 3.5H6A2.25 2.25 0 003.75 5.75v12.5A2.25 2.25 0 006 20.25z" /></svg>Visualización de Datos</h3>
                             <ul>
                                 <li><a href="Writing_thinking.html">Escribir es pensar</a></li>
-                                <li><a href="https://html.energy/html-day/2025/index.html">HTML DAY</a></li>                                
+                                <li><a href="https://html.energy/html-day/2025/index.html">HTML DAY</a></li>                                 
                                 <li><a href="#analisis-redes">Introducción a las Redes</a></li>
                                 <li><a href="#elementos-comunes">Mapa Conceptual General</a></li>
                                 <li><a href="RED POLITICOS.html">Red de Políticos</a></li>
@@ -471,7 +470,7 @@
                                 <li><a href="treemap_ias.html">Treemap de IAs</a></li>
                                 <li><a href="INFLACION ARGENTINA RESPONSIVA.html">INFLACION EN ARGENTINA</a></li>
                                 <li><a href="https://soarxiv.org/">SOARXIV.ORG</a></li>
-                                <li><a href="diagrama_open_acess.html">Open Access</a></li>                                
+                                <li><a href="diagrama_open_acess.html">Open Access</a></li>                                 
                             </ul>
                         </div>
                         <div><h3><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" /></svg>Mapas Conceptuales</h3>
@@ -489,7 +488,6 @@
                                 <li><a href="IAS_BUSQUEDA.HTML">Buscador de IAs</a></li>
                                 <li><a href="googleias.html">IAs de Google</a></li>
                                 <li><a href="IAs.html">Red de IAs</a></li>
-                                <li><a href="#voyant-tools">Análisis con Voyant Tools</a></li>
                                 <li><a href="Paper_web.html">Plantilla Web para Papers</a></li>
                             </ul>
                         </div>
@@ -504,7 +502,7 @@
                                 <li><a href="Empleos_IES.html">Empleos en Educación Superior</a></li>
                                 <li><a href="Pedagogia-Biologia.html">Pedagogías en Biología (Chile)</a></li>
                                 <li><a href="QF.HTML">Química y Farmacia (Chile)</a></li>
-                                <li><a href="tiny_houses_web.html">Tiny Houses (Chile)</a></li>                                
+                                <li><a href="tiny_houses_web.html">Tiny Houses (Chile)</a></li>                                 
                             </ul>
                         </div>
                     </div>
@@ -555,7 +553,7 @@
                                 <li><a href="probando2gemini.html">Probando 2</a></li>
                                 <li><a href="web caos orden.html">Web Caos y Orden</a></li>
                                 <li><a href="AI- ESCRITURA- INCLUYE SHADOW FINAL.html">AI Escritura Incluye Shadow Final</a></li>
-                                <li><a href="experimento_proteina.html">Experimento Proteina</a></li>                                
+                                <li><a href="experimento_proteina.html">Experimento Proteina</a></li>                                 
                             </ul>
                         </div>
                     </div>
@@ -599,10 +597,10 @@
                 <section id="analisis-redes" class="glassmorphism" data-animate>
                     <h2>Análisis de Redes y Visualización de Datos</h2>
                     <p>Las conexiones lo son todo. A través del <span class="highlight">análisis de redes</span>, busco mapear y entender las relaciones ocultas en sistemas complejos, ya sean redes neuronales, interacciones sociales o la estructura de un texto. La <span class="highlight">visualización de datos</span> con herramientas como D3.js se convierte en un microscopio para observar patrones que de otro modo serían invisibles.</p>
-                     <h3 id="elementos-comunes">Mapa Conceptual General</h3>
-                     <div id="visualization" class="visualization-container"></div>
-                     <h3 id="redes-palabras">Red de Palabras Clave</h3>
-                     <div id="network-graph" class="visualization-container"></div>
+                    <h3 id="elementos-comunes">Mapa Conceptual General</h3>
+                    <div id="visualization" class="visualization-container"></div>
+                    <h3 id="redes-palabras">Red de Palabras Clave</h3>
+                    <div id="network-graph" class="visualization-container"></div>
                 </section>
                 
                 <section id="inteligencia-artificial" class="glassmorphism" data-animate>
@@ -610,11 +608,6 @@
                     <p>La <span class="highlight">Inteligencia Artificial</span> no es solo una herramienta, sino un espejo que refleja nuestras propias nociones de inteligencia y conciencia. Investigo los modelos de IA, no solo por su capacidad predictiva, sino como <span class="highlight">sistemas complejos</span> que nos permiten simular y explorar las reglas de la emergencia, el aprendizaje y la auto-organización, conectando directamente con los principios de la autopoiesis.</p>
                 </section>
 
-                <section id="voyant-tools" class="glassmorphism" data-animate>
-                    <h2>Análisis de Textos con Voyant Tools</h2>
-                    <iframe src="https://voyant-tools.org/tool/CollocatesGraph/?query=a&query=the&query=powerpuff&mode=corpus&corpus=9e0ea2351023ab13cbc0979214742c17" title="Análisis de texto con Voyant Tools"></iframe>
-                </section>
-                
                 <div id="ciencias-cognitivas" style="display:none;"></div>
                 <div id="epistemologia" style="display:none;"></div>
             </main>
@@ -820,7 +813,7 @@
                     if (entry.isIntersecting) {
                         entry.target.classList.add('is-visible');
                         
-                        const elementsToAnimate = entry.target.querySelectorAll('h2, h3, p, .visualization-container, iframe');
+                        const elementsToAnimate = entry.target.querySelectorAll('h2, h3, p, .visualization-container');
                         elementsToAnimate.forEach((el, index) => {
                            el.style.transitionDelay = `${index * 150}ms`;
                         });
