@@ -169,11 +169,17 @@
         }
 
         .main-container {
-            width: 95%;
-            max-width: 1200px;
+            width: 100%;
+            padding: 0 2rem;
             margin: 0 auto;
-            padding: 1rem clamp(0.5rem, 2.5vw, 2rem) 1rem;
             pointer-events: none;
+        }
+
+        @media (min-width: 768px) {
+            .main-container {
+                padding: 0 5%;
+                max-width: 1200px;
+            }
         }
         
         main, .footer, .section, .hero-content {
@@ -591,13 +597,13 @@
     <nav class="glassmorphism">
         <div class="nav-content">
             <div class="nav-logo">
-                <a href="index.html">
+                <a href="#">
                     <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-8 w-8 md:h-10 md:w-10 rounded-full">
                     <span>O.C.V.M.</span>
                 </a>
             </div>
             <ul class="nav-container" id="nav-menu">
-                <li><a href="index.html">
+                <li><a href="#inicio">
                     <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
                     Inicio</a></li>
                 <li><a href="#contacto">
@@ -776,8 +782,13 @@
             setupNavigation();
             setupScrollAnimations();
             setupTabs();
+            // Start the simulation if the "simulacion" tab is active on load
             if (document.getElementById('simulacion').classList.contains('active')) {
                 initPrimordialSoup();
+            }
+            // Create flow diagram if the "prueba" tab is active on load
+            if (document.getElementById('prueba').classList.contains('active')) {
+                createFlowDiagram();
             }
         });
 
@@ -790,27 +801,34 @@
                 camera.position.z = 50;
                 renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("bg-canvas"), alpha: true });
                 renderer.setSize(window.innerWidth, window.innerHeight);
+                
                 const pointCount = 200;
                 const positions = new Float32Array(pointCount * 3);
                 const pointGeo = new THREE.BufferGeometry();
+                
                 for (let i = 0; i < pointCount; i++) {
                     positions[i * 3] = (Math.random() - 0.5) * 400;
                     positions[i * 3 + 1] = (Math.random() - 0.5) * 400;
                     positions[i * 3 + 2] = (Math.random() - 0.5) * 400;
                 }
+                
                 pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
                 const pointMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.5, transparent: true, opacity: 0.8 });
                 points = new THREE.Points(pointGeo, pointMaterial);
                 scene.add(points);
+                
                 regenerateLines();
+                
                 window.addEventListener("resize", onWindowResize, false);
                 document.addEventListener('mousemove', onMouseMove, false);
                 renderer.domElement.addEventListener('click', onCanvasClick, false);
+                
                 animate();
             } catch (error) {
                 console.error('Error al inicializar Three.js de fondo:', error);
             }
         }
+
         function onWindowResize() {
             if(camera && renderer) {
                 camera.aspect = window.innerWidth / window.innerHeight;
@@ -818,11 +836,13 @@
                 renderer.setSize(window.innerWidth, window.innerHeight);
             }
         }
+
         let mouseX = 0, mouseY = 0;
         function onMouseMove(event) {
             mouseX = (event.clientX - window.innerWidth / 2) / 100;
             mouseY = (event.clientY - window.innerHeight / 2) / 100;
         }
+
         function animate() {
             requestAnimationFrame(animate);
             if(scene && camera && renderer && points && lines) {
@@ -834,6 +854,7 @@
                 renderer.render(scene, camera);
             }
         }
+        
         function onCanvasClick(event) {
             const mouse = new THREE.Vector2();
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -845,6 +866,7 @@
             const pos = camera.position.clone().add(dir.multiplyScalar(distance));
             addPoint(pos);
         }
+
         function addPoint(position) {
             const oldPositions = points.geometry.attributes.position.array;
             const newPointCount = oldPositions.length / 3 + 1;
@@ -857,6 +879,7 @@
             points.geometry.attributes.position.needsUpdate = true;
             regenerateLines();
         }
+
         function regenerateLines() {
             if (lines) scene.remove(lines);
             const pointPositions = points.geometry.attributes.position.array;
@@ -894,7 +917,7 @@
             ACTIVE: { id: 3, color: new THREE.Color(1.0, 0.3, 0.3), baseSize: 24 }
         };
 
-        const particleData = [];
+        let particleData = [];
         const internalCount = 20;
         const sensoryCount = 15;
         const activeCount = 15;
@@ -907,19 +930,19 @@
             const width = simCanvas.offsetWidth;
             const height = simCanvas.offsetHeight;
 
-            // Clean up previous simulation if it exists
-            if (simScene) {
-                simScene.children.forEach(child => simScene.remove(child));
-                simScene = null;
+            if (simRenderer) {
                 simRenderer.dispose();
-                simRenderer.domElement = null;
-                particleData.length = 0;
+            }
+            if (simScene) {
+                while (simScene.children.length > 0) {
+                    simScene.remove(simScene.children[0]);
+                }
             }
 
+            particleData = [];
             simScene = new THREE.Scene();
             simCamera = new THREE.OrthographicCamera(width / -2, width / 2, height / 2, height / -2, 1, 1000);
             simCamera.position.z = 100;
-
             simRenderer = new THREE.WebGLRenderer({ canvas: simCanvas, antialias: true, alpha: true });
             simRenderer.setPixelRatio(window.devicePixelRatio);
             simRenderer.setSize(width, height);
@@ -931,7 +954,6 @@
 
             let particleIndex = 0;
 
-            // Initialize Internal Particles (center of the "cell")
             for (let i = 0; i < internalCount; i++, particleIndex++) {
                 const radius = 50;
                 const angle = Math.random() * 2 * Math.PI;
@@ -951,7 +973,6 @@
                 });
             }
 
-            // Initialize Sensory and Active Particles (Markov Blanket)
             for (let i = 0; i < sensoryCount + activeCount; i++, particleIndex++) {
                 const isSensory = i < sensoryCount;
                 const type = isSensory ? PARTICLE_TYPES.SENSORY : PARTICLE_TYPES.ACTIVE;
@@ -973,7 +994,6 @@
                 });
             }
 
-            // Initialize External Particles
             for (let i = 0; i < externalCount; i++, particleIndex++) {
                 const x = (Math.random() - 0.5) * width * 0.8;
                 const y = (Math.random() - 0.5) * height * 0.8;
@@ -1006,12 +1026,10 @@
             particles = new THREE.Points(particleGeometry, particleMaterial);
             simScene.add(particles);
 
-            // Initialize Connection Lines
             const lineMaterial = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.2 });
             connectionLines = new THREE.LineSegments(new THREE.BufferGeometry(), lineMaterial);
             simScene.add(connectionLines);
-
-            // Event Listeners
+            
             simCanvas.addEventListener('click', onSimCanvasClick, false);
             window.addEventListener('resize', onSimWindowResize, false);
             document.getElementById('reset-simulation').addEventListener('click', initPrimordialSoup);
@@ -1046,25 +1064,18 @@
             vector.unproject(simCamera);
 
             const newParticleType = PARTICLE_TYPES.EXTERNAL;
-            const newParticleCount = particleData.length + 1;
-
             const oldPositions = particles.geometry.attributes.position.array;
             const oldColors = particles.geometry.attributes.color.array;
             const oldSizes = particles.geometry.attributes.size.array;
+            const newParticleCount = particleData.length + 1;
 
             const newPositions = new Float32Array(newParticleCount * 3);
             const newColors = new Float32Array(newParticleCount * 3);
             const newSizes = new Float32Array(newParticleCount);
 
-            for (let i = 0; i < particleData.length; i++) {
-                newPositions[i * 3] = oldPositions[i * 3];
-                newPositions[i * 3 + 1] = oldPositions[i * 3 + 1];
-                newPositions[i * 3 + 2] = oldPositions[i * 3 + 2];
-                newColors[i * 3] = oldColors[i * 3];
-                newColors[i * 3 + 1] = oldColors[i * 3 + 1];
-                newColors[i * 3 + 2] = oldColors[i * 3 + 2];
-                newSizes[i] = oldSizes[i];
-            }
+            newPositions.set(oldPositions);
+            newColors.set(oldColors);
+            newSizes.set(oldSizes);
 
             const lastIndex = newParticleCount - 1;
             newPositions[lastIndex * 3] = vector.x;
@@ -1104,7 +1115,7 @@
         }
 
         function simAnimate() {
-            if (!simRunning || !particles || !particles.geometry || !particles.geometry.attributes.position || simPaused) {
+            if (!simRunning || simPaused) {
                 requestAnimationFrame(simAnimate);
                 return;
             }
@@ -1119,6 +1130,7 @@
             const width = simCamera.right - simCamera.left;
             const height = simCamera.top - simCamera.bottom;
             const boundary = Math.min(width, height) * 0.4;
+            const forceMultiplier = simSpeed * 0.05;
 
             for (let i = 0; i < totalParticles; i++) {
                 const data = particleData[i];
@@ -1126,30 +1138,25 @@
                 const force = new THREE.Vector3();
                 let interactionCount = 0;
 
-                // Boundary force to keep particles within canvas
                 const distFromCenter = particlePos.length();
                 if (distFromCenter > boundary) {
                     const boundaryForce = particlePos.clone().normalize().multiplyScalar(-0.05 * (distFromCenter - boundary) * simSpeed);
                     force.add(boundaryForce);
                 }
 
-                // Interactions based on particle types
                 for (let j = 0; j < totalParticles; j++) {
                     if (i === j) continue;
                     const neighborPos = new THREE.Vector3(positions[j * 3], positions[j * 3 + 1], positions[j * 3 + 2]);
                     const neighborData = particleData[j];
                     const distance = particlePos.distanceTo(neighborPos);
 
-                    // Repulsive force to prevent overlap
                     if (distance < 20 && distance > 0) {
                         const repulsiveForce = particlePos.clone().sub(neighborPos).normalize().multiplyScalar(0.5 / distance * simSpeed);
                         force.add(repulsiveForce);
                         interactionCount++;
                     }
 
-                    // Markov Blanket interactions
                     if (data.type !== PARTICLE_TYPES.EXTERNAL && neighborData.type !== PARTICLE_TYPES.EXTERNAL) {
-                        // Cohesion within the Markov Blanket
                         if (distance < 100 && distance > 20) {
                             const attractiveForce = neighborPos.clone().sub(particlePos).normalize().multiplyScalar(0.01 * simSpeed);
                             force.add(attractiveForce);
@@ -1163,14 +1170,12 @@
                         }
                     }
 
-                    // Sensory particles influenced by external particles
                     if (data.type === PARTICLE_TYPES.SENSORY && neighborData.type === PARTICLE_TYPES.EXTERNAL && distance < 150) {
                         const sensoryForce = neighborPos.clone().sub(particlePos).normalize().multiplyScalar(0.005 * simSpeed);
                         force.add(sensoryForce);
                         interactionCount++;
                     }
 
-                    // Active particles influence external particles
                     if (data.type === PARTICLE_TYPES.ACTIVE && neighborData.type === PARTICLE_TYPES.EXTERNAL && distance < 100) {
                         const activeForce = particlePos.clone().sub(neighborPos).normalize().multiplyScalar(0.003 * simSpeed);
                         particleData[j].vel.add(activeForce);
@@ -1178,11 +1183,9 @@
                     }
                 }
 
-                // Update energy and particle size
                 data.energy = Math.min(1.5, Math.max(0.5, data.energy + (interactionCount * 0.01 - 0.005)));
                 sizes[i] = data.type.baseSize * data.energy;
 
-                // Update velocity and position
                 const friction = 0.95;
                 data.vel.add(force).multiplyScalar(friction);
                 particlePos.add(data.vel.clone().multiplyScalar(simSpeed));
@@ -1192,7 +1195,6 @@
                 positions[i * 3 + 2] = particlePos.z;
             }
 
-            // Update connection lines
             if (connectionLines.geometry) connectionLines.geometry.dispose();
             const lineGeometry = new THREE.BufferGeometry();
             lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
@@ -1209,6 +1211,7 @@
         // --- DIAGRAMA DE FLUJO D3.JS ---
         function createFlowDiagram() {
             const container = d3.select("#flow-diagram");
+            container.html(''); // Clear previous SVG
             const width = container.node().getBoundingClientRect().width;
             const height = window.innerWidth <= 640 ? 200 : 320;
             const margin = {top: 20, right: 20, bottom: 20, left: 20};
@@ -1238,21 +1241,14 @@
                 ]
             };
 
-            const simulation = d3.forceSimulation(data.nodes)
-                .force("link", d3.forceLink(data.links).id(d => d.id).distance(100))
-                .force("charge", d3.forceManyBody().strength(-200))
-                .force("center", d3.forceCenter(width / 2, height / 2))
-                .stop();
-
             const nodeRadius = window.innerWidth <= 640 ? 20 : 30;
-            data.nodes[0].fx = data.nodes[0].x;
-            data.nodes[0].fy = data.nodes[0].y;
-            data.nodes[1].fx = data.nodes[1].x;
-            data.nodes[1].fy = data.nodes[1].y;
-            data.nodes[2].fx = data.nodes[2].x;
-            data.nodes[2].fy = data.nodes[2].y;
-            data.nodes[3].fx = data.nodes[3].x;
-            data.nodes[3].fy = data.nodes[3].y;
+            data.nodes.forEach(d => {
+                const nodeSizeFactor = window.innerWidth <= 640 ? 0.8 : 1;
+                d.x *= nodeSizeFactor;
+                d.y *= nodeSizeFactor;
+                d.fx = d.x;
+                d.fy = d.y;
+            });
             
             const link = svg.append("g")
                 .attr("class", "links")
@@ -1292,7 +1288,6 @@
                 tooltip.html(d.description)
                     .style("left", (event.pageX + 10) + "px")
                     .style("top", (event.pageY - 28) + "px");
-
                 d3.select(event.currentTarget).classed("active", true);
             }).on("mouseout", () => {
                 tooltip.transition().duration(500).style("opacity", 0);
@@ -1362,25 +1357,18 @@
                     initPrimordialSoup();
                 }
                 simCanvas.style.display = 'block';
-                flowDiagramContainer.style.display = 'none';
+                if(flowDiagramContainer) flowDiagramContainer.style.display = 'none';
             } else if (tabID === 'prueba') {
                 simRunning = false;
-                simCanvas.style.display = 'none';
-                flowDiagramContainer.style.display = 'block';
-                flowDiagramContainer.innerHTML = '';
-                createFlowDiagram();
+                if(simCanvas) simCanvas.style.display = 'none';
+                if(flowDiagramContainer) {
+                    flowDiagramContainer.style.display = 'block';
+                    createFlowDiagram();
+                }
             } else {
                 simRunning = false;
-                simCanvas.style.display = 'none';
-                flowDiagramContainer.style.display = 'none';
-            }
-
-            if (tabID !== 'simulacion') {
-                simScene = null;
-                simRenderer = null;
-                particles = null;
-                connectionLines = null;
-                particleData.length = 0;
+                if(simCanvas) simCanvas.style.display = 'none';
+                if(flowDiagramContainer) flowDiagramContainer.style.display = 'none';
             }
         }
     </script>
