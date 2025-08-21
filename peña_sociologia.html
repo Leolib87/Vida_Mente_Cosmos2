@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sociología y Crisis: Conversación con Carlos Peña | O.C.V.M.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --primary-text: #e5e7eb;
+            --primary-glow: #818cf8;
+            --secondary-glow: #22d3ee;
+            --font-main: 'Inter', sans-serif;
+            --nav-height: 70px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: #000000;
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+        
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            cursor: crosshair;
+        }
+
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.menu-open {
+            overflow: hidden;
+        }
+        
+        nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+            padding: 0 5%;
+            pointer-events: auto;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .nav-logo a {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            text-shadow: 0 0 8px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-container { display: flex; justify-content: center; align-items: center; list-style: none; height: 100%; gap: 0.5rem;}
+        nav .nav-container > li { position: relative; height: 100%; display: flex; align-items: center; }
+        nav .nav-container > li > a {
+            color: var(--primary-text); text-decoration: none; font-size: clamp(0.9em, 1.2vw, 1.05em); font-weight: 500;
+            transition: color 0.3s ease, text-shadow 0.3s ease; padding: 0 1rem; display: flex; align-items: center; gap: 8px;
+        }
+        nav .nav-container > li > a:hover, nav .nav-container > li:hover > a { color: #FFFFFF; text-shadow: 0 0 12px var(--primary-glow); }
+        
+        .nav-icon { width: 20px; height: 20px; stroke-width: 1.5; }
+        
+        .hero {
+            min-height: 80vh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; position: relative;
+            padding: 1rem;
+            padding-top: var(--nav-height);
+        }
+        .hero-content { position: relative; z-index: 2; animation: fadeIn 2s ease-in; }
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 5.5rem); font-weight: 700; color: #fff;
+            text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow), 0 0 40px rgba(129, 140, 248, 0.7);
+            animation: pulse-glow 3s infinite alternate;
+        }
+        .hero p.subtitle { font-size: clamp(1.2rem, 3vw, 1.8rem); color: var(--secondary-glow); text-shadow: 0 0 8px var(--secondary-glow); margin-top: 0.5rem; }
+        .hero p.description { font-size: clamp(1rem, 2.5vw, 1.2rem); max-width: 900px; margin: 1.5rem auto 0; text-shadow: 0 0 5px #000; }
+        
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow); }
+            to { text-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow); }
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .main-container { 
+            width: 100%;
+            max-width: none;
+            margin: 0 auto; 
+            padding: 1rem 2.5vw;
+            pointer-events: none;
+        }
+        
+        main, .footer, .section, .hero-content {
+            pointer-events: auto;
+        }
+
+        main p, .footer p, main li, main blockquote {
+            user-select: text;
+            cursor: default;
+            text-align: justify;
+        }
+
+        .layout-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 2rem; }
+        
+        .section {
+            padding: clamp(1.5rem, 5vw, 2.5rem);
+            border-radius: 12px; margin-bottom: 2rem; position: relative;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .section:hover { transform: translateY(-5px); box-shadow: 0 0 40px rgba(129, 140, 248, 0.2); }
+        
+        .section h2, .section .tab-nav, .section .tab-content {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .section.is-visible h2, .section.is-visible .tab-nav, .section.is-visible .tab-content-container {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        h2 {
+            font-size: clamp(1.5rem, 5vw, 2.2rem); color: var(--primary-text); text-shadow: 0 0 8px var(--secondary-glow);
+            border-bottom: 1px solid var(--primary-glow); padding-bottom: 1rem; margin-bottom: 1.5rem;
+        }
+        h3 { font-size: clamp(1.4rem, 4vw, 1.9rem); color: var(--primary-glow); margin: 2.5rem 0 1.5rem 0; }
+        h4 { font-size: clamp(1.2rem, 3vw, 1.5rem); color: var(--secondary-glow); margin-bottom: 1rem; margin-top: 2rem; }
+        
+        /* --- ESTILOS PARA TABS Y CONTENIDO --- */
+        .color-personaje { color: #F59E0B; font-weight: 600; } /* Mustard Yellow */
+        .color-concepto { color: var(--primary-glow); font-style: italic; font-weight: 500;}
+        .color-idea { color: #a7f3d0; } /* Mint green */
+
+        .tab-nav {
+            display: flex;
+            flex-wrap: wrap;
+            border-bottom: 1px solid rgba(129, 140, 248, 0.3);
+            margin-bottom: 2rem;
+        }
+        .tab-button {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--primary-text);
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-bottom: -1px;
+        }
+        .tab-button:hover {
+            color: #fff;
+            background-color: rgba(129, 140, 248, 0.1);
+        }
+        .tab-button.active {
+            color: var(--primary-glow);
+            border-bottom-color: var(--primary-glow);
+            text-shadow: 0 0 8px var(--primary-glow);
+            font-weight: 600;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeInContent 0.6s ease forwards;
+        }
+        @keyframes fadeInContent {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card {
+            background-color: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        .quote-block {
+            border-left: 3px solid var(--primary-glow);
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #c7d2fe;
+        }
+        
+        .footer { text-align: center; padding: 2.5rem 1rem; color: var(--primary-glow); border-top: 1px solid var(--primary-text); margin-top: 2rem; }
+        
+        @media (min-width: 1025px) {
+            .menu-toggle { display: none; }
+            .nav-container { display: flex; }
+        }
+
+        @media (max-width: 1024px) {
+            .nav-content { justify-content: space-between; }
+            .nav-container {
+                position: fixed;
+                top: var(--nav-height);
+                left: 0;
+                width: 100%;
+                height: calc(100vh - var(--nav-height));
+                background: rgba(17, 24, 39, 0.95);
+                backdrop-filter: blur(15px);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+                transform: translateY(-110%);
+                overflow-y: auto;
+                padding: 2rem;
+            }
+            body.menu-open .nav-container {
+                transform: translateY(0);
+            }
+
+            nav .nav-container > li { width: 100%; height: auto; text-align: center; }
+            nav .nav-container > li > a { padding: 1rem; width: 100%; font-size: 1.5em;}
+            
+            .menu-toggle {
+                display: block; position: relative; z-index: 1001;
+                width: 30px; height: 22px;
+                background: none; border: none; cursor: pointer;
+            }
+            .icon-bar {
+                display: block; width: 100%; height: 3px; background-color: var(--primary-text); 
+                margin: 6px 0; transition: all 0.3s ease-in-out;
+                border-radius: 2px;
+            }
+
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) { transform: rotate(45deg) translate(7px, 7px); }
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) { opacity: 0; }
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+    <nav class="glassmorphism">
+        <div class="nav-content">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-8 w-8 md:h-10 md:w-10 rounded-full">
+                    <span>O.C.V.M.</span>
+                </a>
+            </div>
+            <ul class="nav-container" id="nav-menu">
+                <li><a href="index.html">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+                    Inicio</a></li>
+                <li><a href="#contacto">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                    Contacto</a></li>
+            </ul>
+            <button class="menu-toggle" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container" id="inicio">
+        <div class="hero">
+            <div class="hero-content">
+                <h1>Sociología y Crisis</h1>
+                <p class="subtitle">Una Conversación con Carlos Peña</p>
+                <p class="description">
+                    Un análisis profundo sobre el lugar de la sociología en los tiempos actuales, su relación con la crisis, la crítica y otros relatos como la ciencia de datos, y su vínculo indisoluble con el proyecto de la Ilustración y la democracia.
+                </p>
+            </div>
+        </div>
+
+        <div class="layout-grid">
+            <main class="content">
+                
+                <section id="conferencia-contenido" class="glassmorphism" data-animate>
+                    <h2>Análisis de la Conversación</h2>
+                    
+                    <div class="tab-nav">
+                        <button class="tab-button active" onclick="changeTab(event, 'origen')">Origen en la Crisis</button>
+                        <button class="tab-button" onclick="changeTab(event, 'relatos')">Frente a Otros Relatos</button>
+                        <button class="tab-button" onclick="changeTab(event, 'critica')">El Lugar de la Crítica</button>
+                        <button class="tab-button" onclick="changeTab(event, 'contingencia')">Contingencia y Universalismo</button>
+                        <button class="tab-button" onclick="changeTab(event, 'conclusion')">Conclusión: Estructura y Agencia</button>
+                    </div>
+
+                    <div class="tab-content-container">
+                        <div id="origen" class="tab-content active">
+                            <h3>El Nacimiento de la Sociología en la Modernidad</h3>
+                            <p class="mb-4">La sociología, y las ciencias sociales en general, aparecen de la mano de la <span class="color-concepto">sociedad moderna</span>: esa suma de capitalismo, estado nacional y mediatización de la cultura. Inevitablemente, nacen como una reflexión sobre la <span class="color-idea">crisis</span>, es decir, sobre la ruptura del antiguo orden y la aparición de un mundo nuevo, inédito y desconcertante.</p>
+                            <p class="mb-4">Lo social se comprendía tradicionalmente como una entidad con una finalidad intrínseca. De pronto, en la modernidad, aparecen fenómenos como la individuación, una nueva estructura social y una pobreza masiva desconocida hasta entonces. Este "desajuste del orden social", como lo llamó <span class="color-personaje">Auguste Comte</span>, es una crisis formidable que requiere ser reflexionada.</p>
+                            <blockquote class="quote-block">
+                                La sociología, en cambio, para decirlo ya en síntesis, es la conciencia que la sociedad moderna se esfuerza por tener acerca de sí misma. Y este es el primer paso para que la sociedad se guíe a sí misma, y esto último, que la sociedad se guíe a sí misma, recordémoslo, es el ideal rusoniano de la democracia, nada menos.
+                            </blockquote>
+                            <p>Sin este esfuerzo reflexivo, que también comparte la literatura —la "Comedia Humana" de <span class="color-personaje">Balzac</span> nace junto con la sociología—, andaríamos desorientados, pasto del autoritarismo. Solo una sociedad consciente de sí misma es capaz de guiarse, y a eso llamamos democracia. Hay, por tanto, un vínculo indisoluble entre las ciencias sociales, la modernidad y el ideal democrático.</p>
+                        </div>
+
+                        <div id="relatos" class="tab-content">
+                            <h3>La Sociología Frente a la Ciencia de Datos y el Periodismo</h3>
+                            <p class="mb-4">Un debate común hoy es que otros relatos, como la <span class="color-concepto">ciencia de datos</span> y el <span class="color-concepto">periodismo</span>, han ganado más prominencia para generar reflexividad social, relegando a la sociología a un lugar secundario.</p>
+                            
+                            <h4>Sociología vs. Periodismo</h4>
+                            <p class="mb-4">El periodismo, la crónica de actualidad, tiene un parentesco con las ciencias sociales. Sin embargo, la sociología es un esfuerzo reflexivo que supone <span class="color-idea">razones de segundo orden</span>. Es una forma de comprensión de lo social desde la teoría, de la cual la crónica carece. La crónica se deja hipnotizar por los hechos sin indagar en el patrón subyacente.</p>
+                            <blockquote class="quote-block">
+                                La sociología parte de una sospecha que está en <span class="color-personaje">Hegel</span> y <span class="color-personaje">Marx</span>: lo que acontece a la vista no es lo que acontece, porque lo que acontece está por debajo de los hechos. Como dice <span class="color-personaje">Marx</span> en "El Capital": "A primera vista, la sociedad capitalista se nos aparece como un inmenso arsenal de mercancías". El esfuerzo reflexivo consiste en bucear por debajo de ese escenario.
+                            </blockquote>
+                            
+                            <h4>Sociología vs. Big Data</h4>
+                            <p class="mb-4">La idea de que los datos hablan por sí mismos es una tontería. Los datos son como un testigo en un juicio: hay que interrogarlos, y para eso se necesitan las preguntas que aporta la teoría de las ciencias sociales. La mera facticidad es muda.</p>
+                            <p>Un estadístico puede describir las curvas demográficas, pero se le escapará el <span class="color-idea">sentido</span>, el significado que alienta esa conducta. El gran misterio, ya planteado por el teólogo del siglo XVI <span class="color-personaje">Luis de Molina</span>, es explicar la divergencia entre las regularidades estadísticas y la conducta individual. Sabemos que la gente en general peca, pero lo sorprendente es que algunos no, o pecan menos. Explicar esta divergencia es lo que hacen las ciencias sociales.</p>
+                        </div>
+                        
+                        <div id="critica" class="tab-content">
+                            <h3>El Lugar de la Crítica en una Sociología Ilustrada</h3>
+                            <p class="mb-4">La sociología es un producto <span class="color-concepto">ilustrado</span>. Nace con la pretensión de que los seres humanos compartimos una racionalidad que nos permite comprender el mundo, una racionalidad independiente de nuestros intereses y pasiones. Hoy, sin embargo, asistimos a un fenómeno, especialmente en la universidad, al que creo hay que oponerse: la idea de que la racionalidad no existe, que solo hay intereses, pasiones y posiciones de poder, como diría <span class="color-personaje">Foucault</span>.</p>
+                            <blockquote class="quote-block">
+                                Esta idea de la sospecha, atribuida a los "maestros de la sospecha" (<span class="color-personaje">Marx</span>, <span class="color-personaje">Nietzsche</span>, <span class="color-personaje">Freud</span>), es llevada al extremo por el postestructuralismo francés. Descreer de la racionalidad es descreer de la posibilidad de las ciencias sociales y de la universidad misma.
+                            </blockquote>
+                            <p>Para decirlo polémicamente, esta visión me parece un sucedáneo de sociología y filosofía. <span class="color-personaje">Foucault</span>, un autor relativamente sencillo para gente poco ilustrada, provee un marco de análisis que reduce todo a procesos de subjetivación y poder. Si bien estos análisis son interesantes, no pueden agotar el quehacer de las ciencias sociales.</p>
+
+                            <h4>Crítica como Revelación de la Contingencia</h4>
+                            <p class="mb-4">Entonces, ¿cuál es el lugar de la crítica en una sociología ilustrada? Lo que enseña una sociología radicalmente ilustrada, como diría <span class="color-personaje">Luhmann</span>, es que el mundo social es <span class="color-idea">contingente</span>. Es de esta manera, pero podría ser de otra.</p>
+                            <p>La crítica surge de esta revelación. Las ciencias sociales nos muestran que el mundo es así, pero pudo ser de otra manera. Hay una conexión indisoluble entre crítica y ciencias sociales. La crítica es un producto de la racionalidad, en la medida que la razón, reflexionando sobre sí misma (como en <span class="color-personaje">Kant</span>), es capaz de descubrir sus límites y mostrar su contingencia. Lo opuesto a la crítica es la ideología, que hace la vista gorda ante la realidad que contradice sus convicciones.</p>
+                        </div>
+
+                        <div id="contingencia" class="tab-content">
+                            <h3>Contingencia, Ironía y el Dilema del Universalismo</h3>
+                            <p class="mb-4">La idea de la contingencia tiene un correlato ético, como lo plantea <span class="color-personaje">Richard Rorty</span> en "Contingencia, ironía y solidaridad". Él propone una ética basada en el reconocimiento del sufrimiento del otro, pero sin un fundamento metafísico, lo que supone una crítica radical al principio de <span class="color-concepto">universalismo</span>.</p>
+                            
+                            <h4>La Tensión entre lo Universal y lo Particular</h4>
+                            <p class="mb-4">La crítica a los universales, que se ha hecho desde la clase (<span class="color-personaje">Marx</span>), el género (feminismo) o el medio ambiente, busca mostrar los límites del proyecto moderno, presentándolo como particular. ¿Cómo se resuelve esta tensión?</p>
+                            <p><span class="color-personaje">Carlos Peña:</span> Hay que distinguir dos maneras de concebir el universalismo. Una, el objeto de la crítica de <span class="color-personaje">Rorty</span>, es la idea de que hay principios cuya validez es una realidad sustancial, un "espejo de la naturaleza" con el que podemos comparar nuestros enunciados. Esa idea hay que descartarla.</p>
+                            <blockquote class="quote-block">
+                                Pero hay otra manera de sostener nuestras pretensiones de universalidad, que es decir: "yo creo en estas pretensiones porque están suficientemente justificadas ante la audiencia de la que hablo". Esta es la <span class="color-concepto">concepción epistémica de la verdad</span>. Si compartimos un lenguaje, podemos justificar algunas de nuestras aserciones de manera universal. Y en eso, <span class="color-personaje">Rorty</span> estaría de acuerdo.
+                            </blockquote>
+                            <p>Todo universalismo se afirma desde una particularidad. Nadie vive en la universalidad. El equívoco es pensar que sí. Lo que decimos es: a la luz de la particularidad donde me despliego, puedo afirmar esta universalidad.</p>
+                        </div>
+                        
+                        <div id="conclusion" class="tab-content">
+                            <h3>Conclusión: La Tensión entre Estructura y Agencia</h3>
+                            <p class="mb-4">La sociología cabalga en una tensión constante entre el análisis de la <span class="color-concepto">facticidad</span> (las herencias, los accidentes de la cuna) y la aspiración <span class="color-concepto">normativa</span> (ofrecer imágenes de futuro). Es crucial poner sobre la mesa la facticidad, pero la sociología no puede renunciar a esa aspiración normativa, pues lo contrario es una sociedad sin esperanza.</p>
+                            <blockquote class="quote-block">
+                                Lo más radical que enseña la sociología es que ni la naturaleza ni la historia tienen la última palabra. La sociología le niega títulos a la naturaleza para guiarnos, puesto que la sociedad no es naturaleza. Y le niega títulos a la historia: no estamos atados al pasado.
+                            </blockquote>
+                            <p>Nos enseña que el mundo es contingente. ¿Y qué quiere decir eso? Que puede ser de cualquier forma, y que en eso, la deliberación humana colectiva tiene un lugar. Esa es la justificación final de la democracia: decidir cómo queremos vivir.</p>
+                            
+                            <h4>El Eco de un Debate Teológico</h4>
+                            <p class="mb-4">Esta tensión intrínseca entre las teorías más agentivas y las más estructuralistas es una herencia de un viejo debate teológico. Está en la discusión entre <span class="color-personaje">Pelagio</span> y <span class="color-personaje">San Agustín</span>.</p>
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div class="card">
+                                    <h4 style="color: var(--primary-glow);">Pelagio (Agencia)</h4>
+                                    <p>Sostenía que cada uno se salva por su propia voluntad. Dios nos dio libre albedrío, y la voluntad tiene la palabra final en el destino humano.</p>
+                                </div>
+                                <div class="card">
+                                    <h4 style="color: var(--secondary-glow);">San Agustín (Estructura + Agencia)</h4>
+                                    <p>Refutó a <span class="color-personaje">Pelagio</span>, argumentando que la gracia divina tiene una porción muy importante. Somos una mezcla de voluntad (agencia) y gracia (estructura).</p>
+                                </div>
+                            </div>
+                            <p class="mt-4"><span class="color-idea">Hoy día, todas las ciencias sociales son como agustinianas. No son pelagianas.</span></p>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+        <footer class="footer" id="contacto">
+            <h2>Contacto</h2>
+            <p>Este espacio es una cartografía personal y una invitación al diálogo.</p>
+            <p style="margin-top:1.5rem; font-size: 0.9em;">La vida es terriblemente bella cuando los jugadores juegan. | 2025</p>
+        </footer>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof THREE !== 'undefined') {
+                initThreeJS();
+            } else {
+                console.error("Three.js not loaded");
+            }
+            setupNavigation();
+            setupScrollAnimations();
+        });
+
+        let scene, camera, renderer, points, lines;
+        function initThreeJS() {
+            try {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+                camera.position.z = 50;
+                renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("bg-canvas"), alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                const pointCount = 200;
+                const positions = new Float32Array(pointCount * 3);
+                const pointGeo = new THREE.BufferGeometry();
+                for (let i = 0; i < pointCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 400;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 400;
+                }
+                pointGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                const pointMaterial = new THREE.PointsMaterial({ color: 0x818cf8, size: 1.5, transparent: true, opacity: 0.8 });
+                points = new THREE.Points(pointGeo, pointMaterial);
+                scene.add(points);
+                regenerateLines();
+                window.addEventListener("resize", onWindowResize, false);
+                document.addEventListener('mousemove', onMouseMove, false);
+                renderer.domElement.addEventListener('click', onCanvasClick, false);
+                animate();
+            } catch (error) {
+                console.error('Error initializing Three.js:', error);
+            }
+        }
+        function onWindowResize() {
+            if(camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+        let mouseX = 0, mouseY = 0;
+        function onMouseMove(event) {
+            mouseX = (event.clientX - window.innerWidth / 2) / 100;
+            mouseY = (event.clientY - window.innerHeight / 2) / 100;
+        }
+        function animate() {
+            requestAnimationFrame(animate);
+            if(scene && camera && renderer && points && lines) {
+                points.rotation.y += 0.0005;
+                lines.rotation.y += 0.0005;
+                camera.position.x += (mouseX - camera.position.x) * 0.05;
+                camera.position.y += (-mouseY - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+                renderer.render(scene, camera);
+            }
+        }
+        function onCanvasClick(event) {
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+            vector.unproject(camera);
+            const dir = vector.sub(camera.position).normalize();
+            const distance = -camera.position.z / dir.z;
+            const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+            addPoint(pos);
+        }
+        function addPoint(position) {
+            const oldPositions = points.geometry.attributes.position.array;
+            const newPointCount = oldPositions.length / 3 + 1;
+            const newPositions = new Float32Array(newPointCount * 3);
+            newPositions.set(oldPositions);
+            newPositions[oldPositions.length] = position.x;
+            newPositions[oldPositions.length + 1] = position.y;
+            newPositions[oldPositions.length + 2] = position.z;
+            points.geometry.setAttribute('position', new THREE.BufferAttribute(newPositions, 3));
+            points.geometry.attributes.position.needsUpdate = true;
+            regenerateLines();
+        }
+        function regenerateLines() {
+            if (lines) scene.remove(lines);
+            const pointPositions = points.geometry.attributes.position.array;
+            const pointCount = pointPositions.length / 3;
+            const linePositions = [];
+            for (let i = 0; i < pointCount; i++) {
+                for (let j = i + 1; j < pointCount; j++) {
+                    const dx = pointPositions[i * 3] - pointPositions[j * 3];
+                    const dy = pointPositions[i * 3 + 1] - pointPositions[j * 3 + 1];
+                    const dz = pointPositions[i * 3 + 2] - pointPositions[j * 3 + 2];
+                    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    if (dist < 50) {
+                        linePositions.push(pointPositions[i * 3], pointPositions[i * 3 + 1], pointPositions[i * 3 + 2]);
+                        linePositions.push(pointPositions[j * 3], pointPositions[j * 3 + 1], pointPositions[j * 3 + 2]);
+                    }
+                }
+            }
+            const lineGeo = new THREE.BufferGeometry();
+            lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.3, transparent: true });
+            lines = new THREE.LineSegments(lineGeo, lineMaterial);
+            scene.add(lines);
+        }
+
+        function setupNavigation() {
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            const navMenu = document.getElementById('nav-menu');
+            menuToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.body.classList.toggle('menu-open');
+            });
+            navMenu.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A' && window.innerWidth <= 1024) {
+                   document.body.classList.remove('menu-open');
+                }
+            });
+        }
+
+        function setupScrollAnimations() {
+            const animatedSections = document.querySelectorAll('[data-animate]');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        const elementsToAnimate = entry.target.querySelectorAll('h2, .tab-nav, .tab-content-container');
+                        elementsToAnimate.forEach((el, index) => {
+                           el.style.transitionDelay = `${index * 150}ms`;
+                        });
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            animatedSections.forEach(section => observer.observe(section));
+        }
+
+        function changeTab(event, tabID) {
+            let tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            let tabButtons = document.getElementsByClassName('tab-button');
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove('active');
+            }
+            document.getElementById(tabID).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+    </script>
+</body>
+</html>
