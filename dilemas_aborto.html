@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Análisis exhaustivo, multidimensional y filosófico de la conferencia 'Los Dilemas del Aborto' dictada por el Profesor Carlos Peña, explorando las tensiones entre autonomía, protección del nasciturus y consenso traslapado en una sociedad democrática, con un enfoque en la deliberación racional y la dignidad humana.">
+    <meta name="keywords" content="aborto, Carlos Peña, bioética, filosofía, derecho, consenso traslapado, nasciturus, autonomía, sociedad democrática, deliberación racional, dignidad humana">
+    <meta name="author" content="O.C.V.M.">
+    <title>Conferencia: Los Dilemas del Aborto | Profesor Carlos Peña</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+    <style>
+        /* Variables y estilos globales */
+        :root {
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #22d3ee;
+            --primary-text: #e5e7eb;
+            --primary-glow: #818cf8;
+            --secondary-glow: #22d3ee;
+            --font-main: 'Inter', sans-serif;
+            --nav-height: 90px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: #000000;
+            color: var(--primary-text);
+            font-family: var(--font-main);
+            line-height: 2.2;
+            overflow-x: hidden;
+            /* Agrega un degradado para el fondo */
+            background: linear-gradient(135deg, rgba(0,0,0,1) 0%, rgba(17,24,39,1) 100%);
+        }
+
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        body.menu-open {
+            overflow: hidden;
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: var(--nav-height);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 6%;
+            pointer-events: auto;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1700px;
+        }
+
+        .nav-logo a {
+            font-size: 1.7em;
+            font-weight: 900;
+            color: #fff;
+            text-decoration: none;
+            text-shadow: 0 0 14px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            list-style: none;
+            height: 100%;
+            gap: 1.8rem;
+        }
+
+        nav .nav-container > li {
+            position: relative;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        nav .nav-container > li > a {
+            color: var(--primary-text);
+            text-decoration: none;
+            font-size: clamp(1.1em, 1.6vw, 1.25em);
+            font-weight: 500;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        nav .nav-container > li > a:hover,
+        nav .nav-container > li:hover > a {
+            color: #FFFFFF;
+            text-shadow: 0 0 18px var(--primary-glow);
+        }
+
+        .nav-icon {
+            width: 28px;
+            height: 28px;
+            stroke-width: 1.5;
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            padding: 3.5rem;
+            padding-top: var(--nav-height);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            animation: fadeIn 3.5s ease-in;
+            max-width: 1500px;
+        }
+
+        .hero h1 {
+            font-size: clamp(4.5rem, 12vw, 7.5rem);
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 0 16px var(--primary-glow), 0 0 32px var(--primary-glow), 0 0 64px rgba(129, 140, 248, 0.7);
+            animation: pulse-glow 4.5s infinite alternate;
+        }
+
+        .hero p.subtitle {
+            font-size: clamp(1.6rem, 5vw, 2.8rem);
+            color: var(--secondary-glow);
+            text-shadow: 0 0 14px var(--secondary-glow);
+            margin-top: 1.8rem;
+        }
+
+        .hero p.description {
+            font-size: clamp(1.3rem, 3.5vw, 1.7rem);
+            max-width: 1300px;
+            margin: 3.5rem auto 0;
+            text-shadow: 0 0 8px #000;
+        }
+
+        @keyframes pulse-glow {
+            from { text-shadow: 0 0 16px var(--primary-glow), 0 0 32px var(--primary-glow); }
+            to { text-shadow: 0 0 32px var(--primary-glow), 0 0 64px var(--primary-glow); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 1700px;
+            margin: 0 auto;
+            padding: 3.5rem 4.5vw;
+            pointer-events: none;
+        }
+
+        main, .footer, .section, .hero-content {
+            pointer-events: auto;
+        }
+
+        main p, .footer p, main li, main blockquote {
+            user-select: text;
+            cursor: default;
+            text-align: justify;
+            line-height: 2.3;
+        }
+
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 4.5rem;
+            margin-top: 4.5rem;
+        }
+
+        .section {
+            padding: clamp(3.5rem, 8.5vw, 4.5rem);
+            border-radius: 22px;
+            margin-bottom: 4.5rem;
+            position: relative;
+            transition: transform 0.6s ease, box-shadow 0.6s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 0 70px rgba(129, 140, 248, 0.35);
+        }
+
+        .section h2, .section .tab-nav, .section .tab-content, .section .mermaid-diagram {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.9s ease-out, transform 0.9s ease-out;
+        }
+
+        h2 {
+            font-size: clamp(2.5rem, 7vw, 3.2rem);
+            color: var(--primary-text);
+            text-shadow: 0 0 14px var(--secondary-glow);
+            border-bottom: 2px solid var(--primary-glow);
+            padding-bottom: 2.2rem;
+            margin-bottom: 3.5rem;
+        }
+
+        h3 {
+            font-size: clamp(2rem, 6vw, 2.8rem);
+            color: var(--primary-glow);
+            margin: 4.5rem 0 3rem 0;
+        }
+
+        h4 {
+            font-size: clamp(1.6rem, 5vw, 2.2rem);
+            color: var(--secondary-glow);
+            margin-bottom: 2rem;
+            margin-top: 4rem;
+        }
+
+        h5 {
+            font-size: clamp(1.4rem, 4.5vw, 1.8rem);
+            color: var(--primary-text);
+            margin-bottom: 1.8rem;
+            margin-top: 3.5rem;
+            font-weight: 600;
+        }
+
+        /* Estilos para términos destacados */
+        .color-personaje {
+            color: #F59E0B;
+            font-weight: 700;
+            text-shadow: 0 0 6px rgba(245, 158, 11, 0.7);
+        }
+
+        .color-concepto {
+            color: var(--primary-glow);
+            font-style: italic;
+            font-weight: 500;
+            text-shadow: 0 0 6px var(--primary-glow);
+        }
+
+        .color-idea {
+            color: #a7f3d0;
+            font-weight: 600;
+            text-shadow: 0 0 5px rgba(167, 243, 208, 0.6);
+        }
+
+        .tab-nav {
+            display: flex;
+            flex-wrap: wrap;
+            border-bottom: 2px solid rgba(129, 140, 248, 0.45);
+            margin-bottom: 4rem;
+        }
+
+        .tab-button {
+            padding: 1.5rem 2.5rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            border-bottom: 4px solid transparent;
+            color: var(--primary-text);
+            font-size: clamp(1.1rem, 2.7vw, 1.3rem);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-bottom: -2px;
+        }
+
+        .tab-button:hover {
+            color: #fff;
+            background-color: rgba(129, 140, 248, 0.3);
+        }
+
+        .tab-button.active {
+            color: var(--primary-glow);
+            border-bottom-color: var(--primary-glow);
+            text-shadow: 0 0 14px var(--primary-glow);
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+            opacity: 0;
+            transform: translateY(25px);
+            transition: opacity 0.9s ease forwards, transform 0.9s ease forwards;
+        }
+
+        .tab-content.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card {
+            background-color: rgba(0,0,0,0.45);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            padding: 3.5rem;
+            border-radius: 18px;
+            margin: 3.5rem 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 0 35px rgba(129, 140, 248, 0.45);
+        }
+
+        .quote-block {
+            border-left: 7px solid var(--primary-glow);
+            padding-left: 3.5rem;
+            margin: 3.5rem 0;
+            font-style: italic;
+            color: #c7d2fe;
+            font-size: 1.25rem;
+            line-height: 2.3;
+            position: relative;
+        }
+
+        .quote-block::before {
+            content: '“';
+            font-size: 3rem;
+            color: var(--primary-glow);
+            position: absolute;
+            left: -2rem;
+            top: -0.7rem;
+        }
+
+        .mermaid-diagram {
+            background-color: rgba(255, 255, 255, 0.12);
+            padding: 2.5rem;
+            border-radius: 14px;
+            margin: 3.5rem 0;
+            text-align: center;
+        }
+
+        .mermaid-diagram svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 4.5rem 3rem;
+            color: var(--primary-glow);
+            border-top: 1px solid var(--primary-text);
+            margin-top: 5.5rem;
+        }
+
+        .footer p {
+            font-size: clamp(1.05rem, 2.5vw, 1.2rem);
+            margin: 1.2rem 0;
+        }
+
+        @media (min-width: 1025px) {
+            .menu-toggle { display: none; }
+            .nav-container { display: flex; }
+            .layout-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 1024px) {
+            .nav-content { justify-content: space-between; }
+            .nav-container {
+                position: fixed;
+                top: var(--nav-height);
+                left: 0;
+                width: 100%;
+                height: calc(100vh - var(--nav-height));
+                background: rgba(17, 24, 39, 0.95);
+                backdrop-filter: blur(20px);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+                transform: translateY(-110%);
+                overflow-y: auto;
+                padding: 4rem;
+            }
+
+            body.menu-open .nav-container {
+                transform: translateY(0);
+            }
+
+            nav .nav-container > li {
+                width: 100%;
+                height: auto;
+                text-align: center;
+                margin: 1.2rem 0;
+            }
+
+            nav .nav-container > li > a {
+                padding: 2rem;
+                width: 100%;
+                font-size: 2.2em;
+            }
+
+            .menu-toggle {
+                display: block;
+                position: relative;
+                z-index: 1001;
+                width: 38px;
+                height: 30px;
+                background: none;
+                border: none;
+                cursor: pointer;
+            }
+
+            .icon-bar {
+                display: block;
+                width: 100%;
+                height: 5px;
+                background-color: var(--primary-text);
+                margin: 8px 0;
+                transition: all 0.3s ease-in-out;
+                border-radius: 3px;
+            }
+
+            body.menu-open .menu-toggle .icon-bar:nth-child(1) {
+                transform: rotate(45deg) translate(10px, 10px);
+            }
+
+            body.menu-open .menu-toggle .icon-bar:nth-child(2) {
+                opacity: 0;
+            }
+
+            body.menu-open .menu-toggle .icon-bar:nth-child(3) {
+                transform: rotate(-45deg) translate(10px, -10px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="glassmorphism">
+        <div class="nav-content">
+            <div class="nav-logo">
+                <a href="#inicio">
+                    <img src="https://placehold.co/40x40/818cf8/000000?text=O" alt="Logo O.C.V.M." class="h-11 w-11 md:h-13 md:w-13 rounded-full">
+                    <span>O.C.V.M.</span>
+                </a>
+            </div>
+            <ul class="nav-container" id="nav-menu">
+                <li><a href="#inicio">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+                    Inicio</a></li>
+                <li><a href="#analisis-conferencia">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75M21 16.5a2.25 2.25 0 00-2.25-2.25H15M19.5 8.25a2.25 2.25 0 00-2.25-2.25H10.5a2.25 2.25 0 00-2.25 2.25v8.25a2.25 2.25 0 002.25 2.25h2.25a2.25 2.25 0 002.25-2.25V18l2.25-2.25" /></svg>
+                    Conferencia</a></li>
+                <li><a href="#contacto">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                    Contacto</a></li>
+            </ul>
+            <button class="menu-toggle" id="menu-toggle-btn" aria-label="Abrir o cerrar menú">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- Hero Section -->
+        <div class="hero" id="inicio">
+            <div class="hero-content">
+                <h1>Los Dilemas del Aborto</h1>
+                <p class="subtitle">Una exploración filosófica, bioética y legal por el <span class="color-personaje">Profesor Carlos Peña</span></p>
+                <p class="description">
+                    La conferencia inaugural del <span class="color-personaje">Profesor Carlos Peña</span>, rector de la <span class="color-idea">Universidad Diego Portales</span>, ofrece un análisis multidimensional de los dilemas del aborto, abordando las tensiones entre la <span class="color-idea">autonomía individual</span> y la <span class="color-idea">protección del nasciturus</span>. Inspirado en el <span class="color-concepto">consenso traslapado</span> de <span class="color-personaje">John Rawls</span>, Peña propone un marco para la deliberación racional en una sociedad democrática plural, enfatizando la <span class="color-idea">dignidad humana</span>, el <span class="color-idea">discernimiento moral</span> y la aceptación de las <span class="color-concepto">cargas del juicio</span>. Este enfoque invita a un diálogo reflexivo que respeta la pluralidad de convicciones y reconoce la complejidad ética de uno de los debates más controvertidos de nuestro tiempo.
+                </p>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="layout-grid">
+            <main class="content">
+                <section id="analisis-conferencia" class="glassmorphism">
+                    <h2>Conferencia del <span class="color-personaje">Profesor Carlos Peña</span>: Los Dilemas del Aborto</h2>
+                    <div class="tab-nav">
+                        <button class="tab-button active" onclick="changeTab(event, 'introduccion')">Introducción</button>
+                        <button class="tab-button" onclick="changeTab(event, 'falacia-biologica')">Falacia Biológica</button>
+                        <button class="tab-button" onclick="changeTab(event, 'concepto-persona')">Concepto de Persona</button>
+                        <button class="tab-button" onclick="changeTab(event, 'estatus-nasciturus')">Estatus del Nasciturus</button>
+                        <button class="tab-button" onclick="changeTab(event, 'derecho-comparado')">Derecho Comparado</button>
+                        <button class="tab-button" onclick="changeTab(event, 'conclusion')">Conclusión</button>
+                    </div>
+                    <div class="tab-content-container">
+                        <!-- Tab 1: Introducción -->
+                        <div id="introduccion" class="tab-content active">
+                            <h3>1. Introducción: La Controversia del Aborto en la Esfera Pública</h3>
+                            <p>
+                                El <span class="color-personaje">Profesor Carlos Peña</span>, rector de la <span class="color-idea">Universidad Diego Portales</span>, abogado, doctor en filosofía y columnista influyente en Chile, abre su conferencia posicionando el aborto como uno de los dilemas más álgidos en la <span class="color-concepto">esfera pública</span>. Este concepto, desarrollado por <span class="color-personaje">Jürgen Habermas</span> en su obra <span class="color-idea">Teoría de la acción comunicativa</span>, describe el espacio donde los ciudadanos ejercen la <span class="color-idea">razón pública</span> para deliberar sobre cuestiones fundamentales de la vida colectiva. Peña subraya la capacidad del aborto para movilizar <span class="color-concepto">concepciones arraigadas</span> que configuran la <span class="color-idea">identidad personal y colectiva</span>, convirtiéndolo en un tema profundamente divisivo. Como él expresa:
+                            </p>
+                            <blockquote class="quote-block">
+                                "De todos los dilemas que ocupan la esfera pública, ese ámbito en el que los ciudadanos deliberan acerca de cómo queremos vivir, uno de los más álgidos sin ninguna duda, y como todos ustedes saben, es el del aborto. La índole controversial que este tema posee deriva del hecho que a diferencia de otros que también atraen e imantan la atención de los ciudadanos, en este se ponen en juego algunas de nuestras concepciones más arraigadas, ese tipo de concepciones que orientan la vida de cada uno y sin las cuales a veces la propia identidad se ve desmedrada o se ve puesta en peligro."
+                            </blockquote>
+                            <div class="card">
+                                <h4>El Desafío de una Sociedad Democrática</h4>
+                                <p>
+                                    Peña plantea una pregunta central: ¿cómo resolver un dilema tan polarizante en una <span class="color-concepto">sociedad democrática</span> que valora la <span class="color-idea">libertad de conciencia</span> y el <span class="color-idea">discernimiento individual</span>? Su enfoque no busca imponer una solución definitiva, sino identificar los <span class="color-concepto">dilemas conceptuales y morales</span> que subyacen al debate, promoviendo un diálogo racional que respete la pluralidad. Peña explica:
+                                </p>
+                                <blockquote class="quote-block">
+                                    "¿Cómo resolver entonces en una sociedad democrática un dilema como el del aborto que, como digo, parece despertar las convicciones más profundas y más arraigadas de las personas? En lo que sigue, me propongo examinar brevemente este problema, haciendo el esfuerzo de identificar algunos de los dilemas conceptuales y de índole moral que le subyacen."
+                                </blockquote>
+                                <p>
+                                    Esta perspectiva refleja la influencia de <span class="color-personaje">Habermas</span>, quien aboga por un modelo de deliberación basado en el diálogo racional-crítico, y de <span class="color-personaje">Hannah Arendt</span>, quien en <span class="color-idea">La condición humana</span> destaca la importancia de la acción comunicativa en el espacio público. Peña busca trascender las posturas dogmáticas, fomentando una <span class="color-idea">tolerancia reflexiva</span> frente a las discrepancias.
+                                </p>
+                            </div>
+                            <div class="card">
+                                <h4>El Consenso Traslapado como Solución Práctica</h4>
+                                <p>
+                                    Peña introduce el concepto de <span class="color-concepto">consenso traslapado</span>, desarrollado por <span class="color-personaje">John Rawls</span> in <span class="color-idea">Liberalismo político</span>. Este marco sugiere que, en una sociedad plural, individuos con visiones morales opuestas pueden convergir en acuerdos prácticos sin renunciar a sus convicciones fundamentales. Peña señala:
+                                </p>
+                                <blockquote class="quote-block">
+                                    "Me parece a mí que cuando se esclarece este punto se logra avistar una solución que todos podríamos con suficiente buena voluntad y raciocinio aceptar. Esta aceptación por la que abogaré enseguida no equivale, por supuesto, a un consenso pleno, sino apenas a lo que siguiendo a Rawls podríamos llamar un consenso traslapado, no un acuerdo final."
+                                </blockquote>
+                                <p>
+                                    El <span class="color-concepto">consenso traslapado</span> es especialmente relevante para el aborto, donde las posturas pro-vida y pro-elección reflejan profundas diferencias éticas. Peña argumenta que aceptar las <span class="color-concepto">cargas del juicio</span> —los desacuerdos inevitables entre personas racionales— es esencial para una democracia liberal. Esta idea se alinea con la <span class="color-idea">neutralidad liberal</span> de Rawls, que evita que el Estado imponga una concepción particular del bien.
+                                </p>
+                            </div>
+                            <div class="card">
+                                <h4>El Contexto Chileno: Un Debate Polarizado</h4>
+                                <p>
+                                    En Chile, el debate sobre el aborto ha sido históricamente polarizado, marcado por una prohibición total hasta 2017, cuando se despenalizó en tres causales: riesgo de vida de la madre, inviabilidad fetal y violación. Peña sitúa su conferencia en este contexto, abogando por un enfoque que equilibre la <span class="color-idea">autonomía de la mujer</span> con la <span class="color-idea">protección del nasciturus</span>. Su propuesta busca superar las narrativas binarias (pro-vida vs. pro-elección) que dominan el discurso público, promoviendo un diálogo más inclusivo y reflexivo.
+                                </p>
+                                <h5>Historia Legislativa en Chile</h5>
+                                <p>
+                                    La despenalización del aborto en Chile marcó un hito tras décadas de restricciones estrictas bajo la dictadura de Pinochet (1973-1990), que prohibió el aborto en todas sus formas. La ley de 2017, aprobada bajo el gobierno de <span class="color-personaje">Michelle Bachelet</span>, refleja un avance hacia el reconocimiento de la <span class="color-idea">autonomía reproductiva</span>, pero sigue siendo limitada frente a legislaciones más permisivas en otros países. Peña sugiere que el <span class="color-concepto">consenso traslapado</span> puede guiar futuras reformas, respetando la diversidad de creencias en Chile.
+                                </p>
+                            </div>
+                            <div class="card">
+                                <h4>La Relevancia de la Deliberación Pública</h4>
+                                <p>
+                                    Peña enfatiza que el aborto no es solo un tema ético o legal, sino un desafío para la <span class="color-idea">deliberación pública</span>. Inspirado en <span class="color-personaje">Arendt</span>, quien en <span class="color-idea">La vida del espíritu</span> destaca la importancia del juicio reflexivo, Peña propone que el debate sobre el aborto debe ser un ejercicio de <span class="color-idea">razón pública</span> que fomente la <span class="color-idea">tolerancia</span> y el respeto mutuo. Este enfoque no solo es relevante para Chile, sino para cualquier sociedad que aspire a una democracia pluralista.
+                                </p>
+                            </div>
+                            <div class="mermaid-diagram">
+                                <div id="mermaid-introduccion" class="mermaid">
+                                    graph TD
+                                        A[Introducción]
+                                        A --> B[Esfera Pública]
+                                        A --> C[Controversia Pública]
+                                        A --> D[Consenso Traslapado]
+                                        A --> E[Cargas del Juicio]
+                                        B --> B1[Deliberación Ciudadana]
+                                        B --> B2[Habermas: Razón Pública]
+                                        C --> C1[Identidad Personal]
+                                        C --> C2[Concepciones Arraigadas]
+                                        D --> D1[John Rawls]
+                                        D --> D2[Neutralidad Liberal]
+                                        D --> D3[Tolerancia]
+                                        E --> E1[Diálogo Racional]
+                                        E --> E2[Hannah Arendt]
+                                        E --> E3[Jürgen Habermas]
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 2: Falacia Biológica -->
+                        <div id="falacia-biologica" class="tab-content">
+                            <h3>2. La Falacia de la Perspectiva Biológica</h3>
+                            <p>
+                                Peña aborda un error común en el debate sobre el aborto: la creencia de que el conocimiento científico puede resolver el dilema al determinar el <span class="color-concepto">origen de la vida humana</span>. Esta perspectiva, aunque atractiva en una cultura moderna que valora los hechos empíricos, es insuficiente para abordar las cuestiones normativas inherentes al aborto.
+                            </p>
+                            <div class="card">
+                                <h4>La Tentación del Reduccionismo Científico</h4>
+                                <p>
+                                    En muchos debates públicos, se asume que precisar el momento exacto en que comienza la vida humana —por ejemplo, a través de marcadores biológicos como la concepción, el latido del corazón o la actividad cerebral— podría establecer una línea clara entre lo lícito y lo ilícito. Peña critica esta postura como una <span class="color-concepto">falacia reductiva</span>:
+                                </p>
+                                <blockquote class="quote-block">
+                                    "Su decirse, por ejemplo, que de lo que se trata a fin de resolver este dilema, es de precisar con los auxilios de la ciencia o de la técnica el principio de la vida humana, con lo cual la frontera entre lo que es lícito o no lícito de hacer quedaría perfectamente trazada en base a las evidencias disponibles. Este punto de vista, según el cual, como digo, la cuestión del aborto podría ser zanjada por el saber científico o técnico, es especialmente tentador, sobre todo si se atiende al hecho que en la cultura moderna está profundamente arraigada la idea que si bien podemos discrepar en cuestiones de valor o relativas al mundo ético de la cultura, contamos, sin embargo, with una amplia base de acuerdo en cuestiones puramente fácticas o empíricas."
+                                </blockquote>
+                                <p>
+                                    Peña argumenta que esta confianza en la ciencia refleja una preferencia cultural por resolver conflictos mediante hechos verificables, evitando las complejidades de los juicios de valor. Sin embargo, esta estrategia es errónea porque el aborto no es un problema empírico, sino normativo.
+                                </p>
+                                <h5>El Contexto Cultural de la Ciencia</h5>
+                                <p>
+                                    La preferencia por el reduccionismo científico es un producto de la modernidad, influida por el positivismo de <span class="color-personaje">Auguste Comte</span> y la confianza en la ciencia como árbitro de la verdad. Peña sugiere que esta mentalidad, aunque útil en otros contextos, no puede resolver dilemas éticos como el aborto, que requieren un juicio moral y social.
+                                </p>
+                            </div>
+                            <div class="card">
+                                <h4>La Pregunta Normativa: ¿Cuándo Comienza la Persona?</h4>
+                                <p>
+                                    El verdadero dilema, según Peña, no es determinar el <span class="color-concepto">origen de la vida</span>, sino responder a la pregunta: <span class="color-concepto">¿cuándo comienza la persona?</span> Esta distinción es crucial, ya que el estatus de <span class="color-concepto">persona</span> implica derechos y deberes que trascienden los datos biológicos. Peña explica:
+                                </p>
+                                <blockquote class="quote-block">
+                                    "Desgraciadamente no es así. Lo que ocurre es que la pregunta que es necesario para orientarse en medio de los dilemas del aborto y que debemos responder no es estrictamente hablando una pregunta acerca del origen de la vida, sino que se trata de una pregunta acerca de cuándo comienza o cuándo principia la persona."
+                                </blockquote>
+                                <p>
+                                    Esta idea se alinea con la distinción filosófica entre hechos y valores, propuesta por <span class="color-personaje">David Hume</span> en su <span class="color-idea">Tratado de la naturaleza humana</span>. Hume argumentó que no se puede derivar un "deber ser" de un "es", una idea conocida como la <span class="color-concepto">guillotina de Hume</span>. Peña aplica este principio para mostrar que la ciencia puede proporcionar antecedentes (e.g., desarrollo embrionario), pero no puede dictar juicios normativos sobre la <span class="color-concepto">personalidad</span>.
+                                </p>
+                            </div>
+                            <div class="card">
+                                <h4>La Falacia Naturalista de <span class="color-personaje">G.E. Moore</span></h4>
+                                <p>
+                                    Peña también conecta su crítica con la <span class="color-concepto">falacia naturalista</span> de <span class="color-personaje">G.E. Moore</span>, quien en <span class="color-idea">Principia Ethica</span> argumentó que los conceptos éticos no pueden reducirse a propiedades naturales. Por ejemplo, el hecho de que un embrión tenga un código genético humano no implica automáticamente que deba ser tratado como una <span class="color-concepto">persona</span>. Peña refuerza esta idea:
+                                </p>
+                                <blockquote class="quote-block">
+                                    "La distinción entre describir y adscribir deriva de la circunstancia que las características fácticas no permiten por sí solas derivar ninguna consecuencia normativa."
+                                </blockquote>
+                                <p>
+                                    Esta perspectiva subraya la necesidad de un juicio normativo que trascienda los datos empíricos, situando el debate en el terreno de la ética y la filosofía.
+                                </p>
+                            </div>
+                            <div class="card">
+                                <h4>Implicaciones para el Debate Público</h4>
+                                <p>
+                                    La falacia biológica tiene profundas implicaciones para el debate público. Al centrarse en hechos científicos, se evade la complejidad de las cuestiones morales y legales, lo que puede exacerbar la polarización. Peña aboga por un enfoque que reconozca la necesidad de deliberar sobre valores, respetando la <span class="color-idea">diversidad de perspectivas</span> en una sociedad plural. Este punto establece el fundamento para su análisis posterior del concepto de <span class="color-concepto">persona</span> y el estatus del <span class="color-concepto">nasciturus</span>.
+                                </p>
+                                <h5>El Caso Chileno</h5>
+                                <p>
+                                    En Chile, los argumentos basados en la ciencia (e.g., el momento de la concepción como inicio de la vida) han dominado el discurso pro-vida, mientras que los argumentos pro-elección enfatizan la <span class="color-idea">autonomía</span>. Peña invita a un cambio de paradigma hacia un diálogo que incorpore consideraciones éticas y legales, superando el reduccionismo científico.
+                                </p>
+                            </div>
+                            <div class="card">
+                                <h4>Críticas al Enfoque Biológico</h4>
+                                <p>
+                                    Peña también podría alinearse con críticas contemporáneas al enfoque biológico, como las de <span class="color-personaje">Judith Jarvis Thomson</span>, quien en su ensayo <span class="color-idea">A Defense of Abortion</span> argumenta que incluso si se concede que el feto es una persona desde la concepción, esto no implica automáticamente que el aborto sea inmoral. Thomson utiliza la analogía del "violinista" para defender la <span class="color-idea">autonomía corporal</span>, sugiriendo que los derechos del feto no siempre superan los de la mujer. Aunque Peña no cita directamente a Thomson, su énfasis en la <span class="color-idea">autonomía</span> sugiere una compatibilidad con esta perspectiva.
+                                </p>
+                            </div>
+                            <div class="mermaid-diagram">
+                                <div id="mermaid-falacia-biologica" class="mermaid">
+                                    graph TD
+                                        A[Falacia Biológica]
+                                        A --> B[Pregunta Normativa]
+                                        A --> C[Hechos vs. Valores]
+                                        A --> D[Reduccionismo Científico]
+                                        B --> B1[¿Cuándo Comienza la Persona?]
+                                        B --> B2[Limitaciones de la Ciencia]
+                                        C --> C1[David Hume]
+                                        C --> C2[G.E. Moore]
+                                        C --> C3[Falacia Naturalista]
+                                        D --> D1[Cultura Moderna]
+                                        D --> D2[Biología vs. Ética]
+                                        D --> D3[Judith Jarvis Thomson]
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 3: Concepto de Persona -->
+                        <div id="concepto-persona" class="tab-content">
+                            <h3>3. El Concepto de Persona: Perspectivas Históricas y Filosóficas</h3>
+                            <p>
+                                Peña profundiza en el concepto de <span class="color-concepto">persona</span>, destacando que no es sinónimo de <span class="color-concepto">vida humana</span>. Este término, con raíces etimológicas y filosóficas, implica una dimensión normativa que trasciende la biología, situándose en el centro del debate sobre el aborto.
+                            </p>
+                            <div class="grid md:grid-cols-2 gap-14">
+                                <div class="card">
+                                    <h4 style="color: var(--primary-glow);">Tradición Cristiana: La Persona como Dignidad Irreductible</h4>
+                                    <p>
+                                        En la <span class="color-idea">patrística cristiana</span>, el término <span class="color-concepto">persona</span> se desarrolló para explicar misterios teológicos como la <span class="color-concepto">Trinidad</span> y la <span class="color-concepto">Encarnación</span>. Peña cita a <span class="color-personaje">Boecio</span>, <span class="color-personaje">Tomás de Aquino</span>, <span class="color-personaje">Duns Escoto</span> y <span class="color-personaje">Karol Wojtyła</span>, quienes enfatizaron que la persona no es reducible a un individuo biológico. Peña explica:
+                                    </p>
+                                    <blockquote class="quote-block">
+                                        "En la patrística, la palabra persona se emplea originariamente para explicitar el misterio de la trinidad y afirmar, por ejemplo, que hay tres personas, pero un solo Dios, es decir, tres personas sola sustancia en la patrística inicial. [...] Lo que prueba que el concepto de persona se despega de cualquier sustancialidad empírica."
+                                    </blockquote>
+                                    <h5>Contribuciones de <span class="color-personaje">Boecio</span></h5>
+                                    <p>
+                                        <span class="color-personaje">Boecio</span>, en su obra <span class="color-idea">De persona et duabus naturis</span>, definió la persona como una <span class="color-concepto">"substancia individual de naturaleza racional"</span>. Esta definición estableció un precedente para la filosofía medieval, destacando la racionalidad y la singularidad como características esenciales de la persona.
+                                    </p>
+                                    <h5>Perspectiva de <span class="color-personaje">Tomás de Aquino</span></h5>
+                                    <p>
+                                        <span class="color-personaje">Tomás de Aquino</span>, en su <span class="color-idea">Summa Theologiae</span>, argumentó que la persona posee una dignidad única derivada de su relación con lo divino, trascendiendo su naturaleza biológica. Esta idea implica que la <span class="color-concepto">persona</span> no es intercambiable, a diferencia de un individuo biológico dentro de una especie.
+                                    </p>
+                                    <h5>Aporte de <span class="color-personaje">Duns Escoto</span></h5>
+                                    <p>
+                                        <span class="color-personaje">Duns Escoto</span> introdujo el concepto de <span class="color-concepto">haecceitas</span> (estaidad), que enfatiza la singularidad irrepetible de cada persona. Esta noción refuerza la idea de que la personalidad no puede reducirse a características empíricas.
+                                    </p>
+                                    <h5>Influencia de <span class="color-personaje">Karol Wojtyła</span></h5>
+                                    <p>
+                                        <span class="color-personaje">Karol Wojtyła</span>, en su obra <span class="color-idea">Persona y acto</span>, desarrolló una fenomenología de la persona, destacando su capacidad de <span class="color-idea">autodeterminación</span> y su dimensión trascendental. Peña cita:
+                                    </p>
+                                    <blockquote class="quote-block">
+                                        "Desde Boecio en adelante hasta la actualidad, pasando por autores tan relevantes, prestigiosos y con toda justicia respetados como Tomás de Aquino o Escoto, por ejemplo, una persona no es equivalente a un individuo porque se dice, mientras un individuo es un singular intercambiable dentro de una especie, ello no ocurre con la persona que no es ni intercambiable con ningún otro singular, como argumenta Santo Tomás, ni reducible a mera naturaleza."
+                                    </blockquote>
+                                    <p>
+                                        Esta tradición teológica subraya que la <span class="color-concepto">persona</span> implica una dimensión normativa y espiritual, lo que complica su aplicación al <span class="color-concepto">nasciturus</span> en el debate sobre el aborto.
+                                    </p>
+                                </div>
+                                <div class="card">
+                                    <h4 style="color: var(--secondary-glow);">Tradición Liberal y Analítica: La Persona como Juicio Adscriptivo</h4>
+                                    <p>
+                                        En la tradición liberal y analítica, Peña se apoya en <span class="color-personaje">H.L.A. Hart</span> y <span class="color-personaje">Bruce Ackerman</span> para argumentar que el estatus de <span class="color-concepto">persona</span> es <span class="color-concepto">adscriptivo</span>, no descriptivo. Esto significa que no se deriva automáticamente de características empíricas, sino que requiere un juicio normativo basado en la <span class="color-idea">deliberación pública</span>. Peña explica:
+                                    </p>
+                                    <blockquote class="quote-block">
+                                        "Para esta tradición, el problema del inicio de la persona no es un asunto descriptivo y en esto coincide con la tradición cristiana, sino uno, como sugirió alguna vez Hart, adscriptivo. La distinción entre describir y adscribir deriva de la circunstancia que las características fácticas no permiten por sí solas derivar ninguna consecuencia normativa."
+                                    </blockquote>
+                                    <h5>Contribución de <span class="color-personaje">H.L.A. Hart</span></h5>
+                                    <p>
+                                        <span class="color-personaje">H.L.A. Hart</span>, en su obra <span class="color-idea">El concepto de derecho</span>, defendió la importancia de las normas sociales en la determinación de categorías jurídicas. Peña utiliza esta idea para argumentar que el estatus de persona es un constructo normativo, no un hecho natural.
+                                    </p>
+                                    <h5>Perspectiva de <span class="color-personaje">Bruce Ackerman</span></h5>
+                                    <p>
+                                        <span class="color-personaje">Bruce Ackerman</span>, en su teoría del <span class="color-idea">liberalismo dialogal</span>, enfatiza la necesidad de un diálogo público para resolver cuestiones normativas. Peña conecta esta idea con la <span class="color-concepto">ciudadanía moral</span>:
+                                    </p>
+                                    <blockquote class="quote-block">
+                                        "La ciudadanía moral es un asunto de deliberación pública en la que la ciencia médica o biológica puede proporcionar antecedentes empíricos, pero sin que ella pueda formular el definitivo juicio adscriptivo respecto de qué entes son efectivamente personas."
+                                    </blockquote>
+                                    <p>
+                                        Esta perspectiva subraya que determinar quién es una persona es una cuestión de <span class="color-concepto">ciudadanía moral</span> o jurídica, resuelta mediante el consenso social, no por la biología.
+                                    </p>
+                                    <h5>Influencia de <span class="color-personaje">Charles Taylor</span></h5>
+                                    <p>
+                                        Peña también podría resonar con <span class="color-personaje">Charles Taylor</span>, quien en <span class="color-idea">Fuentes del yo</span> argumenta que la identidad personal se construye en el contexto de relaciones sociales y valores culturales. Esta idea refuerza la noción de que la <span class="color-concepto">persona</span> es un constructo social, no un atributo biológico inherente.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <h4>Origen Etimológico y Social de la Persona</h4>
+                                <p>
+                                    Peña destaca el origen etimológico del término <span class="color-concepto">persona</span>, derivado del latín <i>persona</i> (máscara), usado en el teatro clásico para representar un rol social. Esta raíz sugiere que la personalidad es un constructo social y normativo:
+                                    </p>
+                                    <blockquote class="quote-block">
+                                        "Como todo el mundo sabe o casi todo el mundo habría que decir más bien, la palabra persona no es equivalente a vida humana, según lo prueba su origen etimológico que designa inicialmente la máscara de un actor, el artificio que le confería a un individuo un papel en medio de la escena social."
+                                    </blockquote>
+                                    <p>
+                                        Esta idea conecta con las teorías de <span class="color-personaje">Taylor</span>, quien enfatiza que la identidad personal se forma en el diálogo con la comunidad. Peña utiliza esta perspectiva para argumentar que el debate sobre el aborto debe centrarse en juicios normativos, no en hechos empíricos.
+                                    </p>
+                                </div>
+                                <div class="card">
+                                    <h4>Implicaciones para el Debate sobre el Aborto</h4>
+                                    <p>
+                                        La distinción entre <span class="color-concepto">vida humana</span> y <span class="color-concepto">persona</span> tiene profundas implicaciones para el debate sobre el aborto. Peña argumenta que el <span class="color-concepto">nasciturus</span> no cumple automáticamente los criterios de personalidad, ya que carece de capacidades como la <span class="color-idea">autodeterminación</span> o la <span class="color-idea">conciencia reflexiva</span>. Sin embargo, esto no implica que sea desprovisto de valor, lo que lleva al análisis del estatus legal del <span class="color-concepto">nasciturus</span>.
+                                    </p>
+                                    <h5>Perspectiva Feminista</h5>
+                                    <p>
+                                        Desde una perspectiva feminista, como la de <span class="color-personaje">Judith Jarvis Thomson</span>, el estatus de persona del feto no necesariamente anula el derecho de la mujer a decidir sobre su cuerpo. Thomson sostiene que la <span class="color-idea">autonomía corporal</span> es un derecho fundamental, incluso si se concede que el feto es una persona. Esta perspectiva podría complementar el análisis de Peña sobre la protección del <span class="color-concepto">nasciturus</span>.
+                                    </p>
+                                </div>
+                                <div class="mermaid-diagram">
+                                    <div id="mermaid-concepto-persona" class="mermaid">
+                                        graph TD
+                                            A[Concepto de Persona]
+                                            A --> B[Tradición Cristiana]
+                                            A --> C[Tradición Liberal]
+                                            B --> B1[Boecio]
+                                            B --> B2[Tomás de Aquino]
+                                            B --> B3[Duns Escoto]
+                                            B --> B4[Karol Wojtyła]
+                                            B --> B5[Dignidad Trascendental]
+                                            C --> C1[H.L.A. Hart]
+                                            C --> C2[Bruce Ackerman]
+                                            C --> C3[Ciudadanía Moral]
+                                            C --> C4[Charles Taylor]
+                                            A --> D[Origen Etimológico]
+                                            D --> D1[Máscara Teatral]
+                                            D --> D2[Constructo Social]
+                                            A --> E[Implicaciones para Aborto]
+                                            E --> E1[Judith Jarvis Thomson]
+                                            E --> E2[Autonomía Corporal]
+                                    </div>
+                                </div>
+                            </div>
+
+                        <!-- Tab 4: Estatus del Nasciturus -->
+                        <div id="estatus-nasciturus" class="tab-content">
+                            <h3>4. El Estatus Legal del Nasciturus: Protección vs. Personalidad Jurídica</h3>
+                            <p>
+                                Peña examina el estatus del <span class="color-concepto">nasciturus</span> (el concebido pero no nacido) en el ámbito legal, distingiendo entre su <span class="color-idea">protección</span> y su <span class="color-concepto">personalidad jurídica</span>. Este análisis es crucial para entender cómo el derecho aborda el aborto y las tensiones entre los derechos de la mujer y el valor del feto.
+                            </p>
+                            <div class="grid md:grid-cols-2 gap-14">
+                                <div class="card">
+                                    <h4 style="color: var(--primary-glow);">El Nacimiento como Principio de la Personalidad Jurídica</h4>
+                                    <p>
+                                        En la tradición legal occidental, derivada del <span class="color-concepto">Digesto romano</span>, la <span class="color-concepto">personalidad jurídica</span> comienza con el <span class="color-idea">nacimiento</span>, siempre que el feto sobreviva a la separación de la madre. Peña explica:
+                                    </p>
+                                    <blockquote class="quote-block">
+                                        "En esa tradición que se reitera en todo el mundo anglosajón desde luego y en el mundo de la Europa continental, la condición de persona principia con el nacimiento. A condición, agregan esos textos, que la criatura sobreviva a la separación de su madre un momento siquiera."
+                                    </blockquote>
+                                    <h5>Implicaciones Jurídicas</h5>
+                                    <p>
+                                        Esta regla tiene implicaciones prácticas, como la suspensión de derechos hereditarios hasta que el <span class="color-concepto">nasciturus</span> nazca vivo. Si el feto no sobrevive al parto, no se le considera persona jurídica, y cualquier daño causado se evalúa en relación con la madre. Peña señala:
+                                    </p>
+                                    <blockquote class="quote-block">
+                                        "Si se causa un daño al feto, por ejemplo, en toda la tradición legal, solo han de resarcírsele los perjuicios de manera independiente de la madre si nace vivo. Si no sobrevive a la separación de la madre y fue dañado, por ejemplo, es como si nunca hubiera existido."
+                                    </blockquote>
+                                    <p>
+                                        Esta perspectiva se basa en la idea de que los <span class="color-concepto">derechos fundamentales</span> requieren capacidades como la <span class="color-idea">autodeterminación</span>, la posesión de <span class="color-idea">intereses propios</span> y la <span class="color-idea">responsabilidad</span>, que el <span class="color-concepto">nasciturus</span> no posee.
+                                    </p>
+                                </div>
+                                <div class="card">
+                                    <h4 style="color: var(--secondary-glow);">Protección sin Personalidad Jurídica</h4>
+                                    <p>
+                                        Aunque el <span class="color-concepto">nasciturus</span> no sea una persona jurídica, Peña aclara que no puede tratarse como una "cosa" en el sentido moderno. En la tradición romana, el término <span class="color-concepto">res</span> incluía entidades no apropiables, como el aire o las cosas sagradas, que merecen respeto. Peña explica:
+                                    </p>
+                                    <blockquote class="quote-block">
+                                        "Hacía entonces decir que el nasciturus no es persona, [...] no significa en caso alguno poner al embrión o al nasciturus del lado de los entes que están a disposición a discreción de la voluntad humana y al servicio de cualquier propósito."
+                                    </blockquote>
+                                    <h5>El Mandato Constitucional Chileno</h5>
+                                    <p>
+                                        En Chile, la <span class="color-concepto">Constitución</span> establece un mandato de <span class="color-idea">protección</span> para el <span class="color-concepto">nasciturus</span>, reflejado en prácticas legales que favorecen su cuidado y desarrollo. Peña cita:
+                                    </p>
+                                    <blockquote class="quote-block">
+                                        "El nasciturus es así, como digo, merecedor de protección. Sobre eso no hay duda alguna, ni desde el punto de vista dogmático, o sea, desde el punto de vista de las reglas jurídico positivas vigentes, ni tampoco desde el punto de vista que he denominado trascendental."
+                                    </blockquote>
+                                    <p>
+                                        Esta protección, sin embargo, no equivale a otorgarle derechos fundamentales, lo que plantea el desafío de compatibilizarla con la <span class="color-idea">autonomía de la mujer</span>.
+                                    </p>
+                                    <h5>Perspectiva Feminista: <span class="color-personaje">Judith Jarvis Thomson</span></h5>
+                                    <p>
+                                        Peña no cita directamente a <span class="color-personaje">Thomson</span>, pero su énfasis en la <span class="color-idea">autonomía</span> resuena con el argumento de Thomson en <span class="color-idea">A Defense of Abortion</span>. Thomson sostiene que el derecho de la mujer a controlar su cuerpo puede prevalecer sobre el derecho a la vida del feto, incluso si se concede que este es una persona. Esta perspectiva podría complementar el análisis de Peña sobre la protección del <span class="color-concepto">nasciturus</span>.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <h4>Análisis Trascendental: Condiciones de los Derechos Fundamentales</h4>
+                                <p>
+                                    Peña adopta un enfoque <span class="color-concepto">trascendental</span>, inspirado en <span class="color-personaje">Immanuel Kant</span>, para analizar las condiciones que hacen posible la práctica de los <span class="color-concepto">derechos fundamentales</span>. Según él, estos derechos presuponen que sus titulares sean capaces de <span class="color-idea">autodeterminarse</span>, tener <span class="color-idea">intereses propios</span> y ser <span class="color-idea">responsables</span>. Peña explica:
+                                    </p>
+                                    <blockquote class="quote-block">
+                                        "Tenemos que averiguar qué características son las que hemos de suponer en los titulares de los derechos fundamentales para que esa práctica de los derechos fundamentales, tal como la conocemos, tenga sentido y luego averiguar si esas características que son las condiciones de posibilidad de los derechos fundamentales, se cumplen en el caso del nasciturus. [...] Parece evidente que no."
+                                    </blockquote>
+                                    <p>
+                                        Este análisis kantiano subraya que el <span class="color-concepto">nasciturus</span> no cumple los criterios de <span class="color-idea">autonomía</span> necesarios para ser titular de derechos fundamentales, aunque merece protección en virtud de su potencial y valor intrínseco.
+                                    </p>
+                                    <h5>La Ética Kantiana</h5>
+                                    <p>
+                                        En la <span class="color-idea">Fundamentación de la metafísica de las costumbres</span>, <span class="color-personaje">Kant</span> argumenta que la dignidad humana deriva de la capacidad de actuar según principios racionales. Peña utiliza esta idea para justificar por qué el <span class="color-concepto">nasciturus</span> no es titular de derechos fundamentales, aunque reconoce su valor ético.
+                                    </p>
+                                </div>
+                                <div class="card">
+                                    <h4>Tensiones Éticas y Legales</h4>
+                                    <p>
+                                        La distinción entre <span class="color-idea">protección</span> y <span class="color-concepto">personalidad jurídica</span> genera tensiones éticas y legales. Peña destaca que el desafío radica en equilibrar el mandato de protección del <span class="color-concepto">nasciturus</span> con los derechos de la mujer, particularmente su <span class="color-idea">autonomía reproductiva</span>. Este equilibrio requiere un enfoque que respete tanto el valor del feto como la libertad de la mujer, un tema que Peña aborda en la sección sobre derecho comparado.
+                                    </p>
+                                    <h5>Perspectiva Chilena</h5>
+                                    <p>
+                                        En Chile, la <span class="color-concepto">Constitución</span> establece que "la ley protege la vida del que está por nacer", lo que refleja un compromiso con la <span class="color-idea">protección del nasciturus</span>. Sin embargo, la ley de tres causales de 2017 reconoce ciertos derechos de la mujer, creando un equilibrio parcial. Peña sugiere que este equilibrio debe refinarse mediante un diálogo racional que incorpore el <span class="color-concepto">consenso traslapado</span>.
+                                    </p>
+                                </div>
+                                <div class="mermaid-diagram">
+                                    <div id="mermaid-estatus-nasciturus" class="mermaid">
+                                        graph TD
+                                            A[Estatus del Nasciturus]
+                                            A --> B[Personalidad Jurídica]
+                                            A --> C[Protección sin Personalidad]
+                                            A --> D[Análisis Trascendental]
+                                            A --> E[Tensiones Éticas y Legales]
+                                            B --> B1[Digesto Romano]
+                                            B --> B2[Nacimiento]
+                                            B --> B3[Derechos Fundamentales]
+                                            C --> C1[Constitución Chilena]
+                                            C --> C2[Autonomía de la Mujer]
+                                            C --> C3[Judith Jarvis Thomson]
+                                            D --> D1[Immanuel Kant]
+                                            D --> D2[Condiciones de Posibilidad]
+                                            E --> E1[Equilibrio de Valores]
+                                            E --> E2[Contexto Chileno]
+                                            E --> E3[Desafíos Legislativos]
+                                    </div>
+                                </div>
+                            </div>
+
+                        <!-- Tab 5: Derecho Comparado -->
+                        <div id="derecho-comparado" class="tab-content">
+                            <h3>5. La Solución en el Derecho Comparado: Ponderación y Consenso</h3>
+                            <p>
+                                Peña propone que la solución al dilema del aborto no consiste en imponer una visión moral única, sino en <span class="color-idea">ponderar</span> la <span class="color-idea">autonomía de la mujer</span> con la <span class="color-idea">protección del nasciturus</span>. Este enfoque se refleja en la jurisprudencia internacional, que ofrece modelos prácticos para abordar el problema.
+                            </p>
+                            <div class="grid md:grid-cols-2 gap-14">
+                                <div class="card">
+                                    <h4 style="color: var(--primary-glow);">Jurisprudencia Alemana: Antijuricidad y Exención Penal</h4>
+                                    <p>
+                                        En Alemania, el aborto es considerado <span class="color-idea">antijurídico</span> porque el Estado tiene un interés legítimo en proteger al <span class="color-concepto">nasciturus</span>. Sin embargo, en ciertos casos, se declara <span class="color-idea">penalmente impune</span> para respetar la <span class="color-idea">autonomía de la mujer</span>. Peña explica:
+                                    </p>
+                                    <blockquote class="quote-block">
+                                        "En el caso alemán, se ha declarado que el aborto es antijurídico porque el Estado tiene interés en proteger al nasciturus, pero al mismo tiempo se ha afirmado que es penalmente impune, es decir, que no merece pena penal en razón de la autonomía a que la mujer tiene derecho."
+                                    </blockquote>
+                                    <h5>Contexto de la Corte Constitucional Alemana</h5>
+                                    <p>
+                                        La Corte Constitucional alemana, en decisiones como la de 1975, afirmó que el Estado tiene el deber de proteger la vida humana, incluido el <span class="color-concepto">nasciturus</span>. Sin embargo, reconoció que penalizar el aborto en todos los casos podría violar los derechos de la mujer. Este enfoque busca un equilibrio entre principios opuestos, reflejando la idea de <span class="color-idea">ponderación</span>.
+                                    </p>
+                                    <h5>El Principio de Proporcionalidad</h5>
+                                    <p>
+                                        La jurisprudencia alemana utiliza el principio de <span class="color-idea">proporcionalidad</span>, que evalúa la legitimidad de las restricciones a los derechos fundamentales. Peña sugiere que este principio puede aplicarse al aborto, permitiendo al Estado proteger al <span class="color-concepto">nasciturus</span> sin anular la <span class="color-idea">autonomía</span> de la mujer.
+                                    </p>
+                                </div>
+                                <div class="card">
+                                    <h4 style="color: var(--secondary-glow);">Jurisprudencia Estadounidense: Equilibrio entre Vida y Autonomía</h4>
+                                    <p>
+                                        En Estados Unidos, desde <span class="color-concepto">Roe v. Wade</span> (1973) hasta 1992, la Corte Suprema permitió a los estados regular el aborto ponderando el interés en la vida del feto con la <span class="color-idea">autonomía reproductiva</span>. Peña señala:
+                                    </p>
+                                    <blockquote class="quote-block">
+                                        "En el caso norteamericano, [...] la Suprema Corte ha declarado desde el caso Roe versus Wade hasta 1992 en términos generales, que es legítimo que los estados contrapesen el interés en la vida del feto con la autonomía de la mujer a la hora de regular el aborto."
+                                    </blockquote>
+                                    <h5>El Legado de <span class="color-concepto">Roe v. Wade</span></h5>
+                                    <p>
+                                        En <span class="color-concepto">Roe v. Wade</span>, la Corte estableció el derecho al aborto como parte de la <span class="color-idea">privacidad</span>, entendida como <span class="color-idea">autogobierno</span>. Sin embargo, permitió restricciones progresivas conforme avanza el embarazo, reconociendo un interés creciente en la protección del feto. Este enfoque refleja la <span class="color-concepto">gradualidad</span> de los derechos, un principio que Peña encuentra útil para el debate.
+                                    </p>
+                                    <h5>Post-Roe: Cambios Recientes</h5>
+                                    <p>
+                                        Aunque Peña se refiere al período hasta 1992, es relevante mencionar que en 2022, la Corte Suprema de Estados Unidos derogó <span class="color-concepto">Roe v. Wade</span> en el caso <span class="color-concepto">Dobbs v. Jackson Women's Health Organization</span>, devolviendo la regulación del aborto a los estados. Esto refuerza la idea de Peña de que el aborto requiere un equilibrio dinámico entre valores en conflicto, adaptado a cada contexto legal.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <h4>El Consenso Traslapado de <span class="color-personaje">John Rawls</span></h4>
+                                <p>
+                                    Peña recurre al <span class="color-concepto">consenso traslapado</span> de <span class="color-personaje">John Rawls</span> para justificar estas soluciones legales. Este concepto permite a personas con visiones opuestas convergir en acuerdos prácticos sin sacrificar sus convicciones. Peña explica:
+                                    </p>
+                                    <blockquote class="quote-block">
+                                        "Por eso, los dilemas del aborto no pueden ser resueltos o zanjados de manera definitiva, sino que en vez de ello solo se puede aspirar a un consenso superpuesto o traslapado en el que las personas que abrigan y abrazan distintos puntos de vista puedan, no obstante, convergir en el espacio público sin por eso sacrificar sus convicciones finales."
+                                    </blockquote>
+                                    <p>
+                                        Peña argumenta que el Estado, en una democracia liberal, debe abstenerse de imponer una moral única y delegar ciertas decisiones al <span class="color-idea">discernimiento individual</span>:
+                                    </p>
+                                    <blockquote class="quote-block">
+                                        "El Estado se abstiene de penalizar el aborto y entrega en ciertos casos calificados la decisión a la autonomía, no porque considere el aborto moralmente lícito, [...] sino porque el Estado, como corresponde de un estado liberal, se inclina frente al hecho que en una sociedad democrática hay aspectos de nuestro discernimiento en que no nos cabe sino aceptar las discrepancias a las que luego incluso de un diálogo intenso arribamos."
+                                    </blockquote>
+                                    <p>
+                                        Esta postura refleja el principio rawlsiano de <span class="color-idea">neutralidad liberal</span>, que busca respetar la diversidad de concepciones del bien en una sociedad plural.
+                                    </p>
+                                </div>
+                                <div class="card">
+                                    <h4>Implicaciones para el Contexto Chileno</h4>
+                                    <p>
+                                        En Chile, donde la despenalización del aborto en tres causales es un avance reciente, Peña sugiere que el modelo de <span class="color-concepto">consenso traslapado</span> puede guiar el desarrollo de políticas que equilibren la <span class="color-idea">protección del nasciturus</span> con los derechos de las mujeres. Este enfoque podría fomentar un debate más inclusivo, superando las posturas dogmáticas que han dominado el discurso público.
+                                    </p>
+                                    <h5>Desafíos Legislativos</h5>
+                                    <p>
+                                        La implementación de políticas basadas en el <span class="color-concepto">consenso traslapado</span> enfrenta desafíos en Chile, donde las instituciones religiosas y conservadoras tienen una influencia significativa. Peña propone que un diálogo racional, inspirado en <span class="color-personaje">Rawls</span> y <span class="color-personaje">Habermas</span>, puede facilitar acuerdos prácticos que respeten tanto la <span class="color-idea">autonomía</span> como la <span class="color-idea">protección</span>.
+                                    </p>
+                                </div>
+                                <div class="mermaid-diagram">
+                                    <div id="mermaid-derecho-comparado" class="mermaid">
+                                        graph TD
+                                            A[Derecho Comparado]
+                                            A --> B[Jurisprudencia Alemana]
+                                            A --> C[Jurisprudencia Estadounidense]
+                                            A --> D[Consenso Traslapado]
+                                            A --> E[Implicaciones para Chile]
+                                            B --> B1[Antijuricidad]
+                                            B --> B2[Exención Penal]
+                                            B --> B3[Corte Constitutional]
+                                            B --> B4[Principio de Proporcionalidad]
+                                            C --> C1[Roe v. Wade]
+                                            C --> C2[Autonomía Reproductiva]
+                                            C --> C3[Privacidad]
+                                            C --> C4[Post-Roe: Dobbs v. Jackson]
+                                            D --> D1[John Rawls]
+                                            D --> D2[Neutralidad Liberal]
+                                            D --> D3[Deliberación Continua]
+                                            E --> E1[Desafíos Legislativos]
+                                            E --> E2[Equilibrio de Valores]
+                                            E --> E3[Contexto Chileno]
+                                    </div>
+                                </div>
+                            </div>
+
+                        <!-- Tab 6: Conclusión -->
+                        <div id="conclusion" class="tab-content">
+                            <h3>6. Conclusión: El Discernimiento Moral como Dignidad Humana</h3>
+                            <p>
+                                Peña concluye su conferencia con una reflexión profunda sobre la naturaleza del <span class="color-idea">discernimiento moral</span>. Lejos de ser una limitación, la ausencia de una solución definitiva para el aborto es una oportunidad para una deliberación continua, que refleja la <span class="color-idea">dignidad humana</span>. Peña expresa:
+                            </p>
+                            <blockquote class="quote-block">
+                                "Lo anterior, en fin, no significa que estamos condenados a obrar a ciegas frente a cuestiones como el aborto, sino al revés. Significa que estamos condenados, por decirlo así, y este debe ser motivo de contento y no de tristeza, a discernir permanentemente qué hacer en frente del aborto o de otros dilemas semejantes, lo que por otra parte es propio del discernimiento moral."
+                            </blockquote>
+                            <div class="card">
+                                <h4>La Metáfora del Piloto</h4>
+                                <p>
+                                    Peña utiliza una metáfora aristotélica para ilustrar el proceso del <span class="color-idea">discernimiento moral</span>, comparándolo con la labor de un piloto que navega en mares turbulentos:
+                                    </p>
+                                    <blockquote class="quote-block">
+                                        "Como recuerda Aristóteles, el discernimiento moral, la condición moral de los seres humanos se parece a la labor del piloto de un barco que en vez de conducirlo por una línea recta y sin tropiezos, como si supiera perfectamente a dónde tiene que ir, el piloto debe estar atento mientras navega y nosotros, mientras vivimos y en cada minuto, a evitar naufragar, confundido por las rocas y la espuma."
+                                    </blockquote>
+                                    <p>
+                                        Esta metáfora, extraída de la <span class="color-idea">Ética a Nicómaco</span> de <span class="color-personaje">Aristóteles</span>, captura la complejidad y la responsabilidad del juicio moral. En esta obra, Aristóteles introduce el concepto de <span class="color-concepto">phronesis</span> (prudencia práctica), que implica la capacidad de deliberar sabiamente en contextos inciertos.
+                                    </p>
+                                </div>
+                                <div class="card">
+                                    <h4>La Dignidad Humana en la Deliberación</h4>
+                                    <p>
+                                        Peña argumenta que la <span class="color-idea">dignidad humana</span> radica en la capacidad de los individuos para reflexionar y decidir en contextos complejos. La falta de una solución definitiva para el aborto no es un fracaso, sino una expresión de la libertad humana para enfrentar dilemas éticos. Esta idea se conecta con la filosofía de <span class="color-personaje">Immanuel Kant</span>, quien en su <span class="color-idea">Crítica de la razón práctica</span> destaca la autonomía como la base de la dignidad moral.
+                                    </p>
+                                </div>
+                                <div class="card">
+                                    <h4>Relevancia Contemporánea</h4>
+                                    <p>
+                                        La conferencia de Peña tiene una relevancia particular en el contexto chileno, donde el debate sobre el aborto sigue siendo polarizado. Su propuesta de un <span class="color-concepto">consenso traslapado</span> ofrece un marco para avanzar hacia políticas que equilibren la <span class="color-idea">autonomía</span> y la <span class="color-idea">protección</span>, promoviendo una sociedad más inclusiva y reflexiva. Peña concluye que aceptar las <span class="color-concepto">cargas del juicio</span> es un acto de madurez democrática:
+                                    </p>
+                                    <blockquote class="quote-block">
+                                        "En una sociedad democrática hay aspectos de nuestro discernimiento en que no nos cabe sino aceptar las discrepancias a las que luego incluso de un diálogo intenso arribamos."
+                                    </blockquote>
+                                    <p>
+                                        Este enfoque fomenta un diálogo continuo que respeta la <span class="color-idea">diversidad de convicciones</span>, reflejando los principios de una democracia liberal moderna.
+                                    </p>
+                                </div>
+                                <div class="card">
+                                    <h4>Implicaciones Globales</h4>
+                                    <p>
+                                        Más allá de Chile, las ideas de Peña tienen implicaciones globales en un mundo donde el aborto sigue siendo un tema controvertido. Su énfasis en el <span class="color-idea">discernimiento moral</span> y la <span class="color-idea">tolerancia</span> ofrece un modelo para abordar dilemas éticos en contextos multiculturales, donde las diferencias de valores son inevitables. La referencia a <span class="color-personaje">Aristóteles</span>, <span class="color-personaje">Rawls</span> y <span class="color-personaje">Habermas</span> sitúa la conferencia en un marco filosófico universal, aplicable a cualquier sociedad que aspire a la justicia y la equidad.
+                                    </p>
+                                </div>
+                                <div class="mermaid-diagram">
+                                    <div id="mermaid-conclusion" class="mermaid">
+                                        graph TD
+                                            A[Conclusión]
+                                            A --> B[Phronesis Aristotélica]
+                                            A --> C[Dignidad Humana]
+                                            A --> D[Sociedad Plural]
+                                            A --> E[Relevancia Contemporánea]
+                                            A --> F[Implicaciones Globales]
+                                            B --> B1[Metáfora del Piloto]
+                                            B --> B2[Ética a Nicómaco]
+                                            B --> B3[Prudencia Práctica]
+                                            C --> C1[Deliberación Continua]
+                                            C --> C2[Autonomía Kantiana]
+                                            C --> C3[Jürgen Habermas]
+                                            D --> D1[Consenso Democrático]
+                                            D --> D2[Pluralismo]
+                                            D --> D3[Tolerancia Reflexiva]
+                                            E --> E1[Contexto Chileno]
+                                            E --> E2[Desafíos Éticos]
+                                            F --> F1[Democracia Liberal]
+                                            F --> F2[John Rawls]
+                                            F --> F3[Hannah Arendt]
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <footer class="footer" id="contacto">
+            <h2>Contacto</h2>
+            <p>Este espacio es una invitación al diálogo reflexivo sobre los dilemas filosóficos, éticos y legales del aborto, inspirado en la conferencia del <span class="color-personaje">Profesor Carlos Peña</span>. Contáctenos para compartir sus perspectivas y contribuir a una discusión más profunda.</p>
+            <p style="margin-top:2rem; font-size: 1em;">La vida es terriblemente bella cuando navegamos con discernimiento. | 2025</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicializar Mermaid.js una vez al cargar la página
+            if (typeof mermaid !== 'undefined') {
+                mermaid.initialize({ startOnLoad: false, theme: 'dark' });
+            } else {
+                console.error("Mermaid.js not loaded");
+            }
+            setupNavigation();
+            // Llama a changeTab para la pestaña inicial para que el diagrama de Mermaid se renderice
+            document.getElementById('introduccion').classList.add('active');
+            mermaid.run({ nodes: [document.getElementById('mermaid-introduccion')] });
+        });
+
+        // Función para manejar el cambio de pestañas y renderizar los diagramas
+        function changeTab(event, tabID) {
+            // Elimina la clase 'active' de todas las pestañas y botones
+            let tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            let tabButtons = document.getElementsByClassName('tab-button');
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove('active');
+            }
+
+            // Agrega la clase 'active' a la pestaña y botón seleccionados
+            const activeTab = document.getElementById(tabID);
+            activeTab.classList.add('active');
+            event.currentTarget.classList.add('active');
+
+            // Renderiza el diagrama de Mermaid de la pestaña activa
+            const activeMermaidContainer = document.getElementById(`mermaid-${tabID}`);
+            if (activeMermaidContainer && typeof mermaid !== 'undefined') {
+                mermaid.run({ nodes: [activeMermaidContainer] });
+            }
+        }
+
+        // Función para manejar la navegación móvil
+        function setupNavigation() {
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            const navMenu = document.getElementById('nav-menu');
+            menuToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.body.classList.toggle('menu-open');
+            });
+            navMenu.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A' && window.innerWidth <= 1024) {
+                    document.body.classList.remove('menu-open');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
